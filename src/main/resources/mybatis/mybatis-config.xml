@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!-- 캐시 사용 -->
+        <setting name="cacheEnabled" value="true"/>
+        <!-- 지연 로딩 사용 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!-- auto-generated key 사용 -->
+        <setting name="useGeneratedKeys" value="true"/>
+        <!-- underscore to camelCase 자동 변환 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- NULL 값 처리 -->
+        <setting name="jdbcTypeForNull" value="NULL"/>
+        <!-- 로그 구현체 지정 -->
+        <setting name="logImpl" value="SLF4J"/>
+        <!-- 디버그 모드 -->
+        <setting name="logPrefix" value="[MyBatis] "/>
+    </settings>
+
+    <!-- Type Aliases -->
+    <typeAliases>
+        <package name="com.sanaiclub"/>
+    </typeAliases>
+</configuration>

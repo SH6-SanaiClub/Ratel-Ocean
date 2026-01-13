@@ -1,0 +1,115 @@
+# ===== 빌드 결과물 =====
+target/
+out/
+build/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===== IntelliJ IDEA =====
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ===== Eclipse =====
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# ===== NetBeans =====
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ===== VS Code =====
+.vscode/
+
+# ===== Maven =====
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== 민감정보 =====
+**/db.properties
+**/database.properties
+**/application-local.properties
+**/application-dev.properties
+**/*-local.yml
+**/*-local.yaml
+*.env
+.env.local
+.env.*.local
+
+# ===== 로그 파일 =====
+logs/
+*.log
+log/
+*.log.*
+
+# ===== 컴파일 파일 =====
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# ===== 임시 파일 =====
+*.tmp
+*.bak
+*.swp
+*~
+*.orig
+*.rej
+
+# ===== OS 관련 =====
+# Mac
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ===== 데이터베이스 파일 =====
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== 업로드 파일 (선택) =====
+/uploads/
+/upload/
+/files/
+/temp/
+
+# ===== Tomcat =====
+.tomcat/
+tomcat.*/
+
+# ===== 기타 =====
+.kotlin
+.cache/
+SESSIONS.ser
