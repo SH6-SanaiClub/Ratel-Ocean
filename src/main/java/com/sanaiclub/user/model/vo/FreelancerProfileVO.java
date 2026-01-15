@@ -30,7 +30,7 @@ import lombok.*;
 @Builder
 public class FreelancerProfileVO {
 
-    private int freelancerId;
+    private Integer freelancerId;
     private String nickname;
     private String introduction;
     private String githubUrl;

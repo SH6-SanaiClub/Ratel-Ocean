@@ -33,8 +33,8 @@ import java.time.LocalDateTime;
 @Builder
 public class AccountVO {
 
-    private int accountId;
-    private int userId;
+    private Integer accountId;
+    private Integer userId;
     private String bankName;
     private String accountHolder;
     private String accountNumber;

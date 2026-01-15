@@ -31,8 +31,8 @@ import lombok.*;
 @Builder
 public class ClientProfileVO {
 
-    private int clientId;
-    private Long companyId;
+    private Integer clientId;
+    private Integer companyId;
     private ClientType clientType;
 
 
