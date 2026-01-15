@@ -4,15 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
 
     const revInput = document.getElementById('maxRevisionCount');
-    if(revInput) {
-        revInput.addEventListener('input', function() {
-            if (this.value > 3) { alert('무상 수정 횟수는 최대 3회까지만 설정 가능합니다.'); this.value = 3; }
+    if (revInput) {
+        revInput.addEventListener('input', function () {
+            if (this.value > 3) {
+                alert('무상 수정 횟수는 최대 3회까지만 설정 가능합니다.');
+                this.value = 3;
+            }
         });
     }
 
     const searchInput = document.getElementById('stackSearchInput');
-    if(searchInput) {
-        searchInput.addEventListener('input', function() {
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             document.querySelectorAll('.stack-item').forEach(item => {
                 const text = item.innerText.toLowerCase();
@@ -24,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const budget = document.getElementById('budgetInput');
-    if(budget) {
+    if (budget) {
         budget.addEventListener('input', e => {
             let val = e.target.value.replace(/[^0-9]/g, '');
             e.target.value = val ? Number(val).toLocaleString() : '';
@@ -32,9 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const form = document.getElementById('projectForm');
-    if(form) {
+    if (form) {
         form.addEventListener('submit', () => {
-            if(budget) budget.value = budget.value.replace(/,/g, '');
+            if (budget) budget.value = budget.value.replace(/,/g, '');
         });
     }
 });
@@ -50,14 +53,23 @@ function nextStep(targetStep) {
     let isValid = true;
 
     const inputs = section.querySelectorAll('input[required], textarea[required], select[required]');
-    for(let input of inputs) {
-        if(input.disabled) continue;
-        if(input.type === 'radio') {
+    for (let input of inputs) {
+        if (input.disabled) continue;
+        if (input.type === 'radio') {
             const checked = section.querySelector(`input[name="${input.name}"]:checked`);
-            if(!checked) { isValid = false; alert('필수 항목을 선택해주세요.'); input.focus(); break; }
+            if (!checked) {
+                isValid = false;
+                alert('필수 항목을 선택해주세요.');
+                input.focus();
+                break;
+            }
         } else {
-            if(!input.value.trim()) {
-                isValid = false; alert('필수 항목을 입력해주세요.'); input.focus(); input.style.borderColor = '#ff4d4f'; break;
+            if (!input.value.trim()) {
+                isValid = false;
+                alert('필수 항목을 입력해주세요.');
+                input.focus();
+                input.style.borderColor = '#ff4d4f';
+                break;
             } else {
                 input.style.borderColor = '#ddd';
             }
@@ -70,7 +82,10 @@ function nextStep(targetStep) {
     updateUI();
 }
 
-function prevStep(target) { currentStep = target; updateUI(); }
+function prevStep(target) {
+    currentStep = target;
+    updateUI();
+}
 
 function selectCard(element) {
     const group = element.parentElement;
@@ -87,7 +102,7 @@ function addStack(id, name, element) {
 
     const displayBox = document.getElementById('stackDisplayBox');
     const placeholder = displayBox.querySelector('.placeholder-text');
-    if(placeholder) placeholder.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'none';
 
     const tag = document.createElement('span');
     tag.className = 'stack-tag';
@@ -96,7 +111,10 @@ function addStack(id, name, element) {
 
     const hiddenArea = document.getElementById('selectedStackHidden');
     const hidden = document.createElement('input');
-    hidden.type = 'hidden'; hidden.name = 'stackIds'; hidden.value = id; hidden.id = 'hidden_stack_' + id;
+    hidden.type = 'hidden';
+    hidden.name = 'stackIds';
+    hidden.value = id;
+    hidden.id = 'hidden_stack_' + id;
     hiddenArea.appendChild(hidden);
 }
 
@@ -106,7 +124,7 @@ function removeStack(id, name, btn) {
     document.getElementById('hidden_stack_' + id).remove();
 
     document.querySelectorAll('.stack-item').forEach(item => {
-        if(item.innerText === name) item.classList.remove('selected');
+        if (item.innerText === name) item.classList.remove('selected');
     });
 
     const displayBox = document.getElementById('stackDisplayBox');
@@ -117,19 +135,31 @@ function removeStack(id, name, btn) {
 
 function toggleStartType(radio) {
     const dateInput = document.getElementById('startDate');
-    if(radio.value === 'ASAP') { dateInput.disabled = true; dateInput.value = ''; }
-    else { dateInput.disabled = false; dateInput.focus(); }
+    if (radio.value === 'ASAP') {
+        dateInput.disabled = true;
+        dateInput.value = '';
+    } else {
+        dateInput.disabled = false;
+        dateInput.focus();
+    }
 }
 
 function toggleYear(chk) {
     const input = document.getElementById('minYearInput');
-    if(chk.checked) { input.disabled = true; input.value = ''; input.style.backgroundColor = '#f5f5f5'; }
-    else { input.disabled = false; input.style.backgroundColor = '#fff'; input.focus(); }
+    if (chk.checked) {
+        input.disabled = true;
+        input.value = '';
+        input.style.backgroundColor = '#f5f5f5';
+    } else {
+        input.disabled = false;
+        input.style.backgroundColor = '#fff';
+        input.focus();
+    }
 }
 
 function handleFileSelect(input) {
     const file = input.files[0];
-    if(file) {
+    if (file) {
         document.getElementById('fileDisplayDefault').style.display = 'none';
         document.getElementById('fileDisplaySelected').style.display = 'flex';
         document.getElementById('fileNameDisplay').innerText = file.name;
@@ -141,7 +171,7 @@ function updatePreview() {
     document.getElementById('previewDescription').innerText = document.querySelector('textarea[name="description"]').value;
 
     const pos = document.querySelector('input[name="positionId"]:checked');
-    if(pos) document.getElementById('previewCategory').innerText = pos.parentElement.querySelector('strong').innerText;
+    if (pos) document.getElementById('previewCategory').innerText = pos.parentElement.querySelector('strong').innerText;
 
     document.getElementById('previewBudget').innerText = document.getElementById('budgetInput').value + "원";
     document.getElementById('previewDuration').innerText = document.getElementById('durationInput').value + "일";
@@ -164,16 +194,16 @@ function updatePreview() {
     document.getElementById('previewYearBadge').innerText = isYearUnknown ? "경력 무관" : (document.getElementById('minYearInput').value + "년 이상");
 
     const comm = document.querySelector('input[name="communicateMethod"]:checked');
-    if(comm) document.getElementById('previewComm').innerText = comm.parentElement.querySelector('strong').innerText;
+    if (comm) document.getElementById('previewComm').innerText = comm.parentElement.querySelector('strong').innerText;
 
     const pay = document.querySelector('input[name="paymentMethod"]:checked');
-    if(pay) document.getElementById('previewPay').innerText = pay.parentElement.querySelector('strong').innerText;
+    if (pay) document.getElementById('previewPay').innerText = pay.parentElement.querySelector('strong').innerText;
 
     const revCount = document.getElementById('maxRevisionCount').value;
     document.getElementById('previewRevision').innerText = "무상 수정 " + revCount + "회";
 
     const fileName = document.getElementById('fileNameDisplay').innerText;
-    if(fileName) {
+    if (fileName) {
         document.getElementById('previewFileArea').style.display = 'block';
         document.getElementById('previewFileName').innerText = fileName;
     }

@@ -36,7 +36,7 @@
                 <div class="file-drop-zone compact" onclick="document.getElementById('fileInput').click()">
                     <div id="fileDisplayDefault" class="file-content-center">
                         <i class="fa-solid fa-cloud-arrow-up file-icon-mid"></i>
-                        <p class="file-text-small">클릭하여 파일 업로드 (PDF, PPT, DOC 등)</p>
+                        <p class="file-text-small">클릭하여 파일 업로드</p>
                     </div>
                     <div id="fileDisplaySelected" style="display:none;" class="file-content-center">
                         <i class="fa-solid fa-file-lines file-icon-selected"></i>
@@ -103,9 +103,9 @@
                 <div class="col-half">
                     <label class="label">요구 숙련도 <span class="required">*</span></label>
                     <select name="minLevel" class="form-control">
-                        <option value="1">Lv.1 입문</option>
+                        <option value="1" selected>Lv.1 입문</option>
                         <option value="2">Lv.2 초급</option>
-                        <option value="3" selected>Lv.3 중급</option>
+                        <option value="3">Lv.3 중급</option>
                         <option value="4">Lv.4 중급+</option>
                         <option value="5">Lv.5 고급</option>
                     </select>
@@ -135,7 +135,7 @@
             </div>
 
             <div class="form-group-styled">
-                <label class="label">지출 가능 예산 <span class="required">*</span></label>
+                <label class="label">프로젝트 예산 <span class="required">*</span></label>
                 <div class="input-with-unit">
                     <span class="currency">₩</span>
                     <input type="text" name="budget" id="budgetInput" class="form-control" placeholder="0" required>

@@ -111,13 +111,13 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 
-/* [수정] 입력창 컨테이너 (공통) */
+/* 입력창 컨테이너 (공통) */
 .input-with-unit {
     position: relative;
     width: 100%;
 }
 
-/* [수정] 1. 예산 입력창 전용 스타일 (양쪽 여백) */
+/* 1. 예산 입력창 전용 스타일 (양쪽 여백) */
 #budgetInput {
     padding-left: 35px; /* '₩' 기호 공간 */
     padding-right: 40px; /* '원' 텍스트 공간 */
@@ -135,14 +135,14 @@ input[type="number"] {
     pointer-events: none;
 }
 
-/* [수정] 2. 경력 입력창 전용 스타일 (오른쪽 넓은 여백) */
+/* 2. 경력 입력창 전용 스타일 (오른쪽 넓은 여백) */
 #minYearInput {
     padding-right: 90px; /* '년 (이상)' 텍스트가 길어서 여백 확보 */
     padding-left: 12px; /* 왼쪽은 기본 여백 */
     text-align: right;
 }
 
-/* [수정] 3. 기간/횟수 입력창 전용 스타일 (오른쪽 기본 여백) */
+/* 3. 기간/횟수 입력창 전용 스타일 (오른쪽 기본 여백) */
 #durationInput, #maxRevisionCount {
     padding-right: 40px;
     text-align: right;
