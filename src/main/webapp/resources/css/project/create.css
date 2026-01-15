@@ -553,3 +553,20 @@ input[type="number"] {
     background: #E8F5E9;
     color: #2E7D32;
 }
+
+/*  상세 내용(Textarea) 힌트 텍스트 */
+textarea.form-control::placeholder {
+    color: #b0b0b0;
+    font-size: 13.5px;
+    font-weight: 300;
+    line-height: 1.7;
+    letter-spacing: -0.3px;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 일반 입력창(Input) 힌트도 통일 */
+input.form-control::placeholder {
+    color: #bbb;
+    font-size: 13px;
+    font-weight: 300;
+}

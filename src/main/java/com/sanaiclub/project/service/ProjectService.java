@@ -24,8 +24,7 @@ import java.util.UUID;
 @Service
 public class ProjectService {
 
-//    @Value("${file.upload-dir}")
-//    private String uploadDir;
+    private static final String UPLOAD_DIR = "D:\\workspace\\Ratel-Ocean\\src\\main\\webapp\\resources\\upload\\project\\";
 
     @Autowired
     private ProjectMapper projectMapper;
@@ -120,29 +119,34 @@ public class ProjectService {
         projectVO.setPlanUrl(request.getPlanUrl());
         projectVO.setFileSize(request.getFileSize());
 
-        // 파일 업로드
-//        if (planFile != null && !planFile.isEmpty()) {
-//            // 1. 주입된 uploadDir(project 폴더) 존재 확인 (없을 때만 생성)
-//            File dir = new File(uploadDir);
-//            if (!dir.exists() && !dir.mkdirs()) {
-//                throw new IOException("저장 경로를 생성할 수 없습니다.");
-//            }
-//
-//            // 2. 파일명 생성 (project 폴더 바로 아래 저장됨)
-//            String originalFileName = planFile.getOriginalFilename();
-//            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
-//
-//            // 3. 별도의 하위 폴더 없이 uploadDir 폴더에 바로 파일 생성
-//            File saveFile = new File(uploadDir, savedFileName);
-//
-//            // 4. 물리적 저장 실행
-//            planFile.transferTo(saveFile);
-//
-//            // 5. DB용 정보 세팅 (웹 접근용 가상 경로)
-//            projectVO.setPlanUrl("/uploads/" + savedFileName);
-//            double size = (double) planFile.getSize() / (1024 * 1024);
-//            projectVO.setFileSize(String.format("%.2f MB", size));
-//        }
+        // 파일 업로드 및 정보 저장 로직
+        if (planFile != null && !planFile.isEmpty()) {
+            // 1. 디렉토리 확인 및 생성
+            File dir = new File(UPLOAD_DIR);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // 2. 파일명 중복 방지 (UUID 사용)
+            String originalFileName = planFile.getOriginalFilename();
+            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+
+            // 3. 파일 저장 (지정된 로컬 경로)
+            File saveFile = new File(UPLOAD_DIR + savedFileName);
+            planFile.transferTo(saveFile);
+
+            // 4. DB 저장용 정보 설정
+            // 웹 서버 접근 경로 (/resources/...)로 저장
+            projectVO.setPlanUrl("/resources/upload/project/" + savedFileName);
+
+            // 파일 크기 계산 (MB 단위)
+            double size = (double) planFile.getSize() / (1024 * 1024);
+            projectVO.setFileSize(String.format("%.2f MB", size));
+        } else {
+            // 파일이 없을 경우 null 처리
+            projectVO.setPlanUrl(null);
+            projectVO.setFileSize(null);
+        }
 
         // 프로젝트 메인 정보 INSERT
         projectMapper.insertProject(projectVO);

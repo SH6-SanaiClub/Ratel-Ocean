@@ -19,24 +19,21 @@
                 <span class="step-desc-small">진행하고자 하는 프로젝트의 기본 정보를 입력해주세요.</span>
                 <h2 class="step-title">프로젝트 개요</h2>
             </div>
-
             <div class="form-group-styled">
                 <label class="label">프로젝트 제목 <span class="required">*</span></label>
                 <input type="text" name="title" id="title" class="form-control" placeholder="예) 배달 플랫폼 관리자 페이지 개발" required>
             </div>
-
             <div class="form-group-styled">
                 <label class="label">프로젝트 상세 내용 <span class="required">*</span></label>
                 <textarea name="description" id="description" class="form-control" rows="20" required
-                          placeholder="프로젝트 개요 :&#13;&#10;- 의뢰 배경, 달성하려는 목적/목표를 알려주세요.&#13;&#10;[예시] 운영중인 쇼핑몰의 C/S 효율 제고를 위한 AI 챗봇 개발입니다.&#13;&#10;&#13;&#10;주요 기능 :&#13;&#10;- 핵심적인 기능(혹은 화면 구성)이나 아이디어에 대해 알려주세요.&#13;&#10;[예시] 자사 C/S 메뉴얼에 대한 학습, FAQ 기반 답변 제공, 상담원 연결 등&#13;&#10;&#13;&#10;참고 사이트/앱 :&#13;&#10;- 원하는 디자인/기능을 가진 참고 서비스가 있다면 참고하는 부분들과 함께 알려주세요.&#13;&#10;[예시] 위시캣, 크몽 등 플랫폼&#13;&#10;&#13;&#10;지원 시 참고 사항 :&#13;&#10;- 파트너스가 충족해야 하는 조건이나 우대 사항 등을 알려주세요.&#13;&#10;[예시] 유사한 프로젝트 경험이 있는 업체를 찾고 있으며 디자인에 역량이 있는 업체를 선호합니다."></textarea>
+                          placeholder="&lt;프로젝트 진행 배경 및 목적&gt;&#13;&#10;- 이 프로젝트를 기획하게 된 계기와 해결하고자 하는 문제를 적어주세요.&#13;&#10;(예시) 기존 오프라인 매장의 온라인 판매 확장을 위한 반응형 웹 사이트 구축&#13;&#10;&#13;&#10;&lt;상세 업무 내용&gt;&#13;&#10;- 구현이 필요한 핵심 기능이나 페이지 구성에 대해 나열해 주세요.&#13;&#10;(예시) 소셜 로그인, 상품 검색/필터링, PG 결제 연동, 관리자 대시보드 개발 등&#13;&#10;&#13;&#10;&lt;참고 레퍼런스&gt;&#13;&#10;- 벤치마킹하고 싶은 웹사이트나 앱 URL이 있다면 기재해 주세요.&#13;&#10;(예시) 'OOO' 서비스의 심플한 UI/UX를 선호합니다.&#13;&#10;&#13;&#10;&lt;기타 유의사항&gt;&#13;&#10;- 작업 진행 시 선호하는 소통 방식이나 우대 조건을 자유롭게 적어주세요.&#13;&#10;(예시) 주 1회 진행 상황 공유 미팅 필수, 상용 서비스 출시 경험자 우대"></textarea>
             </div>
-
             <div class="form-group-styled">
                 <label class="label">기획서 등 관련 파일</label>
                 <div class="file-drop-zone compact" onclick="document.getElementById('fileInput').click()">
                     <div id="fileDisplayDefault" class="file-content-center">
                         <i class="fa-solid fa-cloud-arrow-up file-icon-mid"></i>
-                        <p class="file-text-small">클릭하여 파일 업로드</p>
+                        <p class="file-text-small">클릭하여 파일 업로드 (최대 5GB)</p>
                     </div>
                     <div id="fileDisplaySelected" style="display:none;" class="file-content-center">
                         <i class="fa-solid fa-file-lines file-icon-selected"></i>
@@ -48,7 +45,6 @@
                 <input type="hidden" name="planUrl" id="planUrl">
                 <input type="hidden" name="fileSize" id="fileSize">
             </div>
-
             <div class="btn-area right">
                 <button type="button" class="btn btn-next" onclick="nextStep(2)">다음 단계</button>
             </div>
@@ -59,7 +55,6 @@
                 <span class="step-desc-small">어떤 전문가가 필요하신가요?</span>
                 <h2 class="step-title">개발 영역 및 기술 스택</h2>
             </div>
-
             <div class="form-group-styled">
                 <label class="label">개발 영역 (직군) <span class="required">*</span></label>
                 <div class="selection-grid-4">
@@ -83,7 +78,6 @@
                     </c:forEach>
                 </div>
             </div>
-
             <div class="form-group-styled">
                 <label class="label">관련 기술 스택 <span class="required">*</span></label>
                 <div id="stackDisplayBox" class="stack-display-box">
@@ -98,7 +92,6 @@
                     </c:forEach>
                 </div>
             </div>
-
             <div class="form-group-styled row-half">
                 <div class="col-half">
                     <label class="label">요구 숙련도 <span class="required">*</span></label>
@@ -121,7 +114,6 @@
                     </label>
                 </div>
             </div>
-
             <div class="btn-area between">
                 <button type="button" class="btn btn-prev" onclick="prevStep(1)">이전</button>
                 <button type="button" class="btn btn-next" onclick="nextStep(3)">다음 단계</button>
@@ -138,7 +130,7 @@
                 <label class="label">프로젝트 예산 <span class="required">*</span></label>
                 <div class="input-with-unit">
                     <span class="currency">₩</span>
-                    <input type="text" name="budget" id="budgetInput" class="form-control" placeholder="0" required>
+                    <input type="text" name="budget" id="budgetInput" class="form-control has-currency" placeholder="0" required>
                     <span class="unit-text">원</span>
                 </div>
                 <label class="check-option mt-2">
@@ -169,10 +161,13 @@
 
             <div class="form-group-styled">
                 <label class="label">예상 진행 기간 <span class="required">*</span></label>
-                <div class="input-with-unit">
-                    <input type="number" name="estDuration" id="durationInput" class="form-control" placeholder="기간 입력" required>
-                    <span class="unit-text">일</span>
-                </div>
+                <select name="estDuration" id="durationSelect" class="form-control" required>
+                    <option value="" disabled selected>예상 기간을 선택해주세요</option>
+                    <option value="1개월 이하">1개월 이하</option>
+                    <option value="1~3개월">1~3개월</option>
+                    <option value="3~6개월">3~6개월</option>
+                    <option value="6개월 이상">6개월 이상</option>
+                </select>
                 <label class="check-option mt-2">
                     <input type="checkbox" name="durationNegotiable" value="true">
                     <span>기간 조율 가능</span>
@@ -224,9 +219,7 @@
                     </label>
                 </div>
             </div>
-
             <hr style="margin: 30px 0; border:0; border-top:1px solid #eee;">
-
             <div class="form-group-styled">
                 <label class="label">무상 수정 횟수 <span class="required">*</span></label>
                 <div class="input-with-unit" style="max-width: 150px;">
@@ -235,12 +228,10 @@
                 </div>
                 <p class="input-desc" style="margin-top:5px; color:#d32f2f;">최대 3회까지 설정 가능합니다.</p>
             </div>
-
             <div class="form-group-styled">
                 <label class="label">수정 관련 상세 규정 (선택)</label>
                 <textarea name="changePolicy" class="form-control" rows="3" placeholder="예) 텍스트/이미지 단순 교체는 무제한입니다."></textarea>
             </div>
-
             <div class="btn-area between">
                 <button type="button" class="btn btn-prev" onclick="prevStep(3)">이전</button>
                 <button type="button" class="btn btn-next" onclick="nextStep(5)">미리보기</button>
@@ -254,7 +245,6 @@
                     <span class="preview-badge" id="previewCategory">카테고리</span>
                     <h3 id="previewTitle">제목 미리보기</h3>
                 </div>
-
                 <div class="preview-grid-box">
                     <div class="preview-box-item">
                         <span class="pb-label">예상 금액</span>
@@ -262,19 +252,17 @@
                     </div>
                     <div class="preview-box-item border-left">
                         <span class="pb-label">예상 기간</span>
-                        <strong class="pb-value" id="previewDuration">0일</strong>
+                        <strong class="pb-value" id="previewDuration">0개월</strong>
                     </div>
                     <div class="preview-box-item border-left">
                         <span class="pb-label">시작 예정</span>
                         <strong class="pb-value" id="previewStart">미정</strong>
                     </div>
                 </div>
-
                 <div class="preview-content-area">
                     <label class="label">프로젝트 내용</label>
                     <div class="preview-desc-box" id="previewDescription"></div>
                 </div>
-
                 <div class="preview-meta-area">
                     <div class="meta-row">
                         <span class="meta-label">관련 기술</span>
@@ -300,15 +288,12 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="previewFileArea" style="display:none; margin-top:20px; text-align:center; padding:15px; background:#f8f9fa; border-radius:8px;">
                     <i class="fa-solid fa-paperclip"></i> 첨부파일: <strong id="previewFileName"></strong>
                 </div>
             </div>
-
             <input type="hidden" name="isPublic" value="true">
             <input type="hidden" name="projectStatus" value="READY">
-
             <div class="btn-area between">
                 <button type="button" class="btn btn-prev" onclick="prevStep(4)">수정하기</button>
                 <button type="submit" class="btn btn-submit">등록 완료</button>
