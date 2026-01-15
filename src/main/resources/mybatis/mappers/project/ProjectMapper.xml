@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ProjectMapper">
+
+    <insert id="insertProject" parameterType="com.sanaiclub.project.model.vo.ProjectVO"
+            useGeneratedKeys="true" keyProperty="projectId">
+        INSERT INTO projects (
+            client_id, title, description,
+            start_date, deadline_date,
+            est_duration, duration_negotiable,
+            budget, budget_negotiable,
+            communicate_method, payment_method,
+            max_revision_count, change_policy, project_status, is_public,
+            plan_url, file_size  ) VALUES (
+                                              #{clientId}, #{title}, #{description},
+                                              #{startDate}, #{deadlineDate},
+                                              #{estDuration}, #{durationNegotiable},
+                                              #{budget}, #{budgetNegotiable},
+                                              #{communicateMethod}, #{paymentMethod},
+                                              #{maxRevisionCount}, #{changePolicy}, #{projectStatus}, #{isPublic},
+                                              #{planUrl}, #{fileSize} )
+    </insert>
+
+    <insert id="insertProjectStack" parameterType="com.sanaiclub.project.model.vo.ProjectStackVO">
+        INSERT INTO project_stacks (project_id, stack_id, stack_level, stack_year)
+        VALUES (#{projectId}, #{stackId}, #{stackLevel}, #{stackYear})
+    </insert>
+
+</mapper>
