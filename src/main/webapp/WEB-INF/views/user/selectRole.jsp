@@ -3,52 +3,52 @@
     ═══════════════════════════════════════════════════════════════════════
     selectRole.jsp - 회원 역할 선택 페이지
     ═══════════════════════════════════════════════════════════════════════
-    
+
     [설명]
     회원가입 첫 단계에서 사용자가 프리랜서 또는 클라이언트 중
     어떤 역할로 가입할지 선택하는 페이지입니다.
-    
+
     [연결되는 컨트롤러]
     JoinController.java > selectRolePage() 메서드
-    @GetMapping("/select-role.do")
-    
+    @GetMapping("/select-role")
+
     [회원 역할 설명]
     1. 프리랜서 (Freelancer)
        - 자신의 기술을 팔아서 용역비를 받는 사람
        - 프로필: 기술스택, 경력, 포트폴리오, 시간 단가
        - 기능: 프로젝트 입찰, 계약, 외주 수행
        - 수익: 완료된 프로젝트당 수익
-    
+
     2. 클라이언트 (Client)
        - 프로젝트를 발주하여 프리랜서를 고용하는 기업/개인
        - 프로필: 회사 정보, 발주 기록, 신용도
        - 기능: 프로젝트 등록, 프리랜서 선정, 계약 관리
        - 비용: 프리랜서 비용 + 시스템 수수료
-    
+
     [사용 기술]
     - React 18 (동적 UI)
     - Tailwind CSS (스타일링)
     - 커스텀 색상 테마
-    
+
     [클라이언트 요소]
     - 두 개의 카드형 선택 버튼
     - 각 역할별 상세 설명
     - 하단 "다음" 버튼
     - 뒤로가기 링크
-    
+
     [사용자 선택 흐름]
     1. 이 페이지에서 역할 선택
-    2. POST /join/select-role.do로 선택값 전송
+    2. POST /join/select-role로 선택값 전송
     3. 서버가 세션에 역할 저장
-    4. /join/signup.do로 자동 리다이렉트
+    4. /join/signup로 자동 리다이렉트
     5. 회원정보 입력 페이지로 이동
-    
+
     [향후 개선 사항]
     - 역할별 비디오 튜토리얼
     - 각 역할의 장점 상세 설명
     - FAQ 섹션
     - 역할 변경 가능 옵션 (가입 후)
-    
+
     @version 1.0 (2026-01-13)
 -->
 <!DOCTYPE html>
@@ -99,13 +99,33 @@
         <h1 class="title">회원 유형 선택</h1>
         <p class="subtitle">어떤 유형으로 가입하시겠습니까? 전문 프리랜서와 클라이언트를 위한 안전한 계약 플랫폼입니다.</p>
 
-        <form method="post" action="${pageContext.request.contextPath}/join/select-role.do" class="role-form">
-            <!-- React root: the JS will mount the interactive components here. Fallback/non-JS users still submit. -->
-            <div id="join-root" class="cards"></div>
+        <form id="roleForm" method="post" action="${pageContext.request.contextPath}/join/select-role">
+            <input type="hidden" name="userType" id="userTypeInput">
+
+            <div class="cards">
+                <button type="button" class="role-btn" onclick="selectAndSubmit('FREELANCER')">
+                    <div class="icon">👨‍💻</div>
+                    <div class="label">프리랜서</div>
+                    <p>내 기술로 프로젝트를 수행합니다.</p>
+                </button>
+
+                <button type="button" class="role-btn" onclick="selectAndSubmit('CLIENT')">
+                    <div class="icon">🏢</div>
+                    <div class="label">클라이언트</div>
+                    <p>전문가를 고용하여 프로젝트를 맡깁니다.</p>
+                </button>
+            </div>
         </form>
 
-        <!-- App bundle (no build step; uses CDN React + this script) -->
-        <script src="${pageContext.request.contextPath}/resources/js/joinApp.js"></script>
+        <script>
+            function selectAndSubmit(role) {
+                // 1. 값 세팅
+                document.getElementById('userTypeInput').value = role;
+
+                // 2. 사나이답게 바로 전송
+                document.getElementById('roleForm').submit();
+            }
+        </script>
     </div>
 </main>
 
