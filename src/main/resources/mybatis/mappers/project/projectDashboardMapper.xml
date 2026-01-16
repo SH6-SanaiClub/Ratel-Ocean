@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ProjectDashboardMapper">
+
+    <resultMap id="ProjectDashboardCardMap"
+               type="com.sanaiclub.project.model.dto.ProjectDashboardCardDTO">
+
+        <id property="projectId" column="project_id"/>
+        <result property="title" column="title"/>
+        <result property="estDuration" column="est_duration"/>
+        <result property="applicantCount" column="applicant_count"/>
+        <result property="budget" column="budget"/>
+        <result property="dday" column="dday"/>
+        <result property="deadlineDate" column="deadline_date_fmt"/>
+
+        <!-- stacks: SKILL + POSITION 다 들어오게 하고, category로 구분 -->
+        <collection property="stacks"
+                    ofType="com.sanaiclub.project.model.dto.RequiredStackDTO">
+            <id property="projectStackId" column="project_stack_id"/>
+            <result property="stackId" column="stack_id"/>
+            <result property="stackName" column="stack_name"/>
+            <result property="stackLevel" column="stack_level"/>
+            <result property="stackYear" column="stack_year"/>
+            <result property="category" column="category"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="selectDashboardCards" resultMap="ProjectDashboardCardMap">
+        SELECT
+        p.project_id,
+        p.title,
+        p.est_duration,
+        p.applicant_count,
+        p.budget,
+        DATEDIFF(p.deadline_date, CURDATE()) AS dday,
+        DATE_FORMAT(p.deadline_date, '%Y-%m-%d') AS deadline_date_fmt,
+
+        ps.project_stack_id,
+        ps.stack_id,
+        s.stack_name,
+        s.category,
+        ps.stack_level,
+        ps.stack_year
+
+        FROM projects p
+        LEFT JOIN project_stacks ps ON ps.project_id = p.project_id
+        LEFT JOIN stacks s ON s.stack_id = ps.stack_id
+
+        WHERE p.is_public = TRUE
+        AND p.project_status = 'READY'
+
+        <if test="onlyActive != null and onlyActive == true">
+            AND p.deadline_date >= CURDATE()
+        </if>
+
+        <if test="keyword != null and keyword != ''">
+            AND p.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        ORDER BY p.created_at DESC
+
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+</mapper>
