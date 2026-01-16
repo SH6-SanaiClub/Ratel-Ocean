@@ -40,7 +40,6 @@ public class JwtTokenProvider {
     /**
      * JWT 서명에 사용할 비밀키 (Base64 인코딩된 문자열)
      * - 최소 256비트(32자) 이상 권장
-     * - 예: "MySecretKeyForJwtTokenMustBe256BitsLong!!"
      */
     @Value("${jwt.secret}")
     private String secretKeyString;
@@ -78,6 +77,12 @@ public class JwtTokenProvider {
      */
     @PostConstruct
     protected void init() {
+        // 🔍 디버깅용 로그 (범인 색출)
+        logger.warn("==================================================");
+        logger.warn(">>> 현재 로드된 비밀키: [{}]", secretKeyString);
+        logger.warn(">>> 키 길이: {} 글자", secretKeyString != null ? secretKeyString.length() : 0);
+        logger.warn("==================================================");
+
         // 문자열 → SecretKey 변환
         this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
         logger.info("JwtTokenProvider 초기화 완료");
