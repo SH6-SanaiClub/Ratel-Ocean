@@ -22,33 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * AuthController - 인증 관련 API 컨트롤러
- * ═══════════════════════════════════════════════════════════════════════
- *
- * [역할]
- * - 로그인 / 로그아웃 / 토큰 재발급 API 제공
- * - JWT 토큰을 HttpOnly Cookie로 관리
- *
- * [엔드포인트 목록]
- * ┌────────────────────┬────────┬─────────────────────────┐
- * │ URL                │ Method │ 설명                    │
- * ├────────────────────┼────────┼─────────────────────────┤
- * │ /login             │ GET    │ 로그인 페이지           │
- * │ /login.do          │ POST   │ 로그인 처리 (API)       │
- * │ /logout.do         │ POST   │ 로그아웃 처리           │
- * │ /auth/refresh.do   │ POST   │ Access Token 재발급     │
- * └────────────────────┴────────┴─────────────────────────┘
- *
- * [쿠키 설정]
- * - HttpOnly: true (JavaScript 접근 차단 → XSS 방어)
- * - Secure: true (HTTPS에서만 전송, 개발 시 false)
- * - Path: "/" (모든 경로에서 쿠키 전송)
- *
- * @author sanaiclub
- * @version 1.0
- */
+
 @Controller
 public class AuthController {
 
@@ -72,14 +46,6 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-
-    // ═══════════════════════════════════════════════════════════════
-    // 페이지 이동
-    // ═══════════════════════════════════════════════════════════════
-
-    /**
-     * 로그인 페이지
-     */
     @GetMapping("/login")
     public String loginPage() {
         return "user/login";
@@ -92,41 +58,6 @@ public class AuthController {
 
     /**
      * 로그인 처리
-     *
-     * [요청]
-     * POST /login.do
-     * Content-Type: application/json
-     * {
-     *   "loginId": "user123",
-     *   "password": "password123"
-     * }
-     *
-     * [응답 - 성공]
-     * HTTP 200 OK
-     * Set-Cookie: accessToken=eyJ...; HttpOnly; Path=/
-     * Set-Cookie: refreshToken=eyJ...; HttpOnly; Path=/
-     * {
-     *   "success": true,
-     *   "message": "로그인 성공",
-     *   "data": {
-     *     "accessToken": "eyJ...",
-     *     "refreshToken": "eyJ...",
-     *     "tokenType": "Bearer",
-     *     "expiresIn": 1800,
-     *     "userInfo": { ... }
-     *   }
-     * }
-     *
-     * [응답 - 실패]
-     * HTTP 401 Unauthorized
-     * {
-     *   "success": false,
-     *   "message": "아이디 또는 비밀번호가 일치하지 않습니다."
-     * }
-     *
-     * [@Valid 어노테이션]
-     * - LoginRequestDTO의 @NotBlank, @Size 등 검증 수행
-     * - 검증 실패 시 MethodArgumentNotValidException 발생
      *
      * @param request  로그인 요청 DTO
      * @param response HTTP 응답 (쿠키 설정용)
@@ -163,32 +94,8 @@ public class AuthController {
         }
     }
 
-
-    // ═══════════════════════════════════════════════════════════════
-    // 로그아웃 API
-    // ═══════════════════════════════════════════════════════════════
-
     /**
      * 로그아웃 처리
-     *
-     * [처리 흐름]
-     * 1. 쿠키에서 Access Token 추출
-     * 2. 토큰에서 userId 추출
-     * 3. DB에서 Refresh Token 삭제
-     * 4. 클라이언트 쿠키 삭제
-     *
-     * [요청]
-     * POST /logout.do
-     * Cookie: accessToken=eyJ...
-     *
-     * [응답]
-     * HTTP 200 OK
-     * Set-Cookie: accessToken=; Max-Age=0; Path=/
-     * Set-Cookie: refreshToken=; Max-Age=0; Path=/
-     * {
-     *   "success": true,
-     *   "message": "로그아웃 성공"
-     * }
      */
     @PostMapping("/logout.do")
     @ResponseBody
@@ -207,9 +114,6 @@ public class AuthController {
                 // (JwtTokenProvider 주입 필요 - 아래 개선 버전 참고)
                  Integer userId = jwtTokenProvider.getUserId(accessToken);
                  authService.logout(userId);
-
-//                // 임시: Service에서 토큰으로 직접 처리하도록 변경 가능
-//                logger.info("Access Token으로 로그아웃 처리");
             }
 
             // 3. 쿠키 삭제
@@ -229,38 +133,8 @@ public class AuthController {
         }
     }
 
-
-    // ═══════════════════════════════════════════════════════════════
-    // 토큰 재발급 API
-    // ═══════════════════════════════════════════════════════════════
-
     /**
      * Access Token 재발급
-     *
-     * [사용 시점]
-     * - Access Token 만료 시 (401 응답 받았을 때)
-     * - 클라이언트가 Refresh Token으로 새 Access Token 요청
-     *
-     * [요청 방식 1 - 쿠키 자동 전송]
-     * POST /auth/refresh.do
-     * Cookie: refreshToken=eyJ...
-     *
-     * [요청 방식 2 - Body로 전송]
-     * POST /auth/refresh.do
-     * Content-Type: application/json
-     * { "refreshToken": "eyJ..." }
-     *
-     * [응답]
-     * HTTP 200 OK
-     * Set-Cookie: accessToken=eyJ...(새토큰); HttpOnly; Path=/
-     * {
-     *   "success": true,
-     *   "data": {
-     *     "accessToken": "eyJ...",
-     *     "tokenType": "Bearer",
-     *     "expiresIn": 1800
-     *   }
-     * }
      */
     @PostMapping("/auth/refresh.do")
     @ResponseBody
@@ -306,12 +180,6 @@ public class AuthController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
-
-
-    // ═══════════════════════════════════════════════════════════════
-    // 쿠키 유틸리티 메서드
-    // ═══════════════════════════════════════════════════════════════
-
     /**
      * 쿠키 추가
      *
