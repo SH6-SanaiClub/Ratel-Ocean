@@ -2,9 +2,7 @@ package com.sanaiclub.user.controller;
 
 import com.sanaiclub.user.model.dto.UserSignupRequestDTO;
 import com.sanaiclub.user.model.vo.UserType;
-import com.sanaiclub.user.service.JoinService; // 1. 타입 변경
-import com.sanaiclub.user.service.JoinServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sanaiclub.user.service.JoinService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,8 +15,12 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/join")
 public class JoinController {
 
-    @Autowired
-    private JoinServiceImpl joinService; // 2. 변수명 및 타입 변경 (JoinService로 교체)
+    private final JoinService joinService;
+
+    // 생성자 주입
+    public JoinController(JoinService joinService){
+        this.joinService = joinService;
+    }
 
     @GetMapping("/select-role")
     public String selectRolePage() {

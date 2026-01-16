@@ -1,23 +1,29 @@
-package com.sanaiclub.user.service;
+package com.sanaiclub.user.service.impl;
 
 import com.sanaiclub.user.dao.UserMapper;
 import com.sanaiclub.user.model.dto.UserSignupRequestDTO;
 import com.sanaiclub.user.model.vo.UserStatus;
 import com.sanaiclub.user.model.vo.UserVO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sanaiclub.user.service.JoinService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
-
 @Service
-@RequiredArgsConstructor
-public class JoinServiceImpl implements  JoinService {
+public class JoinServiceImpl implements JoinService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JoinServiceImpl.class);
 
     private final UserMapper userMapper;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    public JoinServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
 
     @Override
     public boolean isIdDuplicate(String loginId) {
