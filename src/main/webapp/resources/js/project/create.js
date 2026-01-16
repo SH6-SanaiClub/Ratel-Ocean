@@ -60,7 +60,7 @@ function nextStep(targetStep) {
 
     const inputs = section.querySelectorAll('input[required], textarea[required], select[required]');
     for(let input of inputs) {
-        if(input.disabled) continue; // 비활성화된 항목 패스
+        if(input.disabled) continue;
 
         if(input.type === 'radio') {
             const checked = section.querySelector(`input[name="${input.name}"]:checked`);
@@ -146,7 +146,7 @@ function removeStack(id, name, btn) {
     }
 }
 
-// 시작일 라디오 버튼 토글 (ASAP vs 날짜선택)
+// 시작일 라디오 버튼 토글
 function toggleStartType(radio) {
     const dateInput = document.getElementById('startDate');
     if(radio.value === 'ASAP') {
@@ -172,17 +172,16 @@ function toggleYear(chk) {
     }
 }
 
-// 파일 선택 처리
+// 파일 선택 처리 (5GB 제한)
 function handleFileSelect(input) {
     const file = input.files[0];
     if(file) {
-        // 5GB 용량 체크 로직
-        const maxSize = 5 * 1024 * 1024 * 1024; // 5GB (바이트 단위)
+        const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
 
         if(file.size > maxSize) {
             alert("파일 용량은 최대 5GB까지만 업로드 가능합니다.");
-            input.value = ""; // 선택된 파일 초기화
-            return; // 함수 종료
+            input.value = "";
+            return;
         }
 
         document.getElementById('fileDisplayDefault').style.display = 'none';
@@ -191,7 +190,7 @@ function handleFileSelect(input) {
     }
 }
 
-// 미리보기 데이터 업데이트
+// 미리보기
 function updatePreview() {
     // 1. 기본 정보
     document.getElementById('previewTitle').innerText = document.querySelector('input[name="title"]').value;
@@ -201,49 +200,68 @@ function updatePreview() {
     const pos = document.querySelector('input[name="positionId"]:checked');
     if(pos) document.getElementById('previewCategory').innerText = pos.parentElement.querySelector('strong').innerText;
 
-    // 3. 예산
+    // 3. 예산 및 협의 배지
     document.getElementById('previewBudget').innerText = document.getElementById('budgetInput').value + "원";
+    const isBudgetNego = document.querySelector('input[name="budgetNegotiable"]').checked;
+    const budgetBadge = document.getElementById('previewBudgetNego');
+    if(budgetBadge) budgetBadge.style.display = isBudgetNego ? 'inline-block' : 'none';
 
-    // 4. 기간 (드롭다운 값 가져오기)
+    // 4. 기간 및 조율 배지
     const durationVal = document.getElementById('durationSelect').value;
     document.getElementById('previewDuration').innerText = durationVal ? durationVal : "미선택";
+    const isDurationNego = document.querySelector('input[name="durationNegotiable"]').checked;
+    const durationBadge = document.getElementById('previewDurationNego');
+    if(durationBadge) durationBadge.style.display = isDurationNego ? 'inline-block' : 'none';
 
-    // 5. 시작일
+    // 5. 시작일 및 협의 배지
     const startType = document.querySelector('input[name="startType"]:checked').value;
     document.getElementById('previewStart').innerText = (startType === 'ASAP') ? "계약 후 즉시" : document.getElementById('startDate').value;
 
-    // 6. 기술 스택 태그
+    // 시작일 협의 여부
+    const isStartNego = document.querySelector('input[name="startNegotiable"]').checked;
+    const startBadge = document.getElementById('previewStartNego');
+    if(startBadge) startBadge.style.display = isStartNego ? 'inline-block' : 'none';
+
+
+    // 6. 기술 스택
     const stackBox = document.getElementById('previewStacks');
     stackBox.innerHTML = '';
-    document.querySelectorAll('.stack-tag').forEach(tag => {
-        const span = document.createElement('span');
-        // 미리보기용 태그 스타일
-        span.style.cssText = "background:#f1f1f1; padding:5px 12px; border-radius:20px; font-size:13px; margin-right:5px; display:inline-block; margin-bottom:5px; border:1px solid #ddd;";
-        span.innerText = tag.innerText.replace('×', '');
-        stackBox.appendChild(span);
-    });
+    const tags = document.querySelectorAll('.stack-tag');
+    if(tags.length > 0) {
+        tags.forEach(tag => {
+            const span = document.createElement('span');
+            // CSS에 정의한 .round-badge-style 클래스를 적용하여 모양 통일
+            span.className = 'round-badge-style';
+            span.innerText = tag.innerText.replace('×', '').trim();
+            stackBox.appendChild(span);
+        });
+    } else {
+        stackBox.innerHTML = '<span style="color:#aaa;">선택된 기술이 없습니다.</span>';
+    }
 
-    // 7. 숙련도 및 경력
+    // 7. 메타 정보
     const level = document.querySelector('select[name="minLevel"]');
     document.getElementById('previewLevelBadge').innerText = level.options[level.selectedIndex].text;
+
     const isYearUnknown = document.getElementById('minYearUnknown').checked;
     document.getElementById('previewYearBadge').innerText = isYearUnknown ? "경력 무관" : (document.getElementById('minYearInput').value + "년 이상");
 
-    // 8. 소통 및 대금 방식
     const comm = document.querySelector('input[name="communicateMethod"]:checked');
     if(comm) document.getElementById('previewComm').innerText = comm.parentElement.querySelector('strong').innerText;
 
     const pay = document.querySelector('input[name="paymentMethod"]:checked');
     if(pay) document.getElementById('previewPay').innerText = pay.parentElement.querySelector('strong').innerText;
 
-    // 9. 수정 횟수
     const revCount = document.getElementById('maxRevisionCount').value;
     document.getElementById('previewRevision').innerText = "무상 수정 " + revCount + "회";
 
-    // 10. 첨부 파일
+    // 8. 파일
     const fileName = document.getElementById('fileNameDisplay').innerText;
+    const fileArea = document.getElementById('previewFileArea');
     if(fileName) {
-        document.getElementById('previewFileArea').style.display = 'block';
+        fileArea.style.display = 'block';
         document.getElementById('previewFileName').innerText = fileName;
+    } else {
+        fileArea.style.display = 'none';
     }
 }

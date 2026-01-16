@@ -19,15 +19,18 @@
                 <span class="step-desc-small">진행하고자 하는 프로젝트의 기본 정보를 입력해주세요.</span>
                 <h2 class="step-title">프로젝트 개요</h2>
             </div>
+
             <div class="form-group-styled">
                 <label class="label">프로젝트 제목 <span class="required">*</span></label>
                 <input type="text" name="title" id="title" class="form-control" placeholder="예) 배달 플랫폼 관리자 페이지 개발" required>
             </div>
+
             <div class="form-group-styled">
                 <label class="label">프로젝트 상세 내용 <span class="required">*</span></label>
                 <textarea name="description" id="description" class="form-control" rows="20" required
-                          placeholder="&lt;프로젝트 진행 배경 및 목적&gt;&#13;&#10;- 이 프로젝트를 기획하게 된 계기와 해결하고자 하는 문제를 적어주세요.&#13;&#10;(예시) 기존 오프라인 매장의 온라인 판매 확장을 위한 반응형 웹 사이트 구축&#13;&#10;&#13;&#10;&lt;상세 업무 내용&gt;&#13;&#10;- 구현이 필요한 핵심 기능이나 페이지 구성에 대해 나열해 주세요.&#13;&#10;(예시) 소셜 로그인, 상품 검색/필터링, PG 결제 연동, 관리자 대시보드 개발 등&#13;&#10;&#13;&#10;&lt;참고 레퍼런스&gt;&#13;&#10;- 벤치마킹하고 싶은 웹사이트나 앱 URL이 있다면 기재해 주세요.&#13;&#10;(예시) 'OOO' 서비스의 심플한 UI/UX를 선호합니다.&#13;&#10;&#13;&#10;&lt;기타 유의사항&gt;&#13;&#10;- 작업 진행 시 선호하는 소통 방식이나 우대 조건을 자유롭게 적어주세요.&#13;&#10;(예시) 주 1회 진행 상황 공유 미팅 필수, 상용 서비스 출시 경험자 우대"></textarea>
+                          placeholder="&lt;1. 프로젝트 진행 배경 및 목적&gt;&#13;&#10;- 이 프로젝트를 기획하게 된 계기와 해결하고자 하는 문제를 적어주세요.&#13;&#10;(예시) 기존 오프라인 매장의 온라인 판매 확장을 위한 반응형 웹 사이트 구축&#13;&#10;&#13;&#10;&lt;2. 상세 업무 내용&gt;&#13;&#10;- 구현이 필요한 핵심 기능이나 페이지 구성에 대해 나열해 주세요.&#13;&#10;(예시) 소셜 로그인, 상품 검색/필터링, PG 결제 연동, 관리자 대시보드 개발 등&#13;&#10;&#13;&#10;&lt;3. 참고 레퍼런스&gt;&#13;&#10;- 벤치마킹하고 싶은 웹사이트나 앱 URL이 있다면 기재해 주세요.&#13;&#10;(예시) 'OOO' 서비스의 심플한 UI/UX를 선호합니다.&#13;&#10;&#13;&#10;&lt;4. 기타 유의사항&gt;&#13;&#10;- 작업 진행 시 선호하는 소통 방식이나 우대 조건을 자유롭게 적어주세요.&#13;&#10;(예시) 주 1회 진행 상황 공유 미팅 필수, 상용 서비스 출시 경험자 우대"></textarea>
             </div>
+
             <div class="form-group-styled">
                 <label class="label">기획서 등 관련 파일</label>
                 <div class="file-drop-zone compact" onclick="document.getElementById('fileInput').click()">
@@ -45,6 +48,7 @@
                 <input type="hidden" name="planUrl" id="planUrl">
                 <input type="hidden" name="fileSize" id="fileSize">
             </div>
+
             <div class="btn-area right">
                 <button type="button" class="btn btn-next" onclick="nextStep(2)">다음 단계</button>
             </div>
@@ -55,8 +59,9 @@
                 <span class="step-desc-small">어떤 전문가가 필요하신가요?</span>
                 <h2 class="step-title">개발 영역 및 기술 스택</h2>
             </div>
+
             <div class="form-group-styled">
-                <label class="label">개발 영역 (직군) <span class="required">*</span></label>
+                <label class="label">개발 영역 (분야) <span class="required">*</span></label>
                 <div class="selection-grid-4">
                     <c:forEach var="pos" items="${positionList}">
                         <label class="selection-card" onclick="selectCard(this)">
@@ -78,6 +83,7 @@
                     </c:forEach>
                 </div>
             </div>
+
             <div class="form-group-styled">
                 <label class="label">관련 기술 스택 <span class="required">*</span></label>
                 <div id="stackDisplayBox" class="stack-display-box">
@@ -92,13 +98,14 @@
                     </c:forEach>
                 </div>
             </div>
+
             <div class="form-group-styled row-half">
                 <div class="col-half">
                     <label class="label">요구 숙련도 <span class="required">*</span></label>
                     <select name="minLevel" class="form-control">
-                        <option value="1" selected>Lv.1 입문</option>
+                        <option value="1">Lv.1 입문</option>
                         <option value="2">Lv.2 초급</option>
-                        <option value="3">Lv.3 중급</option>
+                        <option value="3" selected>Lv.3 중급</option>
                         <option value="4">Lv.4 중급+</option>
                         <option value="5">Lv.5 고급</option>
                     </select>
@@ -114,6 +121,7 @@
                     </label>
                 </div>
             </div>
+
             <div class="btn-area between">
                 <button type="button" class="btn btn-prev" onclick="prevStep(1)">이전</button>
                 <button type="button" class="btn btn-next" onclick="nextStep(3)">다음 단계</button>
@@ -219,19 +227,23 @@
                     </label>
                 </div>
             </div>
+
             <hr style="margin: 30px 0; border:0; border-top:1px solid #eee;">
+
             <div class="form-group-styled">
-                <label class="label">무상 수정 횟수 <span class="required">*</span></label>
+                <label class="label">수정 요청 횟수<span class="required">*</span></label>
                 <div class="input-with-unit" style="max-width: 150px;">
                     <input type="number" name="maxRevisionCount" id="maxRevisionCount" class="form-control" value="0" min="0" max="3">
                     <span class="unit-text">회</span>
                 </div>
                 <p class="input-desc" style="margin-top:5px; color:#d32f2f;">최대 3회까지 설정 가능합니다.</p>
             </div>
+
             <div class="form-group-styled">
                 <label class="label">수정 관련 상세 규정 (선택)</label>
                 <textarea name="changePolicy" class="form-control" rows="3" placeholder="예) 텍스트/이미지 단순 교체는 무제한입니다."></textarea>
             </div>
+
             <div class="btn-area between">
                 <button type="button" class="btn btn-prev" onclick="prevStep(3)">이전</button>
                 <button type="button" class="btn btn-next" onclick="nextStep(5)">미리보기</button>
@@ -239,34 +251,43 @@
         </div>
 
         <div class="step-section" id="step5">
-            <h2 class="step-title" style="text-align:center;">프로젝트 등록 미리보기</h2>
+            <h2 class="step-title" style="text-align:center; margin-bottom:30px;">프로젝트 등록 미리보기</h2>
+
             <div class="preview-card">
                 <div class="preview-header-center">
                     <span class="preview-badge" id="previewCategory">카테고리</span>
                     <h3 id="previewTitle">제목 미리보기</h3>
                 </div>
+
                 <div class="preview-grid-box">
                     <div class="preview-box-item">
-                        <span class="pb-label">예상 금액</span>
+                        <span class="pb-label">프로젝트 예산</span>
                         <strong class="pb-value" id="previewBudget">0원</strong>
+                        <div id="previewBudgetNego" class="nego-badge round-badge-style">예산 조율 가능</div>
                     </div>
                     <div class="preview-box-item border-left">
-                        <span class="pb-label">예상 기간</span>
-                        <strong class="pb-value" id="previewDuration">0개월</strong>
+                        <span class="pb-label">예상 진행 기간</span>
+                        <strong class="pb-value" id="previewDuration">미선택</strong>
+                        <div id="previewDurationNego" class="nego-badge round-badge-style">기간 조율 가능</div>
                     </div>
                     <div class="preview-box-item border-left">
-                        <span class="pb-label">시작 예정</span>
+                        <span class="pb-label">시작 예정일</span>
                         <strong class="pb-value" id="previewStart">미정</strong>
+                        <div id="previewStartNego" class="nego-badge round-badge-style">일정 협의 가능</div>
                     </div>
                 </div>
+
                 <div class="preview-content-area">
-                    <label class="label">프로젝트 내용</label>
+                    <label class="label" style="font-size:18px; margin-bottom:15px;">프로젝트 상세 내용</label>
                     <div class="preview-desc-box" id="previewDescription"></div>
                 </div>
+
                 <div class="preview-meta-area">
                     <div class="meta-row">
                         <span class="meta-label">관련 기술</span>
-                        <div class="meta-value" id="previewStacks"></div>
+                        <div class="meta-value" id="previewStacks">
+                            <span style="color:#aaa;">선택된 기술이 없습니다.</span>
+                        </div>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">필요 요건</span>
@@ -282,18 +303,22 @@
                         </div>
                     </div>
                     <div class="meta-row">
-                        <span class="meta-label">수정 지원</span>
+                        <span class="meta-label">수정 요청 횟수</span>
                         <div class="meta-value">
-                            <span id="previewRevision"></span>
+                            <span id="previewRevision" style="font-weight:600; color:#333;"></span>
                         </div>
                     </div>
                 </div>
-                <div id="previewFileArea" style="display:none; margin-top:20px; text-align:center; padding:15px; background:#f8f9fa; border-radius:8px;">
-                    <i class="fa-solid fa-paperclip"></i> 첨부파일: <strong id="previewFileName"></strong>
+
+                <div id="previewFileArea" style="display:none; margin-top:30px; text-align:center; padding:20px; background:#f8f9fa; border:1px dashed #ccc; border-radius:8px;">
+                    <i class="fa-solid fa-paperclip" style="color:#666; margin-right:5px;"></i>
+                    첨부파일: <strong id="previewFileName" style="color:#1F7A8C; text-decoration:underline;"></strong>
                 </div>
             </div>
+
             <input type="hidden" name="isPublic" value="true">
             <input type="hidden" name="projectStatus" value="READY">
+
             <div class="btn-area between">
                 <button type="button" class="btn btn-prev" onclick="prevStep(4)">수정하기</button>
                 <button type="submit" class="btn btn-submit">등록 완료</button>

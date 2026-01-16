@@ -117,10 +117,10 @@ input[type="number"] {
     width: 100%;
 }
 
-/* 1. 예산 입력창 전용 스타일 (양쪽 여백) */
+/* 예산 입력창 전용 스타일 (양쪽 여백) */
 #budgetInput {
-    padding-left: 35px; /* '₩' 기호 공간 */
-    padding-right: 40px; /* '원' 텍스트 공간 */
+    padding-left: 35px;
+    padding-right: 40px;
     text-align: right;
 }
 
@@ -135,14 +135,14 @@ input[type="number"] {
     pointer-events: none;
 }
 
-/* 2. 경력 입력창 전용 스타일 (오른쪽 넓은 여백) */
+/* 경력 입력창 전용 스타일 (오른쪽 넓은 여백) */
 #minYearInput {
-    padding-right: 90px; /* '년 (이상)' 텍스트가 길어서 여백 확보 */
-    padding-left: 12px; /* 왼쪽은 기본 여백 */
+    padding-right: 90px;
+    padding-left: 12px;
     text-align: right;
 }
 
-/* 3. 기간/횟수 입력창 전용 스타일 (오른쪽 기본 여백) */
+/* 기간/횟수 입력창 전용 스타일 (오른쪽 기본 여백) */
 #durationInput, #maxRevisionCount {
     padding-right: 40px;
     text-align: right;
@@ -435,50 +435,61 @@ input[type="number"] {
     color: #555;
 }
 
-/* 미리보기 */
+/* 미리보기 카드 디자인 개선 */
 .preview-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 40px;
+    border: 1px solid #e1e1e1;
+    border-radius: 12px;
+    padding: 50px 40px;
     background: #fff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
 }
 
 .preview-header-center {
     text-align: center;
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #eee;
+    margin-bottom: 50px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .preview-badge {
     display: inline-block;
     background: #333;
     color: #fff;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    margin-bottom: 10px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 15px;
 }
 
 #previewTitle {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 800;
     margin: 0;
     color: #222;
+    line-height: 1.4;
+    word-break: keep-all;
 }
 
+/* 미리보기 그리드 박스 (금액/기간/날짜) */
 .preview-grid-box {
     display: flex;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    margin-bottom: 40px;
     background: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    margin-bottom: 50px;
+    padding: 10px 0;
 }
 
 .preview-box-item {
     flex: 1;
-    padding: 25px;
+    padding: 30px 10px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
 }
 
 .preview-box-item.border-left {
@@ -487,53 +498,79 @@ input[type="number"] {
 
 .pb-label {
     display: block;
-    font-size: 13px;
+    font-size: 14px;
     color: #888;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    font-weight: 500;
 }
 
 .pb-value {
-    font-size: 18px;
+    font-size: 22px;
     color: var(--primary);
-    font-weight: 700;
+    font-weight: 800;
+    line-height: 1.2;
 }
 
-.preview-content-area {
-    margin-bottom: 40px;
+/* 둥근 배지 공통 스타일 (기술태그 & 협의태그 통일) */
+.round-badge-style {
+    background: #f1f1f1;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    color: #555;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
+
+/* 협의/조율 배지 전용 마진 추가 */
+.nego-badge {
+    display: none;
+    margin-top: 12px;
+    margin-right: 0;
+}
+
+/* 상세 내용 텍스트 박스 */
+.preview-content-area { margin-bottom: 50px; }
 
 .preview-desc-box {
-    background: #f8f9fa;
-    padding: 25px;
-    border-radius: 8px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    padding: 30px;
+    border-radius: 10px;
     font-size: 15px;
-    line-height: 1.7;
+    line-height: 1.8;
     color: #444;
     white-space: pre-wrap;
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 200px;
 }
 
+/* 메타 정보 영역 */
 .preview-meta-area {
-    border-top: 1px solid #eee;
+    border-top: 1px dashed #ddd;
     padding-top: 30px;
 }
 
-.meta-row {
-    display: flex;
-    margin-bottom: 15px;
-}
+.meta-row { display: flex; margin-bottom: 18px; }
 
 .meta-label {
-    width: 120px;
+    width: 130px;
     font-weight: 700;
-    color: #444;
+    color: #333;
     font-size: 15px;
     flex-shrink: 0;
+    padding-top: 2px;
 }
 
 .meta-value {
     flex: 1;
     font-size: 15px;
-    color: #666;
+    color: #555;
+    line-height: 1.6;
 }
 
 .pill-badge {
@@ -544,17 +581,10 @@ input[type="number"] {
     margin-right: 5px;
 }
 
-.pill-badge.blue {
-    background: #E3F2FD;
-    color: #1976D2;
-}
+.pill-badge.blue { background: #E3F2FD; color: #1976D2; }
+.pill-badge.green { background: #E8F5E9; color: #2E7D32; }
 
-.pill-badge.green {
-    background: #E8F5E9;
-    color: #2E7D32;
-}
-
-/*  상세 내용(Textarea) 힌트 텍스트 */
+/* 힌트 텍스트 스타일 */
 textarea.form-control::placeholder {
     color: #b0b0b0;
     font-size: 13.5px;
@@ -564,7 +594,6 @@ textarea.form-control::placeholder {
     font-family: 'Noto Sans KR', sans-serif;
 }
 
-/* 일반 입력창(Input) 힌트도 통일 */
 input.form-control::placeholder {
     color: #bbb;
     font-size: 13px;

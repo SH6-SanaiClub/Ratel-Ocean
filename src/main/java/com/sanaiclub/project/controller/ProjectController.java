@@ -1,8 +1,6 @@
 package com.sanaiclub.project.controller;
 
-import com.sanaiclub.project.dao.StackMapper;
 import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
-import com.sanaiclub.project.model.dto.StackDto;
 import com.sanaiclub.project.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @RequestMapping("/project")
@@ -41,6 +37,13 @@ public class ProjectController {
             e.printStackTrace();
             return "redirect:/project/create?error=true";
         }
-        return "redirect:/project/create";
+        // 등록 성공 시 success 페이지로 리다이렉트
+        return "redirect:/project/success";
+    }
+
+    // 등록 완료 페이지 이동
+    @GetMapping("/success")
+    public String successPage() {
+        return "project/success";
     }
 }
