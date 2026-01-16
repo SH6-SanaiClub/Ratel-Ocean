@@ -26,6 +26,7 @@ public class ProjectController {
         return "project/create";
     }
 
+    // 프로젝트 등록
     @PostMapping("/create")
     public String createProcess(@ModelAttribute ProjectCreateRequestDTO request, @RequestParam("planFile") MultipartFile planFile, HttpSession session) {
         // 실제 운영시에는 세션 아이디 사용: (Long) session.getAttribute("userId");
