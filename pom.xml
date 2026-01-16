@@ -239,6 +239,13 @@
       <version>6.2.5.Final</version>
     </dependency>
 
+    <!-- Java 11에서 @PostConstruct 사용을 위한 의존성 -->
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
+    </dependency>
+
   </dependencies>
 
   <build>
