@@ -46,6 +46,6 @@
     </bean>
 
     <!-- MapperScanner -->
-    <mybatis-spring:scan base-package="com.sanaiclub"/>
+    <mybatis-spring:scan base-package="com.sanaiclub.user.dao"/>
 
 </beans>
