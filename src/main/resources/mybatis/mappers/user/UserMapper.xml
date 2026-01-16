@@ -138,9 +138,8 @@ UserMapper.xml - 사용자 관련 SQL 쿼리
     <!--
     로그인 ID 중복 확인
     - COUNT 대신 EXISTS 사용 (성능상 유리)
-    - MyBatis가 1/0을 true/false로 변환
     -->
-    <select id="existsByLoginId" parameterType="string" resultType="boolean">
+    <select id="checkId" parameterType="string" resultType="int">
         SELECT EXISTS(
             SELECT 1 FROM users WHERE login_id = #{loginId}
         )
@@ -149,10 +148,26 @@ UserMapper.xml - 사용자 관련 SQL 쿼리
     <!--
     이메일 중복 확인
     -->
-    <select id="existsByEmail" parameterType="string" resultType="boolean">
+    <select id="checkEmail" parameterType="string" resultType="int">
         SELECT EXISTS(
             SELECT 1 FROM users WHERE email = #{email}
         )
     </select>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         삽입 쿼리 (INSERT) - 회원 등록용
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!--
+    회원 등록
+    -->
+    <insert id="insertUser" parameterType="com.sanaiclub.user.model.vo.UserVO"
+            useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (
+            login_id, email, password, user_type, name, phone, birth_date, status
+        ) VALUES (
+                     #{loginId}, #{email}, #{password}, #{userType}, #{name}, #{phone}, #{birthDate}, 'ACTIVE'
+                 )
+    </insert>
 
 </mapper>
