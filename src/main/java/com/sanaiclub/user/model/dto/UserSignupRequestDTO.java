@@ -1,6 +1,7 @@
 package com.sanaiclub.user.model.dto;
 
 import com.sanaiclub.user.model.vo.UserType;
+import java.sql.Date;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,7 +20,7 @@ public class UserSignupRequestDTO {
     private String email;
     private String name;
     private String phone;
-    private String birth;
+    private Date birth;
 
     // 약관 및 선택 사항
     private boolean termAgreed; // 이용약관 동의

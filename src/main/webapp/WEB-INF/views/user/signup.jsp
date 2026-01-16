@@ -188,13 +188,6 @@
 
         // 최종 제출 로직
         $("#next-btn").on("click", function() {
-            // [사나이의 팁] 서버의 UserService가 YYYY.MM.DD 형식을 원하므로 변환해줌
-            const rawDate = $("#birth").val(); // YYYY-MM-DD
-            if(rawDate) {
-                const formattedDate = rawDate.replace(/-/g, ".");
-                // 폼 제출 직전에 값을 살짝 바꿔치기함
-                $("#birth").attr("type", "text").val(formattedDate);
-            }
             $("#signup-form").submit();
         });
     });
