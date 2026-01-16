@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+═══════════════════════════════════════════════════════════════════════
+UserMapper.xml - 사용자 관련 SQL 쿼리
+═══════════════════════════════════════════════════════════════════════
+
+[namespace 규칙]
+- Mapper 인터페이스의 풀 패키지 경로와 일치해야 함
+- 예: com.sanaiclub.user.mapper.UserMapper
+
+[MyBatis 자동 매핑]
+- mybatis-config.xml에서 mapUnderscoreToCamelCase=true 설정
+- DB 컬럼명(user_id) → Java 필드명(userId) 자동 변환
+
+[파라미터 참조]
+- 단일 파라미터: #{value} 또는 #{파라미터명}
+- 다중 파라미터: @Param으로 지정한 이름 사용 #{userId}
+
+═══════════════════════════════════════════════════════════════════════
+-->
+
+<mapper namespace="com.sanaiclub.user.dao.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.sanaiclub.user.model.vo.UserVO">
+        <id property="userId" column="user_id"/>
+        <result property="loginId" column="login_id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="refreshToken" column="refresh_token"/>
+        <result property="userType" column="user_type"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="userColums">
+        user_id,
+        login_id,
+        email,
+        password,
+        refresh_token,
+        user_type,
+        name,
+        phone,
+        birth_date,
+        profile_image_url,
+        status,
+        created_at,
+        updated_at
+    </sql>
+
+    <sql id="activeUserCondition">
+        AND status = 'ACTIVE';
+    </sql>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         조회 쿼리 (SELECT) - 로그인/인증용
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!--
+    로그인 ID로 사용자 조회
+    - 로그인 시 사용자 존재 확인 및 비밀번호 검증용
+    - 비활성 계정도 조회하여 상태별 에러 메시지 제공 가능
+    -->
+    <select id="findByLoginId" parameterType="string" resultMap="UserResultMap">
+        SELECT <include refid="userColums"/>
+        FROM users
+        WHERE login_id = #{loginId}
+    </select>
+
+    <!--
+    사용자 PK로 조회
+    - JWT 토큰에서 추출한 userId로 사용자 정보 조회
+    - 활성 사용자만 조회 (정지/탈퇴 계정 제외)
+    -->
+    <select id="findByUserId" parameterType="int" resultMap="UserResultMap">
+        SELECT <include refid="userColums"/>
+        FROM users
+        WHERE login_id = #{userId}
+            <include refid="activeUserCondition"/>
+    </select>
+
+    <!--
+    이메일로 사용자 조회
+    - 이메일 로그인, 비밀번호 찾기 등에 사용
+    -->
+    <select id="findByEmail" parameterType="string" resultMap="UserResultMap">
+        SELECT
+        <include refid="userColumns"/>
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!--
+    Refresh Token으로 사용자 조회
+    - 토큰 재발급 시 해당 토큰의 소유자 확인
+    - 활성 사용자만 조회
+    -->
+    <select id="findByRefreshToken" parameterType="string" resultMap="UserResultMap">
+        SELECT
+        <include refid="userColumns"/>
+        FROM users
+        WHERE refresh_token = #{refreshToken}
+        <include refid="activeUserCondition"/>
+    </select>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         수정 쿼리 (UPDATE) - 토큰 관리용
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!--
+    Refresh Token 저장/갱신/삭제
+    - 로그인 시: 새 토큰 저장
+    - 재발급 시: 새 토큰으로 갱신
+    - 로그아웃 시: null로 설정
+
+    [updated_at 자동 갱신]
+    - DB에서 ON UPDATE CURRENT_TIMESTAMP 설정으로 자동 갱신됨
+    -->
+    <update id="updateRefreshToken">
+        UPDATE users
+        SET refresh_token = #{refreshToken}
+        WHERE user_id = #{userId}
+    </update>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         존재 확인 쿼리 - 중복 검사용
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!--
+    로그인 ID 중복 확인
+    - COUNT 대신 EXISTS 사용 (성능상 유리)
+    - MyBatis가 1/0을 true/false로 변환
+    -->
+    <select id="existsByLoginId" parameterType="string" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM users WHERE login_id = #{loginId}
+        )
+    </select>
+
+    <!--
+    이메일 중복 확인
+    -->
+    <select id="existsByEmail" parameterType="string" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM users WHERE email = #{email}
+        )
+    </select>
+
+</mapper>
