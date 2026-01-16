@@ -46,7 +46,7 @@ public interface UserMapper {
      * @param loginId 확인할 로그인 ID
      * @return 존재하면 true
      */
-    boolean existsByLoginId(@Param("loginId") String loginId);
+    int checkId(@Param("loginId") String loginId);
 
     /**
      * 이메일 중복 확인
@@ -54,7 +54,7 @@ public interface UserMapper {
      * @param email 확인할 이메일
      * @return 존재하면 true
      */
-    boolean existsByEmail(@Param("email") String email);
+    int checkEmail(@Param("email") String email);
 
     /**
      * 신규 사용자 등록
