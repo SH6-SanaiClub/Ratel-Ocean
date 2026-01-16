@@ -40,7 +40,7 @@ UserMapper.xml - 사용자 관련 SQL 쿼리
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <sql id="userColums">
+    <sql id="userColumns">
         user_id,
         login_id,
         email,
@@ -70,7 +70,7 @@ UserMapper.xml - 사용자 관련 SQL 쿼리
     - 비활성 계정도 조회하여 상태별 에러 메시지 제공 가능
     -->
     <select id="findByLoginId" parameterType="string" resultMap="UserResultMap">
-        SELECT <include refid="userColums"/>
+        SELECT <include refid="userColumns"/>
         FROM users
         WHERE login_id = #{loginId}
     </select>
@@ -81,9 +81,9 @@ UserMapper.xml - 사용자 관련 SQL 쿼리
     - 활성 사용자만 조회 (정지/탈퇴 계정 제외)
     -->
     <select id="findByUserId" parameterType="int" resultMap="UserResultMap">
-        SELECT <include refid="userColums"/>
+        SELECT <include refid="userColumns"/>
         FROM users
-        WHERE login_id = #{userId}
+        WHERE user_id = #{userId}
             <include refid="activeUserCondition"/>
     </select>
 
