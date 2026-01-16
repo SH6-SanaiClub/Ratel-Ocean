@@ -11,6 +11,8 @@ public class RequiredStackDTO {
     private Long projectStackId; // ✅ 중복 제거용 id
     private Long stackId;
     private String stackName;
+    private String category;
     private Integer stackLevel;
     private Integer stackYear;
+    private Long projectId;
 }
