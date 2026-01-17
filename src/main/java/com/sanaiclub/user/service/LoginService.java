@@ -4,7 +4,7 @@ import com.sanaiclub.user.model.dto.LoginRequestDTO;
 import com.sanaiclub.user.model.dto.LoginResponseDTO;
 import com.sanaiclub.user.model.dto.TokenRefreshResponseDTO;
 
-public interface AuthService {
+public interface LoginService {
 
     // 로그인 처리
     LoginResponseDTO login(LoginRequestDTO request);

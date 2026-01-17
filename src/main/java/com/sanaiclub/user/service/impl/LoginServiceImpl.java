@@ -8,7 +8,7 @@ import com.sanaiclub.user.model.dto.TokenRefreshResponseDTO;
 import com.sanaiclub.user.model.dto.UserInfoDTO;
 import com.sanaiclub.user.model.vo.UserStatus;
 import com.sanaiclub.user.model.vo.UserVO;
-import com.sanaiclub.user.service.AuthService;
+import com.sanaiclub.user.service.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,21 +18,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class AuthServiceImpl implements AuthService {
+public class LoginServiceImpl implements LoginService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoginServiceImpl.class);
 
     private final UserMapper userMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthServiceImpl(UserMapper userMapper, JwtTokenProvider jwtTokenProvider) {
+    public LoginServiceImpl(UserMapper userMapper, JwtTokenProvider jwtTokenProvider) {
         this.userMapper = userMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    // 로그인 처리
+    // 로그인
     @Override
     @Transactional  // 쓰기 작업 포함 (Refresh Token 저장)
     public LoginResponseDTO login(LoginRequestDTO request) {
@@ -89,12 +89,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-
-    // ═══════════════════════════════════════════════════════════════
-    // 로그아웃 처리
-    // ═══════════════════════════════════════════════════════════════
-
-    //로그아웃 처리
+    // 로그아웃
     @Override
     @Transactional
     public void logout(Integer userId) {
@@ -111,14 +106,7 @@ public class AuthServiceImpl implements AuthService {
         logger.info("로그아웃 완료: userId={}", userId);
     }
 
-
-    // ═══════════════════════════════════════════════════════════════
-    // 토큰 재발급
-    // ═══════════════════════════════════════════════════════════════
-
-    /**
-     * Access Token 재발급
-     */
+    // Access Token 재발급
     @Override
     @Transactional
     public TokenRefreshResponseDTO refreshAccessToken(String refreshToken) {
