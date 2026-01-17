@@ -2,6 +2,7 @@ package com.sanaiclub.project.dao;
 
 import com.sanaiclub.project.model.dto.ProjectDashboardCardDTO;
 import com.sanaiclub.project.model.dto.RequiredStackDTO;
+import com.sanaiclub.project.model.vo.ProjectsVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,4 +30,6 @@ public interface ProjectDashboardMapper {
     int todayNewProject();
 
     int deadlineWithin7Days();
+
+    ProjectsVO selectProjectDetail(long projectId);
 }

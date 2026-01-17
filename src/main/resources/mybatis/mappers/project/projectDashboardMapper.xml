@@ -93,7 +93,34 @@
                       DATE_SUB(start_date, INTERVAL 1 DAY)
               ) < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
         ]]>
-</select>
+    </select>
 
+    <select id="selectProjectDetail"
+            parameterType="long"
+            resultType="com.sanaiclub.project.model.vo.ProjectsVO">
+        <![CDATA[
+        SELECT
+            project_id,
+            client_id,
+            title,
+            description,
+            start_date,
+            deadline_date,
+            est_duration,
+            budget,
+            communicate_method,
+            payment_method,
+            change_policy,
+            max_revision_count,
+            project_status,
+            is_public,
+            created_at,
+            updated_at,
+            view_count,
+            applicant_count
+        FROM projects
+        WHERE project_id = #{projectId}
+        ]]>
+    </select>
 
 </mapper>

@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -98,6 +99,18 @@
             gap: 22px;
             align-items:stretch;
         }
+
+        /* 카드 전체를 링크로 쓸 때 */
+        .project-link{
+            display:block;
+            text-decoration:none;
+            color: inherit;
+        }
+        .project-link:focus-visible{
+            outline: 3px solid rgba(92,60,206,0.25);
+            border-radius: var(--radius);
+        }
+
 
         .left{
             flex:1;
@@ -427,78 +440,86 @@
         </c:if>
 
         <c:forEach var="p" items="${projectList}">
-            <div class="project-card">
+            <a class="project-link"
+               href="${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}&page=${page}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">
 
-                <!-- LEFT -->
-                <div class="left">
+                <div class="project-card">
+
+                    <!-- LEFT -->
+                    <div class="left">
 
 
 
-                    <!-- 포지션 -->
-                    <div class="chips">
-                        <c:if test="${not empty p.stacks}">
-                            <c:forEach var="s" items="${p.stacks}">
-                                <c:if test="${not empty s.category and s.category eq 'POSITION'}">
-                                    <span class="chip position">${s.stackName}</span>
-                                </c:if>
-                            </c:forEach>
-                        </c:if>
-                    </div>
-
-                    <div class="title">${p.title}</div>
-
-                    <!-- 스킬 -->
-                    <div class="chips">
-                        <c:if test="${not empty p.stacks}">
-                            <c:forEach var="s" items="${p.stacks}">
-                                <c:if test="${not empty s.category and s.category eq 'SKILL'}">
-                  <span class="chip">
-                    ${s.stackName}
-                    <c:if test="${s.stackLevel != null}">
-                        Lv.${s.stackLevel}
-                    </c:if>
-                  </span>
-                                </c:if>
-                            </c:forEach>
-                        </c:if>
-                    </div>
-
-                </div>
-
-                <!-- RIGHT -->
-                <div class="right">
-
-                    <!-- 우측 상단: 북마크 -->
-                    <div class="right-top">
-                        <!-- 북마크: 일단 UI만 (나중에 클릭 이벤트/서버연동하면 됨) -->
-                        <button type="button" class="bookmark-btn" title="북마크">
-                            <!-- bookmark icon -->
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- 우측 중앙: D-day + 지원자 -->
-                    <div class="right-mid">
-                        <div class="dday">
-                            <c:choose>
-                                <c:when test="${p.dday >= 0}">마감 D-${p.dday}</c:when>
-                                <c:otherwise>마감</c:otherwise>
-                            </c:choose>
+                        <!-- 포지션 -->
+                        <div class="chips">
+                            <c:if test="${not empty p.stacks}">
+                                <c:forEach var="s" items="${p.stacks}">
+                                    <c:if test="${not empty s.category and s.category eq 'POSITION'}">
+                                        <span class="chip position">${s.stackName}</span>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
                         </div>
-                        <div class="applicants">지원자 ${p.applicantCount}명</div>
+
+                        <div class="title">${p.title}</div>
+
+                        <!-- 스킬 -->
+                        <div class="chips">
+                            <c:if test="${not empty p.stacks}">
+                                <c:forEach var="s" items="${p.stacks}">
+                                    <c:if test="${not empty s.category and s.category eq 'SKILL'}">
+                                          <span class="chip">
+                                            ${s.stackName}
+                                            <c:if test="${s.stackLevel != null}">
+                                                Lv.${s.stackLevel}
+                                            </c:if>
+                                          </span>
+                                    </c:if>
+                                </c:forEach>
+                            </c:if>
+                        </div>
+
                     </div>
 
-                    <!-- 우측 하단: 예상기간(작게, 예산 왼쪽) + 예산(크게, 우측 아래) -->
-                    <div class="right-bottom">
-                        <div class="duration">예상 기간<br/>${p.estDuration}</div>
-                        <div class="budget">₩${p.budget}</div>
+                    <!-- RIGHT -->
+                    <div class="right">
+
+                        <!-- 우측 상단: 북마크 -->
+                        <div class="right-top">
+                            <!-- 북마크: 일단 UI만 (나중에 클릭 이벤트) -->
+                            <button type="button" class="bookmark-btn" title="북마크"
+                                    onclick="event.preventDefault(); event.stopPropagation();">
+                                <!-- bookmark icon -->
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- 우측 중앙: D-day + 지원자 -->
+                        <div class="right-mid">
+                            <div class="dday">
+                                <c:choose>
+                                    <c:when test="${p.dday >= 0}">마감 D-${p.dday}</c:when>
+                                    <c:otherwise>마감</c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="applicants">지원자 ${p.applicantCount}명</div>
+                        </div>
+
+                        <!-- 우측 하단: 예상기간(작게, 예산 왼쪽) + 예산(크게, 우측 아래) -->
+                        <div class="right-bottom">
+                            <div class="duration">예상 기간<br/>${p.estDuration}</div>
+                            <div class="budget">
+                                <fmt:formatNumber value="${p.budget / 10000}"
+                                                  maxFractionDigits="0"/>만원
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
-
-            </div>
+            </a>
         </c:forEach>
 
     </div>
