@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RequiredStackDTO {
-    private Long projectStackId; // ✅ 중복 제거용 id
+    private Long projectStackId; // 중복 제거용 id
     private Long stackId;
     private String stackName;
     private String category;

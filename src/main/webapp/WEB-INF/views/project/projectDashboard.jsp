@@ -440,10 +440,10 @@
         </c:if>
 
         <c:forEach var="p" items="${projectList}">
-            <a class="project-link"
-               href="${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}&page=${page}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">
+<%--            <a class="project-link"--%>
+<%--               href="${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}&page=${page}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">--%>
 
-                <div class="project-card">
+                <div class="project-card" onclick="location.href='${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}&page=${page}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}'">
 
                     <!-- LEFT -->
                     <div class="left">
@@ -484,19 +484,19 @@
                     <!-- RIGHT -->
                     <div class="right">
 
-                        <!-- 우측 상단: 북마크 -->
-                        <div class="right-top">
-                            <!-- 북마크: 일단 UI만 (나중에 클릭 이벤트) -->
-                            <button type="button" class="bookmark-btn" title="북마크"
-                                    onclick="event.preventDefault(); event.stopPropagation();">
-                                <!-- bookmark icon -->
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"></path>
-                                </svg>
-                            </button>
-                        </div>
+                        <!-- 북마크 -->
+                        <button type="button"
+                                class="bookmark-btn ${p.bookmarked ? 'is-active' : ''}"
+                                data-project-id="${p.projectId}"
+                                title="북마크"
+                                onclick="event.preventDefault(); event.stopPropagation();">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"></path>
+                            </svg>
+                        </button>
 
-                        <!-- 우측 중앙: D-day + 지원자 -->
+
+                        <!-- D-day + 지원자 -->
                         <div class="right-mid">
                             <div class="dday">
                                 <c:choose>
@@ -507,7 +507,7 @@
                             <div class="applicants">지원자 ${p.applicantCount}명</div>
                         </div>
 
-                        <!-- 우측 하단: 예상기간(작게, 예산 왼쪽) + 예산(크게, 우측 아래) -->
+                        <!-- 예상기간(작게, 예산 왼쪽) + 예산(크게, 우측 아래) -->
                         <div class="right-bottom">
                             <div class="duration">예상 기간<br/>${p.estDuration}</div>
                             <div class="budget">
@@ -519,7 +519,7 @@
                     </div>
 
                 </div>
-            </a>
+<%--            </a>--%>
         </c:forEach>
 
     </div>
@@ -584,5 +584,42 @@
     </c:if>
 
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".bookmark-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const projectId = btn.dataset.projectId;
+                console.log("bookmark clicked", projectId);
+
+                try {
+                    const res = await fetch("${pageContext.request.contextPath}/project/bookmark/toggle", {
+                        method: "POST",
+                        headers: {"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"},
+                        body: new URLSearchParams({ projectId })
+                    });
+
+                    const data = await res.json();
+                    if (!data.ok) {
+                        alert(data.message === "LOGIN_REQUIRED" ? "로그인이 필요합니다." : "실패");
+                        return;
+                    }
+
+                    btn.classList.toggle("is-active", data.bookmarked);
+                } catch (err) {
+                    console.error(err);
+                    alert("북마크 처리 중 오류");
+                }
+            });
+        });
+    });
+</script>
+
+
 </body>
+
+
 </html>

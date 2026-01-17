@@ -33,9 +33,11 @@ public class ProjectDashboardService {
 
         int offset = (page - 1) * size;
 
-        // 1) 프로젝트(부모)만 페이징 조회
+        int userId = 1; // 임시
+
+        // 프로젝트만 페이징 조회
         List<ProjectDashboardCardDTO> projects =
-                projectDashboardMapper.selectDashboardProjects(keyword, onlyActive, size, offset);
+                projectDashboardMapper.selectDashboardProjects(keyword, onlyActive, size, offset, userId);
 
         if (projects == null) projects = Collections.emptyList();
 
@@ -44,7 +46,7 @@ public class ProjectDashboardService {
             p.setStacks(new ArrayList<>());
         }
 
-        // 2) 현재 페이지 projectIds로 스택 한 번에 조회
+        // 현재 페이지 projectIds로 스택 한 번에 조회
         List<Long> projectIds = projects.stream()
                 .map(ProjectDashboardCardDTO::getProjectId)
                 .filter(Objects::nonNull)
@@ -62,25 +64,25 @@ public class ProjectDashboardService {
             }
         }
 
-        // 3) 페이지 블록 계산(1~10, 11~20 이런 느낌)
+        // 페이지 블록 계산(1~10, 11~20)
         int blockSize = 10;
         int startPage = ((page - 1) / blockSize) * blockSize + 1;
         int endPage = Math.min(startPage + blockSize - 1, totalPages);
 
-        DashboardPageDTO dto = new DashboardPageDTO();
-        dto.setProjectList(projects);
-        dto.setPage(page);
-        dto.setSize(size);
-        dto.setTotalCount(totalCount);
-        dto.setTotalPages(totalPages);
-        dto.setStartPage(startPage);
-        dto.setEndPage(endPage);
-        dto.setHasPrevBlock(startPage > 1);
-        dto.setHasNextBlock(endPage < totalPages);
-        dto.setPrevBlockPage(startPage - 1);
-        dto.setNextBlockPage(endPage + 1);
+        DashboardPageDTO dashboardPageDTO = new DashboardPageDTO();
+        dashboardPageDTO.setProjectList(projects);
+        dashboardPageDTO.setPage(page);
+        dashboardPageDTO.setSize(size);
+        dashboardPageDTO.setTotalCount(totalCount);
+        dashboardPageDTO.setTotalPages(totalPages);
+        dashboardPageDTO.setStartPage(startPage);
+        dashboardPageDTO.setEndPage(endPage);
+        dashboardPageDTO.setHasPrevBlock(startPage > 1);
+        dashboardPageDTO.setHasNextBlock(endPage < totalPages);
+        dashboardPageDTO.setPrevBlockPage(startPage - 1);
+        dashboardPageDTO.setNextBlockPage(endPage + 1);
 
-        return dto;
+        return dashboardPageDTO;
     }
 
     public int countTodayNewProjects() {

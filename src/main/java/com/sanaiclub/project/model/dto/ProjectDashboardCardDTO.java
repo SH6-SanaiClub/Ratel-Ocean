@@ -20,4 +20,6 @@ public class ProjectDashboardCardDTO {
     private String deadlineDate; // 화면 표시용
 
     private List<RequiredStackDTO> stacks;
+
+    private Boolean bookmarked;
 }

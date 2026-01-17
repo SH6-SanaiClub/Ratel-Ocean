@@ -18,7 +18,16 @@
         DATE_SUB(p.start_date, INTERVAL 1 DAY)
         ),
         CURDATE()
-        ) AS dday
+        ) AS dday,
+        CASE
+        WHEN #{userId} IS NULL THEN 0
+        ELSE EXISTS (
+        SELECT 1
+        FROM project_bookmarks pb
+        WHERE pb.project_id = p.project_id
+        AND pb.user_id = #{userId}
+        )
+        END AS bookmarked
         FROM projects p
         WHERE p.is_public = TRUE
         <if test="onlyActive">

@@ -12,15 +12,16 @@ import java.util.List;
 public interface ProjectDashboardMapper {
 
     List<ProjectDashboardCardDTO> selectDashboardProjects(
-            @Param("keyword") String keyword,
-            @Param("onlyActive") boolean onlyActive,
-            @Param("limit") int limit,
-            @Param("offset") int offset
+        @Param("keyword") String keyword,
+        @Param("onlyActive") boolean onlyActive,
+        @Param("limit") int limit,
+        @Param("offset") int offset,
+        @Param("userId") int userId
     );
 
     int countDashboardProjects(
-            @Param("keyword") String keyword,
-            @Param("onlyActive") boolean onlyActive
+        @Param("keyword") String keyword,
+        @Param("onlyActive") boolean onlyActive
     );
 
     List<RequiredStackDTO> selectStacksByProjectId(

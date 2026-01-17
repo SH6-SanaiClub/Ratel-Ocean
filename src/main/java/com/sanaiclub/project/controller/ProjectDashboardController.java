@@ -3,13 +3,14 @@ package com.sanaiclub.project.controller;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
 import com.sanaiclub.project.model.dto.ProjectDashboardCardDTO;
 import com.sanaiclub.project.model.vo.ProjectsVO;
+import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class ProjectDashboardController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("onlyActive", active);
 
-        // ✅ 추가: 요약 카운트
+        // 요약 카운트
         int todayNewCount = projectDashboardService.countTodayNewProjects();
         int deadline7Count = projectDashboardService.countDeadlineWithinDays();
 
@@ -68,7 +69,7 @@ public class ProjectDashboardController {
 
         model.addAttribute("project", projectDashboardService.getProjectDetail(projectId));
 
-        // (선택) 목록으로 돌아갈 때 쓰라고 다시 담아줌
+        // 목록으로 돌아갈 때 쓰라고 다시 담아줌
         model.addAttribute("page", page);
         model.addAttribute("size", size);
         model.addAttribute("onlyActive", onlyActive);
@@ -76,4 +77,24 @@ public class ProjectDashboardController {
 
         return "project/projectDetailTest";
     }
+
+    private final ProjectBookmarkService projectBookmarkService;
+
+    @PostMapping("/bookmark/toggle")
+    @ResponseBody
+    public Map<String, Object> toggleBookmark(@RequestParam("projectId") long projectId) {
+                                              //@CookieValue(value="accessToken", required=false) String token
+
+//        if (token == null || token.isBlank()) {
+//            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
+//        }
+
+//        long userId = jwtProvider.getUserId(token); // 토큰에서 userId(Subject/claim) 추출
+
+        int userId = 1;
+
+        boolean bookmarked = projectBookmarkService.toggle(projectId, userId);
+        return Map.of("ok", true, "bookmarked", bookmarked);
+    }
+
 }
