@@ -21,12 +21,12 @@ public class ProjectDashboardService {
     @Autowired
     private ProjectDashboardMapper projectDashboardMapper;
 
-    public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam) {
+    public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam, String summary) {
 
         int size = (sizeParam == null || sizeParam < 1) ? 10 : Math.min(sizeParam, 50);
         int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
 
-        int totalCount = projectDashboardMapper.countDashboardProjects(keyword, onlyActive);
+        int totalCount = projectDashboardMapper.countDashboardProjects(keyword, onlyActive, summary);
         int totalPages = (int) Math.ceil(totalCount / (double) size);
         if (totalPages == 0) totalPages = 1;
         if (page > totalPages) page = totalPages;
@@ -37,7 +37,7 @@ public class ProjectDashboardService {
 
         // 프로젝트만 페이징 조회
         List<ProjectDashboardCardDTO> projects =
-                projectDashboardMapper.selectDashboardProjects(keyword, onlyActive, size, offset, userId);
+                projectDashboardMapper.selectDashboardProjects(keyword, onlyActive, size, offset, userId, summary);
 
         if (projects == null) projects = Collections.emptyList();
 

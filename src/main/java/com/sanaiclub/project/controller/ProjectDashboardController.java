@@ -25,12 +25,13 @@ public class ProjectDashboardController {
             @RequestParam(required = false) Boolean onlyActive,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
+            @RequestParam(required = false, defaultValue = "all") String summary,
             Model model
     ) {
         boolean active = Boolean.TRUE.equals(onlyActive);
 
         DashboardPageDTO pageDTO =
-                projectDashboardService.getDashboardProjects(keyword, active, page, size);
+                projectDashboardService.getDashboardProjects(keyword, active, page, size, summary);
 
         model.addAttribute("projectList", pageDTO.getProjectList());
 
@@ -48,6 +49,7 @@ public class ProjectDashboardController {
         // keep params
         model.addAttribute("keyword", keyword);
         model.addAttribute("onlyActive", active);
+        model.addAttribute("summary", summary);
 
         // 요약 카운트
         int todayNewCount = projectDashboardService.countTodayNewProjects();

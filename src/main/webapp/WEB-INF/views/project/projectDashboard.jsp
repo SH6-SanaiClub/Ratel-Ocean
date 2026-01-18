@@ -380,6 +380,19 @@
             .summary-grid{ grid-template-columns: 1fr; }
         }
 
+
+        /* 요약카드 클릭/선택 강조 */
+        .summary-link{ text-decoration:none; color:inherit; display:block; }
+        .summary-card.is-active{
+            border: 2px solid rgba(92,60,206,0.35);
+            box-shadow: 0 14px 34px rgba(92,60,206,0.12);
+            transform: translateY(-1px);
+        }
+        .summary-card.is-active .summary-title{ color: #4f46e5; }
+        .summary-card.is-active .summary-badge{
+            border-color: rgba(92,60,206,0.35);
+        }
+
     </style>
 </head>
 
@@ -387,35 +400,46 @@
 
 <div class="dashboard-wrap">
 
-    <!-- ✅ 상단 요약 -->
+    <!--  상단 요약 -->
     <div class="summary-grid">
-        <div class="summary-card">
-            <div>
-                <div class="summary-title">오늘의 신규 프로젝트</div>
-                <div>
-                    <span class="summary-value">${empty todayNewCount ? 0 : todayNewCount}</span>
-                    <span class="summary-unit">건</span>
-                </div>
-            </div>
-            <div class="summary-badge">+</div>
-        </div>
 
-        <div class="summary-card">
-            <div>
-                <div class="summary-title">마감 임박 (7일 이내)</div>
+        <!-- today 토글 -->
+        <a class="summary-link"
+           href="${pageContext.request.contextPath}/project/dashboard?summary=${summary eq 'today' ? 'all' : 'today'}&page=1&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">
+            <div class="summary-card ${summary eq 'today' ? 'is-active' : ''}">
                 <div>
-        <span class="summary-value" style="color:var(--danger);">
-            ${empty deadline7Count ? 0 : deadline7Count}
-        </span>
-                    <span class="summary-unit">건</span>
+                    <div class="summary-title">오늘의 신규 프로젝트</div>
+                    <div>
+                        <span class="summary-value">${empty todayNewCount ? 0 : todayNewCount}</span>
+                        <span class="summary-unit">건</span>
+                    </div>
                 </div>
+                <div class="summary-badge">+</div>
             </div>
-            <div class="summary-badge danger">!</div>
-        </div>
+        </a>
+
+        <!-- deadline7 토글 -->
+        <a class="summary-link"
+           href="${pageContext.request.contextPath}/project/dashboard?summary=${summary eq 'deadline7' ? 'all' : 'deadline7'}&page=1&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">
+            <div class="summary-card ${summary eq 'deadline7' ? 'is-active' : ''}">
+                <div>
+                    <div class="summary-title">마감 임박 (7일 이내)</div>
+                    <div>
+                    <span class="summary-value" style="color:var(--danger);">
+                        ${empty deadline7Count ? 0 : deadline7Count}
+                    </span>
+                        <span class="summary-unit">건</span>
+                    </div>
+                </div>
+                <div class="summary-badge danger">!</div>
+            </div>
+        </a>
+
     </div>
 
 
-    <!-- 🔍 검색 -->
+
+    <!-- 검색 -->
     <form class="search-box" method="get" action="${pageContext.request.contextPath}/project/dashboard">
         <input type="text"
                name="keyword"
@@ -425,14 +449,16 @@
         <label>
             <input type="checkbox" name="onlyActive" value="true"
                    <c:if test="${onlyActive}">checked</c:if> />
-            마감 전만 보기
+            마감된 프로젝트 보기
         </label>
 
         <input type="hidden" name="size" value="${empty size ? 10 : size}"/>
+        <input type="hidden" name="summary" value="${empty summary ? 'all' : summary}"/>
+
         <button type="submit">검색</button>
     </form>
 
-    <!-- 📋 리스트 -->
+    <!-- 리스트 -->
     <div class="project-list">
 
         <c:if test="${empty projectList}">
@@ -440,8 +466,6 @@
         </c:if>
 
         <c:forEach var="p" items="${projectList}">
-<%--            <a class="project-link"--%>
-<%--               href="${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}&page=${page}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">--%>
 
                 <div class="project-card" onclick="location.href='${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}&page=${page}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}'">
 
@@ -507,7 +531,7 @@
                             <div class="applicants">지원자 ${p.applicantCount}명</div>
                         </div>
 
-                        <!-- 예상기간(작게, 예산 왼쪽) + 예산(크게, 우측 아래) -->
+                        <!-- 예상기간(예산 왼쪽) + 예산(우측 아래) -->
                         <div class="right-bottom">
                             <div class="duration">예상 기간<br/>${p.estDuration}</div>
                             <div class="budget">
@@ -524,7 +548,7 @@
 
     </div>
 
-    <!-- ✅ 페이징 -->
+    <!-- 페이징 -->
     <c:if test="${totalPages > 1}">
         <div class="pagination">
 
@@ -532,7 +556,7 @@
             <c:choose>
                 <c:when test="${hasPrevBlock}">
                     <a class="page-link"
-                       href="${pageContext.request.contextPath}/project/dashboard?page=${prevBlockPage}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">&laquo;</a>
+                       href="${pageContext.request.contextPath}/project/dashboard?page=${prevBlockPage}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}&summary=${summary}">&laquo;</a>
                 </c:when>
                 <c:otherwise>
                     <span class="page-link disabled">&laquo;</span>
@@ -543,7 +567,7 @@
             <c:choose>
                 <c:when test="${page > 1}">
                     <a class="page-link"
-                       href="${pageContext.request.contextPath}/project/dashboard?page=${page-1}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">&lsaquo;</a>
+                       href="${pageContext.request.contextPath}/project/dashboard?page=${page-1}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}&summary=${summary}">&lsaquo;</a>
                 </c:when>
                 <c:otherwise>
                     <span class="page-link disabled">&lsaquo;</span>
@@ -553,14 +577,14 @@
             <!-- 페이지 번호 -->
             <c:forEach var="pno" begin="${startPage}" end="${endPage}">
                 <a class="page-link ${pno == page ? 'active' : ''}"
-                   href="${pageContext.request.contextPath}/project/dashboard?page=${pno}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">${pno}</a>
+                   href="${pageContext.request.contextPath}/project/dashboard?page=${pno}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}&summary=${summary}">${pno}</a>
             </c:forEach>
 
             <!-- › 다음 페이지 -->
             <c:choose>
                 <c:when test="${page < totalPages}">
                     <a class="page-link"
-                       href="${pageContext.request.contextPath}/project/dashboard?page=${page+1}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">&rsaquo;</a>
+                       href="${pageContext.request.contextPath}/project/dashboard?page=${page+1}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}&summary=${summary}">&rsaquo;</a>
                 </c:when>
                 <c:otherwise>
                     <span class="page-link disabled">&rsaquo;</span>
@@ -571,7 +595,7 @@
             <c:choose>
                 <c:when test="${hasNextBlock}">
                     <a class="page-link"
-                       href="${pageContext.request.contextPath}/project/dashboard?page=${nextBlockPage}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">&raquo;</a>
+                       href="${pageContext.request.contextPath}/project/dashboard?page=${nextBlockPage}&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}&summary=${summary}">&raquo;</a>
                 </c:when>
                 <c:otherwise>
                     <span class="page-link disabled">&raquo;</span>
@@ -582,6 +606,7 @@
 
         <div class="hint">${page} / ${totalPages} 페이지</div>
     </c:if>
+
 
 </div>
 

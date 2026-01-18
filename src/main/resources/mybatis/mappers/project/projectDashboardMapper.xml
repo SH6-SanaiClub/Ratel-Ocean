@@ -30,13 +30,47 @@
         END AS bookmarked
         FROM projects p
         WHERE p.is_public = TRUE
-        <if test="onlyActive">
+
+        <!-- summary 선택 -->
+        <choose>
+            <when test="summary == 'today'">
+                AND <![CDATA[
+        p.created_at >= CURDATE()
+        AND p.created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        ]]>
+            </when>
+            <when test="summary == 'deadline7'">
+                AND <![CDATA[
+        LEAST(
+        DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+        DATE_SUB(p.start_date, INTERVAL 1 DAY)
+        ) >= CURDATE()
+        AND LEAST(
+        DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+        DATE_SUB(p.start_date, INTERVAL 1 DAY)
+        ) < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+        ]]>
+            </when>
+            <otherwise>
+                <!-- all: 조건 없음 -->
+            </otherwise>
+        </choose>
+
+        <if test="!onlyActive">
             AND
             LEAST(
             DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
             DATE_SUB(p.start_date, INTERVAL 1 DAY)
             )
             >= CURDATE()
+        </if>
+        <if test="onlyActive">
+            <![CDATA[
+            AND LEAST(
+                DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+                DATE_SUB(p.start_date, INTERVAL 1 DAY)
+            ) < CURDATE()
+            ]]>
         </if>
         <if test="keyword != null and keyword != ''">
             AND p.title LIKE CONCAT('%', #{keyword}, '%')
@@ -45,23 +79,58 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 전체 개수 -->
+    <!-- 개수 -->
     <select id="countDashboardProjects" resultType="int">
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT p.project_id)
         FROM projects p
         WHERE p.is_public = TRUE
 
-        <if test="onlyActive">
-            AND LEAST(
-            DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
-            DATE_SUB(p.start_date, INTERVAL 1 DAY)
-            ) >= CURDATE()
-        </if>
+        <choose>
+            <when test="summary == 'today'">
+                AND <![CDATA[
+                p.created_at >= CURDATE()
+                AND p.created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+            ]]>
+            </when>
+
+            <when test="summary == 'deadline7'">
+                AND <![CDATA[
+                LEAST(
+                    DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+                    DATE_SUB(p.start_date, INTERVAL 1 DAY)
+                ) >= CURDATE()
+                AND LEAST(
+                    DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+                    DATE_SUB(p.start_date, INTERVAL 1 DAY)
+                ) < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+            ]]>
+            </when>
+        </choose>
+
+        <choose>
+            <when test="onlyActive">
+                <![CDATA[
+                AND LEAST(
+                    DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+                    DATE_SUB(p.start_date, INTERVAL 1 DAY)
+                ) < CURDATE()
+            ]]>
+            </when>
+            <otherwise>
+                <![CDATA[
+                AND LEAST(
+                    DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
+                    DATE_SUB(p.start_date, INTERVAL 1 DAY)
+                ) >= CURDATE()
+            ]]>
+            </otherwise>
+        </choose>
 
         <if test="keyword != null and keyword != ''">
             AND p.title LIKE CONCAT('%', #{keyword}, '%')
         </if>
     </select>
+
 
     <select id="selectStacksByProjectId" resultType="com.sanaiclub.project.model.dto.RequiredStackDTO">
         SELECT
@@ -80,6 +149,8 @@
         </foreach>
         ORDER BY ps.project_id, s.category, s.stack_name
     </select>
+
+
 
     <select id="todayNewProject" resultType="int">
         <![CDATA[

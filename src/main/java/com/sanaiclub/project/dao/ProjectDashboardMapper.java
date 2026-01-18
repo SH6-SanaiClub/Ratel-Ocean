@@ -16,12 +16,14 @@ public interface ProjectDashboardMapper {
         @Param("onlyActive") boolean onlyActive,
         @Param("limit") int limit,
         @Param("offset") int offset,
-        @Param("userId") int userId
+        @Param("userId") int userId,
+        @Param("summary") String summary
     );
 
     int countDashboardProjects(
         @Param("keyword") String keyword,
-        @Param("onlyActive") boolean onlyActive
+        @Param("onlyActive") boolean onlyActive,
+        @Param("summary") String summary
     );
 
     List<RequiredStackDTO> selectStacksByProjectId(
