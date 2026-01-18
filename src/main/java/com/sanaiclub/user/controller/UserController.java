@@ -1,7 +1,7 @@
 package com.sanaiclub.user.controller;
 
 import com.sanaiclub.common.dto.ApiResponse;
-import com.sanaiclub.common.security.JwtAuthService;
+import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.user.model.dto.UserInfoDTO;
 import com.sanaiclub.user.service.UserService;
 import org.slf4j.Logger;
@@ -22,14 +22,12 @@ public class UserController {
 
     //의존성 주입
     private final UserService userService;
-    private final JwtAuthService jwtAuthService;
 
     /**
      * 생성자 주입
      */
-    public UserController(UserService userService, JwtAuthService jwtAuthService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.jwtAuthService = jwtAuthService;
     }
 
     // 현재 로그인한 사용자 정보 조회
@@ -39,15 +37,15 @@ public class UserController {
         logger.debug("내 정보 조회 요청");
 
         try {
-            // 1. userId 추출 (JwtAuthService)
-            Integer userId = jwtAuthService.extractUserIdFromRequest(request);
+            // AuthContext에서 현재 사용자 ID 조회
+            Integer userId = AuthContext.getCurrentUserId();
 
-            // 2. 사용자 정보 조회 (UserService)
+            // 사용자 정보 조회 (UserService)
             UserInfoDTO userInfo = userService.getUserInfo(userId);
 
             logger.debug("내 정보 조회 성공: userId={}", userId);
 
-            // 3. HTTP 응답 반환
+            // HTTP 응답 반환
             return ResponseEntity.ok(
                     ApiResponse.success(userInfo, "사용자 정보 조회 성공")
             );

@@ -1,5 +1,6 @@
 package com.sanaiclub.user.controller;
 
+import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.common.security.JwtAuthService;
 import com.sanaiclub.user.service.LoginService;
 import com.sanaiclub.common.dto.ApiResponse;
@@ -103,8 +104,15 @@ public class LoginController {
         logger.info("로그아웃 요청");
 
         try {
-            // JWT 인증: userId 추출 (JwtAuthService)
-            Integer userId = jwtAuthService.extractUserIdFromRequest(request);
+            // AuthContext에서 현재 사용자 ID 조회
+            Integer userId = AuthContext.getCurrentUserId();
+
+            if (userId == null) {
+                logger.warn("로그아웃 시도 - 비로그인 상태");
+                // 비로그인 상태여도 쿠키는 삭제
+                jwtAuthService.clearAuthCookies(response);
+                return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
+            }
 
             // 로그아웃 처리 (LoginService)
             loginService.logout(userId);
@@ -116,12 +124,6 @@ public class LoginController {
 
             return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
 
-        } catch (IllegalArgumentException e) {
-            // 토큰이 유효하지 않아도 쿠키는 삭제 (클라이언트 정리)
-            logger.warn("로그아웃 처리 중 인증 실패: {}", e.getMessage());
-            jwtAuthService.clearAuthCookies(response);
-            return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
-
         } catch (Exception e) {
             // 예상치 못한 오류 발생 시에도 쿠키 삭제
             logger.error("로그아웃 처리 중 오류", e);
@@ -131,7 +133,7 @@ public class LoginController {
     }
 
     /**
-     * Access Token 재발급
+     * Access Token 재발급 (수동 재발급이 필요한 경우에만)
      */
     @PostMapping("/refresh-token")
     @ResponseBody
