@@ -77,7 +77,7 @@ public class ProjectDashboardController {
         model.addAttribute("onlyActive", onlyActive);
         model.addAttribute("keyword", keyword);
 
-        return "project/projectDetailTest";
+        return "project/detail";
     }
 
     private final ProjectBookmarkService projectBookmarkService;

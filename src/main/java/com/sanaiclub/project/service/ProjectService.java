@@ -5,9 +5,8 @@ import com.sanaiclub.project.dao.StackMapper;
 import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
 import com.sanaiclub.project.model.dto.StackDto;
 import com.sanaiclub.project.model.vo.ProjectStackVO;
-import com.sanaiclub.project.model.vo.ProjectVO;
+import com.sanaiclub.project.model.vo.ProjectsVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -61,63 +60,63 @@ public class ProjectService {
     @Transactional
     public void createProject(ProjectCreateRequestDTO request, Integer clientId, MultipartFile planFile) throws IOException {
 
-        ProjectVO projectVO = new ProjectVO();
+        ProjectsVO projectsVO = new ProjectsVO();
 
 
         // 클라이언트 ID, 프로젝트 제목, 설명 저장
-        projectVO.setClientId(clientId);
-        projectVO.setTitle(request.getTitle());
-        projectVO.setDescription(request.getDescription());
+        projectsVO.setClientId(clientId);
+        projectsVO.setTitle(request.getTitle());
+        projectsVO.setDescription(request.getDescription());
 
         // 예산 처리
         try {
             // 콤마(,) 및 앞뒤 공백 제거
             String budgetStr = request.getBudget().replace(",", "").trim();
             // 형변환 후 저장
-            projectVO.setBudget(Integer.parseInt(budgetStr));
+            projectsVO.setBudget(Integer.parseInt(budgetStr));
         } catch (Exception e) {
             // 에러시 0 저장
-            projectVO.setBudget(0);
+            projectsVO.setBudget(0);
         }
         // 예산 협의 가능 여부 처리
         // 받아온 값이 null이 아니고 true인 경우에만 VO에 true 저장
-        projectVO.setBudgetNegotiable(request.getBudgetNegotiable() != null && request.getBudgetNegotiable());
+        projectsVO.setBudgetNegotiable(request.getBudgetNegotiable() != null && request.getBudgetNegotiable());
 
         // 기간 처리
-        projectVO.setEstDuration(request.getEstDuration());
+        projectsVO.setEstDuration(request.getEstDuration());
         // 기간 조율 가능여부도 예산과 동일한 방식으로 VO에 저장
-        projectVO.setDurationNegotiable(request.getDurationNegotiable() != null && request.getDurationNegotiable());
+        projectsVO.setDurationNegotiable(request.getDurationNegotiable() != null && request.getDurationNegotiable());
 
         // 시작일 처리
         // ASAP(즉시 착수 가능) 선택 여부 확인
         if ("ASAP".equals(request.getStartType())) {
             // 오늘 날짜 저장
-            projectVO.setStartDate(Date.valueOf(LocalDate.now()));
+            projectsVO.setStartDate(Date.valueOf(LocalDate.now()));
         } else {
             // 즉시 착수 가능 아닐 경우 사용자 선택 날짜 저장
             // 에러 방지용 코드
             if (request.getStartDate() == null || request.getStartDate().isEmpty()) {
-                projectVO.setStartDate(Date.valueOf(LocalDate.now()));
+                projectsVO.setStartDate(Date.valueOf(LocalDate.now()));
             } else {
                 // 정상 선택시 사용자 지정 날짜 저장
-                projectVO.setStartDate(Date.valueOf(LocalDate.parse(request.getStartDate())));
+                projectsVO.setStartDate(Date.valueOf(LocalDate.parse(request.getStartDate())));
             }
         }
 
         // 마감일 계산 (시작일 기준 +30일)
         // java.sql.Date를 계산하기 편한 LocalDate로 잠시 바꾼 뒤 다시 변환
-        LocalDate startLocalDate = projectVO.getStartDate().toLocalDate();
-        projectVO.setDeadlineDate(Date.valueOf(startLocalDate.plusDays(30)));
+        LocalDate startLocalDate = projectsVO.getStartDate().toLocalDate();
+        projectsVO.setDeadlineDate(Date.valueOf(startLocalDate.plusDays(30)));
 
         // 기타 정보 저장
-        projectVO.setCommunicateMethod(request.getCommunicateMethod());
-        projectVO.setPaymentMethod(request.getPaymentMethod());
-        projectVO.setMaxRevisionCount(request.getMaxRevisionCount());
-        projectVO.setChangePolicy(request.getChangePolicy());
-        projectVO.setProjectStatus(request.getProjectStatus());
-        projectVO.setIsPublic(request.getIsPublic());
-        projectVO.setPlanUrl(request.getPlanUrl());
-        projectVO.setFileSize(request.getFileSize());
+        projectsVO.setCommunicateMethod(request.getCommunicateMethod());
+        projectsVO.setPaymentMethod(request.getPaymentMethod());
+        projectsVO.setMaxRevisionCount(request.getMaxRevisionCount());
+        projectsVO.setChangePolicy(request.getChangePolicy());
+        projectsVO.setProjectStatus(request.getProjectStatus());
+        projectsVO.setIsPublic(request.getIsPublic());
+        projectsVO.setPlanUrl(request.getPlanUrl());
+        projectsVO.setFileSize(request.getFileSize());
 
         // 파일 업로드 및 정보 저장 로직
         if (planFile != null && !planFile.isEmpty()) {
@@ -137,20 +136,20 @@ public class ProjectService {
 
             // 4. DB 저장용 정보 설정
             // 웹 서버 접근 경로 (/resources/...)로 저장
-            projectVO.setPlanUrl("/resources/upload/project/" + savedFileName);
+            projectsVO.setPlanUrl("/resources/upload/project/" + savedFileName);
 
             // 파일 크기 계산 (MB 단위)
             double size = (double) planFile.getSize() / (1024 * 1024);
-            projectVO.setFileSize(String.format("%.2f MB", size));
+            projectsVO.setFileSize(String.format("%.2f MB", size));
         } else {
             // 파일이 없을 경우 null 처리
-            projectVO.setPlanUrl(null);
-            projectVO.setFileSize(null);
+            projectsVO.setPlanUrl(null);
+            projectsVO.setFileSize(null);
         }
 
         // 프로젝트 메인 정보 INSERT
-        projectMapper.insertProject(projectVO);
-        Integer projectId = projectVO.getProjectId();
+        projectMapper.insertProject(projectsVO);
+        Integer projectId = projectsVO.getProjectId();
 
         // 스택 저장
         Integer inputLevel = request.getMinLevel();
