@@ -63,7 +63,7 @@ public class JoinController {
 
         if (isSuccess) {
             session.removeAttribute("joinUserType");
-            return "redirect:/user/login";
+            return "redirect:/login";
         } else {
             rttr.addFlashAttribute("error", "회원가입 중 오류가 발생했습니다.");
             return "redirect:/join/signup";
