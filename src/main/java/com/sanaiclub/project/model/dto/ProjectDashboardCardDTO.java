@@ -9,12 +9,12 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ProjectDashboardCardDTO {
-    private Long projectId;
+    private Integer projectId;
     private String title;
 
     private String estDuration;
     private Integer applicantCount;
-    private Long budget;
+    private Integer budget;
 
     private Integer dday;        // DATEDIFF(deadline_date, CURDATE())
     private String deadlineDate; // 화면 표시용

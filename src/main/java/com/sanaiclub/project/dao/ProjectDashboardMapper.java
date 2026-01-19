@@ -27,7 +27,7 @@ public interface ProjectDashboardMapper {
     );
 
     List<RequiredStackDTO> selectStacksByProjectId(
-        @Param("projectIds") List<Long> projectIds
+        @Param("projectIds") List<Integer> projectIds
     );
 
     int todayNewProject();

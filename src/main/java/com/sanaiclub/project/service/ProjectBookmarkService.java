@@ -12,7 +12,7 @@ public class ProjectBookmarkService {
     private final ProjectBookmarkMapper bookmarkMapper;
 
     @Transactional
-    public boolean toggle(long projectId, long userId) {
+    public boolean toggle(Integer projectId, Integer userId) {
         // 이미 있으면 삭제 → false 반환
         if (bookmarkMapper.isBookmarked(projectId, userId) > 0) {
             bookmarkMapper.deleteBookmark(projectId, userId);

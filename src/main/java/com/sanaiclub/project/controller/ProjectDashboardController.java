@@ -62,7 +62,7 @@ public class ProjectDashboardController {
     }
 
     @GetMapping("/detail")
-    public String detail(@RequestParam("projectId") long projectId,
+    public String detail(@RequestParam("projectId") Integer projectId,
                          @RequestParam(value="page", required=false, defaultValue="1") int page,
                          @RequestParam(value="size", required=false, defaultValue="10") int size,
                          @RequestParam(value="onlyActive", required=false, defaultValue="false") boolean onlyActive,
@@ -84,7 +84,7 @@ public class ProjectDashboardController {
 
     @PostMapping("/bookmark/toggle")
     @ResponseBody
-    public Map<String, Object> toggleBookmark(@RequestParam("projectId") long projectId) {
+    public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
                                               //@CookieValue(value="accessToken", required=false) String token
 
 //        if (token == null || token.isBlank()) {

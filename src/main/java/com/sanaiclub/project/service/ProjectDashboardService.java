@@ -47,7 +47,7 @@ public class ProjectDashboardService {
         }
 
         // 현재 페이지 projectIds로 스택 한 번에 조회
-        List<Long> projectIds = projects.stream()
+        List<Integer> projectIds = projects.stream()
                 .map(ProjectDashboardCardDTO::getProjectId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -55,7 +55,7 @@ public class ProjectDashboardService {
         if (!projectIds.isEmpty()) {
             List<RequiredStackDTO> stacks = projectDashboardMapper.selectStacksByProjectId(projectIds);
             if (stacks != null && !stacks.isEmpty()) {
-                Map<Long, List<RequiredStackDTO>> stackMap =
+                Map<Integer, List<RequiredStackDTO>> stackMap =
                         stacks.stream().collect(Collectors.groupingBy(RequiredStackDTO::getProjectId));
                 for (ProjectDashboardCardDTO p : projects) {
                     List<RequiredStackDTO> list = stackMap.get(p.getProjectId());
