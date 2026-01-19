@@ -27,7 +27,8 @@
             </p>
 
             <div class="btn-area-center">
-                <button type="button" class="btn btn-home" onclick="location.href='/'">메인으로 가기</button>
+                <button type="button" class="btn btn-home"
+                        onclick="location.href='${pageContext.request.contextPath}/project/dashboard'">메인으로 가기</button>
                 <button type="button" class="btn btn-submit" onclick="location.href='/project/list'">내 프로젝트 보기</button>
             </div>
         </div>
