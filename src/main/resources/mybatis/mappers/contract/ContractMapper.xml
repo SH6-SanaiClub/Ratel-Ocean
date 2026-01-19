@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ContractMapper: contracts 테이블 SQL 쿼리 -->
+<mapper namespace="com.sanaiclub.domain.contract.mapper.ContractMapper">
+
+    <!-- ResultMap Definition -->
+    <resultMap id="ContractMap" type="com.sanaiclub.domain.contract.dto.ContractDTO">
+        <id column="contract_id" property="contractId" />
+        <result column="application_id" property="applicationId" />
+        <result column="total_budget" property="totalBudget" />
+        <result column="payment_method" property="paymentMethod" />
+        <result column="contract_start_date" property="contractStartDate" />
+        <result column="contract_end_date" property="contractEndDate" />
+        <result column="contract_status" property="contractStatus" />
+        <result column="origin_contract_url" property="originContractUrl" />
+        <result column="platform_contract_url" property="platformContractUrl" />
+        <result column="ai_report_url" property="aiReportUrl" />
+        <result column="contracted_at" property="contractedAt" />
+        <result column="completed_at" property="completedAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <!-- SELECT: contract ID lookup -->
+    <select id="selectById" parameterType="Long" resultMap="ContractMap">
+        SELECT * FROM contracts WHERE contract_id = #{contractId}
+    </select>
+
+    <!-- SELECT: query contracts by application ID -->
+    <select id="selectByApplicationId" parameterType="Long" resultMap="ContractMap">
+        SELECT * FROM contracts WHERE application_id = #{applicationId}
+    </select>
+
+    <!-- INSERT: create contract -->
+    <insert id="insert" parameterType="com.sanaiclub.domain.contract.dto.ContractDTO" useGeneratedKeys="true" keyProperty="contractId">
+        INSERT INTO contracts (application_id, total_budget, payment_method, contract_start_date, contract_end_date, contract_status, origin_contract_url, contracted_at)
+        VALUES (#{applicationId}, #{totalBudget}, #{paymentMethod}, #{contractStartDate}, #{contractEndDate}, COALESCE(#{contractStatus}, 'SIGNED'), #{originContractUrl}, NOW())
+    </insert>
+
+    <!-- UPDATE: change contract status -->
+    <update id="updateStatus" parameterType="map">
+        UPDATE contracts SET contract_status = #{status}, updated_at = NOW() WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- UPDATE: mark contract as completed -->
+    <update id="markAsCompleted" parameterType="Long">
+        UPDATE contracts SET contract_status = 'COMPLETED', completed_at = NOW(), updated_at = NOW() WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- UPDATE: save AI report URL -->
+    <update id="updateAIReportUrl" parameterType="map">
+        UPDATE contracts SET ai_report_url = #{aiReportUrl}, updated_at = NOW() WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- SELECT: count contracts by status -->
+    <select id="selectStatusCount" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM contracts WHERE contract_status = #{status}
+    </select>
+
+</mapper>
