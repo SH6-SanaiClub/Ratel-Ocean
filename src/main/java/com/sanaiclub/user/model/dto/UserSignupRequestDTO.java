@@ -26,6 +26,10 @@ public class UserSignupRequestDTO {
     private boolean termAgreed; // 이용약관 동의
     private boolean privacyAgreed; // 개인정보 동의
 
+    // 계좌 정보
+    private String bankName;
+    private String accountNumber;
+    private String accountHolder;
 
     /**
      * 비즈니스 로직: 비밀번호 일치 여부 확인

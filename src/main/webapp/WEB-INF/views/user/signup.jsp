@@ -107,7 +107,7 @@
         </form>
 
         <div class="actions text-center">
-            <button id="next-btn" class="btn primary large disabled" type="button" disabled>회원가입 완료</button>
+            <button id="next-btn" class="btn primary large disabled" type="button" disabled>다음으로</button>
         </div>
     </div>
 </main>

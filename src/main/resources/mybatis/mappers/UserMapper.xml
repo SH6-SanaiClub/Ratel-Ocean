@@ -13,6 +13,14 @@
                  )
     </insert>
 
+    <insert id="insertAccount" parameterType="com.sanaiclub.user.model.vo.AccountVO">
+        INSERT INTO accounts (
+            user_id, bank_name, account_number, account_holder
+        ) VALUES (
+                     #{userId}, #{bankName}, #{accountNumber}, #{accountHolder}
+                 )
+    </insert>
+
     <select id="checkId" resultType="int">
         SELECT COUNT(*) FROM users WHERE login_id = #{loginId}
     </select>
