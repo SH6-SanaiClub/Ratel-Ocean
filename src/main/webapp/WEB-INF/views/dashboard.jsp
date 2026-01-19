@@ -14,9 +14,6 @@
     <!-- 2️⃣ 전체 레이아웃 -->
     <div class="layout">
 
-        <!-- 2-1️⃣ 사이드바 -->
-        <%@ include file="/WEB-INF/views/common/sidebar.jsp" %>
-
         <!-- 2-2️⃣ 메인 콘텐츠 -->
         <main>
             <h2>프리랜서 대시보드</h2>
@@ -28,6 +25,9 @@
         </main>
 
     </div>
+
+    <!-- 공통 하단바 -->
+    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
 
 </body>
 </html>

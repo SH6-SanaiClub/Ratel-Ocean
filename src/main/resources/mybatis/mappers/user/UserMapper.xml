@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- User 도메인 MyBatis 매퍼 -->
+<mapper namespace="com.sanaiclub.domain.user.mapper.UserMapper">
+    
+    <!-- ResultMap for User -->
+    <resultMap id="UserResultMap" type="com.sanaiclub.domain.user.dto.User">
+        <id property="userId" column="user_id"/>
+        <result property="loginId" column="login_id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="refreshToken" column="refresh_token"/>
+        <result property="userType" column="user_type"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 이메일과 비밀번호로 사용자 조회 (로그인) -->
+    <select id="findByEmailAndPassword" resultMap="UserResultMap">
+        SELECT user_id, login_id, email, password, refresh_token, 
+               user_type, name, phone, birth_date, profile_image_url,
+               status, created_at, updated_at
+        FROM users
+        WHERE email = #{email}
+          AND password = #{password}
+          AND status = 'ACTIVE'
+    </select>
+
+    <!-- 이메일로 사용자 조회 -->
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT user_id, login_id, email, password, refresh_token, 
+               user_type, name, phone, birth_date, profile_image_url,
+               status, created_at, updated_at
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!-- login_id로 사용자 조회 -->
+    <select id="findByLoginId" resultMap="UserResultMap">
+        SELECT user_id, login_id, email, password, refresh_token, 
+               user_type, name, phone, birth_date, profile_image_url,
+               status, created_at, updated_at
+        FROM users
+        WHERE login_id = #{loginId}
+    </select>
+
+    <!-- 신규 사용자 등록 -->
+    <insert id="insertUser" parameterType="com.sanaiclub.domain.user.dto.User" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (
+            login_id, 
+            email, 
+            password, 
+            user_type, 
+            name, 
+            phone, 
+            birth_date, 
+            profile_image_url,
+            status,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{loginId},
+            #{email},
+            #{password},
+            #{userType},
+            #{name},
+            #{phone},
+            #{birthDate},
+            #{profileImageUrl},
+            'ACTIVE',
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 이메일 중복 확인 -->
+    <select id="countByEmail" resultType="int">
+        SELECT COUNT(*) 
+        FROM users 
+        WHERE email = #{email}
+    </select>
+
+    <!-- loginId 중복 확인 -->
+    <select id="countByLoginId" resultType="int">
+        SELECT COUNT(*) 
+        FROM users 
+        WHERE login_id = #{loginId}
+    </select>
+
+</mapper>
+

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.domain.wallet.mapper.AccountMapper">
+    
+    <resultMap id="AccountResultMap" type="com.sanaiclub.domain.wallet.dto.Account">
+        <id property="accountId" column="account_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="bankName" column="bank_name"/>
+        <result property="accountHolder" column="account_holder"/>
+        <result property="accountNumber" column="account_number"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <resultMap id="FreelancerWalletResultMap" type="com.sanaiclub.domain.wallet.dto.FreelancerWallet">
+        <id property="walletId" column="wallet_id"/>
+        <result property="freelancerId" column="freelancer_id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="balance" column="balance"/>
+        <result property="totalEarned" column="total_earned"/>
+        <result property="walletPw" column="wallet_pw"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+    <!-- 계좌 정보 저장 -->
+    <insert id="insertAccount" parameterType="com.sanaiclub.domain.wallet.dto.Account" useGeneratedKeys="true" keyProperty="accountId">
+        INSERT INTO accounts (
+            user_id,
+            bank_name,
+            account_holder,
+            account_number,
+            updated_at
+        ) VALUES (
+            #{userId},
+            #{bankName},
+            #{accountHolder},
+            #{accountNumber},
+            NOW()
+        )
+    </insert>
+
+    <!-- 프리랜서 지갑 생성 -->
+    <insert id="insertFreelancerWallet" parameterType="com.sanaiclub.domain.wallet.dto.FreelancerWallet" useGeneratedKeys="true" keyProperty="walletId">
+        INSERT INTO freelancer_wallets (
+            freelancer_id,
+            account_id,
+            balance,
+            total_earned,
+            wallet_pw,
+            version
+        ) VALUES (
+            #{freelancerId},
+            #{accountId},
+            #{balance},
+            #{totalEarned},
+            #{walletPw},
+            #{version}
+        )
+    </insert>
+
+    <!-- user_id로 계좌 조회 -->
+    <select id="findAccountByUserId" resultMap="AccountResultMap">
+        SELECT account_id, user_id, bank_name, account_holder, account_number, updated_at
+        FROM accounts
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- freelancer_id로 지갑 조회 -->
+    <select id="findWalletByFreelancerId" resultMap="FreelancerWalletResultMap">
+        SELECT wallet_id, freelancer_id, account_id, balance, total_earned, wallet_pw, version
+        FROM freelancer_wallets
+        WHERE freelancer_id = #{freelancerId}
+    </select>
+
+</mapper>

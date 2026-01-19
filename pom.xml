@@ -5,6 +5,20 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <!--
+  ═══════════════════════════════════════════════════════════════════════
+  프로젝트 기본 정보
+  ═══════════════════════════════════════════════════════════════════════
+  
+  groupId: 조직 또는 프로젝트 그룹 식별자
+  artifactId: 프로젝트 고유 식별자 (WAR 파일명으로 사용됨)
+  version: 프로젝트 버전 (SNAPSHOT = 개발 중)
+  packaging: 빌드 결과물 타입 (war = Tomcat에 배포)
+  
+  빌드 결과: target/ratelocean.war
+  배포 경로: TOMCAT_HOME/webapps/ratelocean.war
+  접속 URL: http://localhost:9999/ratelocean/
+  -->
   <groupId>com.sanaiclub</groupId>
   <artifactId>ratelocean</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -13,6 +27,29 @@
   <name>RatelOcean Maven Webapp</name>
   <description>신한DS 금융 SW 아카데미 1차 팀 프로젝트</description>
   <url>https://github.com/sttarrynight</url>
+
+  <!--
+  ═══════════════════════════════════════════════════════════════════════
+  프로퍼티 (버전 관리 및 빌드 설정)
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [Java 설정]
+  - java.version: 11 (Eclipse Temurin 11 LTS)
+  - maven.compiler.source/target: Java 11 바이트코드 생성
+  - sourceEncoding: UTF-8 (한글 파일명 및 주석 지원)
+  
+  [주요 라이브러리 버전]
+  - Spring Framework: 5.3.33 (Spring MVC + Spring JDBC)
+  - MyBatis: 3.5.13 (SQL Mapper)
+  - MySQL Connector: 8.0.33 (JDBC 드라이버)
+  - Lombok: 1.18.30 (Getter/Setter 자동 생성)
+  - Jackson: 2.15.2 (JSON 처리)
+  
+  [버전 업그레이드 시 주의사항]
+  - Spring과 MyBatis 버전 호환성 확인
+  - MySQL Connector는 8.x 버전 사용 (5.x와 다름)
+  - Java 11 이상 필요
+  -->
 
   <properties>
     <!-- Java 버전 -->
@@ -51,6 +88,30 @@
   </properties>
 
   <dependencies>
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    Spring Framework (MVC + JDBC + Context)
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [spring-webmvc]
+    - Spring MVC 프레임워크 (컨트롤러, 뷰 리졸버, 핸들러 매핑)
+    - DispatcherServlet 기반 웹 애플리케이션
+    - @Controller, @RequestMapping 등 어노테이션 지원
+    
+    [spring-jdbc]
+    - JDBC 템플릿 및 트랜잭션 관리
+    - MyBatis와 통합하여 데이터베이스 접근
+    - @Transactional 어노테이션으로 트랜잭션 제어
+    
+    [spring-context]
+    - IoC 컨테이너 (빈 관리, 의존성 주입)
+    - @Component, @Service, @Repository 스캔
+    - ApplicationContext 기반 설정
+    
+    [spring-context-support]
+    - 캐시, 스케줄링, 메일 발송 등 확장 기능
+    - 현재는 주로 스케줄링(@Scheduled) 사용
+    -->
     <!-- ===== Spring Framework ===== -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -73,6 +134,32 @@
       <version>${spring.version}</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    MyBatis - SQL 매퍼 프레임워크
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [MyBatis란?]
+    - SQL과 자바 객체를 매핑해주는 퍼시스턴스 프레임워크
+    - XML 또는 어노테이션으로 SQL 작성
+    - JDBC 코드 반복 제거, ResultSet 매핑 자동화
+    
+    [주요 장점]
+    1. 복잡한 SQL 쿼리 작성 용이
+    2. 동적 쿼리 지원 (<if>, <choose>, <foreach> 등)
+    3. 자바 객체와 DB 테이블 자동 매핑
+    4. 캐싱 지원으로 성능 향상
+    
+    [mybatis]
+    - MyBatis 코어 라이브러리
+    - SqlSession, Mapper, 동적 SQL 기능 제공
+    
+    [mybatis-spring]
+    - MyBatis와 Spring Framework 통합
+    - MapperScannerConfigurer: Mapper 인터페이스 자동 스캔
+    - SqlSessionTemplate: Spring 트랜잭션 관리 통합
+    - @Transactional 어노테이션 지원
+    -->
     <!-- ===== MyBatis ===== -->
     <dependency>
       <groupId>org.mybatis</groupId>
@@ -85,6 +172,28 @@
       <version>${mybatis-spring.version}</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    Database - MySQL 드라이버 및 커넥션 풀
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [MySQL Connector/J]
+    - MySQL 데이터베이스와 자바 애플리케이션을 연결하는 JDBC 드라이버
+    - MySQL 8.0 최신 기능 지원 (JSON, Window 함수 등)
+    - 서버 시간대(serverTimezone), UTF-8 인코딩 설정 가능
+    - 예: jdbc:mysql://localhost:3306/sanai?serverTimezone=UTC&characterEncoding=UTF-8
+    
+    [HikariCP]
+    - 가장 빠르고 가벼운 JDBC 커넥션 풀
+    - Spring Boot 기본 커넥션 풀로 채택
+    - DB 연결을 미리 생성하여 풀에 보관 → 성능 향상
+    - 주요 설정:
+      · maximumPoolSize: 최대 커넥션 개수 (기본 10개)
+      · minimumIdle: 유휴 커넥션 최소 개수 (기본 5개)
+      · connectionTimeout: 커넥션 획득 대기 시간 (기본 30초)
+      · idleTimeout: 유휴 커넥션 제거 시간 (기본 10분)
+      · maxLifetime: 커넥션 최대 수명 (기본 30분)
+    -->
     <!-- ===== Database ===== -->
     <dependency>
       <groupId>mysql</groupId>
@@ -99,6 +208,30 @@
       <version>${hikaricp.version}</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    Servlet/JSP - 웹 애플리케이션 기본 API
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [javax.servlet-api]
+    - Servlet 표준 API (HttpServlet, HttpServletRequest, HttpServletResponse 등)
+    - scope=provided: Tomcat에서 이미 제공하므로 WAR에 포함하지 않음
+    
+    [javax.servlet.jsp-api]
+    - JSP 표준 API (JSP 컴파일 및 실행)
+    - scope=provided: Tomcat에서 이미 제공하므로 WAR에 포함하지 않음
+    
+    [jstl]
+    - JSP Standard Tag Library (JSP 표준 태그 라이브러리)
+    - JSP에서 반복문, 조건문, 포맷 등을 태그로 처리
+    - 예:
+      · <c:forEach>: 반복문
+      · <c:if>: 조건문
+      · <c:out>: 출력 (XSS 방지)
+      · <fmt:formatDate>: 날짜 포맷
+      · <fmt:formatNumber>: 숫자 포맷
+    - scope 미지정: WAR에 포함되어야 함 (Tomcat에서 제공하지 않음)
+    -->
     <!-- ===== Servlet/JSP ===== -->
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -118,6 +251,39 @@
       <version>${jstl.version}</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    JSON 처리 - Jackson 라이브러리
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Jackson Databind]
+    - 자바 객체 ↔ JSON 변환 라이브러리
+    - Spring MVC의 @ResponseBody, @RequestBody에서 자동으로 사용됨
+    
+    [주요 기능]
+    1. 직렬화(Serialization): 자바 객체 → JSON 문자열
+       예: ProjectVO 객체 → {"projectId":1, "title":"프로젝트"}
+       
+    2. 역직렬화(Deserialization): JSON 문자열 → 자바 객체
+       예: {"title":"프로젝트"} → ProjectDTO 객체
+    
+    [사용 예시]
+    - @ResponseBody: 메서드 리턴값을 JSON으로 자동 변환
+      @PostMapping("/api/project")
+      @ResponseBody
+      public ResponseVO create() { return new ResponseVO("success"); }
+      → {"status":"success"} JSON 응답
+    
+    - @RequestBody: 요청 JSON을 자바 객체로 자동 변환
+      @PostMapping("/api/project")
+      public String create(@RequestBody ProjectDTO dto) { ... }
+      → JSON 요청 → ProjectDTO 객체로 변환
+    
+    [라이브러리 구성]
+    - jackson-databind: 핵심 데이터 바인딩
+    - jackson-core: JSON 파싱/생성 저수준 API
+    - jackson-annotations: @JsonProperty, @JsonIgnore 등 어노테이션
+    -->
     <!-- ===== JSON 처리 ===== -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -135,6 +301,43 @@
       <version>${jackson.version}</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    코드 간소화 - Lombok
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Lombok]
+    - 반복적인 보일러플레이트 코드를 자동으로 생성해주는 라이브러리
+    - 컴파일 시점에 어노테이션을 기반으로 코드 자동 생성
+    
+    [주요 어노테이션]
+    1. @Data
+       - @Getter + @Setter + @ToString + @EqualsAndHashCode + @RequiredArgsConstructor
+       - DTO/VO 클래스에서 가장 많이 사용
+       
+    2. @Getter / @Setter
+       - getter/setter 메서드 자동 생성
+       - 필드별로 개별 적용 가능
+       
+    3. @NoArgsConstructor / @AllArgsConstructor
+       - 기본 생성자 / 모든 필드를 받는 생성자 자동 생성
+       
+    4. @Builder
+       - 빌더 패턴 자동 생성
+       - 예: ProjectVO.builder().title("제목").budget(1000000).build()
+       
+    5. @Slf4j
+       - 로깅 객체 자동 생성 (log.info(), log.error() 등 사용 가능)
+    
+    [scope=provided 이유]
+    - 컴파일 시점에만 필요하고 런타임에는 불필요
+    - WAR 파일에 포함되지 않아 용량 절약
+    - 생성된 코드는 .class 파일에 포함되므로 런타임에 Lombok 불필요
+    
+    [IDE 설정 필요]
+    - Eclipse: lombok.jar 실행하여 설치
+    - IntelliJ IDEA: Lombok 플러그인 설치
+    -->
     <!-- ===== Lombok ===== -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -143,6 +346,49 @@
       <scope>provided</scope>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    로깅(Logging) - SLF4J + Logback
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [SLF4J (Simple Logging Facade for Java)]
+    - 로깅 추상화 인터페이스
+    - 다양한 로깅 구현체(Logback, Log4j 등)를 쉽게 교체 가능
+    - 코드에서는 SLF4J API만 사용 (log.info(), log.error() 등)
+    
+    [Logback]
+    - SLF4J의 구현체 (실제 로그를 파일/콘솔에 출력)
+    - Log4j의 후속 프로젝트로 성능과 기능이 개선됨
+    - Spring Boot의 기본 로깅 라이브러리
+    
+    [주요 기능]
+    1. 로그 레벨: TRACE < DEBUG < INFO < WARN < ERROR
+       - 개발: DEBUG 레벨 (모든 로그 출력)
+       - 운영: INFO 레벨 (중요 정보만 출력)
+    
+    2. 로그 출력 위치
+       - 콘솔: 실시간 로그 확인
+       - 파일: 로그 기록 보관 (일별/크기별 파일 분할 가능)
+    
+    3. 패턴 설정
+       - 시간, 로그 레벨, 클래스명, 메서드명, 메시지 등 출력 형식 지정
+       - 예: %d{yyyy-MM-dd HH:mm:ss} [%level] %logger{36} - %msg%n
+    
+    [사용 예시]
+    - @Slf4j 어노테이션 (Lombok과 함께 사용)
+      @Slf4j
+      @Service
+      public class ProjectService {
+          public void create() {
+              log.info("프로젝트 생성 시작");
+              log.error("에러 발생: {}", e.getMessage());
+          }
+      }
+    
+    [설정 파일]
+    - 위치: src/main/resources/logback.xml
+    - 로그 레벨, 출력 위치, 패턴 등 설정
+    -->
     <!-- ===== Logging ===== -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -155,16 +401,88 @@
       <version>${logback.version}</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    PDF 처리 - Apache PDFBox (선택사항)
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Apache PDFBox]
+    - PDF 파일 생성, 수정, 추출, 변환을 위한 순수 자바 라이브러리
+    - 라이선스: Apache License 2.0 (상업적 사용 가능)
+    
+    [주요 기능]
+    1. PDF 생성: 텍스트, 이미지, 표 등을 포함한 PDF 파일 생성
+    2. PDF 읽기: 텍스트/이미지 추출, 메타데이터 읽기
+    3. PDF 편집: 기존 PDF에 텍스트/이미지 추가, 페이지 병합/분할
+    4. PDF 변환: PDF → 이미지 변환
+    
+    [사용 시나리오]
+    - 계약서 PDF 자동 생성
+    - 프로젝트 제안서 PDF 다운로드
+    - 업로드된 PDF 파일에서 텍스트 추출
+    - 문서 미리보기용 이미지 생성
+    
+    [주의사항]
+    - 현재 프로젝트에서는 사용하지 않으므로 주석 처리됨
+    - PDF 기능이 필요하면 주석 해제하여 사용
+    - PDFBox는 메모리를 많이 사용하므로 대용량 PDF 처리 시 주의
+    -->
     <!-- ===== PDF 처리 (선택사항) ===== -->
     <!-- PDF 기능 필요시 주석 해제 -->
-    <!--
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
       <version>${pdfbox.version}</version>
     </dependency>
-    -->
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    파일 업로드 - Apache Commons FileUpload + Commons IO
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Commons FileUpload]
+    - multipart/form-data 형식의 파일 업로드 처리
+    - Spring의 CommonsMultipartResolver와 함께 사용
+    - 파일 크기 제한, 메모리 임계값 설정 가능
+    
+    [Commons IO]
+    - 파일 입출력 유틸리티
+    - FileUpload의 의존성 라이브러리
+    - 파일 복사, 삭제, 읽기/쓰기 등 편리한 메서드 제공
+    
+    [주요 기능]
+    1. 멀티파트 요청 파싱
+       - HTML 폼에서 <input type="file">로 전송된 파일 처리
+       - 여러 파일 동시 업로드 지원
+    
+    2. 파일 저장
+       - 메모리 또는 임시 디렉토리에 버퍼링
+       - 최종 저장 경로에 파일 저장
+    
+    3. 보안
+       - 파일 크기 제한 (maxUploadSize)
+       - 허용 파일 확장자 검증
+       - 파일명 인코딩 처리
+    
+    [Spring 설정 (servlet-context.xml)]
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="10485760" /> (10MB)
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+    
+    [사용 예시]
+    @PostMapping("/upload")
+    public String upload(@RequestParam("file") MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        file.transferTo(new File("/uploads/" + filename));
+        return "success";
+    }
+    
+    [현재 프로젝트 사용처]
+    - 프로젝트 등록 시 첨부파일 업로드
+    - 사용자 프로필 이미지 업로드
+    -->
     <!-- ===== 파일 업로드 ===== -->
     <dependency>
       <groupId>commons-fileupload</groupId>
@@ -177,6 +495,55 @@
       <version>2.11.0</version>
     </dependency>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    테스트(Test) - JUnit + Spring Test
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [JUnit 4]
+    - 자바 단위 테스트(Unit Test) 프레임워크
+    - 메서드 단위로 테스트 케이스 작성
+    - @Test, @Before, @After 등 어노테이션 지원
+    
+    [Spring Test]
+    - Spring 컨텍스트를 테스트 환경에서 로드
+    - @RunWith(SpringJUnit4ClassRunner.class)
+    - @ContextConfiguration: 설정 파일 지정
+    - @Autowired: 테스트 대상 빈 주입
+    
+    [주요 기능]
+    1. 단위 테스트 (Unit Test)
+       - 개별 메서드의 로직 검증
+       - Service, Mapper 등의 메서드 테스트
+    
+    2. 통합 테스트 (Integration Test)
+       - Spring 컨텍스트와 함께 테스트
+       - 실제 DB 연결, 트랜잭션 테스트
+    
+    3. Mock 테스트
+       - 가짜 객체(Mock)를 사용한 격리 테스트
+       - 외부 의존성 없이 테스트 가능
+    
+    [사용 예시]
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration("file:src/main/resources/spring/root-context.xml")
+    public class ProjectServiceTest {
+        @Autowired
+        private ProjectService projectService;
+        
+        @Test
+        public void testCreateProject() {
+            ProjectDTO dto = new ProjectDTO();
+            dto.setTitle("테스트 프로젝트");
+            int result = projectService.createProject(dto, 1);
+            assertEquals(1, result);
+        }
+    }
+    
+    [scope=test]
+    - 테스트 실행 시에만 사용
+    - 운영 WAR 파일에는 포함되지 않음
+    -->
     <!-- ===== Test ===== -->
     <dependency>
       <groupId>junit</groupId>
@@ -192,10 +559,45 @@
     </dependency>
   </dependencies>
 
+  <!--
+  ═════════════════════════════════════════════════════════════════════════
+  Maven 빌드 설정
+  ═════════════════════════════════════════════════════════════════════════
+  
+  [finalName]
+  - 빌드된 WAR 파일의 이름 지정
+  - 기본값: <artifactId>-<version>.war (ratelocean-1.0.war)
+  - 현재 설정: ratelocean.war
+  - 결과물 위치: target/ratelocean.war
+  - Tomcat 배포: ratelocean.war → http://localhost:8080/ratelocean/
+  -->
   <build>
     <finalName>ratelocean</finalName>
 
     <plugins>
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven Compiler Plugin - 자바 컴파일 설정
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - 자바 소스 코드를 바이트 코드(.class 파일)로 컴파일
+      - 컴파일러 버전, 인코딩, 컴파일 옵션 설정
+      
+      [주요 설정]
+      1. source/target: 11
+         - 자바 11 문법으로 컴파일
+         - JDK 11 필수 (개발 및 운영 서버 모두 JDK 11 설치 필요)
+      
+      2. encoding: UTF-8
+         - 소스 파일 인코딩
+         - 한글 파일명, 한글 주석 정상 처리
+      
+      3. compilerArgs: -parameters
+         - 메서드 파라미터 이름을 바이트 코드에 유지
+         - Spring MVC의 @RequestParam("이름") 생략 가능
+         - 예: @RequestParam String title ("타이틀" 생략 가능)
+      -->
       <!-- Maven Compiler Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -208,9 +610,47 @@
           <compilerArgs>
             <arg>-parameters</arg>
           </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
 
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven War Plugin - WAR 파일 생성
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - 웹 애플리케이션 아카이브(WAR) 파일 생성
+      - Tomcat, Jetty 등 서블릿 컨테이너에 배포 가능한 형태
+      
+      [WAR 파일 구조]
+      - WEB-INF/classes/: 컴파일된 .class 파일
+      - WEB-INF/lib/: 의존성 JAR 파일들
+      - WEB-INF/web.xml: 웹 설정 파일
+      - WEB-INF/views/: JSP 파일
+      - resources/: 정적 리소스(CSS, JS, 이미지)
+      
+      [주요 설정]
+      1. failOnMissingWebXml: false
+         - web.xml이 없어도 빌드 허용
+         - 이유: Spring에서 web.xml을 사용하는 경우 true로 변경
+         - 현재 프로젝트는 web.xml 사용 중이므로 false 유지
+      
+      2. warName: ratelocean
+         - 생성될 WAR 파일명 (ratelocean.war)
+         - <finalName>과 동일하게 설정
+      
+      [사용 방법]
+      - 빌드: mvn clean package
+      - 결과: target/ratelocean.war 생성
+      - 배포: ratelocean.war를 Tomcat webapps에 복사
+      -->
       <!-- Maven War Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -222,6 +662,25 @@
         </configuration>
       </plugin>
 
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven Resources Plugin - 리소스 파일 처리
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - src/main/resources의 리소스 파일을 target/classes로 복사
+      - 프로퍼티 파일, 설정 파일, Mapper XML 등 처리
+      
+      [리소스 파일 예시]
+      - src/main/resources/db.properties → target/classes/db.properties
+      - src/main/resources/spring/*.xml → target/classes/spring/*.xml
+      - src/main/resources/mybatis/mappers/*.xml → target/classes/mybatis/mappers/*.xml
+      
+      [주요 설정]
+      - encoding: UTF-8
+        · 리소스 파일의 문자 인코딩
+        · 한글 프로퍼티 파일, 한글 SQL 주석 정상 처리
+      -->
       <!-- Maven Resources Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -232,6 +691,26 @@
         </configuration>
       </plugin>
 
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven Surefire Plugin - 테스트 실행
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - src/test/java의 JUnit 테스트 코드 자동 실행
+      - 테스트 실패 시 빌드 중단
+      - 테스트 결과 리포트 생성 (target/surefire-reports)
+      
+      [주요 설정]
+      - skipTests: false
+        · 테스트 실행 여부 (기본값)
+        · true로 변경 시 테스트 건너뛰기
+        · 명령어로도 제어 가능: mvn package -DskipTests
+      
+      [사용 예시]
+      - 테스트 포함 빌드: mvn clean test
+      - 테스트 제외 빌드: mvn clean package -DskipTests
+      -->
       <!-- Maven Surefire Plugin (Test) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -242,6 +721,19 @@
         </configuration>
       </plugin>
 
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven Clean Plugin - 빌드 결과물 삭제
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - target/ 폴더와 모든 하위 파일 삭제
+      - 깨끗한 상태에서 새로운 빌드 시작
+      
+      [사용 예시]
+      - mvn clean: target/ 폴더 삭제
+      - mvn clean package: target/ 삭제 후 새로운 빌드
+      -->
       <!-- Maven Clean Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -249,6 +741,19 @@
         <version>3.4.0</version>
       </plugin>
 
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven Install Plugin - 로컬 저장소에 설치
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - 빌드된 아티팩트를 로컬 Maven 저장소에 설치
+      - 위치: ~/.m2/repository/com/sanaiclub/ratelocean/1.0/
+      - 다른 프로젝트에서 이 프로젝트를 의존성으로 사용 가능
+      
+      [사용 예시]
+      - mvn clean install: 빌드 후 로컬 저장소에 설치
+      -->
       <!-- Maven Install Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -256,6 +761,20 @@
         <version>3.1.2</version>
       </plugin>
 
+      <!--
+      ═══════════════════════════════════════════════════════════════════════
+      Maven Deploy Plugin - 원격 저장소에 배포
+      ═══════════════════════════════════════════════════════════════════════
+      
+      [기능]
+      - 빌드된 아티팩트를 원격 Maven 저장소(Nexus, Artifactory 등)에 배포
+      - 팀 내 또는 회사 내 라이브러리 공유용
+      - 현재 프로젝트는 원격 저장소 사용 안 함
+      
+      [사용 예시]
+      - mvn clean deploy: 빌드 후 원격 저장소에 배포
+      - 원격 저장소 설정은 <distributionManagement> 섹션에 정의
+      -->
       <!-- Maven Deploy Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

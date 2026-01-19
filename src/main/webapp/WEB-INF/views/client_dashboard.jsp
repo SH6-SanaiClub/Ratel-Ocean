@@ -18,5 +18,8 @@
         <p>중앙 메뉴: 프로젝트 찾기 / 내 프로젝트 관리 / 채팅방 / 마이 프로필</p>
     </div>
 
+    <!-- 공통 하단바 -->
+    <%@ include file="/WEB-INF/views/common/footer.jsp" %>
+
 </body>
 </html>

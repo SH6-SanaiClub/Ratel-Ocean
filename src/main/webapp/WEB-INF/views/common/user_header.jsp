@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page pageEncoding="UTF-8" %>
 <!--
     ═══════════════════════════════════════════════════════════════════════
     user_header.jsp - 회원가입/로그인 공통 헤더

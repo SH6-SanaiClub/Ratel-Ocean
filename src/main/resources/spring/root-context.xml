@@ -11,15 +11,156 @@
            http://mybatis.org/schema/mybatis-spring
            http://mybatis.org/schema/mybatis-spring.xsd">
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    컴포넌트 스캔 (Component Scan)
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [목적]
+    - @Service, @Repository, @Component 어노테이션이 붙은 클래스를 자동 등록
+    - Spring IoC 컨테이너가 빈(Bean)으로 관리하여 의존성 주입 가능
+    
+    [스캔 대상]
+    - base-package: com.sanaiclub (최상위 패키지부터 하위 모두 스캔)
+    - 포함: @Service, @Repository, @Component
+    - 제외: @Controller (servlet-context.xml에서 별도 스캔)
+    
+    [제외 이유]
+    - @Controller는 DispatcherServlet의 WebApplicationContext에서 관리
+    - root-context.xml은 루트 컨텍스트로 데이터 접근 계층만 담당
+    - 컨트롤러는 웹 요청 처리 계층이므로 servlet-context에서 스캔
+    -->
     <!-- Component Scan (Controller 제외) -->
     <context:component-scan base-package="com.sanaiclub">
         <context:exclude-filter type="annotation"
                                 expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    데이터베이스 연결 설정 외부화
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Properties 파일 로드]
+    - 위치: src/main/resources/db.properties
+    - 용도: DB 연결 정보를 코드와 분리하여 관리
+    
+    [장점]
+    1. 보안: DB 비밀번호를 XML에 직접 노출하지 않음
+    2. 환경별 설정: 개발/테스트/운영 환경마다 다른 DB 사용 가능
+    3. 변경 용이: XML 재컴파일 없이 properties만 수정
+    
+    [db.properties 예시]
+    db.driver=com.mysql.cj.jdbc.Driver
+    db.url=jdbc:mysql://localhost:3306/sanai?serverTimezone=UTC&characterEncoding=UTF-8
+    db.username=root
+    db.password=sanai1234
+    
+    [다른 PC에서 실행 시]
+    - db.properties 파일의 url, username, password를 환경에 맞게 수정
+    - XML 파일은 수정할 필요 없음
+    -->
     <!-- Properties 파일 로드 -->
     <context:property-placeholder location="classpath:db.properties"/>
 
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    HikariCP 커넥션 풀 설정
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [커넥션 풀이란?]
+    - DB 연결(Connection)을 미리 생성하여 풀(Pool)에 보관
+    - 요청 시마다 새로 연결하지 않고 풀에서 가져다 사용
+    - 성능 향상 및 DB 부하 감소
+    
+    [HikariCP 선택 이유]
+    - Spring Boot 기본 커넥션 풀
+    - 가장 빠르고 가벼운 JDBC 커넥션 풀
+    - 안정
+    ═══════════════════════════════════════════════════════════════════════
+    MyBatis SqlSessionFactory 설정
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [SqlSessionFactory란?]
+    - MyBatis의 핵심 객체
+    - SqlSession(DB 작업 수행 객체)을 생성하는 팩토리
+    - 설정 파일과 Mapper XML을 읽어 SQL 매핑 정보를 관리
+    
+    [주요 속성]
+    1) dataSource
+       - HikariCP 커넥션 풀 참조
+       - MyBatis가 DB 연결을 가져올 때 이 dataSource 사용
+    
+    2) configLocation
+       - 위치: src/main/resources/mybatis/mybatis-config.xml
+       - MyBatis 전역 설정 파일 (타입 별칭, 설정 옵션 등)
+       - 예: <typeAliases>, <settings> 등
+    
+    3) mapperLocations
+       - 위치: src/main/resources/mybatis/mappers/**/*.xml
+       - SQL 쿼리가 정의된 Mapper XML 파일들
+       - ** 패턴: mappers 하위의 모든 폴더를 재귀적으로 스캔
+       - 예: project/ProjectMapper.xml, user/UserMapper.xml 등
+    
+    [동작 흐름]
+    1. Spring 컨테이너 시작 시 SqlSessionFactory 생성
+    2. mybatis-config.xml 로드하여 전역 설정 적용
+    3. mapperLocations의 모든 XML 파일 파싱
+    4. SQL문과 Mapper 인터페이스 메서드 매핑
+    5. 준비 완료: 이제 Mapper 호출 시 SQL 실행 가능
+    -->
+    <!--적인 커넥션 관리 및 누수 방지
+    
+    [주요 설정값]
+    - maximumPoolSize: 최대 커넥션 개수 (10개)
+      → 동시에 10개의 DB 연결까지 가능
+    - minimumIdle: 유휴 상태로 유지할 최소 커넥션 개수 (5개)
+      → 항상 5개는 대기 상태 유지
+    - connectionTimeout: 커넥션 획득 대기 시간 (30초)
+      → 30초 내에 커넥션을 얻지 못하면 예외 발생
+    - idleTimeout: 유휴 커넥션 제거 시간 (10분)
+      → 10분간 사용되지 않으면 커넥션 종료
+    - ma
+    ═══════════════════════════════════════════════════════════════════════
+    MyBatis SqlSessionTemplate 설정
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [SqlSessionTemplate이란?]
+    - SqlSession의 스레드 안전(Thread-safe) 구현체
+    - Spring의 트랜잭션 관리와 통합
+    - 예외를 Spring의 DataAccessException으로 변환
+    
+    [SqlSession vs SqlSessionTemplate]
+    - SqlSession: MyBatis 기본 객체 (스레드 안전하지 않음)
+    - SqlSessionTemplate: Spring 환경에서 권장되는 객체
+      → 멀티스레드 환경에서도 안전하게 사용 가능
+      → @Transactional과 자동으로 연동
+    
+    [사용 방법]
+    - Mapper 인터페이스를 통해 간접적으로 사용됨
+    - 직접 호출은 거의 없음 (Mapper가 내부적으로 사용)
+    
+    [트랜잭션 통합]
+    - @Transactional 어노테이션이 붙은 메서드에서:
+      1. 트랜잭션 시작
+      2. SqlSession 생성 및 DB 작업 수행
+      3. 정상 완료 시 commit
+      4. 예외 발생 시 rollback
+      5. SqlSession 자동 종료
+    -->
+    <!--xLifetime: 커넥션 최대 수명 (30분)
+      → 30분 후에는 강제로 종료하고 새로 생성
+    
+    [프로퍼티 플레이스홀더]
+    - ${db.driver}: db.properties의 db.driver 값 주입
+    - ${db.url}: db.properties의 db.url 값 주입
+    - ${db.username}: db.properties의 db.username 값 주입
+    - ${db.password}: db.properties의 db.password 값 주입
+    
+    [destroy-method="close"]
+    - 애플리케이션 종료 시 자동으로 close() 메서드 호출
+    - 모든 커넥션을 정리하고 리소스 해제
+    -->
     <!-- HikariCP DataSource -->
     <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
         <property name="driverClassName" value="${db.driver}"/>
@@ -45,7 +186,19 @@
         <constructor-arg ref="sqlSessionFactory"/>
     </bean>
 
-    <!-- MapperScanner -->
-    <mybatis-spring:scan base-package="com.sanaiclub"/>
+    <!-- MapperScanner - auto-registers Mapper interfaces as Spring beans -->
+    <!-- 
+        [중요] MyBatis Mapper 인터페이스 스캔 설정
+        - basePackage: Mapper 인터페이스가 위치한 패키지 경로
+        - 패턴 설명:
+          * com.sanaiclub.domain.**.mapper: domain 하위의 mapper 패키지 스캔
+          * com.sanaiclub.domain.**.dao: domain 하위의 dao 패키지 스캔 (프로젝트 등록 등)
+        - 주의: @Mapper 어노테이션이 있는 인터페이스만 자동 등록됨
+        - 대응 XML: mybatis/mappers/ 하위의 모든 *.xml 파일과 namespace로 매칭
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.sanaiclub.domain.**.mapper,com.sanaiclub.domain.**.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
 
 </beans>

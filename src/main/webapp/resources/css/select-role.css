@@ -1,0 +1,165 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * select-role.css - 회원 역할 선택 페이지 스타일
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* 브랜드 색상 */
+:root {
+    --brand-dark: #2B2B2B;
+    --brand-muted: #6F7272;
+    --brand-offwhite: #F1F6EE;
+    --brand-mint: #A9D9DB;
+    --brand-teal: #1F7A8C;
+}
+
+/* 기본 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--brand-offwhite);
+    color: var(--brand-dark);
+    line-height: 1.6;
+}
+
+/* 헤더 */
+.site-header {
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1rem 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo img {
+    height: 40px;
+}
+
+.top-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.top-nav a {
+    color: var(--brand-dark);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.top-nav a:hover {
+    color: var(--brand-teal);
+}
+
+/* 메인 컨텐츠 */
+.select-role {
+    min-height: calc(100vh - 200px);
+    padding: 4rem 0;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--brand-muted);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: var(--brand-muted);
+    margin-bottom: 3rem;
+}
+
+/* 역할 선택 카드 */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.role-btn {
+    background-color: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    width: 100%;
+}
+
+.role-btn:hover {
+    border-color: var(--brand-teal);
+    box-shadow: 0 4px 12px rgba(31, 122, 140, 0.15);
+    transform: translateY(-4px);
+}
+
+.role-btn .icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.role-btn .label {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--brand-dark);
+    margin-bottom: 0.5rem;
+}
+
+.role-btn p {
+    color: var(--brand-muted);
+    font-size: 1rem;
+}
+
+/* 로그인 배너 */
+.login-banner {
+    background-color: white;
+    border-top: 1px solid #e0e0e0;
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--brand-muted);
+}
+
+.login-btn {
+    color: var(--brand-teal);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.login-btn:hover {
+    text-decoration: underline;
+}
+
+/* 푸터 */
+.site-footer {
+    background-color: var(--brand-dark);
+    color: white;
+    padding: 2rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+}

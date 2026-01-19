@@ -1,0 +1,689 @@
+// ═══════════════════════════════════════════════════════════════════════
+// 프로젝트 등록 - create.js (모달 방식 통합)
+// ═══════════════════════════════════════════════════════════════════════
+
+let currentStep = 1;
+let selectedAreas = [];    // { stackId, stackName, stackLevel, stackYear }
+let selectedSkills = [];   // { stackId, stackName, stackLevel, stackYear }
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateUI();
+
+    // 1. 무상 수정 횟수 제한 (최대 3회)
+    const revInput = document.getElementById('maxRevisionCount');
+    if (revInput) {
+        revInput.addEventListener('input', function () {
+            if (this.value > 3) {
+                alert('무상 수정 횟수는 최대 3회까지만 설정 가능합니다.');
+                this.value = 3;
+            }
+        });
+    }
+
+    // 2. 예산 입력 콤마 자동 처리
+    const budget = document.getElementById('budgetInput');
+    if (budget) {
+        budget.addEventListener('input', e => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = val ? Number(val).toLocaleString() : '';
+        });
+    }
+
+    // 3. 폼 제출 시 예산 콤마 제거
+    const form = document.getElementById('projectForm');
+    if (form) {
+        form.addEventListener('submit', () => {
+            if (budget) budget.value = budget.value.replace(/,/g, '');
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// 기술 스택 모달 열기
+// ═══════════════════════════════════════════════════════════════════════
+
+function openProjectTechStackModal() {
+    console.log('🚀 프로젝트 기술 스택 모달 열기');
+    
+    // 기존 선택값 복원용 (모달에 전달)
+    const preselectedAreas = selectedAreas.map(a => ({ id: a.stackId, name: a.stackName }));
+    const preselectedStacks = selectedSkills.map(s => ({ id: s.stackId, name: s.stackName }));
+    
+    if (typeof openTechStackModal === 'function') {
+        openTechStackModal(handleTechStackSelection, preselectedAreas, preselectedStacks);
+    } else {
+        alert('❌ 모달 함수를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+        console.error('openTechStackModal 미정의');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 모달 콜백: 선택된 데이터 처리
+// ═══════════════════════════════════════════════════════════════════════
+
+function handleTechStackSelection(selectedPositions, selectedStacks) {
+    console.log('✅ 선택된 개발 영역:', selectedPositions);
+    console.log('✅ 선택된 기술 스택:', selectedStacks);
+    
+    // 개발 영역 처리 (레벨과 경력은 사용자가 직접 입력)
+    selectedAreas = selectedPositions.map(area => ({
+        stackId: area.id,
+        stackName: area.name,
+        stackLevel: null,   // 사용자가 직접 입력
+        stackYear: null     // 사용자가 직접 입력
+    }));
+    
+    // 기술 스택 처리 (레벨과 경력은 사용자가 직접 입력)
+    selectedSkills = selectedStacks.map(stack => ({
+        stackId: stack.id,
+        stackName: stack.name,
+        stackLevel: null,   // 사용자가 직접 입력
+        stackYear: null     // 사용자가 직접 입력
+    }));
+    
+    console.log('📦 선택된 개발 영역:', selectedAreas);
+    console.log('📦 선택된 기술 스택:', selectedSkills);
+    
+    renderSelectedAreas();
+    renderSelectedSkills();
+    updateHiddenInputs();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 선택된 개발 영역 렌더링
+// ═══════════════════════════════════════════════════════════════════════
+
+function renderSelectedAreas() {
+    const container = document.getElementById('selectedAreasContainer');
+    const display = document.getElementById('selectedAreasDisplay');
+    
+    if (selectedAreas.length === 0) {
+        display.style.display = 'none';
+        return;
+    }
+    
+    display.style.display = 'block';
+    container.innerHTML = '';
+    
+    selectedAreas.forEach((area, index) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'flex: 1; min-width: 280px; padding: 1.5rem; border: 1px solid #e0e0e0; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.2s;';
+        card.onmouseover = function() { this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; };
+        card.onmouseout = function() { this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; };
+        
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f0f0f0;">
+                <strong style="font-size: 1.1rem; color: #1F7A8C; display: flex; align-items: center;">
+                    <i class="fa-solid fa-folder" style="margin-right: 8px; font-size: 1rem;"></i>
+                    ${area.stackName}
+                </strong>
+                <button type="button" onclick="removeArea(${index})" 
+                        style="background: none; border: none; color: #999; font-size: 1.3rem; cursor: pointer; padding: 0; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s;"
+                        onmouseover="this.style.background='#fee'; this.style.color='#d32f2f';"
+                        onmouseout="this.style.background='none'; this.style.color='#999';">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; font-weight: 500;">
+                    <i class="fa-solid fa-star" style="margin-right: 6px; color: #ffa726; font-size: 0.8rem;"></i>요구 숙련도
+                </label>
+                <select onchange="updateAreaLevel(${index}, this.value)" 
+                        style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; background: #fafafa; transition: all 0.2s;"
+                        onfocus="this.style.borderColor='#1F7A8C'; this.style.background='#fff';"
+                        onblur="this.style.borderColor='#ddd'; this.style.background='#fafafa';">
+                    <option value="">선택해주세요</option>
+                    <option value="1" ${area.stackLevel == 1 ? 'selected' : ''}>Lv.1 입문</option>
+                    <option value="2" ${area.stackLevel == 2 ? 'selected' : ''}>Lv.2 초급</option>
+                    <option value="3" ${area.stackLevel == 3 ? 'selected' : ''}>Lv.3 중급</option>
+                    <option value="4" ${area.stackLevel == 4 ? 'selected' : ''}>Lv.4 중급+</option>
+                    <option value="5" ${area.stackLevel == 5 ? 'selected' : ''}>Lv.5 고급</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; font-weight: 500;">
+                    <i class="fa-solid fa-clock" style="margin-right: 6px; color: #66bb6a; font-size: 0.8rem;"></i>필요 경력 (년)
+                </label>
+                <input type="number" onchange="updateAreaYear(${index}, this.value)" value="${area.stackYear || ''}" 
+                       min="0" placeholder="0년" 
+                       style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; background: #fafafa; transition: all 0.2s;"
+                       onfocus="this.style.borderColor='#1F7A8C'; this.style.background='#fff';"
+                       onblur="this.style.borderColor='#ddd'; this.style.background='#fafafa';">
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 선택된 기술 스택 렌더링
+// ═══════════════════════════════════════════════════════════════════════
+
+function renderSelectedSkills() {
+    const container = document.getElementById('selectedSkillsContainer');
+    const display = document.getElementById('selectedSkillsDisplay');
+    
+    if (selectedSkills.length === 0) {
+        display.style.display = 'none';
+        return;
+    }
+    
+    display.style.display = 'block';
+    container.innerHTML = '';
+    
+    selectedSkills.forEach((skill, index) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'flex: 1; min-width: 280px; padding: 1.5rem; border: 1px solid #e0e0e0; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.2s;';
+        card.onmouseover = function() { this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; };
+        card.onmouseout = function() { this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; };
+        
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f0f0f0;">
+                <strong style="font-size: 1.1rem; color: #1F7A8C; display: flex; align-items: center;">
+                    <i class="fa-solid fa-code" style="margin-right: 8px; font-size: 1rem;"></i>
+                    ${skill.stackName}
+                </strong>
+                <button type="button" onclick="removeSkill(${index})" 
+                        style="background: none; border: none; color: #999; font-size: 1.3rem; cursor: pointer; padding: 0; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s;"
+                        onmouseover="this.style.background='#fee'; this.style.color='#d32f2f';"
+                        onmouseout="this.style.background='none'; this.style.color='#999';">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; font-weight: 500;">
+                    <i class="fa-solid fa-star" style="margin-right: 6px; color: #ffa726; font-size: 0.8rem;"></i>요구 숙련도
+                </label>
+                <select onchange="updateSkillLevel(${index}, this.value)" 
+                        style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; background: #fafafa; transition: all 0.2s;"
+                        onfocus="this.style.borderColor='#1F7A8C'; this.style.background='#fff';"
+                        onblur="this.style.borderColor='#ddd'; this.style.background='#fafafa';">
+                    <option value="">선택해주세요</option>
+                    <option value="1" ${skill.stackLevel == 1 ? 'selected' : ''}>Lv.1 입문</option>
+                    <option value="2" ${skill.stackLevel == 2 ? 'selected' : ''}>Lv.2 초급</option>
+                    <option value="3" ${skill.stackLevel == 3 ? 'selected' : ''}>Lv.3 중급</option>
+                    <option value="4" ${skill.stackLevel == 4 ? 'selected' : ''}>Lv.4 중급+</option>
+                    <option value="5" ${skill.stackLevel == 5 ? 'selected' : ''}>Lv.5 고급</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; font-weight: 500;">
+                    <i class="fa-solid fa-clock" style="margin-right: 6px; color: #66bb6a; font-size: 0.8rem;"></i>필요 경력 (년)
+                </label>
+                <input type="number" onchange="updateSkillYear(${index}, this.value)" value="${skill.stackYear || ''}" 
+                       min="0" placeholder="0년" 
+                       style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; background: #fafafa; transition: all 0.2s;"
+                       onfocus="this.style.borderColor='#1F7A8C'; this.style.background='#fff';"
+                       onblur="this.style.borderColor='#ddd'; this.style.background='#fafafa';">
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 개발 영역/기술 스택 업데이트 함수
+// ═══════════════════════════════════════════════════════════════════════
+
+function updateAreaLevel(index, level) {
+    selectedAreas[index].stackLevel = level ? parseInt(level) : null;
+    updateHiddenInputs();
+}
+
+function updateAreaYear(index, year) {
+    selectedAreas[index].stackYear = year ? parseInt(year) : null;
+    updateHiddenInputs();
+}
+
+function updateSkillLevel(index, level) {
+    selectedSkills[index].stackLevel = level ? parseInt(level) : null;
+    updateHiddenInputs();
+}
+
+function updateSkillYear(index, year) {
+    selectedSkills[index].stackYear = year ? parseInt(year) : null;
+    updateHiddenInputs();
+}
+
+function removeArea(index) {
+    selectedAreas.splice(index, 1);
+    renderSelectedAreas();
+    updateHiddenInputs();
+}
+
+function removeSkill(index) {
+    selectedSkills.splice(index, 1);
+    renderSelectedSkills();
+    updateHiddenInputs();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Hidden Inputs 업데이트 (폼 제출용)
+// ═══════════════════════════════════════════════════════════════════════
+
+function updateHiddenInputs() {
+    const container = document.getElementById('hiddenStackInputs');
+    container.innerHTML = '';
+    
+    // 개발 영역
+    selectedAreas.forEach(area => {
+        if (area.stackLevel && area.stackYear !== null) {
+            container.innerHTML += `
+                <input type="hidden" name="stackIds" value="${area.stackId}">
+                <input type="hidden" name="stackLevels" value="${area.stackLevel}">
+                <input type="hidden" name="stackYears" value="${area.stackYear}">
+            `;
+        }
+    });
+    
+    // 기술 스택
+    selectedSkills.forEach(skill => {
+        if (skill.stackLevel && skill.stackYear !== null) {
+            container.innerHTML += `
+                <input type="hidden" name="stackIds" value="${skill.stackId}">
+                <input type="hidden" name="stackLevels" value="${skill.stackLevel}">
+                <input type="hidden" name="stackYears" value="${skill.stackYear}">
+            `;
+        }
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// UI 업데이트 (단계 전환)
+// ═══════════════════════════════════════════════════════════════════════
+function updateUI() {
+    document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('step' + currentStep).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 다음 단계로 이동 (유효성 검사 포함)
+// ═══════════════════════════════════════════════════════════════════════
+// [필수 입력 규칙]
+// Step 1: 제목, 상세 내용
+// Step 2: 개발 영역 또는 기술 스택 최소 1개 + 각각의 레벨/경력
+// Step 3: 예산, 진행 기간, 시작일
+// Step 4: 소통 방식, 지급 방식
+
+function nextStep(targetStep) {
+    const section = document.getElementById('step' + currentStep);
+    let isValid = true;
+    
+    // ─────────────────────────────────────────────────────────────────────
+    // 기본 필수 입력 검사
+    // ─────────────────────────────────────────────────────────────────────
+    const inputs = section.querySelectorAll('input[required], textarea[required], select[required]');
+    for (let input of inputs) {
+        if (input.disabled) continue;
+
+        if (input.type === 'radio') {
+            const checked = section.querySelector(`input[name="${input.name}"]:checked`);
+            if (!checked) {
+                isValid = false;
+                showValidationError(`"${input.name}" 항목을 선택해주세요.`);
+                input.focus();
+                break;
+            }
+        } else {
+            if (!input.value.trim()) {
+                isValid = false;
+                showValidationError('모든 필수 항목을 입력해주세요.');
+                input.focus();
+                highlightError(input);
+                break;
+            } else {
+                clearError(input);
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Step 1: 제목 및 상세 내용 추가 검증
+    // ─────────────────────────────────────────────────────────────────────
+    if (currentStep === 1 && isValid) {
+        const title = document.querySelector('input[name="title"]').value.trim();
+        const description = document.querySelector('textarea[name="description"]').value.trim();
+        
+        if (title.length < 10) {
+            showValidationError('프로젝트 제목은 최소 10자 이상 입력해주세요.');
+            document.querySelector('input[name="title"]').focus();
+            isValid = false;
+        } else if (description.length < 50) {
+            showValidationError('프로젝트 상세 내용은 최소 50자 이상 입력해주세요.\n구체적인 업무 내용과 요구사항을 작성하시면 더 적합한 프리랜서를 만날 수 있습니다.');
+            document.querySelector('textarea[name="description"]').focus();
+            isValid = false;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Step 2: 기술 스택 필수 검사
+    // ─────────────────────────────────────────────────────────────────────
+    if (currentStep === 2 && isValid) {
+        // 최소 1개 선택 확인
+        if (selectedAreas.length === 0 && selectedSkills.length === 0) {
+            showValidationError("프로젝트에 필요한 개발 영역 또는 기술 스택을 최소 1개 이상 선택해주세요.");
+            isValid = false;
+        } else {
+            // 선택된 영역/스택의 레벨과 경력이 모두 입력되었는지 확인
+            let incomplete = [];
+            
+            for (let area of selectedAreas) {
+                if (!area.stackLevel || area.stackYear === null || area.stackYear === undefined) {
+                    incomplete.push(area.stackName);
+                }
+            }
+            
+            for (let skill of selectedSkills) {
+                if (!skill.stackLevel || skill.stackYear === null || skill.stackYear === undefined) {
+                    incomplete.push(skill.stackName);
+                }
+            }
+            
+            if (incomplete.length > 0) {
+                showValidationError(`다음 기술 스택의 레벨과 경력을 입력해주세요:\n• ${incomplete.join('\n• ')}`);
+                isValid = false;
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Step 3: 예산, 진행 기간, 시작일 검증
+    // ─────────────────────────────────────────────────────────────────────
+    if (currentStep === 3 && isValid) {
+        const budget = document.getElementById('budgetInput').value.replace(/,/g, '');
+        const duration = document.getElementById('durationSelect').value;
+        const startType = document.querySelector('input[name="startType"]:checked')?.value;
+        const startDate = document.getElementById('startDate').value;
+        
+        if (!budget || parseInt(budget) <= 0) {
+            showValidationError('프로젝트 예산을 입력해주세요.');
+            document.getElementById('budgetInput').focus();
+            isValid = false;
+        } else if (parseInt(budget) < 100000) {
+            showValidationError('프로젝트 예산은 최소 10만원 이상이어야 합니다.');
+            document.getElementById('budgetInput').focus();
+            isValid = false;
+        } else if (!duration) {
+            showValidationError('예상 진행 기간을 선택해주세요.');
+            document.getElementById('durationSelect').focus();
+            isValid = false;
+        } else if (!startType) {
+            showValidationError('프로젝트 시작일을 선택해주세요.');
+            isValid = false;
+        } else if (startType === 'SPECIFIC' && !startDate) {
+            showValidationError('구체적인 시작일을 선택해주세요.');
+            document.getElementById('startDate').focus();
+            isValid = false;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Step 4: 소통 방식, 지급 방식 검증
+    // ─────────────────────────────────────────────────────────────────────
+    if (currentStep === 4 && isValid) {
+        const comm = document.querySelector('input[name="communicateMethod"]:checked');
+        const pay = document.querySelector('input[name="paymentMethod"]:checked');
+        
+        if (!comm) {
+            showValidationError('선호하는 소통 방식을 선택해주세요.');
+            isValid = false;
+        } else if (!pay) {
+            showValidationError('대금 지급 방식을 선택해주세요.');
+            isValid = false;
+        }
+    }
+
+    if (!isValid) return;
+
+    if (targetStep === 5) updatePreview();
+    currentStep = targetStep;
+    updateUI();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 유효성 검사 헬퍼 함수
+// ═══════════════════════════════════════════════════════════════════════
+
+function showValidationError(message) {
+    alert('⚠️ ' + message);
+}
+
+function highlightError(input) {
+    input.style.borderColor = '#D32F2F';
+    input.style.boxShadow = '0 0 0 3px rgba(211, 47, 47, 0.1)';
+    setTimeout(() => {
+        input.style.borderColor = '';
+        input.style.boxShadow = '';
+    }, 3000);
+}
+
+function clearError(input) {
+    input.style.borderColor = '';
+    input.style.boxShadow = '';
+}
+
+function prevStep(target) {
+    currentStep = target;
+    updateUI();
+}
+
+function selectCard(element) {
+    const group = element.parentElement;
+    group.querySelectorAll('.selection-card').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    element.querySelector('input[type="radio"]').checked = true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 미리보기 업데이트
+// ═══════════════════════════════════════════════════════════════════════
+
+function updatePreview() {
+    // 1. 기본 정보
+    document.getElementById('previewTitle').innerText = document.querySelector('input[name="title"]').value;
+    document.getElementById('previewDescription').innerText = document.querySelector('textarea[name="description"]').value;
+
+    // 2. 카테고리 (개발 영역)
+    const categoryText = selectedAreas.length > 0 ? selectedAreas.map(a => a.stackName).join(', ') : '미선택';
+    document.getElementById('previewCategory').innerText = categoryText;
+
+    // 3. 예산 및 협의 배지
+    document.getElementById('previewBudget').innerText = document.getElementById('budgetInput').value + "원";
+    const isBudgetNego = document.querySelector('input[name="budgetNegotiable"]').checked;
+    const budgetBadge = document.getElementById('previewBudgetNego');
+    if (budgetBadge) budgetBadge.style.display = isBudgetNego ? 'inline-block' : 'none';
+
+    // 4. 기간 및 조율 배지
+    const durationVal = document.getElementById('durationSelect').value;
+    document.getElementById('previewDuration').innerText = durationVal ? durationVal : "미선택";
+    const isDurationNego = document.querySelector('input[name="durationNegotiable"]').checked;
+    const durationBadge = document.getElementById('previewDurationNego');
+    if (durationBadge) durationBadge.style.display = isDurationNego ? 'inline-block' : 'none';
+
+    // 5. 시작일 및 협의 배지
+    const startType = document.querySelector('input[name="startType"]:checked').value;
+    document.getElementById('previewStart').innerText = (startType === 'ASAP') ? "계약 후 즉시" : document.getElementById('startDate').value;
+    const isStartNego = document.querySelector('input[name="startNegotiable"]').checked;
+    const startBadge = document.getElementById('previewStartNego');
+    if (startBadge) startBadge.style.display = isStartNego ? 'inline-block' : 'none';
+
+    // 6. 기술 스택 (개발 영역 + 기술 스택)
+    const stackBox = document.getElementById('previewStacks');
+    stackBox.innerHTML = '';
+
+    const allStacks = [...selectedAreas, ...selectedSkills];
+    if (allStacks.length > 0) {
+        allStacks.forEach(stack => {
+            const span = document.createElement('span');
+            span.className = 'round-badge-style';
+            span.innerText = `${stack.stackName} (Lv.${stack.stackLevel}, ${stack.stackYear}년)`;
+            stackBox.appendChild(span);
+        });
+    } else {
+        stackBox.innerHTML = '<span style="color:#aaa;">선택된 기술이 없습니다.</span>';
+    }
+
+    // 7. 메타 정보 - 최고 레벨과 최소 경력 표시
+    if (allStacks.length > 0) {
+        const maxLevel = Math.max(...allStacks.map(s => s.stackLevel || 1));
+        const minYear = Math.min(...allStacks.map(s => s.stackYear || 0));
+        
+        const levelText = ['', '입문', '초급', '중급', '중급+', '고급'][maxLevel];
+        document.getElementById('previewLevelBadge').innerText = `Lv.${maxLevel} ${levelText}`;
+        document.getElementById('previewYearBadge').innerText = `${minYear}년 이상`;
+    } else {
+        document.getElementById('previewLevelBadge').innerText = '미선택';
+        document.getElementById('previewYearBadge').innerText = '미선택';
+    }
+
+    const comm = document.querySelector('input[name="communicateMethod"]:checked');
+    if (comm) document.getElementById('previewComm').innerText = comm.parentElement.querySelector('strong').innerText;
+
+    const pay = document.querySelector('input[name="paymentMethod"]:checked');
+    if (pay) document.getElementById('previewPay').innerText = pay.parentElement.querySelector('strong').innerText;
+
+    const revCount = document.getElementById('maxRevisionCount').value;
+    document.getElementById('previewRevision').innerText = "무상 수정 " + revCount + "회";
+
+    // 8. 파일
+    const fileName = document.getElementById('fileNameDisplay') ? document.getElementById('fileNameDisplay').innerText : '';
+    const fileArea = document.getElementById('previewFileArea');
+    if (fileName) {
+        fileArea.style.display = 'block';
+        document.getElementById('previewFileName').innerText = fileName;
+    } else {
+        fileArea.style.display = 'none';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 기타 함수
+// ═══════════════════════════════════════════════════════════════════════
+
+function toggleStartType(radio) {
+    const dateInput = document.getElementById('startDate');
+    if (radio.value === 'ASAP') {
+        dateInput.disabled = true;
+        dateInput.value = '';
+    } else {
+        dateInput.disabled = false;
+        dateInput.focus();
+    }
+}
+
+function toggleYear(chk) {
+    const input = document.getElementById('minYearInput');
+    if (chk.checked) {
+        input.disabled = true;
+        input.value = '';
+        input.style.backgroundColor = '#f5f5f5';
+    } else {
+        input.disabled = false;
+        input.style.backgroundColor = '#fff';
+        input.focus();
+    }
+}
+
+function handleFileSelect(input) {
+    const file = input.files[0];
+    if (file) {
+        const maxSize = 5 * 1024 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert("파일 용량은 최대 5GB까지만 업로드 가능합니다.");
+            input.value = "";
+            return;
+        }
+        const fileDisplayDefault = document.getElementById('fileDisplayDefault');
+        const fileDisplaySelected = document.getElementById('fileDisplaySelected');
+        if (fileDisplayDefault && fileDisplaySelected) {
+            fileDisplayDefault.style.display = 'none';
+            fileDisplaySelected.style.display = 'flex';
+            document.getElementById('fileNameDisplay').innerText = file.name;
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 미리보기 업데이트
+// ═══════════════════════════════════════════════════════════════════════
+function updatePreview() {
+    // 1. 기본 정보
+    document.getElementById('previewTitle').innerText = document.querySelector('input[name="title"]').value;
+    document.getElementById('previewDescription').innerText = document.querySelector('textarea[name="description"]').value;
+
+    // 2. 카테고리 (개발 영역)
+    const categoryText = selectedAreas.length > 0 ? selectedAreas.map(a => a.stackName).join(', ') : '미선택';
+    document.getElementById('previewCategory').innerText = categoryText;
+
+    // 3. 예산 및 협의 배지
+    document.getElementById('previewBudget').innerText = document.getElementById('budgetInput').value + "원";
+    const isBudgetNego = document.querySelector('input[name="budgetNegotiable"]').checked;
+    const budgetBadge = document.getElementById('previewBudgetNego');
+    if (budgetBadge) budgetBadge.style.display = isBudgetNego ? 'inline-block' : 'none';
+
+    // 4. 기간 및 조율 배지
+    const durationVal = document.getElementById('durationSelect').value;
+    document.getElementById('previewDuration').innerText = durationVal ? durationVal : "미선택";
+    const isDurationNego = document.querySelector('input[name="durationNegotiable"]').checked;
+    const durationBadge = document.getElementById('previewDurationNego');
+    if (durationBadge) durationBadge.style.display = isDurationNego ? 'inline-block' : 'none';
+
+    // 5. 시작일 및 협의 배지
+    const startType = document.querySelector('input[name="startType"]:checked').value;
+    document.getElementById('previewStart').innerText = (startType === 'ASAP') ? "계약 후 즉시" : document.getElementById('startDate').value;
+    const isStartNego = document.querySelector('input[name="startNegotiable"]').checked;
+    const startBadge = document.getElementById('previewStartNego');
+    if (startBadge) startBadge.style.display = isStartNego ? 'inline-block' : 'none';
+
+    // 6. 기술 스택 (개발 영역 + 기술 스택)
+    const stackBox = document.getElementById('previewStacks');
+    stackBox.innerHTML = '';
+
+    const allStacks = [...selectedAreas, ...selectedSkills];
+    if (allStacks.length > 0) {
+        allStacks.forEach(stack => {
+            const span = document.createElement('span');
+            span.className = 'round-badge-style';
+            span.innerText = `${stack.stackName} (Lv.${stack.stackLevel}, ${stack.stackYear}년)`;
+            stackBox.appendChild(span);
+        });
+    } else {
+        stackBox.innerHTML = '<span style="color:#aaa;">선택된 기술이 없습니다.</span>';
+    }
+
+    // 7. 메타 정보 - 최고 레벨과 최소 경력 표시
+    if (allStacks.length > 0) {
+        const maxLevel = Math.max(...allStacks.map(s => s.stackLevel || 1));
+        const minYear = Math.min(...allStacks.map(s => s.stackYear || 0));
+        
+        const levelText = ['', '입문', '초급', '중급', '중급+', '고급'][maxLevel];
+        document.getElementById('previewLevelBadge').innerText = `Lv.${maxLevel} ${levelText}`;
+        document.getElementById('previewYearBadge').innerText = `${minYear}년 이상`;
+    } else {
+        document.getElementById('previewLevelBadge').innerText = '미선택';
+        document.getElementById('previewYearBadge').innerText = '미선택';
+    }
+
+    const comm = document.querySelector('input[name="communicateMethod"]:checked');
+    if (comm) document.getElementById('previewComm').innerText = comm.parentElement.querySelector('strong').innerText;
+
+    const pay = document.querySelector('input[name="paymentMethod"]:checked');
+    if (pay) document.getElementById('previewPay').innerText = pay.parentElement.querySelector('strong').innerText;
+
+    const revCount = document.getElementById('maxRevisionCount').value;
+    document.getElementById('previewRevision').innerText = "무상 수정 " + revCount + "회";
+
+    // 8. 파일
+    const fileNameElement = document.getElementById('fileNameDisplay');
+    const fileName = fileNameElement ? fileNameElement.innerText : '';
+    const fileArea = document.getElementById('previewFileArea');
+    if (fileArea) {
+        if (fileName) {
+            fileArea.style.display = 'block';
+            document.getElementById('previewFileName').innerText = fileName;
+        } else {
+            fileArea.style.display = 'none';
+        }
+    }
+}

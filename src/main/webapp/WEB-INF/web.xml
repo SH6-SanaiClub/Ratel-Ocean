@@ -1,12 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+═══════════════════════════════════════════════════════════════════════
+web.xml - 웹 애플리케이션 배포 서술자 (Deployment Descriptor)
+═══════════════════════════════════════════════════════════════════════
+
+[개요]
+- 웹 애플리케이션의 설정 파일
+- Servlet, Filter, Listener, 에러 페이지 등을 정의
+- Tomcat 서버가 애플리케이션 시작 시 이 파일을 읽고 설정 적용
+
+[Spring MVC에서의 역할]
+1. ContextLoaderListener로 Root Context 로드 (root-context.xml)
+   → Service, Repository, DataSource 등 비즈니스 로직 계층
+
+2. DispatcherServlet으로 WebApplicationContext 로드 (servlet-context.xml)
+   → Controller, ViewResolver 등 웹 계층
+
+3. 문자 인코딩 필터로 한글 처리
+4. 세션 타임아웃 및 에러 페이지 설정
+
+[web-app 네임스페이스]
+- version="4.0": Servlet 4.0 스펙 (Java EE 8, Tomcat 9.0 이상)
+- xmlns: XML 네임스페이스 정의
+-->
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+  <!--
+  애플리케이션 이름
+  - Tomcat 관리자 페이지에서 표시되는 이름
+  - 실제 URL에는 영향을 주지 않음 (WAR 파일명이 URL 경로가 됨)
+  -->
   <display-name>shinhan ratelocean</display-name>
 
+  <!--
+  ═══════════════════════════════════════════════════════════════════════
+  Character Encoding Filter - 한글 인코딩 처리
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [목적]
+  - 모든 HTTP 요청/응답의 문자 인코딩을 UTF-8로 강제 설정
+  - 한글 깨짐 방지
+  
+  [동작 순서]
+  1. 클라이언트 요청 → encodingFilter (UTF-8 설정)
+  2. 서블릿 처리 (한글이 정상적으로 처리됨)
+  3. 응답 → encodingFilter (UTF-8 설정)
+  4. 클라이언트에 응답
+  
+  [주요 파라미터]
+  - encoding: UTF-8 (사용할 문자 인코딩)
+  - forceEncoding: true (요청/응답 모두 강제로 UTF-8 적용)
+    · true: 클라이언트가 다른 인코딩을 요청해도 무시하고 UTF-8 사용
+    · false: 클라이언트가 인코딩을 지정하지 않은 경우만 UTF-8 사용
+  
+  [url-pattern: /*]
+  - 모든 URL 요청에 대해 이 필터 적용
+  - 예: /, /client/signup, /api/project 등 모든 경로
+  
+  [필터 체인]
+  - web.xml에 정의된 순서대로 필터가 실행됨
+  - encodingFilter가 가장 먼저 실행되어야 한글 처리가 보장됨
+  -->
   <!-- 한글 인코딩 필터 -->
   <filter>
     <filter-name>encodingFilter</filter-name>
@@ -25,12 +83,205 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <!--
+  ═══════════════════════════════════════════════════════════════════════
+  Root ApplicationContext - 루트 컨텍스트 설정
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [Root Context란?]
+  - Spring의 최상위 컨텍스트 (부모 컨텍스트)
+  - 비즈니스 로직 계층을 담당: Service, Repository, DataSource 등
+  - 모든 DispatcherServlet이 공유하는 공통 빈(Bean)을 관리
+  
+  [contextConfigLocation]
+  - Ro
+  ═══════════════════════════════════════════════════════════════════════
+  DispatcherServlet - Spring MVC의 핵심 프론트 컨트롤러
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [DispatcherServlet이란?]
+  - Spring MVC의 중앙 진입점 (Front Controller 패턴)
+  - 모든 웹 요청을 받아 적절한 Controller로 라우팅
+  - WebApplicationContext를 생성하고 관리
+  
+  [Front Controller 패턴]
+  - 모든 요청이 하나의 진입점(DispatcherServlet)을 거침
+  - 요청 분석 → 핸들러(Controller) 찾기 → 실행 → 뷰 렌더링
+  
+  [주요 구성 요소]
+  1. HandlerMapping
+     - URL과 Controller 메서드를 매핑
+     - 예: /client/signup → SignupController.showForm()
+  
+  2. HandlerAdapter
+     - Controller 메서드를 실행하는 어댑터
+     - @RequestMapping, @GetMapping 등 어노테이션 처리
+  
+  3. ViewResolver
+     - 논리적 뷰 이름 → 실제 JSP 파일 경로 변환
+     - 예: "signup" → /WEB-INF/views/client/signup.jsp
+  
+  4. HandlerExceptionResolver
+     - 예외 처리 (@ExceptionHandler, @ControllerAdvice)
+  
+  [설정 파라미터]
+  - servlet-name: appServlet
+    · 서블릿의 고유 이름
+    · 여러 DispatcherServlet을 사용할 경우 구분용
+  
+  - contextConfigLocation: classpath:spring/servlet-context.xml
+    · WebApplicationContext의 설정 파일 위치
+    · Controller, ViewResolver, Interceptor 등 정의
+  
+  - load-on-startup: 1
+    · 서버 시작 시 즉시 서블릿 초기화 (숫자가 낮을수록 우선순위 높음)
+    · 0 이상: 서버 시작 시 자동 로드
+    · 음수 또는 미지정: 첫 요청 시 로드 (지연 로딩)
+  
+  [url-pattern: /]
+  - 모든 URL 요청을 DispatcherServlet이 처리
+  - 정적 리소스(CSS, JS, 이미지)는 servlet-context.xml의 <resources> 태그로 제외
+  - 예외: *.jsp 파일은 JSP 서블릿이 처리
+  
+  [요청 처리 흐름]
+  1. 클라이언트 요청 → DispatcherServlet
+  2. HandlerMapping → 적절한 Controller 찾기
+  3. HandlerAdapter → Controller 메서드 실행
+  4. Controller → 비즈니스 로직 처리 (Service 호출)
+  5. ModelAndView 반환 (또는 @ResponseBody로 JSON 반환)
+  6. ViewResolver → JSP 파일 경로 결정
+  7. JSP 렌더링 → 클라이언트 응답
+  -->
+  <!--ot Context의 설정 파일 위치 지정
+  - classpath: → src/main/resources/ 경로를 의미
+  - 예: classpath:spring/root-context.xml
+    → src/main/resources/spring/root-context.xml
+  
+  [root-context.xml에 정의되는 빈]
+  - DataSource (HikariCP): DB 연결 풀
+  - SqlSessionFactory (MyBatis): SQL 매핑
+  - TransactionManager: 트랜잭션 관리
+  - @Service, @Repository 어노테이션 빈: 비즈니스 로직
+  
+  [왜 R
+  ═══════════════════════════════════════════════════════════════════════
+  세션 타임아웃 설정
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [세션(Session)이란?]
+  - 서버가 클라이언트를 식별하고 상태를 유지하기 위한 메커니즘
+  - 로그인 정보, 장바구니, 임시 데이터 등을 저장
+  - 각 클라이언트마다 고유한 세션 ID(JSESSIONID)를 쿠키로 부여
+  
+  [세션 타임아웃]
+  - 사용자가 일정 시간 동안 활동하지 않으면 세션 자동 만료
+  - 단위: 분(minute)
+  - 현재 설정: 30분 (1800초)
+  
+  [30분 타임아웃의 의미]
+  - 사용자가 30분간 아무 요청도 하지 않으면 세션 만료
+  - 로그인 상태 해제 → 재로그인 필요
+  - 각 요청마다 타임아웃 시간이 갱신됨 (활동 중에는 만료되지 않음)
+  
+  [세션 만료 시나리오]
+  1. 사용자 로그인 → 세션 생성 (JSESSIONID 쿠키 발급)
+  2. 30분간 아무 페이지도 접속하지 않음
+  3. 세션 만료 → 로그인 정보 삭제
+  4. 다음 요청 시 → 로그인 페이지로 리다이렉트
+  
+  [타임아웃 조정 기준]
+  - 보안 중요 (금융, 개인정보): 5~10분 (짧게)
+  - 일반 서비스: 30분~1시간
+  - 편의성 우선: 1시간 이상
+  
+  [프로그래매틱 제어]
+  - Java 코드에서도 제어 가능:
+    request.getSession().setMaxInactiveInterval(1800); // 초 단위
+  -->
+  <!--oot Context와 Servlet Context를 분리하는가?]
+  1. 관심사의 분리 (Separation of Concerns)
+     - Root: 비즈니스 로직 (데이터 접근, 트랜잭션)
+     - Servlet: 웹 계층 (컨트롤러, 뷰 리졸버)
+  
+  2. 여러 DispatcherServlet 공유
+     - 하나의 Root Context를 여러 Servlet이 공유 가능
+     - 예: /api/* → apiServlet, /admin/* → adminServlet
+     - 두 서블릿 모두 동일한 Service/Repository 사용
+  
+  3. 테스트 용이성
+     - 비즈니스 로직만 따로 테스트 가능 (웹 계층 제외)
+  -->
   <!-- Root Context 설정 -->
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>classpath:spring/root-context.xml</param-value>
   </context-param>
 
+  <!--
+  ═══════════════════════════════════════════════════════════════════════
+  ContextLoaderListener - 루트 컨텍스트 초기화
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [역할]
+  - 웹 애플리케이션 시작 시 Root Context를 로드하는 리스너
+  - contextConfigLocation에 지정된 root-context.xml 파일을 읽음
+  - Root Context를 생성하고 ServletContext에 저장
+  
+  ═══════════════════════════════════════════════════════════════════════
+  에러 페이지 설정
+  ═══════════════════════════════════════════════════════════════════════
+  
+  [목적]
+  - HTTP 에러 발생 시 사용자에게 친절한 에러 페이지 표시
+  - 기본 Tomcat 에러 페이지 대신 커스텀 페이지 제공
+  
+  [404 Not Found]
+  - 원인: 요청한 URL에 해당하는 리소스가 없음
+  - 예시:
+    · 존재하지 않는 경로 접근: /client/nonexistent
+    · 삭제된 페이지 접근
+    · URL 오타
+  - 처리: /WEB-INF/views/error/404.jsp 표시
+  
+  [500 Internal Server Error]
+  - 원인: 서버 내부 오류 (예외 발생)
+  - 예시:
+    · NullPointerException, SQLException 등
+    · 컨트롤러 메서드에서 처리되지 않은 예외
+    · DB 연결 실패
+  - 처리: /WEB-INF/views/error/500.jsp 표시
+  
+  [기타 HTTP 상태 코드]
+  - 400 Bad Request: 잘못된 요청 (필수 파라미터 누락 등)
+  - 403 Forbidden: 접근 권한 없음
+  - 503 Service Unavailable: 서비스 일시 중단
+  
+  [에러 페이지 우선순위]
+  1. @ExceptionHandler (Controller 내부)
+  2. @ControllerAdvice (전역 예외 처리)
+  3. web.xml의 <error-page> 설정
+  4. Tomcat 기본 에러 페이지
+  
+  [개발 vs 운영]
+  - 개발 환경: 상세한 스택 트레이스 표시 (디버깅 용이)
+  - 운영 환경: 간결한 메시지만 표시 (보안상 스택 트레이스 노출 금지)
+  
+  [에러 페이지 작성 팁]
+  - 에러 정보 접근: ${pageContext.errorData}
+  - 상태 코드: ${pageContext.errorData.statusCode}
+  - 에러 메시지: ${pageContext.exception.message}
+  - 홈으로 돌아가기 링크 제공
+  -->
+  <!--
+  [동작 시점]
+  - 서버 시작 → ContextLoaderListener 실행 (Root Context 생성)
+  - DispatcherServlet 초기화 (Servlet Context 생성, Root Context 참조)
+  - 애플리케이션 종료 → ContextLoaderListener 종료 (Root Context 종료)
+  
+  [ServletContextListener 인터페이스]
+  - contextInitialized(): 웹 애플리케이션 시작 시 호출
+  - contextDestroyed(): 웹 애플리케이션 종료 시 호출
+  -->
   <!-- Context Loader Listener -->
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

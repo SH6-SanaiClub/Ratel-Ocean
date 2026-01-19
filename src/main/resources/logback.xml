@@ -1,7 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+═══════════════════════════════════════════════════════════════════════
+logback.xml - SLF4J/Logback 로깅 설정
+═══════════════════════════════════════════════════════════════════════
+
+[개요]
+- Spring 애플리케이션의 로깅(logging) 설정 파일
+- Logback은 SLF4J의 기본 구현체
+- 개발 중 디버깅, 운영 중 모니터링에 필수
+
+[주요 설정]
+1. Console Appender: 콘솔에 로그 출력
+2. File Appender: 파일에 로그 저장 (logs/application.log)
+3. Logger 설정: 각 패키지별 로그 레벨 지정
+4. Root Logger: 기본 로그 레벨 및 Appender 설정
+
+[로그 레벨]
+- DEBUG: 개발 중 상세한 디버깅 정보
+- INFO: 중요한 정보 (기본 레벨)
+- WARN: 경고 (처리 가능한 문제)
+- ERROR: 오류 (처리 불가능한 문제)
+
+[logs 폴더]
+- 위치: 프로젝트 루트/logs/
+- 자동 생성: 애플리케이션 실행 시 자동으로 생성됨
+- .gitignore에 포함: Git에서 제외 (로그 파일은 공유하지 않음)
+- USB 이동 시: 제외되므로 다른 PC에서도 자동 생성됨
+
+[타임 베이스 롤링(TimeBasedRollingPolicy)]
+- 날짜별로 로그 파일 분할
+- 파일명: application.2026-01-18.log
+- maxHistory: 30일 이상 된 파일 자동 삭제
+- 디스크 용량 자동 관리
+
+[개발 vs 운영]
+- 개발: DEBUG 레벨로 상세한 정보 출력
+- 운영: INFO 레벨로 중요한 정보만 출력
+-->
 <configuration>
 
-    <!-- Console Appender -->
+    <!-- Console Appender - 콘솔에 로그 출력 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -9,7 +47,45 @@
         </encoder>
     </appender>
 
-    <!-- File Appender -->
+    <!--
+    File Appender - 파일에 로그 저장 (RollingFileAppender: 날짜별 분할)
+    
+    [주요 속성]
+    - file: logs/application.log
+      · 현재 로그 파일 경로
+      · 애플리케이션 실행 시 자동으로 logs/ 폴더 생성
+      · 상대 경로: 프로젝트 실행 디렉토리 기준
+    
+    - TimeBasedRollingPolicy
+      · 날짜 기반 로그 파일 분할 정책
+      · 매일 자정에 새로운 파일 생성
+    
+    - fileNamePattern: logs/application.%d{yyyy-MM-dd}.log
+      · 날짜별 파일명 패턴
+      · %d{yyyy-MM-dd}: 일자를 YYYY-MM-DD 형식으로 치환
+      · 예: application.2026-01-18.log, application.2026-01-19.log
+    
+    - maxHistory: 30
+      · 30일 이상 된 로그 파일 자동 삭제
+      · 디스크 용량 자동 관리
+      · 예: 2026-01-18 생성 파일은 2026-02-17에 자동 삭제
+    
+    [logs 폴더 위치]
+    - 개발 환경: C:\Users\사용자\Desktop\Latelocean\Latelocean\logs/
+    - Tomcat 배포: Tomcat 설치 디렉토리 기준 logs/
+    - Docker: 컨테이너 내부 /app/logs/ (마운트 필요)
+    
+    [.gitignore 처리]
+    - logs/ 폴더는 .gitignore에 포함됨
+    - Git 저장소에 커밋되지 않음
+    - 각 개발 환경마다 독립적으로 생성됨
+    - USB 이동/다른 PC 개발 시에도 자동으로 생성됨
+    
+    [주의사항]
+    - 애플리케이션 실행 중에는 application.log 파일이 잠금됨
+    - Windows에서 삭제/이동 불가 (프로세스 종료 후 가능)
+    - 충분한 디스크 공간 필요 (maxHistory로 자동 관리)
+    -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -22,14 +98,84 @@
         </encoder>
     </appender>
 
-    <!-- Logger 설정 -->
-    <logger name="com.shinhan.freelancer" level="DEBUG"/>
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    Logger 설정 - 각 패키지별 로그 레벨 지정
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Logger name 구조]
+    - com.shinhan.freelancer: 프로젝트 패키지 (현재는 com.sanaiclub)
+    - org.springframework: Spring Framework 로그
+    - org.mybatis: MyBatis 로그
+    - com.zaxxer.hikari: HikariCP 로그
+    
+    [로그 레벨 의미]
+    - DEBUG: 모든 정보 출력 (개발 중 디버깅용)
+    - INFO: 일반 정보만 출력 (운영용)
+    - WARN: 경고 이상만 출력
+    - ERROR: 에러만 출력
+    - OFF: 로그 출력 안 함
+    
+    [현재 설정]
+    - com.shinhan.freelancer (DEBUG)
+      · 프로젝트 코드의 모든 로그 출력
+      · 예: Controller, Service, Repository 메서드 실행 로그
+    
+    - org.springframework (INFO)
+      · Spring 프레임워크 기본 로그만 출력
+      · 예: 빈 생성, 컨텍스트 초기화
+    
+    - org.springframework.web (DEBUG)
+      · Spring MVC 상세 로그 출력
+      · 예: 요청/응답, 핸들러 매핑
+    
+    - org.mybatis (DEBUG)
+      · MyBatis 상세 로그 출력
+      · 예: SQL 준비, 쿼리 실행
+    
+    - com.zaxxer.hikari (INFO)
+      · HikariCP 로그만 출력
+      · 예: 커넥션 풀 초기화, 타임아웃
+    
+    [SQL 로깅 설정]
+    - jdbc.sqlonly (DEBUG): 실행된 SQL 출력
+      · SELECT * FROM projects WHERE status = 'active'
+    
+    - jdbc.sqltiming (INFO): SQL 실행 시간
+      · SQL의 실행 시간을 밀리초 단위로 표시
+    
+    - jdbc.audit (OFF): JDBC 감시 로그 (불필요하므로 비활성화)
+    
+    - jdbc.resultset (OFF): 결과 셋 로그 (불필요하므로 비활성화)
+    
+    - jdbc.resultsettable (DEBUG): 결과를 테이블 형식으로 출력
+      · 개발 중 데이터 확인 시 유용
+    
+    - jdbc.connection (INFO): DB 연결 로그
+      · 연결/종료 이벤트
+    
+    [개발 환경 최적화]
+    - 프로젝트 코드: DEBUG (상세한 정보)
+    - Spring/MyBatis: DEBUG (쿼리 및 상세 정보)
+    - 외부 라이브러리: INFO (기본 정보만)
+    
+    [운영 환경 최적화 (변경 필요)]
+    - Root logger를 INFO로 변경
+    - 프로젝트 패키지는 INFO 유지 (필수 정보만)
+    - 로그 파일 크기 제한 (GB 단위 확인)
+    
+    [현재 프로젝트 패키지]
+    - com.sanaiclub.* 으로 시작
+    - 설정값을 com.sanaiclub으로 변경하면 현재 프로젝트 로그 출력
+    -->
+    <!-- Application Logger (프로젝트 코드) -->
+    <logger name="com.sanaiclub" level="DEBUG"/>
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.springframework.web" level="DEBUG"/>
     <logger name="org.mybatis" level="DEBUG"/>
     <logger name="com.zaxxer.hikari" level="INFO"/>
 
-    <!-- SQL 로그 (개발 시에만) -->
+    <!-- SQL 로그 (개발 시에만 사용 - 운영에서는 OFF로 변경) -->
     <logger name="jdbc.sqlonly" level="DEBUG"/>
     <logger name="jdbc.sqltiming" level="INFO"/>
     <logger name="jdbc.audit" level="OFF"/>
@@ -37,7 +183,29 @@
     <logger name="jdbc.resultsettable" level="DEBUG"/>
     <logger name="jdbc.connection" level="INFO"/>
 
-    <!-- Root Logger -->
+    <!--
+    ═══════════════════════════════════════════════════════════════════════
+    Root Logger - 전역 기본 로그 설정
+    ═══════════════════════════════════════════════════════════════════════
+    
+    [Root Logger란?]
+    - 모든 로거의 최상위 부모
+    - 특정 logger에서 로그 레벨을 지정하지 않으면 Root Logger의 설정을 따름
+    
+    [현재 설정: level="INFO"]
+    - 기본적으로 INFO 레벨 이상의 로그만 출력
+    - 위에서 지정한 logger들이 이를 재정의함
+    
+    [Appender]
+    - CONSOLE: 콘솔에 출력 (개발 중 화면 확인)
+    - FILE: 파일에 저장 (운영 중 로그 보관)
+    
+    [권장 설정]
+    - 개발: INFO (다양한 정보)
+    - 운영: INFO 또는 WARN (성능 고려)
+    - 프로덕션: WARN (최소한의 로그로 성능 최적화)
+    -->
+    <!-- Root Logger - 전역 기본 로그 설정 -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>

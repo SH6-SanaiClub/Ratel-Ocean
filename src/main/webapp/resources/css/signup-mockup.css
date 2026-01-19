@@ -1,0 +1,244 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * signup-mockup.css - 회원가입 페이지 스타일
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* 회원가입 컨테이너 */
+.signup-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* 카드 스타일 */
+.card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.signup-card {
+    padding: 0;
+}
+
+.card-inner {
+    padding: 2rem;
+}
+
+/* 폼 섹션 */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--brand-dark);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--brand-mint);
+}
+
+/* 그리드 레이아웃 */
+.grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.two-col {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* 필드 */
+.field {
+    display: block;
+}
+
+.label {
+    display: block;
+    font-weight: 500;
+    color: var(--brand-dark);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.label.small {
+    font-size: 0.85rem;
+}
+
+.label .muted {
+    color: var(--brand-muted);
+    font-weight: 400;
+}
+
+/* 입력 필드 */
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--brand-teal);
+    box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.1);
+}
+
+.input::placeholder {
+    color: #aaa;
+}
+
+.input.small {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+}
+
+/* 입력 행 (버튼 포함) */
+.input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-row .input {
+    flex: 1;
+}
+
+/* 버튼 */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn.primary {
+    background-color: var(--brand-teal);
+    color: white;
+}
+
+.btn.primary:hover:not(.disabled) {
+    background-color: #165f6d;
+}
+
+.btn.outline {
+    background-color: white;
+    border: 1px solid var(--brand-teal);
+    color: var(--brand-teal);
+}
+
+.btn.outline:hover {
+    background-color: var(--brand-teal);
+    color: white;
+}
+
+.btn.small {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.btn.large {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+}
+
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+}
+
+/* 인라인 메시지 */
+.inline-msg {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.inline-msg.success {
+    color: #22c55e;
+}
+
+.inline-msg.error {
+    color: #ef4444;
+}
+
+/* 프로필 이미지 업로드 영역 */
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border: 2px dashed #d0d0d0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.upload-area:hover {
+    border-color: var(--brand-teal);
+}
+
+.avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: var(--brand-offwhite);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+/* 인증 영역 */
+.verify-area {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    align-items: center;
+}
+
+.verify-area .input {
+    flex: 1;
+}
+
+.timer {
+    font-size: 0.9rem;
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* 액션 버튼 영역 */
+.actions {
+    padding: 2rem;
+}
+
+.actions.text-center {
+    text-align: center;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .grid.two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .card-inner {
+        padding: 1.5rem;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+}

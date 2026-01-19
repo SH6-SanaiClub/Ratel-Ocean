@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+═══════════════════════════════════════════════════════════════════════
+StackMapper.xml
+═══════════════════════════════════════════════════════════════════════
+
+[설명]
+기술 스택 및 개발 분야 조회를 위한 MyBatis Mapper XML 파일입니다.
+stacks 테이블에서 POSITION(개발분야) 및 SKILL(기술스택)을 조회합니다.
+
+[위치]
+경로: mybatis/mappers/project/StackMapper.xml
+인터페이스: com.sanaiclub.domain.project.dao.StackMapper
+
+[쿼리 목록]
+1. findAll: 모든 스택 목록 조회
+   - POSITION: 개발분야 (웹, 모바일, 게임/그래픽 등)
+   - SKILL: 기술스택 (Java, React, Python 등)
+
+@author 이은희 (신한DS 금융 SW 아카데미)
+@version 1.0
+@since 2026-01-18
+-->
+
+<mapper namespace="com.sanaiclub.domain.project.dao.StackMapper">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         모든 스택 목록 조회 (개발분야 + 기술스택)
+         - stacks 테이블의 모든 레코드 조회
+         - category 컬럼으로 POSITION과 SKILL 구분
+         ═══════════════════════════════════════════════════════════════ -->
+    <select id="findAll" resultType="com.sanaiclub.domain.project.dto.StackDto">
+        SELECT 
+            stack_id AS stackId,
+            stack_name AS stackName,
+            category
+        FROM stacks
+        ORDER BY 
+            CASE category 
+                WHEN 'POSITION' THEN 1 
+                WHEN 'SKILL' THEN 2 
+            END,
+            stack_name
+    </select>
+
+</mapper>
