@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+═══════════════════════════════════════════════════════════════════════
+ClientProfileMapper.xml - 클라이언트 프로필 SQL
+═══════════════════════════════════════════════════════════════════════
+-->
+
+<mapper namespace="com.sanaiclub.user.dao.ClientProfileMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="ClientProfileResultMap" type="com.sanaiclub.user.model.vo.ClientProfileVO">
+        <id property="clientId" column="client_id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="clientType" column="client_type"/>
+    </resultMap>
+
+    <!-- 컬럼 목록 -->
+    <sql id="clientProfileColumns">
+        client_id,
+        company_id,
+        client_type
+    </sql>
+
+    <!--
+    클라이언트 프로필 등록
+    -->
+    <insert id="insertClientProfile" parameterType="com.sanaiclub.user.model.vo.ClientProfileVO">
+        INSERT INTO client_profiles (
+            client_id,
+            company_id,
+            client_type
+        ) VALUES (
+                     #{clientId},
+                     #{companyId},
+                     #{clientType}
+                 )
+    </insert>
+
+    <!--
+    클라이언트 ID로 프로필 조회
+    -->
+    <select id="findByClientId" parameterType="int" resultMap="ClientProfileResultMap">
+        SELECT <include refid="clientProfileColumns"/>
+        FROM client_profiles
+        WHERE client_id = #{clientId}
+    </select>
+
+    <!--
+    클라이언트 프로필 수정
+    -->
+    <update id="updateClientProfile" parameterType="com.sanaiclub.user.model.vo.ClientProfileVO">
+        UPDATE client_profiles
+        SET
+            company_id = #{companyId},
+            client_type = #{clientType}
+        WHERE client_id = #{clientId}
+    </update>
+
+    <!--
+    회사 ID로 연결된 클라이언트 수 조회
+    -->
+    <select id="countByCompanyId" parameterType="int" resultType="int">
+        SELECT COUNT(*)
+        FROM client_profiles
+        WHERE company_id = #{companyId}
+    </select>
+
+</mapper>
