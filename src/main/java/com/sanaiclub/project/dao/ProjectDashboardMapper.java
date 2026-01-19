@@ -34,5 +34,5 @@ public interface ProjectDashboardMapper {
 
     int deadlineWithin7Days();
 
-    ProjectsVO selectProjectDetail(long projectId);
+    ProjectsVO selectProjectDetail(Integer projectId);
 }

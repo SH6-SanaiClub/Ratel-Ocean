@@ -22,4 +22,7 @@ public class ProjectDashboardCardDTO {
     private List<RequiredStackDTO> stacks;
 
     private Boolean bookmarked;
+
+    private String companyName;  // 클라이언트 회사명
+    private String clientName;   // 클라이언트 이름 ( 개인 클라이언트의 경우 )
 }

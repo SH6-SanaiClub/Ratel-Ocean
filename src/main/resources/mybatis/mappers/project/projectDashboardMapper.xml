@@ -12,6 +12,9 @@
         p.est_duration    AS estDuration,
         p.applicant_count AS applicantCount,
         p.budget          AS budget,
+        c.company_name    AS companyName,
+        u.name            AS clientName,
+
         DATEDIFF(
         LEAST(
         DATE_ADD(DATE(p.created_at), INTERVAL 30 DAY),
@@ -29,6 +32,11 @@
         )
         END AS bookmarked
         FROM projects p
+
+        JOIN users u ON u.user_id = p.client_id
+        JOIN client_profiles cp ON cp.client_id = p.client_id
+        LEFT JOIN companies c ON c.company_id = cp.company_id
+
         WHERE p.is_public = TRUE
 
         <!-- summary 선택 -->
@@ -175,8 +183,9 @@
         ]]>
     </select>
 
+    <!-- 상세보기 -->
     <select id="selectProjectDetail"
-            parameterType="long"
+            parameterType="Integer"
             resultType="com.sanaiclub.project.model.vo.ProjectsVO">
         <![CDATA[
         SELECT
@@ -202,5 +211,6 @@
         WHERE project_id = #{projectId}
         ]]>
     </select>
+
 
 </mapper>

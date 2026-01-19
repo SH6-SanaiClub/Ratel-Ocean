@@ -393,6 +393,34 @@
             border-color: rgba(92,60,206,0.35);
         }
 
+        /* 회사 / 개인 표시 */
+        .owner-name{
+            margin-bottom: 4px;
+        }
+
+        .badge{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:4px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:900;
+            white-space:nowrap;
+        }
+
+        .badge.company{
+            background:#eef2ff;
+            color:#3730a3;
+            border:1px solid #c7d2fe;
+        }
+
+        .badge.personal{
+            background:#ecfeff;
+            color:#0f766e;
+            border:1px solid #99f6e4;
+        }
+
     </style>
 </head>
 
@@ -472,7 +500,17 @@
                     <!-- LEFT -->
                     <div class="left">
 
-
+                        <!-- 회사명 / 개인 클라이언트 -->
+                        <div class="owner-name">
+                            <c:choose>
+                                <c:when test="${not empty p.companyName}">
+                                    <span class="badge company">🏢 ${p.companyName}</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge personal">👤 ${p.clientName}</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
 
                         <!-- 포지션 -->
                         <div class="chips">

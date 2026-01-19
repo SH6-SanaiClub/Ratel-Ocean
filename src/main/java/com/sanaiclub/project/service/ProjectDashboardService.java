@@ -93,7 +93,7 @@ public class ProjectDashboardService {
         return projectDashboardMapper.deadlineWithin7Days();
     }
 
-    public ProjectsVO getProjectDetail(long projectId) {
+    public ProjectsVO getProjectDetail(Integer projectId) {
         return projectDashboardMapper.selectProjectDetail(projectId);
     }
 }
