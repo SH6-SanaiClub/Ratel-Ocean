@@ -46,6 +46,13 @@ public class LoginController {
      */
     @GetMapping("/login")
     public String loginPage() {
+        if (AuthContext.isAuthenticated()) {
+            if (AuthContext.isFreelancer()) {
+                return "redirect:/freelancer/dashboard";
+            } else if (AuthContext.isClient()) {
+                return "redirect:/client/dashboard";
+            }
+        }
         return "user/login";
     }
 
