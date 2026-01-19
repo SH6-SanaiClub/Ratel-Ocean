@@ -18,7 +18,11 @@
     </context:component-scan>
 
     <!-- Properties 파일 로드 -->
-    <context:property-placeholder location="classpath:db.properties"/>
+    <context:property-placeholder location="classpath:db.properties, classpath:jwt.properties"/>
+
+    <!-- BCrypt 비밀번호 암호화 설정 -->
+    <bean id="passwordEncoder"
+          class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
 
     <!-- HikariCP DataSource -->
     <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
@@ -46,6 +50,6 @@
     </bean>
 
     <!-- MapperScanner -->
-    <mybatis-spring:scan base-package="com.sanaiclub"/>
+    <mybatis-spring:scan base-package="com.sanaiclub.user.dao"/>
 
 </beans>
