@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ContractReviewMapper.xml - 계약 리뷰 SQL 매핑
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[역할]
+계약 리뷰 관련 데이터베이스 쿼리를 정의합니다.
+
+[DB 구조]
+- contracts 테이블: 계약 기본 정보 + 리뷰 데이터 저장
+- projects 테이블: 프로젝트 제목 조회용 (JOIN)
+
+[별점 저장 규칙]
+- 화면: 0.0 ~ 10.0 (0.5 단위)
+- DB: 0 ~ 20 (INT)
+- 변환은 Service/DTO에서 수행, 여기서는 INT 그대로 저장
+
+[리뷰 컬럼]
+- client_rating: 클라이언트가 준 별점 (INT 0~20)
+- client_experience: 클라이언트 공개 리뷰 (TEXT)
+- client_is_renewal_intended: 재계약 의사 (TINYINT(1))
+- freelancer_rating: 프리랜서가 준 별점 (INT 0~20)
+- freelancer_experience: 프리랜서 공개 리뷰 (TEXT)
+
+[중복 방지 로직]
+- client_rating이 NULL이 아니면 → 클라이언트 리뷰 작성 완료
+- freelancer_rating이 NULL이 아니면 → 프리랜서 리뷰 작성 완료
+- Service에서 이 값을 체크하여 중복 작성 차단
+
+@author Ratel Ocean Team
+@since 2026-01-15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-->
+
+<mapper namespace="com.sanaiclub.domain.contract.mapper.ContractReviewMapper">
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         ResultMap: 계약 정보 + 리뷰 데이터
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    
+    <resultMap id="ContractReviewResultMap" type="com.sanaiclub.domain.contract.dto.ContractReviewDTO">
+        <!-- 계약 기본 정보 -->
+        <id property="contractId" column="contract_id"/>
+        <result property="clientId" column="client_id"/>
+        <result property="freelancerId" column="freelancer_id"/>
+        <result property="contractStartDate" column="contract_start_date"/>
+        <result property="contractEndDate" column="contract_end_date"/>
+        <result property="totalBudget" column="total_budget"/>
+        
+        <!-- 프로젝트 정보 (JOIN) -->
+        <result property="projectTitle" column="project_title"/>
+        
+        <!-- 클라이언트 리뷰 -->
+        <result property="clientRating" column="client_rating"/>
+        <result property="clientExperience" column="client_experience"/>
+        <result property="clientIsRenewalIntended" column="client_is_renewal_intended"/>
+        
+        <!-- 프리랜서 리뷰 -->
+        <result property="freelancerRating" column="freelancer_rating"/>
+        <result property="freelancerExperience" column="freelancer_experience"/>
+    </resultMap>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         조회: 계약 정보 및 리뷰 상태
+         
+         [목적]
+         리뷰 작성 화면에서 계약 요약 정보 표시 + 중복 작성 방지
+         
+         [반환 조건]
+         - contract_id가 존재하지 않으면 null
+         - 존재하면 contracts + projects JOIN 결과 반환
+         
+         [JOIN 이유]
+         화면에서 "어떤 프로젝트에 대한 리뷰인지" 표시하기 위해
+         projects.title을 가져옵니다.
+         
+         [NULL 처리]
+         - client_rating, freelancer_rating이 NULL이면
+           아직 해당 주체가 리뷰 작성 안 한 것
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    
+    <select id="selectContractWithReview" resultMap="ContractReviewResultMap">
+        SELECT 
+            c.contract_id,
+            p.client_id,
+            pa.freelancer_id,
+            c.contract_start_date,
+            c.contract_end_date,
+            c.total_budget,
+            c.client_rating,
+            c.client_experience,
+            c.client_is_renewal_intended,
+            c.freelancer_rating,
+            c.freelancer_experience,
+            p.title AS project_title
+        FROM contracts c
+        LEFT JOIN project_applications pa ON c.contract_id = pa.application_id
+        LEFT JOIN projects p ON pa.project_id = p.project_id
+        WHERE c.contract_id = #{contractId}
+    </select>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         업데이트: 클라이언트 리뷰 저장
+         
+         [업데이트 대상]
+         - client_rating (별점 0~20)
+         - client_experience (공개 리뷰 텍스트)
+         - client_is_renewal_intended (재계약 의사)
+         
+         [중요!]
+         이 쿼리는 무조건 UPDATE를 수행합니다.
+         중복 작성 방지는 Service에서 체크해야 합니다.
+         
+         [NULL 허용]
+         - client_experience는 NULL 가능 (리뷰 작성 안 할 수도 있음)
+         - client_rating은 NOT NULL (별점은 필수)
+         - client_is_renewal_intended는 NULL 가능
+         
+         [트랜잭션]
+         Service 레이어에서 @Transactional 적용
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    
+    <update id="updateClientReview">
+        UPDATE contracts
+        SET 
+            client_rating = #{clientRating},
+            client_experience = #{clientExperience},
+            client_is_renewal_intended = #{clientIsRenewalIntended}
+        WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         업데이트: 프리랜서 리뷰 저장
+         
+         [업데이트 대상]
+         - freelancer_rating (별점 0~20)
+         - freelancer_experience (공개 리뷰 텍스트)
+         
+         [클라이언트와의 차이]
+         프리랜서는 재계약 의사 항목이 없습니다.
+         
+         [중요!]
+         이 쿼리는 무조건 UPDATE를 수행합니다.
+         중복 작성 방지는 Service에서 체크해야 합니다.
+         
+         [NULL 허용]
+         - freelancer_experience는 NULL 가능
+         - freelancer_rating은 NOT NULL (별점은 필수)
+         
+         [트랜잭션]
+         Service 레이어에서 @Transactional 적용
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    
+    <update id="updateFreelancerReview">
+        UPDATE contracts
+        SET 
+            freelancer_rating = #{freelancerRating},
+            freelancer_experience = #{freelancerExperience}
+        WHERE contract_id = #{contractId}
+    </update>
+
+</mapper>

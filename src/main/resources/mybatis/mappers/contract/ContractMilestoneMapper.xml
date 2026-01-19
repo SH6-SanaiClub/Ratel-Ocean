@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ContractMilestoneMapper: contract_milestones 테이블 SQL 쿼리 -->
+<mapper namespace="com.sanaiclub.domain.contract.mapper.ContractMilestoneMapper">
+
+    <!-- ResultMap Definition -->
+    <resultMap id="ContractMilestoneMap" type="com.sanaiclub.domain.contract.dto.ContractMilestoneDTO">
+        <id column="milestone_id" property="milestoneId" />
+        <result column="contract_id" property="contractId" />
+        <result column="step_order" property="stepOrder" />
+        <result column="milestone_name" property="milestoneName" />
+        <result column="work_scope" property="workScope" />
+        <result column="amount" property="amount" />
+        <result column="due_date" property="dueDate" />
+        <result column="status" property="status" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <!-- SELECT: 계약의 마일스톤 조회 -->
+    <select id="selectByContractId" parameterType="Long" resultMap="ContractMilestoneMap">
+        SELECT * FROM contract_milestones WHERE contract_id = #{contractId} ORDER BY step_order ASC
+    </select>
+
+    <!-- INSERT: 단일 마일스톤 생성 -->
+    <insert id="insert" parameterType="com.sanaiclub.domain.contract.dto.ContractMilestoneDTO" useGeneratedKeys="true" keyProperty="milestoneId">
+        INSERT INTO contract_milestones (contract_id, step_order, milestone_name, work_scope, amount, due_date, status, created_at)
+        VALUES (#{contractId}, #{stepOrder}, #{milestoneName}, #{workScope}, #{amount}, #{dueDate}, COALESCE(#{status}, 'WAITING'), NOW())
+    </insert>
+
+    <!-- INSERT: 마일스톤 배치 입력 -->
+    <insert id="insertBatch" parameterType="list">
+        INSERT INTO contract_milestones (contract_id, step_order, milestone_name, work_scope, amount, due_date, status, created_at) VALUES
+        <foreach collection="list" item="milestone" separator=",">
+            (#{milestone.contractId}, #{milestone.stepOrder}, #{milestone.milestoneName}, #{milestone.workScope}, #{milestone.amount}, #{milestone.dueDate}, COALESCE(#{milestone.status}, 'WAITING'), NOW())
+        </foreach>
+    </insert>
+
+    <!-- UPDATE: 마일스톤 상태 변경 -->
+    <update id="updateStatus" parameterType="map">
+        UPDATE contract_milestones SET status = #{status}, updated_at = NOW() WHERE milestone_id = #{milestoneId}
+    </update>
+
+    <!-- SELECT: 계약의 마일스톤 총액 -->
+    <select id="selectTotalAmountByContractId" parameterType="Long" resultType="Long">
+        SELECT COALESCE(SUM(amount), 0) FROM contract_milestones WHERE contract_id = #{contractId} AND status != 'CANCELED'
+    </select>
+
+    <!-- SELECT: 마일스톤 ID로 조회 -->
+    <select id="selectById" parameterType="Long" resultMap="ContractMilestoneMap">
+        SELECT * FROM contract_milestones WHERE milestone_id = #{milestoneId}
+    </select>
+
+</mapper>
