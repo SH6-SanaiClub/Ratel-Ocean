@@ -25,6 +25,16 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <!-- JWT 인증 필터 -->
+  <filter>
+    <filter-name>jwtAuthenticationFilter</filter-name>
+    <filter-class>com.sanaiclub.common.security.JwtAuthenticationFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>jwtAuthenticationFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- Root Context 설정 -->
   <context-param>
     <param-name>contextConfigLocation</param-name>

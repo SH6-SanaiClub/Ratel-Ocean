@@ -2,9 +2,7 @@ package com.sanaiclub.user.controller;
 
 import com.sanaiclub.user.model.dto.UserSignupRequestDTO;
 import com.sanaiclub.user.model.vo.UserType;
-import com.sanaiclub.user.service.JoinService; // 1. 타입 변경
-import com.sanaiclub.user.service.JoinServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sanaiclub.user.service.JoinService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,8 +15,12 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/join")
 public class JoinController {
 
-    @Autowired
-    private JoinServiceImpl joinService; // 2. 변수명 및 타입 변경 (JoinService로 교체)
+    private final JoinService joinService;
+
+    // 생성자 주입
+    public JoinController(JoinService joinService){
+        this.joinService = joinService;
+    }
 
     @GetMapping("/select-role")
     public String selectRolePage() {
@@ -44,52 +46,27 @@ public class JoinController {
     }
 
     @PostMapping("/signup")
-    public String signupProcess(@ModelAttribute UserSignupRequestDTO signupDTO, HttpSession session) {
-        // 이전 단계에서 선택한 유저 타입 세팅
-        UserType userType = (UserType) session.getAttribute("joinUserType");
-        signupDTO.setUserType(userType);
-
-        // 핵심: DB에 저장하지 않고 세션에 객체 저장
-        session.setAttribute("tempUser", signupDTO);
-
-        // 계좌 등록 페이지로 이동
-        return "redirect:/join/register-account";
-    }
-
-    @GetMapping("/register-account")
-    public String registerAccountPage(HttpSession session, Model model) {
-        if (session.getAttribute("tempUser") == null) {
+    public String signupProcess(@ModelAttribute UserSignupRequestDTO signupDTO, HttpSession session, RedirectAttributes rttr) {
+        UserType sessionType = (UserType) session.getAttribute("joinUserType");
+        if (sessionType == null) {
             return "redirect:/join/select-role";
         }
-        return "user/registerAccount"; // registerAccount.jsp 경로 확인 필요
-    }
+        signupDTO.setUserType(sessionType);
 
-    @PostMapping("/complete")
-    public String completeSignup(@RequestParam("bankName") String bankName,
-                                 @RequestParam("accountNumber") String accountNumber,
-                                 @RequestParam("accountHolder") String accountHolder,
-                                 HttpSession session, RedirectAttributes rttr) {
-
-        UserSignupRequestDTO tempUser = (UserSignupRequestDTO) session.getAttribute("tempUser");
-
-        if (tempUser == null) {
-            return "redirect:/join/select-role";
+        if (!signupDTO.isPasswordMatching()) {
+            rttr.addFlashAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/join/signup";
         }
 
-        // DTO에 계좌 정보 추가
-        tempUser.setBankName(bankName);
-        tempUser.setAccountNumber(accountNumber);
-        tempUser.setAccountHolder(accountHolder);
-
-        // 최종 DB 저장 서비스 호출
-        boolean isSuccess = joinService.signUp(tempUser);
+        // 3. 서비스 호출부 변수명 수정
+        boolean isSuccess = joinService.signUp(signupDTO);
 
         if (isSuccess) {
-            session.invalidate(); // 회원가입 완료 후 세션 초기화
+            session.removeAttribute("joinUserType");
             return "redirect:/user/login";
         } else {
-            rttr.addFlashAttribute("error", "회원가입 처리 중 오류가 발생했습니다.");
-            return "redirect:/join/register-account";
+            rttr.addFlashAttribute("error", "회원가입 중 오류가 발생했습니다.");
+            return "redirect:/join/signup";
         }
     }
 
