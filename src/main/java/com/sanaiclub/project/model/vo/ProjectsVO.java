@@ -5,7 +5,7 @@ import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Data
-public class ProjectVO {
+public class ProjectsVO {
     private Integer projectId;
     private Integer clientId;
     private String title;

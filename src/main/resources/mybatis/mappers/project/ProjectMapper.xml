@@ -4,7 +4,7 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ProjectMapper">
 
-    <insert id="insertProject" parameterType="com.sanaiclub.project.model.vo.ProjectVO"
+    <insert id="insertProject" parameterType="com.sanaiclub.project.model.vo.ProjectsVO"
             useGeneratedKeys="true" keyProperty="projectId">
         INSERT INTO projects (
             client_id, title, description,
