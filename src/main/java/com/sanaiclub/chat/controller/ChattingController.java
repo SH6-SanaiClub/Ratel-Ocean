@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,13 +26,16 @@ public class ChattingController {
     // 채팅 아이콘 → 목록 화면
     @GetMapping
     public String roomList() {
+
         return "chat/roomList";
     }
 
     // 채팅방 진입 (화면)
     @GetMapping("/room/{room_id}")
-    public String roomPage(@PathVariable Integer room_id, Model model) {
+    public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
+        Integer login_user_id = (Integer) httpSession.getAttribute("login_user_id");
         model.addAttribute("room_id", room_id);
+        model.addAttribute("login_user_id", login_user_id);
         return "chat/room";
     }
     @GetMapping("/room/{room_id}/info")
