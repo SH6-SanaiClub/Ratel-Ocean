@@ -1,13 +1,14 @@
 package com.sanaiclub.chat.model.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@Getter
+
 @AllArgsConstructor
+@Data
+@NoArgsConstructor
 public class ChatMessageDTO {
     private Integer message_id;
     private Integer sender_id;
