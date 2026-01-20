@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +18,7 @@ public class ChatService {
 
     private final ChatRoomMapper chatRoomMapper;
     private final ChatMessageMapper chatMessageMapper;
+    private final Map<Integer, Integer> typingMap = new ConcurrentHashMap<>();
 
     // =========================================
     // 1. 내 채팅방 목록 조회 (AJAX용)
@@ -57,6 +60,19 @@ public class ChatService {
     // =========================================
     // 4. 메시지 전송
     // =========================================
+    public void updateTyping(Integer room_id, boolean typing) {
+        Integer userId = getLoginUserId();
+
+        if (typing) {
+            typingMap.put(room_id, userId);
+        } else {
+            typingMap.remove(room_id);
+        }
+    }
+    public Integer getTypingUser(Integer room_id) {
+        return typingMap.get(room_id);
+    }
+
     @Transactional
     public void send_message(Integer room_id, String content, String file_name, String file_url, Long file_size) {
         Integer sender_id = getLoginUserId();
@@ -79,9 +95,12 @@ public class ChatService {
     // =========================================
     // 6. 메시지 읽음 처리
     // =========================================
-    public void mark_as_read(Integer message_id) {
-        chatMessageMapper.markAsRead(message_id);
+    @Transactional
+    public void markRoomAsRead(Integer room_id) {
+        Integer loginUserId = getLoginUserId();
+        chatMessageMapper.markRoomMessagesAsRead(room_id, loginUserId);
     }
+
 
     // =========================================
     // 7. 메시지 삭제
