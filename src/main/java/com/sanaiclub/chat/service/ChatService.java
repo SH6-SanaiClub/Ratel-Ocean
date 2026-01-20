@@ -29,9 +29,8 @@ public class ChatService {
         List<ChatRoomDTO> rooms = chatRoomMapper.find_my_rooms(login_user_id);
         System.out.println(rooms);
 
-        for (ChatRoomDTO room : rooms) {
+        /*for (ChatRoomDTO room : rooms) {
             List<ChatMessageDTO> messages = chatMessageMapper.findMessages(room.getRoom_id());
-            System.out.println("!!!!:" + messages);
             if (!messages.isEmpty()) {
                 ChatMessageDTO last_msg = messages.get(messages.size() - 1);
                 //last_message_at=Tue Jan 20 12:24:16 KST 2026, last_message_content=null
@@ -44,7 +43,7 @@ public class ChatService {
             }
         }
         System.out.println("----------------end -----------------");
-        System.out.println(rooms);
+        System.out.println(rooms);*/
         return rooms;
     }
 
@@ -119,6 +118,6 @@ public class ChatService {
     // =========================================
     private Integer getLogin_user_id() {
         // 실제 구현에서는 SecurityContext, Session 등에서 가져오기
-        return 1; // 테스트용 하드코딩
+        return 2; // 테스트용 하드코딩
     }
 }
