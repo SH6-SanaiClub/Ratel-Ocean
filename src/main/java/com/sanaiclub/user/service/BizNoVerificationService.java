@@ -18,16 +18,28 @@ public interface BizNoVerificationService {
      * 사업자번호 진위확인
      *
      * @param businessNumber 사업자번호 (하이픈 포함 가능)
+     * @param ceoName 대표자명
+     * @param openingDate 개업일자 (YYYYMMDD 형식)
      * @return 인증 결과
      * @throws IllegalArgumentException 인증 실패 시
      */
-    BizNoVerificationResponseDTO.BusinessData verifyBusinessNumber(String businessNumber);
+    BizNoVerificationResponseDTO.BusinessData verifyBusinessNumber(
+            String businessNumber,
+            String ceoName,
+            String openingDate
+    );
 
     /**
      * 사업자번호가 유효한지 확인
      *
      * @param businessNumber 사업자번호
+     * @param ceoName 대표자명
+     * @param openingDate 개업일자 (YYYYMMDD 형식)
      * @return 유효하면 true
      */
-    boolean isValidBusinessNumber(String businessNumber);
+    boolean isValidBusinessNumber(
+            String businessNumber,
+            String ceoName,
+            String openingDate
+    );
 }

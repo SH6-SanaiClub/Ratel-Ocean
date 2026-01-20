@@ -99,6 +99,7 @@ public class ClientJoinServiceImpl implements ClientJoinService {
                     .ceoName(companyDTO.getCeoName())
                     .ceoEmail(companyDTO.getCeoEmail())
                     .businessNumber(companyDTO.getCleanBusinessNumber())  // 하이픈 제거
+                    .openingDate(companyDTO.getOpeningDate())  // ⭐ 추가
                     .businessVerified(companyDTO.isVerified())
                     .industry(companyDTO.getIndustry())
                     .address(companyDTO.getAddress())
@@ -159,9 +160,17 @@ public class ClientJoinServiceImpl implements ClientJoinService {
      * 사업자번호 진위확인
      */
     @Override
-    public boolean verifyBusinessNumber(String businessNumber) {
+    public boolean verifyBusinessNumber(
+            String businessNumber,
+            String ceoName,
+            String openingDate
+    ) {
         try {
-            bizNoVerificationService.verifyBusinessNumber(businessNumber);
+            bizNoVerificationService.verifyBusinessNumber(
+                    businessNumber,
+                    ceoName,
+                    openingDate
+            );
             return true;
         } catch (Exception e) {
             logger.warn("사업자번호 진위확인 실패: {}", e.getMessage());

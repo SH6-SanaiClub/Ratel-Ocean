@@ -16,7 +16,8 @@ import org.springframework.web.client.RestTemplate;
  * ═══════════════════════════════════════════════════════════════════════
  *
  * [역할]
- * - 국세청 공공데이터포털 API 호출
+ * - 국세청 공공데이터포털 API 호출 (validate 엔드포인트)
+ * - 사업자번호 + 대표자명 + 개업일자로 진위 확인
  * - HTTP 통신 및 결과 파싱
  *
  */
@@ -42,19 +43,33 @@ public class BizNoVerificationServiceImpl implements BizNoVerificationService {
 
     /**
      * 사업자번호 진위확인
+     *
+     * @param businessNumber 사업자번호 (하이픈 포함 가능)
+     * @param ceoName 대표자명
+     * @param openingDate 개업일자 (YYYYMMDD)
+     * @return 인증 결과
      */
     @Override
-    public BizNoVerificationResponseDTO.BusinessData verifyBusinessNumber(String businessNumber) {
-        logger.info("사업자번호 진위확인 시작: {}", maskBusinessNumber(businessNumber));
+    public BizNoVerificationResponseDTO.BusinessData verifyBusinessNumber(
+            String businessNumber,
+            String ceoName,
+            String openingDate
+    ) {
+        logger.info("사업자번호 진위확인 시작: businessNumber={}, ceoName={}, openingDate={}",
+                maskBusinessNumber(businessNumber), maskName(ceoName), openingDate);
 
         try {
             // 1. 요청 DTO 생성
-            BizNoVerificationRequestDTO request = BizNoVerificationRequestDTO.of(businessNumber);
+            BizNoVerificationRequestDTO request = BizNoVerificationRequestDTO.of(
+                    businessNumber,
+                    ceoName,
+                    openingDate
+            );
 
             // 2. HTTP 헤더 설정
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Infuser " + apiKey);
+            headers.set("Authorization", apiKey);  // 또는 "Infuser " + apiKey
 
             // 3. HTTP 요청 엔티티 생성
             HttpEntity<BizNoVerificationRequestDTO> entity = new HttpEntity<>(request, headers);
@@ -121,9 +136,13 @@ public class BizNoVerificationServiceImpl implements BizNoVerificationService {
      * 사업자번호가 유효한지 확인
      */
     @Override
-    public boolean isValidBusinessNumber(String businessNumber) {
+    public boolean isValidBusinessNumber(
+            String businessNumber,
+            String ceoName,
+            String openingDate
+    ) {
         try {
-            verifyBusinessNumber(businessNumber);
+            verifyBusinessNumber(businessNumber, ceoName, openingDate);
             return true;
         } catch (Exception e) {
             logger.debug("사업자번호 유효성 검사 실패: {}", e.getMessage());
@@ -147,5 +166,21 @@ public class BizNoVerificationServiceImpl implements BizNoVerificationService {
         }
 
         return "***";
+    }
+
+    /**
+     * 이름 마스킹 (로그용)
+     * - 예: 홍길동 → 홍*동
+     */
+    private String maskName(String name) {
+        if (name == null || name.length() < 2) {
+            return "*";
+        }
+
+        if (name.length() == 2) {
+            return name.charAt(0) + "*";
+        }
+
+        return name.charAt(0) + "*".repeat(name.length() - 2) + name.charAt(name.length() - 1);
     }
 }

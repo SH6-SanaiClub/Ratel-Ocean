@@ -52,7 +52,13 @@ public interface ClientJoinService {
      * 사업자번호 진위확인
      *
      * @param businessNumber 사업자번호
+     * @param ceoName 대표자명
+     * @param openingDate 개업일자 (YYYYMMDD 형식)
      * @return 유효하면 true
      */
-    boolean verifyBusinessNumber(String businessNumber);
+    boolean verifyBusinessNumber(
+            String businessNumber,
+            String ceoName,
+            String openingDate
+    );
 }
