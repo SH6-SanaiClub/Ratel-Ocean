@@ -92,7 +92,7 @@
                                         <i class="fa-solid fa-database"></i>
                                     </c:when>
                                     <%-- 3. 웹 --%>
-                                    <c:when test="${fn:contains(n, 'web') or fn:contains(n, '웹') or fn:contains(n, 'front') or fn:contains(n, 'back') or fn:contains(n, 'full') or fn:contains(n, 'html')}">
+                                    <c:when test="${fn:contains(n, 'web') or fn:contains(n, '웹')}">
                                         <i class="fa-solid fa-globe"></i>
                                     </c:when>
                                     <%-- 4. 앱/모바일 --%>
@@ -112,21 +112,21 @@
                                         <i class="fa-solid fa-microchip"></i>
                                     </c:when>
                                     <%-- 8. 보안 --%>
-                                    <c:when test="${fn:contains(n, 'security') or fn:contains(n, 'sec') or fn:contains(n, '보안') or fn:contains(n, '해킹')}">
+                                    <%--<c:when test="${fn:contains(n, 'security') or fn:contains(n, 'sec') or fn:contains(n, '보안') or fn:contains(n, '해킹')}">
                                         <i class="fa-solid fa-shield-halved"></i>
                                     </c:when>
-                                    <%-- 9. 블록체인 --%>
+                                    &lt;%&ndash; 9. 블록체인 &ndash;%&gt;
                                     <c:when test="${fn:contains(n, 'block') or fn:contains(n, 'chain') or fn:contains(n, '블록체인')}">
                                         <i class="fa-solid fa-link"></i>
                                     </c:when>
-                                    <%-- 10. 디자인 --%>
+                                    &lt;%&ndash; 10. 디자인 &ndash;%&gt;
                                     <c:when test="${fn:contains(n, 'design') or fn:contains(n, 'ui') or fn:contains(n, 'ux') or fn:contains(n, '디자인') or fn:contains(n, 'publish') or fn:contains(n, '퍼블리싱')}">
                                         <i class="fa-solid fa-pen-nib"></i>
                                     </c:when>
-                                    <%-- 11. 기획/PM --%>
+                                    &lt;%&ndash; 11. 기획/PM &ndash;%&gt;
                                     <c:when test="${fn:contains(n, 'plan') or fn:contains(n, 'pm') or fn:contains(n, '기획') or fn:contains(n, 'po') or fn:contains(n, 'manager')}">
                                         <i class="fa-solid fa-file-signature"></i>
-                                    </c:when>
+                                    </c:when>--%>
                                     <%-- 기타 --%>
                                     <c:otherwise>
                                         <i class="fa-solid fa-code"></i>

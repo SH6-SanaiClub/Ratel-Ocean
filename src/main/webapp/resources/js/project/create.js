@@ -52,7 +52,10 @@ function togglePosition(card) {
 }
 
 function toggleStack(item, stackName) {
-    if ($('#stackIdsUnknown').is(':checked')) { alert("먼저 '잘 모르겠어요'를 해제해주세요."); return; }
+    if ($('#stackIdsUnknown').is(':checked')) {
+        alert("먼저 '잘 모르겠어요'를 해제해주세요.");
+        return;
+    }
     const checkbox = $(item).find('input[type="checkbox"]');
     const isSelected = !checkbox.prop('checked');
     checkbox.prop('checked', isSelected);
@@ -108,26 +111,49 @@ function toggleYear(chk) {
 function nextStep(step) {
     // 1 : 제목, 내용 (NOT NULL)
     if (step === 2) {
-        if (!$('#title').val().trim()) { alert('프로젝트 제목을 입력해주세요.'); $('#title').focus(); return; }
-        if ($('#description').summernote('isEmpty')) { alert('상세 내용을 입력해주세요.'); return; }
+        if (!$('#title').val().trim()) {
+            alert('프로젝트 제목을 입력해주세요.');
+            $('#title').focus();
+            return;
+        }
+        if ($('#description').summernote('isEmpty')) {
+            alert('상세 내용을 입력해주세요.');
+            return;
+        }
     }
     // 2 : 개발분야(NOT NULL)
     if (step === 3) {
         if ($('input[name="positionIds"]:checked').length === 0) {
-            alert('개발 분야를 하나 이상 선택해주세요.'); return;
+            alert('개발 분야를 하나 이상 선택해주세요.');
+            return;
         }
         if ($('input[name="stackIds"]:checked').length === 0 && !$('#stackIdsUnknown').is(':checked')) {
-            alert('기술 스택을 선택하거나 "잘 모르겠어요"를 체크해주세요.'); return;
+            alert('기술 스택을 선택하거나 "잘 모르겠어요"를 체크해주세요.');
+            return;
         }
     }
     // 3 : 예산, 기간, 시작일, 미팅, 대금 (NOT NULL)
     if (step === 4) {
-        if(!$('#budgetInput').val()) { alert('예산을 입력해주세요.'); $('#budgetInput').focus(); return; }
-        if(!$('#estDuration').val()) { alert('예상 기간을 선택해주세요.'); $('#estDuration').focus(); return; }
-        if($('input[name="startType"]:checked').val() === 'DATE' && !$('#startDate').val()) {
-            alert('시작 예정일을 선택해주세요.'); $('#startDate').focus(); return;
+        if (!$('#budgetInput').val()) {
+            alert('예산을 입력해주세요.');
+            $('#budgetInput').focus();
+            return;
         }
-        if(!$('#maxRevisionCount').val()) { alert('수정 횟수를 입력해주세요.'); $('#maxRevisionCount').focus(); return; }
+        if (!$('#estDuration').val()) {
+            alert('예상 기간을 선택해주세요.');
+            $('#estDuration').focus();
+            return;
+        }
+        if ($('input[name="startType"]:checked').val() === 'DATE' && !$('#startDate').val()) {
+            alert('시작 예정일을 선택해주세요.');
+            $('#startDate').focus();
+            return;
+        }
+        if (!$('#maxRevisionCount').val()) {
+            alert('수정 횟수를 입력해주세요.');
+            $('#maxRevisionCount').focus();
+            return;
+        }
     }
 
     $('.step-section').removeClass('active');
@@ -138,12 +164,16 @@ function nextStep(step) {
     if (step === 4) updatePreview();
 }
 
-function prevStep(step) { nextStep(step); }
+function prevStep(step) {
+    nextStep(step);
+}
 
 function updatePreview() {
     $('#prev-title').text($('#title').val());
     const positions = [];
-    $('.position-card.selected').each(function() { positions.push($(this).find('span').text()); });
+    $('.position-card.selected').each(function () {
+        positions.push($(this).find('span').text());
+    });
     $('#prev-positions').text(positions.join(', ') || '미지정');
 
     let raw = $('#budgetInput').val().replace(/,/g, '');
@@ -168,7 +198,7 @@ function updatePreview() {
     if ($('#stackIdsUnknown').is(':checked')) {
         $('#prev-stacks').html('<span>전문가와 협의</span>');
     } else {
-        $('.stack-chip.selected').each(function() {
+        $('.stack-chip.selected').each(function () {
             $('#prev-stacks').append(`<span>${$(this).text().trim()}</span>`);
         });
     }
@@ -187,7 +217,7 @@ function updatePreview() {
     $('#prev-revision').text($('input[name="maxRevisionCount"]').val() + '회');
 
     const policy = $('#changePolicy').val();
-    if(policy.trim()) {
+    if (policy.trim()) {
         $('#prev-policy-area').show();
         $('#prev-policy-text').text(policy);
     } else {
