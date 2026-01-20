@@ -29,4 +29,48 @@
         ]]>
   </delete>
 
+    <select id="selectBookmarkedDashboardProjects"
+            resultType="com.sanaiclub.project.model.dto.ProjectDashboardCardDTO">
+        SELECT
+            p.project_id      AS projectId,
+            p.title           AS title,
+            p.est_duration    AS estDuration,
+            p.applicant_count AS applicantCount,
+            p.budget          AS budget,
+            c.company_name    AS companyName,
+            u.name            AS clientName,
+            DATEDIFF(p.deadline_date, CURDATE()) AS dday,
+            1 AS bookmarked
+        FROM project_bookmarks pb
+            JOIN projects p ON p.project_id = pb.project_id
+            JOIN users u ON u.user_id = p.client_id
+            JOIN client_profiles cp ON cp.client_id = p.client_id
+            LEFT JOIN companies c ON c.company_id = cp.company_id
+        WHERE pb.user_id = #{userId}
+            AND p.is_public = TRUE
+
+        <if test="keyword != null and keyword != ''">
+            AND p.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        ORDER BY pb.created_at DESC, pb.bookmark_id DESC
+    </select>
+
+    <select id="selectStacksByProjectId" resultType="com.sanaiclub.project.model.dto.RequiredStackDTO">
+        SELECT
+            ps.project_stack_id AS projectStackId,
+            ps.project_id       AS projectId,
+            ps.stack_id         AS stackId,
+            s.stack_name        AS stackName,
+            s.category          AS category,
+            ps.stack_level      AS stackLevel,
+            ps.stack_year       AS stackYear
+        FROM project_stacks ps
+            JOIN stacks s ON s.stack_id = ps.stack_id
+        WHERE ps.project_id IN
+            <foreach collection="projectIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        ORDER BY ps.project_id, s.category, s.stack_name
+    </select>
 </mapper>
