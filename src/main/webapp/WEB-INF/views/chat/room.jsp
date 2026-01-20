@@ -22,6 +22,9 @@
     <main class="chat-area">
         <div class="chat-header" id="chatHeader">채팅방</div>
         <div class="chat-body" id="chatBody"></div>
+        <div class="typing" id="typingIndicator">
+            상대방이 입력 중입니다...
+        </div>
         <div class="chat-input">
             <input type="text" id="messageInput" placeholder="메시지를 입력하세요">
             <button class="send-btn" onclick="sendMessage()">전송</button>
@@ -55,6 +58,13 @@
                 roomList.innerHTML = "";
 
                 list.forEach(room => {
+                    let roomTimeText = "";
+
+                    if (room.last_message_at) {
+                        roomTimeText = new Date(room.last_message_at)
+                            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
                     const roomDiv = document.createElement("div");
                     roomDiv.dataset.roomId = room.room_id;
                     roomDiv.className = "chat-room" + (room.room_id === selectedRoomId ? " selected" : "");
@@ -63,7 +73,7 @@
                         <div style="flex:1;">
                             <div class="room-top">
                                 <span>${room.name}</span>
-                                <span>${room.last_message_at ? new Date(room.last_message_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''}</span>
+                                <span>${roomTimeText}</span>
                             </div>
                             <div class="room-bottom">
                                 ${room.last_message_content || '아직 메시지가 없습니다.'}
@@ -84,7 +94,41 @@
         highlightSelectedRoom();
         loadRoomInfo();
     }
+    let typingTimer = null;
 
+    document.getElementById("messageInput").addEventListener("input", () => {
+        if (!selectedRoomId) return;
+
+        fetch(`/ratelocean/chat/room/${selectedRoomId}/typing`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "typing=true"
+        });
+
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            fetch(`/ratelocean/chat/room/${selectedRoomId}/typing`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "typing=false"
+            });
+        }, 1500);
+    });
+    function loadTypingStatus() {
+        if (!selectedRoomId) return;
+
+        fetch(`/ratelocean/chat/room/${selectedRoomId}/typing`)
+            .then(res => res.json())
+            .then(userId => {
+                const el = document.getElementById("typingIndicator");
+
+                if (userId && userId !== loginUserId) {
+                    el.style.display = "block";
+                } else {
+                    el.style.display = "none";
+                }
+            });
+    }
     function highlightSelectedRoom() {
         document.querySelectorAll(".chat-room").forEach(div => {
             div.classList.toggle(
@@ -103,17 +147,38 @@
                 const body = document.getElementById("chatBody");
                 body.innerHTML = "";
                 list.forEach(msg => {
+                    let timeText = "";
+
+                    if (msg.created_at) {
+                        timeText = new Date(msg.created_at)
+                            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
                     const mine = msg.sender_id === loginUserId;
+
+                    let readMark = "";
+
+                    // ✅ 내가 보낸 메시지만 체크
+                    if (mine) {
+                        readMark = msg.is_read === 1 ? "0" : "1";
+                    }
+
                     const div = document.createElement("div");
                     div.className = "message " + (mine ? "mine" : "");
+
                     div.innerHTML = `
-                        <div class="bubble">
-                            ${escapeHtml(msg.content || "")}
-                            <div class="meta">${new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                        </div>
-                    `;
+        <div class="bubble">
+            ${escapeHtml(msg.content || "")}
+            <div class="meta">
+                        ${timeText}
+                <span class="read-mark">${readMark}</span>
+            </div>
+        </div>
+    `;
+
                     body.appendChild(div);
                 });
+
                 body.scrollTop = body.scrollHeight;
             });
     }
@@ -158,6 +223,17 @@
             });
     }
 
+    function selectRoom(room_id) {
+        selectedRoomId = room_id;
+
+        // ✅ 읽음 처리
+        fetch(`/ratelocean/chat/room/${room_id}/read`, {
+            method: "POST"
+        });
+
+        loadMessages();
+        loadChatRooms();
+    }
 
     // ================== 자동 갱신 ==================
     loadChatRooms();

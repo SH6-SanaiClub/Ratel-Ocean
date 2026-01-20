@@ -119,49 +119,53 @@
                 container.innerHTML = "";
 
                 list.forEach(room => {
-                    container.innerHTML += `
-                        <a href="/ratelocean/chat/room/${room.room_id}" class="chat-room-link">
-                            <div class="chat-room">
 
-                                <img src="${room.profile_image_url || '/assets/img/default-profile.png'}"
-                                     class="avatar"
-                                     onerror="this.src='/assets/img/default-profile.png'">
+                    // ✅ 시간 문자열
+                    let timeText = "";
+                    if (room.last_message_at) {
+                        timeText = new Date(room.last_message_at)
+                            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
 
-                                <div class="room-info">
-                                    <div class="room-top">
-                                        <span>${room.name}</span>
-                                        <span>
-                                            ${room.last_message_at
-                                                ? new Date(room.last_message_at).toLocaleTimeString([], {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })
-                                                : ""}
-                                        </span>
-                                    </div>
+                    // ✅ 안 읽은 메시지 개수
+                    let unreadHtml = "";
+                    if (room.unread_count > 0) {
+                        unreadHtml =
+                            '<span class="unread-badge">' +
+                            room.unread_count +
+                            '</span>';
+                    }
 
-                                    <div class="room-bottom">
-                                        ${room.last_message_content || "아직 메시지가 없습니다."}
-                                    </div>
-                                </div>
+                    container.innerHTML +=
+                        '<a href="/ratelocean/chat/room/' + room.room_id + '" class="chat-room-link">' +
+                        '<div class="chat-room">' +
 
-                                ${room.has_new_message
-                                    ? `<span class="unread-badge">NEW</span>`
-                                    : ``}
+                        '<img src="' + (room.profile_image_url || '/assets/img/default-profile.png') +
+                        '" class="avatar">' +
 
-                            </div>
-                        </a>
-                    `;
+                        '<div class="room-info">' +
+                        '<div class="room-top">' +
+                        '<span>' + room.name + '</span>' +
+                        '<span>' + timeText + '</span>' +
+                        '</div>' +
+
+                        '<div class="room-bottom">' +
+                        (room.last_message_content || '아직 메시지가 없습니다.') +
+                        '</div>' +
+                        '</div>' +
+
+                        unreadHtml +
+
+                        '</div>' +
+                        '</a>';
                 });
             });
     }
 
-    // 최초 로딩
     loadChatRooms();
-
-    // 3초마다 자동 갱신
     setInterval(loadChatRooms, 3000);
 </script>
+
 
 </body>
 </html>
