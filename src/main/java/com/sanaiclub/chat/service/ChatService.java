@@ -23,14 +23,18 @@ public class ChatService {
     // =========================================
     // 1. 내 채팅방 목록 조회 (AJAX용)
     // =========================================
+    @Transactional
     public List<ChatRoomDTO> find_my_rooms() {
-        Integer login_user_id = getLoginUserId();
+        Integer login_user_id = getLogin_user_id();
         List<ChatRoomDTO> rooms = chatRoomMapper.find_my_rooms(login_user_id);
+        System.out.println(rooms);
 
         for (ChatRoomDTO room : rooms) {
             List<ChatMessageDTO> messages = chatMessageMapper.findMessages(room.getRoom_id());
+            System.out.println("!!!!:" + messages);
             if (!messages.isEmpty()) {
                 ChatMessageDTO last_msg = messages.get(messages.size() - 1);
+                //last_message_at=Tue Jan 20 12:24:16 KST 2026, last_message_content=null
                 room.setLast_message_content(last_msg.getContent());
                 room.setLast_message_at(last_msg.getCreated_at());
                 // 로그인 유저가 읽지 않은 메시지 있는지 확인
@@ -39,7 +43,8 @@ public class ChatService {
                 room.setLast_message_content("아직 메시지가 없습니다.");
             }
         }
-
+        System.out.println("----------------end -----------------");
+        System.out.println(rooms);
         return rooms;
     }
 
@@ -61,10 +66,10 @@ public class ChatService {
     // 4. 메시지 전송
     // =========================================
     public void updateTyping(Integer room_id, boolean typing) {
-        Integer userId = getLoginUserId();
+        Integer user_id = getLogin_user_id();
 
         if (typing) {
-            typingMap.put(room_id, userId);
+            typingMap.put(room_id, user_id);
         } else {
             typingMap.remove(room_id);
         }
@@ -75,7 +80,7 @@ public class ChatService {
 
     @Transactional
     public void send_message(Integer room_id, String content, String file_name, String file_url, Long file_size) {
-        Integer sender_id = getLoginUserId();
+        Integer sender_id = getLogin_user_id();
 
         chatMessageMapper.insertMessage(room_id, sender_id, content, file_name, file_url, file_size);
 
@@ -97,8 +102,8 @@ public class ChatService {
     // =========================================
     @Transactional
     public void markRoomAsRead(Integer room_id) {
-        Integer loginUserId = getLoginUserId();
-        chatMessageMapper.markRoomMessagesAsRead(room_id, loginUserId);
+        Integer login_user_id = getLogin_user_id();
+        chatMessageMapper.markRoomMessagesAsRead(room_id,login_user_id);
     }
 
 
@@ -112,7 +117,7 @@ public class ChatService {
     // =========================================
     // 로그인 유저 ID 가져오기 (테스트용)
     // =========================================
-    private Integer getLoginUserId() {
+    private Integer getLogin_user_id() {
         // 실제 구현에서는 SecurityContext, Session 등에서 가져오기
         return 1; // 테스트용 하드코딩
     }
