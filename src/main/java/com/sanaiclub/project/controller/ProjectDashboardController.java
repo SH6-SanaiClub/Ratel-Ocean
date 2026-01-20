@@ -1,8 +1,7 @@
 package com.sanaiclub.project.controller;
 
+import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
-import com.sanaiclub.project.model.dto.ProjectDashboardCardDTO;
-import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +29,11 @@ public class ProjectDashboardController {
     ) {
         boolean active = Boolean.TRUE.equals(onlyActive);
 
+        // 쿠키에서 현재 사용자 ID 가져오기
+        Integer userId = AuthContext.getCurrentUserId() != null ? AuthContext.getCurrentUserId() : null;
+
         DashboardPageDTO pageDTO =
-                projectDashboardService.getDashboardProjects(keyword, active, page, size, summary);
+                projectDashboardService.getDashboardProjects(keyword, active, page, size, summary, userId);
 
         model.addAttribute("projectList", pageDTO.getProjectList());
 
@@ -57,16 +59,17 @@ public class ProjectDashboardController {
 
         model.addAttribute("todayNewCount", todayNewCount);
         model.addAttribute("deadline7Count", deadline7Count);
+        model.addAttribute("isClient", AuthContext.isClient());
 
         return "project/projectDashboard";
     }
 
     @GetMapping("/detail")
     public String detail(@RequestParam("projectId") Integer projectId,
-                         @RequestParam(value="page", required=false, defaultValue="1") int page,
-                         @RequestParam(value="size", required=false, defaultValue="10") int size,
-                         @RequestParam(value="onlyActive", required=false, defaultValue="false") boolean onlyActive,
-                         @RequestParam(value="keyword", required=false, defaultValue="") String keyword,
+                         @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                         @RequestParam(value = "size", required = false, defaultValue = "10") int size,
+                         @RequestParam(value = "onlyActive", required = false, defaultValue = "false") boolean onlyActive,
+                         @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
                          Model model) {
 
         model.addAttribute("project", projectDashboardService.getProjectDetail(projectId));
@@ -85,15 +88,13 @@ public class ProjectDashboardController {
     @PostMapping("/bookmark/toggle")
     @ResponseBody
     public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
-                                              //@CookieValue(value="accessToken", required=false) String token
 
-//        if (token == null || token.isBlank()) {
-//            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
-//        }
+        // 로그인 체크 및 실제 ID 사용
+        if (!AuthContext.isAuthenticated()) {
+            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
+        }
 
-//        long userId = jwtProvider.getUserId(token); // 토큰에서 userId(Subject/claim) 추출
-
-        int userId = 1;
+        Integer userId = AuthContext.getCurrentUserId();
 
         boolean bookmarked = projectBookmarkService.toggle(projectId, userId);
         return Map.of("ok", true, "bookmarked", bookmarked);

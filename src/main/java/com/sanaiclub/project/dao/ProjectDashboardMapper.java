@@ -14,9 +14,9 @@ public interface ProjectDashboardMapper {
     List<ProjectDashboardCardDTO> selectDashboardProjects(
         @Param("keyword") String keyword,
         @Param("onlyActive") boolean onlyActive,
-        @Param("limit") int limit,
-        @Param("offset") int offset,
-        @Param("userId") int userId,
+        @Param("limit") Integer limit,
+        @Param("offset") Integer offset,
+        @Param("userId") Integer userId,
         @Param("summary") String summary
     );
 

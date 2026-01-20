@@ -421,12 +421,25 @@
             border:1px solid #99f6e4;
         }
 
+        .register-area { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .btn-register {
+            padding: 12px 24px; background: var(--primary); color: #fff;
+            border-radius: 14px; text-decoration: none; font-weight: 900;
+        }
+
     </style>
 </head>
 
 <body>
 
 <div class="dashboard-wrap">
+    <c:if test="${isClient}">
+        <div class="register-area">
+            <a href="${pageContext.request.contextPath}/project/create" class="btn-register">
+                프로젝트 등록하기
+            </a>
+        </div>
+    </c:if>
 
     <!--  상단 요약 -->
     <div class="summary-grid">
@@ -445,7 +458,6 @@
                 <div class="summary-badge">+</div>
             </div>
         </a>
-
         <!-- deadline7 토글 -->
         <a class="summary-link"
            href="${pageContext.request.contextPath}/project/dashboard?summary=${summary eq 'deadline7' ? 'all' : 'deadline7'}&page=1&size=${size}&onlyActive=${onlyActive}&keyword=${fn:escapeXml(keyword)}">
@@ -650,6 +662,12 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // 서버에서 넘어온 알림 메시지가 있으면 실행
+        const alertMsg = "${alertMsg}";
+        if (alertMsg) {
+            alert(alertMsg);
+        }
+
         document.querySelectorAll(".bookmark-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
                 e.preventDefault();

@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface ProjectBookmarkMapper {
-    int isBookmarked(@Param("projectId") long projectId, @Param("userId") long userId);
-    int insertBookmark(@Param("projectId") long projectId, @Param("userId") long userId);
-    int deleteBookmark(@Param("projectId") long projectId, @Param("userId") long userId);
+    int isBookmarked(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
+    int insertBookmark(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
+    int deleteBookmark(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
 }
