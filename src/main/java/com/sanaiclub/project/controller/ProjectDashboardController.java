@@ -1,8 +1,6 @@
 package com.sanaiclub.project.controller;
 
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
-import com.sanaiclub.project.model.dto.ProjectDashboardCardDTO;
-import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
 import lombok.RequiredArgsConstructor;
@@ -85,13 +83,6 @@ public class ProjectDashboardController {
     @PostMapping("/bookmark/toggle")
     @ResponseBody
     public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
-                                              //@CookieValue(value="accessToken", required=false) String token
-
-//        if (token == null || token.isBlank()) {
-//            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
-//        }
-
-//        long userId = jwtProvider.getUserId(token); // 토큰에서 userId(Subject/claim) 추출
 
         int userId = 1;
 
