@@ -5,6 +5,57 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ProjectDashboardMapper">
 
+    <!-- 대시보드 필터 -->
+    <sql id="dashboardFilters">
+        <choose>
+            <when test="summary == 'today'">
+                AND p.created_at >= CURDATE() AND p.created_at <![CDATA[ < ]]> DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+            </when>
+            <when test="summary == 'deadline7'">
+                AND p.deadline_date >= CURDATE() AND p.deadline_date <![CDATA[ < ]]> DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+            </when>
+        </choose>
+
+        <choose>
+            <when test="onlyActive">
+                AND p.deadline_date <![CDATA[ < ]]> CURDATE()
+            </when>
+            <otherwise>
+                AND p.deadline_date >= CURDATE()
+            </otherwise>
+        </choose>
+
+        <if test="keyword != null and keyword != ''">
+            AND p.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        <if test="minBudget != null">AND p.budget >= #{minBudget}</if>
+        <if test="maxBudget != null">AND p.budget <![CDATA[ <= ]]> #{maxBudget}</if>
+
+        <if test="(positionIds != null and positionIds.size > 0) or (stackIds != null and stackIds.size > 0)">
+            AND (
+            <trim prefixOverrides="OR">
+                <if test="positionIds != null and positionIds.size > 0">
+                    EXISTS (
+                    SELECT 1 FROM project_stacks ps
+                    WHERE ps.project_id = p.project_id
+                    AND ps.stack_id IN
+                    <foreach collection="positionIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    )
+                </if>
+                <if test="stackIds != null and stackIds.size > 0">
+                    OR EXISTS (
+                    SELECT 1 FROM project_stacks ps
+                    WHERE ps.project_id = p.project_id
+                    AND ps.stack_id IN
+                    <foreach collection="stackIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    )
+                </if>
+            </trim>
+            )
+        </if>
+    </sql>
+
     <!-- 삭제된 client인 경우 프로젝트를 가져오지 않도록 where 조건 추가 필요 -->
     <!--  시작일(start_date) 관련 로직 제거, 마감일 기준으로 계산, 모집중인 것만 select -->
     <select id="selectDashboardProjects" resultType="com.sanaiclub.project.model.dto.ProjectDashboardCardDTO">
@@ -16,57 +67,28 @@
         p.budget          AS budget,
         c.company_name    AS companyName,
         u.name            AS clientName,
-
         DATEDIFF(p.deadline_date, CURDATE()) AS dday,
-
         CASE
         WHEN #{userId} IS NULL THEN 0
         ELSE EXISTS (
-        SELECT 1
-        FROM project_bookmarks pb
-        WHERE pb.project_id = p.project_id
-        AND pb.user_id = #{userId}
+        SELECT 1 FROM project_bookmarks pb
+        WHERE pb.project_id = p.project_id AND pb.user_id = #{userId}
         )
         END AS bookmarked
         FROM projects p
-
         JOIN users u ON u.user_id = p.client_id
         JOIN client_profiles cp ON cp.client_id = p.client_id
         LEFT JOIN companies c ON c.company_id = cp.company_id
+        WHERE p.is_public = TRUE AND p.project_status = 'READY'
 
-        WHERE p.is_public = TRUE
-        AND p.project_status = 'READY'
+        <include refid="dashboardFilters" />
 
-        <!-- summary 선택 -->
+        ORDER BY
         <choose>
-            <when test="summary == 'today'">
-                <![CDATA[
-                AND p.created_at >= CURDATE()
-                AND p.created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-                ]]>
-            </when>
-            <when test="summary == 'deadline7'">
-                <![CDATA[
-                AND p.deadline_date >= CURDATE()
-                AND p.deadline_date < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
-                ]]>
-            </when>
+            <when test="sort == 'budget_desc'">p.budget DESC, p.created_at DESC</when>
+            <when test="sort == 'deadline_asc'">p.deadline_date ASC, p.project_id DESC</when>
+            <otherwise>p.created_at DESC, p.project_id DESC</otherwise>
         </choose>
-
-        <if test="!onlyActive">
-            AND p.deadline_date >= CURDATE()
-        </if>
-        <if test="onlyActive">
-            <![CDATA[
-            AND p.deadline_date < CURDATE()
-            ]]>
-        </if>
-
-        <if test="keyword != null and keyword != ''">
-            AND p.title LIKE CONCAT('%', #{keyword}, '%')
-        </if>
-
-        ORDER BY p.created_at DESC, p.project_id DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
@@ -75,42 +97,11 @@
     <select id="countDashboardProjects" resultType="int">
         SELECT COUNT(DISTINCT p.project_id)
         FROM projects p
-
         JOIN users u ON u.user_id = p.client_id
         JOIN client_profiles cp ON cp.client_id = p.client_id
+        WHERE p.is_public = TRUE AND p.project_status = 'READY'
 
-        WHERE p.is_public = TRUE
-        AND p.project_status = 'READY'
-
-        <choose>
-            <when test="summary == 'today'">
-                <![CDATA[
-                AND p.created_at >= CURDATE()
-                AND p.created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-                ]]>
-            </when>
-            <when test="summary == 'deadline7'">
-                <![CDATA[
-                AND p.deadline_date >= CURDATE()
-                AND p.deadline_date < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
-                ]]>
-            </when>
-        </choose>
-
-        <choose>
-            <when test="onlyActive">
-                <![CDATA[
-                AND p.deadline_date < CURDATE()
-                ]]>
-            </when>
-            <otherwise>
-                AND p.deadline_date >= CURDATE()
-            </otherwise>
-        </choose>
-
-        <if test="keyword != null and keyword != ''">
-            AND p.title LIKE CONCAT('%', #{keyword}, '%')
-        </if>
+        <include refid="dashboardFilters" />
     </select>
 
 
@@ -155,30 +146,38 @@
     <!-- 상세보기 -->
     <select id="selectProjectDetail"
             parameterType="Integer"
-            resultType="com.sanaiclub.project.model.vo.ProjectsVO">
-        <![CDATA[
+            resultType="com.sanaiclub.project.model.dto.ProjectDetailDTO">
         SELECT
-            project_id,
-            client_id,
-            title,
-            description,
-            start_date,
-            deadline_date,
-            est_duration,
-            budget,
-            communicate_method,
-            payment_method,
-            change_policy,
-            max_revision_count,
-            project_status,
-            is_public,
-            created_at,
-            updated_at,
-            view_count,
-            applicant_count
+            project_id          AS projectId,
+            client_id           AS clientId,
+            title               AS title,
+            description         AS description,
+            start_date          AS startDate,
+            deadline_date       AS deadlineDate,
+            est_duration        AS estDuration,
+            budget              AS budget,
+            communicate_method  AS communicateMethod,
+            payment_method      AS paymentMethod,
+            change_policy       AS changePolicy,
+            max_revision_count  AS maxRevisionCount,
+            project_status      AS projectStatus,
+            is_public           AS isPublic,
+            created_at          AS createdAt,
+            updated_at          AS updatedAt,
+            view_count          AS viewCount,
+            applicant_count     AS applicantCount,
+            budget_negotiable   AS budgetNegotiable,
+            duration_negotiable AS durationNegotiable,
+            plan_url            AS planUrl
         FROM projects
         WHERE project_id = #{projectId}
-        ]]>
+    </select>
+
+    <select id="hasUserApplied" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM project_applications
+        WHERE project_id = #{projectId}
+          AND freelancer_id = #{userId}
     </select>
 
 
