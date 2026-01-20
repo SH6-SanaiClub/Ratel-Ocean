@@ -4,7 +4,10 @@ import com.sanaiclub.user.model.vo.CompanySize;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * ═══════════════════════════════════════════════════════════════════════
@@ -15,8 +18,6 @@ import javax.validation.constraints.Pattern;
  * - 클라이언트 회원가입 4단계: 법인 회사 정보 입력
  * - companies 테이블 INSERT용 데이터
  *
- * @author sanaiclub
- * @version 1.0
  */
 @Getter
 @Setter
@@ -50,6 +51,13 @@ public class CompanyRegistrationDTO {
     @NotBlank(message = "사업자등록번호를 입력해주세요.")
     @Pattern(regexp = "^\\d{3}-?\\d{2}-?\\d{5}$", message = "올바른 사업자등록번호 형식이 아닙니다.")
     private String businessNumber;
+
+    /**
+     * 개업일자
+     * - 사업자등록증에 기재된 개업일자
+     */
+    @NotNull(message = "개업일자를 입력해주세요.")
+    private LocalDate openingDate;
 
     /**
      * 업종
@@ -87,6 +95,19 @@ public class CompanyRegistrationDTO {
         return this.businessNumber != null
                 ? this.businessNumber.replaceAll("-", "")
                 : null;
+    }
+
+    /**
+     * 개업일자를 YYYYMMDD 형식 문자열로 반환 (API 요청용)
+     *
+     * @return "20260101" 형식 문자열
+     */
+    public String getOpeningDateAsString() {
+        if (this.openingDate == null) {
+            return null;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        return this.openingDate.format(formatter);
     }
 
     /**
