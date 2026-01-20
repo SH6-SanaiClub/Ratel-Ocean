@@ -46,12 +46,14 @@
                  )
     </insert>
 
-    <update id="markAsRead">
+    <update id="markRoomMessagesAsRead">
         UPDATE messages
-        SET is_read = 1,
-            read_at = CURRENT_TIMESTAMP
-        WHERE message_id = #{message_id}
+        SET is_read = 1
+        WHERE room_id = #{room_id}
+          AND sender_id != #{login_user_id}
+          AND is_read = 0
     </update>
+
 
     <update id="deleteMessage">
         UPDATE messages
