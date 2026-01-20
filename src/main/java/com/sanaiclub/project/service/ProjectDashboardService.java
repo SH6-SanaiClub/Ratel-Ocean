@@ -111,7 +111,6 @@ public class ProjectDashboardService {
         }
 
         // 2. 기술 스택 조회 및 세팅
-        // (기존 selectStacksByProjectId 재사용 - List<Integer>를 받으므로 싱글톤 리스트로 전달)
         List<RequiredStackDTO> stacks = projectDashboardMapper.selectStacksByProjectId(Collections.singletonList(projectId));
         detail.setStacks(stacks);
 
@@ -121,7 +120,7 @@ public class ProjectDashboardService {
             boolean applied = projectDashboardMapper.hasUserApplied(projectId, userId);
             detail.setApplied(applied);
 
-            // 찜하기(북마크) 여부 확인
+            // 북마크 여부 확인
             int bookmarkCount = projectBookmarkMapper.isBookmarked(projectId, userId);
             detail.setWishlisted(bookmarkCount > 0);
         } else {

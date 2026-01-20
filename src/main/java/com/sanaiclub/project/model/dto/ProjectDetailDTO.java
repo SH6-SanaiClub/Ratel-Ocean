@@ -1,72 +1,44 @@
 package com.sanaiclub.project.model.dto;
 
 import com.sanaiclub.project.model.vo.ProjectsVO;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
-@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(callSuper = true) // 부모 클래스(ProjectsVO)의 데이터까지 출력
 public class ProjectDetailDTO extends ProjectsVO {
 
     private Boolean budgetNegotiable;   // 예산 협의 가능 여부
     private Boolean durationNegotiable; // 기간 협의 가능 여부
-
     private String planUrl;             // 기획서 파일 경로
 
-    // 기술 스택
-    private List<RequiredStackDTO> stacks;
+    private List<RequiredStackDTO> stacks; // 기술 스택 목록
 
-    // 현재 로그인한 사용자 기준 상태값
-    private boolean isApplied;
-    private boolean isWishlisted;
+    private boolean isApplied;    // 지원 여부
+    private boolean isWishlisted; // 찜하기 여부
 
-    //  Getter / Setter
-
-    public Boolean getBudgetNegotiable() {
-        return budgetNegotiable;
-    }
-
-    public void setBudgetNegotiable(Boolean budgetNegotiable) {
-        this.budgetNegotiable = budgetNegotiable;
-    }
-
-    public Boolean getDurationNegotiable() {
-        return durationNegotiable;
-    }
-
-    public void setDurationNegotiable(Boolean durationNegotiable) {
-        this.durationNegotiable = durationNegotiable;
-    }
-
-    public String getPlanUrl() {
-        return planUrl;
-    }
-
-    public void setPlanUrl(String planUrl) {
-        this.planUrl = planUrl;
-    }
-
-    public List<RequiredStackDTO> getStacks() {
-        return stacks;
-    }
-
-    public void setStacks(List<RequiredStackDTO> stacks) {
-        this.stacks = stacks;
-    }
-
-    public boolean isApplied() {
-        return isApplied;
-    }
-
-    public void setApplied(boolean applied) {
-        isApplied = applied;
-    }
-
-    public boolean isWishlisted() {
-        return isWishlisted;
-    }
-
-    public void setWishlisted(boolean wishlisted) {
-        isWishlisted = wishlisted;
+    /**
+     * DTO 생성 편의 메서드 (필요 시 사용)
+     * * @param budgetNegotiable 예산 협의 여부
+     * @param durationNegotiable 기간 협의 여부
+     * @param planUrl 기획서 경로
+     * @param stacks 기술 스택
+     * @return ProjectDetailDTO
+     */
+    public static ProjectDetailDTO of(Boolean budgetNegotiable,
+                                      Boolean durationNegotiable,
+                                      String planUrl,
+                                      List<RequiredStackDTO> stacks) {
+        return ProjectDetailDTO.builder()
+                .budgetNegotiable(budgetNegotiable)
+                .durationNegotiable(durationNegotiable)
+                .planUrl(planUrl)
+                .stacks(stacks)
+                .build();
     }
 }

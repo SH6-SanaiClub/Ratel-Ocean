@@ -92,12 +92,12 @@ public class ProjectDashboardController {
         // 로그인 사용자 ID 가져오기
         Integer userId = AuthContext.getCurrentUserId() != null ? AuthContext.getCurrentUserId() : null;
 
-        // [수정] userId도 같이 넘겨서 지원여부/찜여부까지 조회
+        // userId도 같이 넘겨서 지원여부/찜여부까지 조회
         ProjectDetailDTO projectDetail = projectDashboardService.getProjectDetail(projectId, userId);
 
         model.addAttribute("project", projectDetail);
 
-        // JSP에서 변수를 바로 쓸 수 있게 플래그들을 model에 별도로도 담아주면 편리함 (선택사항)
+        // jsp에서 변수를 바로 쓸 수 있게 플래그들을 model에 별도로 담아 사용
         model.addAttribute("isApplied", projectDetail.isApplied());
         model.addAttribute("isWishlisted", projectDetail.isWishlisted());
 
