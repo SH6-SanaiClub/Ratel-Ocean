@@ -35,8 +35,16 @@
 </div>
 
 <script>
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
     let selectedRoomId = null;
-    const loginUserId = ${loginUser.id};
+    const loginUserId = ${sessionScope.loginUser.user_id};
 
     // ================== 채팅방 목록 로드 ==================
     function loadChatRooms() {
@@ -48,6 +56,7 @@
 
                 list.forEach(room => {
                     const roomDiv = document.createElement("div");
+                    roomDiv.dataset.roomId = room.room_id;
                     roomDiv.className = "chat-room" + (room.room_id === selectedRoomId ? " selected" : "");
                     roomDiv.innerHTML = `
                         <img src="${room.profile_image_url || '/assets/img/default-profile.png'}" class="avatar">
@@ -69,8 +78,8 @@
     }
 
     // ================== 방 선택 ==================
-    function selectRoom(roomId) {
-        selectedRoomId = roomId;
+    function selectRoom(room_id) {
+        selectedRoomId = room_id;
         loadMessages();
         highlightSelectedRoom();
         loadRoomInfo();
@@ -78,7 +87,10 @@
 
     function highlightSelectedRoom() {
         document.querySelectorAll(".chat-room").forEach(div => {
-            div.classList.toggle("selected", div.querySelector('span').innerText === selectedRoomId.toString());
+            div.classList.toggle(
+                "selected",
+                div.dataset.roomId == selectedRoomId
+            );
         });
     }
 
@@ -96,7 +108,7 @@
                     div.className = "message " + (mine ? "mine" : "");
                     div.innerHTML = `
                         <div class="bubble">
-                            ${msg.content || ""}
+                            ${escapeHtml(msg.content || "")}
                             <div class="meta">${new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                         </div>
                     `;
@@ -127,30 +139,35 @@
     // ================== 우측 방 정보 로드 ==================
     function loadRoomInfo() {
         if (!selectedRoomId) return;
-        fetch(`/ratelocean/chat/room/${selectedRoomId}`)
+
+        fetch(`/ratelocean/chat/room/${selectedRoomId}/info`)
             .then(res => res.json())
             .then(room => {
                 const info = document.getElementById("roomInfo");
                 info.innerHTML = `
-                    <div class="profile-card">
-                        <img src="${room.profile_image_url || '/assets/img/default-profile.png'}" class="avatar">
-                        <h3>${room.name}</h3>
-                        <p>${room.project_name || ''}</p>
-                        <div class="action-buttons">
-                            <a href="/user/profile/${room.other_user_id}" class="btn">프로필</a>
-                            <a href="/project/${room.project_id}" class="btn secondary">프로젝트</a>
-                        </div>
+                <div class="profile-card">
+                    <img src="${room.profile_image_url || '/assets/img/default-profile.png'}" class="avatar">
+                    <h3>${room.name}</h3>
+
+                    <div class="action-buttons">
+                        <a href="/user/profile/${room.user_id}" class="btn">프로필</a>
+                        <a href="/project/${room.project_id}" class="btn secondary">프로젝트</a>
                     </div>
-                `;
+                </div>
+            `;
             });
     }
+
 
     // ================== 자동 갱신 ==================
     loadChatRooms();
     setInterval(() => {
         loadChatRooms();
-        loadMessages();
+        if (selectedRoomId) {
+            loadMessages();
+        }
     }, 3000);
+
 </script>
 </body>
 </html>
