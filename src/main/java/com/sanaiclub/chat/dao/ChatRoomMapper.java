@@ -5,12 +5,13 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ChatRoomMapper {
 
     // 내 채팅방 목록 조회
-    List<ChatRoomDTO> find_my_rooms(@Param("member_id") Integer member_id);
+    List<ChatRoomDTO> find_my_rooms(@Param("login_user_id") Integer login_user_id);
 
     // 단일 채팅방 상세 조회
     ChatRoomDTO find_room_by_id(@Param("room_id") Integer room_id);
