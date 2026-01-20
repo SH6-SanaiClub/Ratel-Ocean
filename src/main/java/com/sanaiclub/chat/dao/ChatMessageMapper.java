@@ -19,9 +19,11 @@ public interface ChatMessageMapper {
             @Param("file_url") String file_url,
             @Param("file_size") Long file_size
     );
-    void markAsRead(
-            @Param("message_id")  Integer message_id
+    void markRoomMessagesAsRead(
+            @Param("room_id") Integer room_id,
+            @Param("login_user_id") Integer login_user_id
     );
+
 
     // 메시지 삭제 처리
     void deleteMessage(
