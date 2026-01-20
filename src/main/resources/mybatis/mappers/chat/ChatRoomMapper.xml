@@ -4,72 +4,41 @@
 
 
 <mapper namespace="com.sanaiclub.chat.dao.ChatRoomMapper">
-    <resultMap id="chatRoomMap"
-               type="com.sanaiclub.chat.model.dto.ChatRoomDTO">
-
+    <resultMap id="chatRoomMap" type="com.sanaiclub.chat.model.dto.ChatRoomDTO">
         <id property="room_id" column="room_id"/>
-
         <result property="project_id" column="project_id"/>
         <result property="is_active" column="is_active"/>
         <result property="profile_image_url" column="profile_image_url"/>
-
-        <result property="last_message_at" column="last_message_at"/>
-
-       <result property="last_message_content" column="last_message_content" javaType="string"/>
+        <result property="last_message_content" column="last_message_content"/>
         <result property="last_message_sender_id" column="last_message_sender_id"/>
-
+        <result property="last_message_at" column="last_message_at"/>
         <result property="unread_count" column="unread_count"/>
         <result property="name" column="name"/>
-
     </resultMap>
+
     <select id="find_my_rooms"  parameterType="int"
               resultMap="chatRoomMap" >
-        SELECT
-            cr.room_id as room_id,
-            cr.project_id as project_id,
-            cr.is_active,
-            cr.last_message_at,
-            u.name,
-            u.profile_image_url,
-            m.content AS last_message_content,
-            m.sender_id AS last_message_sender_id,
-            (
-                SELECT COUNT(*)
-                FROM messages m3
-                WHERE m3.room_id = cr.room_id
-                  AND m3.sender_id != #{login_user_id}
+        SELECT rooms.*, m.content AS last_message_content,
+               m.sender_id AS last_message_sender_id,
+               m.created_at AS last_message_at,
+               (
+                   SELECT COUNT(*)
+                   FROM messages m3
+                   WHERE m3.room_id = rooms.room_id
+                     AND m3.sender_id != #{login_user_id}
             AND m3.is_read = 0
             ) AS unread_count
-        FROM chat_rooms cr
-            JOIN projects p
-        ON p.project_id = cr.project_id
-            JOIN users u
-            ON u.user_id =
-            CASE
-            WHEN cr.freelancer_id = #{login_user_id}
-            THEN p.client_id
-            ELSE cr.freelancer_id
-        END
-                 LEFT JOIN (
-            SELECT m2.*
+        FROM chat_rooms rooms
+            LEFT JOIN messages m
+        ON m.message_id = (
+            SELECT m2.message_id
             FROM messages m2
-            WHERE m2.room_id IS NOT NULL
+            WHERE m2.room_id = rooms.room_id
             ORDER BY m2.created_at DESC
-        ) m
-                           ON m.room_id = cr.room_id
-                               AND m.message_id = (
-                                   SELECT m3.message_id
-                                   FROM messages m3
-                                   WHERE m3.room_id = cr.room_id
-                                   ORDER BY m3.created_at DESC
             LIMIT 1
             )
-        WHERE (
-            cr.freelancer_id = #{login_user_id}
-           OR p.client_id = #{login_user_id}
-            )
-
-        ORDER BY cr.last_message_at DESC
+        WHERE rooms.freelancer_id = #{login_user_id}
+        ORDER BY rooms.last_message_at DESC
     </select>
 
     <select id="find_room_by_id" resultType="com.sanaiclub.chat.model.dto.ChatRoomDTO">
