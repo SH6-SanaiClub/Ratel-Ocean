@@ -11,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/chat")
@@ -28,19 +30,36 @@ public class ChattingController {
 
     // 채팅방 진입 (화면)
     @GetMapping("/room/{room_id}")
-    public String room(@PathVariable Integer room_id, Model model) {
-
-        // 1. 채팅방 기본 정보 (상대방, 프로젝트 포함)
-        ChatRoomDTO room = chatService.find_room_by_id(room_id);
-
-        // 2. 공유 파일 목록
-        List<ChatMessageDTO> sharedFiles = chatService.find_shared_files(room_id);
-
+    public String roomPage(@PathVariable Integer room_id, Model model) {
         model.addAttribute("room_id", room_id);
-        model.addAttribute("room", room);
-        model.addAttribute("sharedFiles", sharedFiles);
-
         return "chat/room";
+    }
+    @GetMapping("/room/{room_id}/info")
+    @ResponseBody
+    public Map<String, Object> roomInfo(@PathVariable Integer room_id) {
+
+        ChatRoomDTO room = chatService.find_room_by_id(room_id);
+        Integer loginUserId = 1; // 세션에서
+
+        Integer targetUserId;
+
+        // 예시 구조 (freelancer / client)
+        if (room.getSender_id() != null && room.getSender_id().equals(loginUserId)) {
+            targetUserId = room.getProject_id(); // 예시 아님, 구조에 맞게
+        } else {
+            targetUserId = room.getSender_id();
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("room_id", room.getRoom_id());
+        result.put("name", room.getName());
+        result.put("profile_image_url", room.getProfile_image_url());
+        result.put("project_id", room.getProject_id());
+
+        // ⭐ 핵심
+        result.put("user_id", targetUserId);
+
+        return result;
     }
 
     // 채팅방 목록 데이터 (AJAX)
