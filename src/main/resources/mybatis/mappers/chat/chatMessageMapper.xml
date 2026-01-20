@@ -5,19 +5,11 @@
 
 <mapper namespace="com.sanaiclub.chat.dao.ChatMessageMapper">
 
-    <select id="findMessages" resultType="com.sanaiclub.chat.model.dto.ChatMessageDTO">
+    <select id="findMessages"
+            parameterType="int"
+            resultType="com.sanaiclub.chat.model.dto.ChatMessageDTO">
         SELECT
-            m.message_id,
-            m.room_id,
-            m.sender_id,
-            m.file_name,
-            m.file_url,
-            m.file_size,
-            m.content,
-            m.created_at,
-            m.is_read,
-            m.is_deleted,
-            m.deleted_at
+            *
         FROM messages m
         WHERE m.room_id = #{room_id}
         ORDER BY m.created_at ASC
