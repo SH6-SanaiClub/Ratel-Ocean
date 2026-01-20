@@ -1,14 +1,16 @@
 package com.sanaiclub.user.model.dto;
 
 import com.sanaiclub.user.model.vo.UserType;
-import java.sql.Date;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import java.time.LocalDate;
+
+import lombok.*;
 
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserSignupRequestDTO {
     // 1단계 선택 값
     private UserType userType;
@@ -20,7 +22,7 @@ public class UserSignupRequestDTO {
     private String email;
     private String name;
     private String phone;
-    private Date birth;
+    private LocalDate birth;
 
     // 약관 및 선택 사항
     private boolean termAgreed; // 이용약관 동의
