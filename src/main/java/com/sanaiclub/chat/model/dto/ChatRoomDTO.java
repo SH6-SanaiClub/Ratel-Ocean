@@ -18,7 +18,7 @@ public class ChatRoomDTO {
     private Date created_at;
     private Date last_message_at;
     private String last_message_content;
-    private Long last_message_sender_id;
+    private Integer last_message_sender_id;
     private Integer unread_count;
     private String name;
     private boolean has_new_message;
