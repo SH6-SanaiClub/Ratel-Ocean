@@ -44,7 +44,7 @@ public class JoinServiceImpl implements JoinService {
         // 비밀번호 암호화 (BCrypt)
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
 
-        // DTO -> VO 변환 (Builder 패턴 사용)
+        // DTO -> VO 변환
         UserVO userVO = UserVO.builder()
                 .loginId(dto.getLoginId())
                 .password(encodedPassword)
@@ -57,6 +57,14 @@ public class JoinServiceImpl implements JoinService {
                 .build();
 
         // DB 저장
-        return userMapper.insertUser(userVO) > 0;
+        int inserted = userMapper.insertUser(userVO);
+
+        if (inserted > 0) {
+            logger.info("회원가입 성공: loginId={}", dto.getLoginId());
+            return true;
+        } else {
+            logger.error("회원가입 실패: loginId={}", dto.getLoginId());
+            return false;
+        }
     }
 }
