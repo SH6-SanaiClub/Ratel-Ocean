@@ -61,6 +61,11 @@ public class ChattingController {
 
         return result;
     }
+    @PostMapping("/chat/room/{room_id}/read")
+    @ResponseBody
+    public void markAsRead(@PathVariable Integer room_id) {
+        chatService.markRoomAsRead(room_id);
+    }
 
     // 채팅방 목록 데이터 (AJAX)
     @GetMapping("/rooms")
@@ -74,6 +79,20 @@ public class ChattingController {
     @ResponseBody
     public List<ChatMessageDTO> getMessages(@PathVariable Integer room_id) {
         return chatService.find_messages(room_id);
+    }
+    @GetMapping("/room/{room_id}/typing")
+    @ResponseBody
+    public Integer getTyping(@PathVariable Integer room_id) {
+        return chatService.getTypingUser(room_id);
+    }
+
+    @PostMapping("/room/{room_id}/typing")
+    @ResponseBody
+    public void typing(
+            @PathVariable Integer room_id,
+            @RequestParam boolean typing
+    ) {
+        chatService.updateTyping(room_id, typing);
     }
 
     // 메시지 전송
