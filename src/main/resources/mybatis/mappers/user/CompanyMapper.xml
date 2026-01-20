@@ -17,6 +17,7 @@ CompanyMapper.xml - 회사 정보 SQL
         <result property="ceoName" column="ceo_name"/>
         <result property="ceoEmail" column="ceo_email"/>
         <result property="businessNumber" column="business_number"/>
+        <result property="openingDate" column="opening_date"/>
         <result property="businessVerified" column="business_verified"/>
         <result property="industry" column="industry"/>
         <result property="address" column="address"/>
@@ -32,6 +33,7 @@ CompanyMapper.xml - 회사 정보 SQL
         ceo_name,
         ceo_email,
         business_number,
+        opening_date,
         business_verified,
         industry,
         address,
@@ -53,6 +55,7 @@ CompanyMapper.xml - 회사 정보 SQL
             ceo_name,
             ceo_email,
             business_number,
+            opening_date,
             business_verified,
             industry,
             address,
@@ -63,6 +66,7 @@ CompanyMapper.xml - 회사 정보 SQL
                      #{ceoName},
                      #{ceoEmail},
                      #{businessNumber},
+                     #{openingDate},
                      #{businessVerified},
                      #{industry},
                      #{address},
@@ -107,6 +111,7 @@ CompanyMapper.xml - 회사 정보 SQL
             company_name = #{companyName},
             ceo_name = #{ceoName},
             ceo_email = #{ceoEmail},
+            opening_date = #{openingDate},
             industry = #{industry},
             address = #{address},
             company_size = #{companySize},
