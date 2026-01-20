@@ -4,7 +4,7 @@
 
 
 <mapper namespace="com.sanaiclub.chat.dao.ChatRoomMapper">
-    <select id="findMyRooms"
+    <select id="find_my_rooms"
             resultType="com.sanaiclub.chat.model.dto.ChatRoomDTO">
         SELECT
             cr.room_id,
@@ -37,11 +37,18 @@
     </select>
 
     <select id="find_room_by_id" resultType="com.sanaiclub.chat.model.dto.ChatRoomDTO">
-        SELECT room_id, name, profile_image_url, last_message_content, last_message_at, has_new_message
-        FROM chat_rooms
-        WHERE room_id = #{room_id}
+        SELECT
+            cr.room_id,
+            cr.last_message_at,
+            cr.last_message_content,
+            u.name,
+            u.profile_image_url
+        FROM chat_rooms cr
+                 JOIN users u
+                      ON u.user_id = cr.freelancer_id
+        WHERE cr.room_id = #{room_id}
     </select>
-    <update id="updateLastMessage" parameterType="map">
+    <update id="update_last_message" parameterType="map">
         UPDATE chat_rooms
         SET last_message_at = CURRENT_TIMESTAMP,
         last_message_content = #{content}

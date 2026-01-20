@@ -15,7 +15,9 @@
             m.file_size,
             m.content,
             m.created_at,
-            m.is_read
+            m.is_read,
+            m.is_deleted,
+            m.deleted_at
         FROM messages m
         WHERE m.room_id = #{room_id}
         ORDER BY m.created_at ASC
