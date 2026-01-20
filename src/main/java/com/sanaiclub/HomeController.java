@@ -113,4 +113,12 @@ public class HomeController {
 
         return result;
     }
+
+    /**
+     * 계약서 예제 페이지 (JSP 양식만 출력)
+     */
+    @GetMapping("/clientcon1")
+    public String contractSimpleExample() {
+        return "contract/contractForm";
+    }
 }

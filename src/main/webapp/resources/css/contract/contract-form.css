@@ -1,0 +1,6 @@
+/* contractForm.jsp 전용 스타일 */
+.contract-container { font-family: 'Noto Sans KR', sans-serif; }
+.section-title { color: #2d3a4b; }
+input[type="file"] { margin-top: 8px; }
+button[type="submit"] { margin-left: 12px; background: #2d3a4b; color: #fff; border: none; padding: 8px 18px; border-radius: 4px; cursor: pointer; }
+button[type="submit"]:hover { background: #1a2230; }

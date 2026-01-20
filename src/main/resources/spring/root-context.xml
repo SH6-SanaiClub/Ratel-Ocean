@@ -51,5 +51,8 @@
 
     <!-- MapperScanner -->
     <mybatis-spring:scan base-package="com.sanaiclub.user.dao"/>
+    <mybatis-spring:scan base-package="com.sanaiclub.project.dao"/>
+    <mybatis-spring:scan base-package="com.sanaiclub.contract.dao"/>
+
 
 </beans>
