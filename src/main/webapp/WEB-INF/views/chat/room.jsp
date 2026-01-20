@@ -47,7 +47,7 @@
     }
 
     let selectedRoomId = null;
-    const loginUserId = ${sessionScope.loginUser.user_id};
+    const loginUserId = '${sessionScope.loginUser != null ? sessionScope.loginUser.user_id : 0}';
 
     // ================== 채팅방 목록 로드 ==================
     function loadChatRooms() {
@@ -86,14 +86,8 @@
                 });
             });
     }
-
     // ================== 방 선택 ==================
-    function selectRoom(room_id) {
-        selectedRoomId = room_id;
-        loadMessages();
-        highlightSelectedRoom();
-        loadRoomInfo();
-    }
+
     let typingTimer = null;
 
     document.getElementById("messageInput").addEventListener("input", () => {
@@ -233,6 +227,8 @@
 
         loadMessages();
         loadChatRooms();
+        loadRoomInfo(); // 누락되지 않도록
+        highlightSelectedRoom();
     }
 
     // ================== 자동 갱신 ==================
