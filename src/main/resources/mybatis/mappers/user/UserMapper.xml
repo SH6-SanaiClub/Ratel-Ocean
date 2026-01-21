@@ -170,4 +170,43 @@ UserMapper.xml - 사용자 관련 SQL 쿼리
                  )
     </insert>
 
+    <insert id="insertFreelancerProfile">
+        INSERT INTO freelancer_profiles (
+            user_id, nickname, introduction,
+            school_name, major, degree, grad_status,
+            github_url, website_url, is_profile_complete
+        ) VALUES (
+                     #{userId}, #{dto.nickname}, #{dto.introduction},
+                     #{dto.schoolName}, #{dto.major}, #{dto.degree}, #{dto.gradStatus},
+                     #{dto.githubUrl}, #{dto.websiteUrl}, 1
+                 )
+    </insert>
+
+    <insert id="insertCompany" parameterType="com.sanaiclub.user.model.dto.ClientProfileDTO"
+            useGeneratedKeys="true" keyProperty="companyId">
+        INSERT INTO companies (
+            company_name, ceo_name, business_number,
+            industry, address, company_size, website_url
+        ) VALUES (
+                     #{companyName}, #{ceoName}, #{businessNumber},
+                     #{industry}, #{address}, #{companySize}, #{websiteUrl}
+                 )
+    </insert>
+
+    <insert id="insertClientProfile">
+        INSERT INTO client_profiles (
+            client_id, company_id, client_type
+        ) VALUES (
+                     #{userId}, #{dto.companyId}, #{dto.clientType}
+                 )
+    </insert>
+
+    <insert id="insertAccount" parameterType="com.sanaiclub.user.model.vo.AccountVO">
+        INSERT INTO accounts (
+            user_id, bank_name, account_number, account_holder
+        ) VALUES (
+                     #{userId}, #{bankName}, #{accountNumber}, #{accountHolder}
+                 )
+    </insert>
+
 </mapper>

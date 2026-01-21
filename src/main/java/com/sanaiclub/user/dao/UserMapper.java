@@ -1,5 +1,8 @@
 package com.sanaiclub.user.dao;
 
+import com.sanaiclub.user.model.dto.ClientProfileDTO;
+import com.sanaiclub.user.model.dto.FreelancerProfileDTO;
+import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.user.model.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -46,6 +49,9 @@ public interface UserMapper {
      * @param loginId 확인할 로그인 ID
      * @return 존재하면 true
      */
+    int insertAccount(AccountVO account);
+
+    // 아이디 중복 체크 (존재하면 1, 없으면 0 반환)
     int checkId(@Param("loginId") String loginId);
 
     /**
@@ -63,4 +69,15 @@ public interface UserMapper {
      * @return 등록된 행 수 (정상이면 1)
      */
     int insertUser(UserVO user);
+
+    // 프리랜서 프로필 등록
+    int insertFreelancerProfile(@Param("userId") int userId,
+                                @Param("dto") FreelancerProfileDTO dto);
+
+    // 3. 기업 정보 등록
+    int insertCompany(ClientProfileDTO dto);
+
+    // 4. 클라이언트 프로필 등록
+    int insertClientProfile(@Param("userId") int userId,
+                            @Param("dto") ClientProfileDTO dto);
 }
