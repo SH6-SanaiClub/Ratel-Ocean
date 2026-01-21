@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,9 +51,10 @@ public class ChatService {
     // =========================================
     // 2. 단일 채팅방 조회
     // =========================================
-    public ChatRoomDTO find_room_by_id(Integer room_id) {
-        return chatRoomMapper.find_room_by_id(room_id); // Mapper에 selectRoomDetail 구현 필요
+    public List<ChatMessageDTO> find_room_by_id(Integer room_id, Integer login_user_id) {
+        return chatRoomMapper.find_room_by_id(room_id, login_user_id);
     }
+
 
     // =========================================
     // 3. 메시지 목록 조회

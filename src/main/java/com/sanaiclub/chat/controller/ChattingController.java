@@ -40,31 +40,16 @@ public class ChattingController {
     }
     @GetMapping("/room/{room_id}/info")
     @ResponseBody
-    public Map<String, Object> roomInfo(@PathVariable Integer room_id) {
+    public List<ChatMessageDTO> roomInfo(
+            @PathVariable Integer room_id,
+            HttpSession session
+    ) {
+        Integer login_user_id =
+                1;
 
-        ChatRoomDTO room = chatService.find_room_by_id(room_id);
-        Integer loginUserId = 1; // 세션에서
-
-        Integer targetUserId;
-
-        // 예시 구조 (freelancer / client)
-        if (room.getSender_id() != null && room.getSender_id().equals(loginUserId)) {
-            targetUserId = room.getProject_id(); // 예시 아님, 구조에 맞게
-        } else {
-            targetUserId = room.getSender_id();
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("room_id", room.getRoom_id());
-        result.put("name", room.getName());
-        result.put("profile_image_url", room.getProfile_image_url());
-        result.put("project_id", room.getProject_id());
-
-        // ⭐ 핵심
-        result.put("user_id", targetUserId);
-
-        return result;
+        return chatService.find_room_by_id(room_id, login_user_id);
     }
+
     @PostMapping("/chat/room/{room_id}/read")
     @ResponseBody
     public void markAsRead(@PathVariable Integer room_id) {
