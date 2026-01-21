@@ -68,7 +68,9 @@ public class ChatService {
         return chatRoomMapper.find_room_by_id(room_id, login_user_id);
     }
 
-
+    public ChatRoomDTO findRoomInfo(Integer room_id, Integer login_user_id) {
+        return chatRoomMapper.findRoomInfo(room_id, login_user_id);
+    }
     // =========================================
     // 3. 메시지 목록 조회
     // =========================================

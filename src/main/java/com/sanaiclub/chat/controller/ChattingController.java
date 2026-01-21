@@ -35,19 +35,19 @@ public class ChattingController {
     public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
         Integer login_user_id = (Integer) httpSession.getAttribute("login_user_id");
         model.addAttribute("room_id", room_id);
-        model.addAttribute("login_user_id", login_user_id);
+        //model.addAttribute("login_user_id", login_user_id);
         return "chat/room";
     }
     @GetMapping("/room/{room_id}/info")
     @ResponseBody
-    public List<ChatMessageDTO> roomInfo(
+    public ChatRoomDTO roomInfo(
             @PathVariable Integer room_id,
             HttpSession session
     ) {
-        Integer login_user_id =
-                1;
+        Integer login_user_id = 1; // 실제 세션 로그인 유저 id로 교체
 
-        return chatService.find_room_by_id(room_id, login_user_id);
+        // 서비스에서 ChatRoomDTO 반환하도록
+        return chatService.findRoomInfo(room_id, login_user_id);
     }
 
     @PostMapping("/chat/room/{room_id}/read")
