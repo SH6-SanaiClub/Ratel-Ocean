@@ -23,8 +23,6 @@ public class ProjectDashboardService {
     @Autowired
     private ProjectDashboardMapper projectDashboardMapper;
 
-    @Autowired
-    private ProjectBookmarkMapper projectBookmarkMapper;
 
     public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam, String summary,
                                                  String sort, List<Integer> positionIds, List<Integer> stackIds,
@@ -100,35 +98,5 @@ public class ProjectDashboardService {
 
     public int countDeadlineWithinDays() {
         return projectDashboardMapper.deadlineWithin7Days();
-    }
-
-    public ProjectDetailDTO getProjectDetail(Integer projectId, Integer userId) {
-        // 1. 프로젝트 기본 정보 조회
-        ProjectDetailDTO detail = projectDashboardMapper.selectProjectDetail(projectId);
-
-        if (detail == null) {
-            throw new RuntimeException("프로젝트를 찾을 수 없습니다."); // 또는 null 리턴 처리
-        }
-
-        // 2. 기술 스택 조회 및 세팅
-        List<RequiredStackDTO> stacks = projectDashboardMapper.selectStacksByProjectId(Collections.singletonList(projectId));
-        detail.setStacks(stacks);
-
-        // 3. 로그인 사용자 관련 정보 세팅
-        if (userId != null) {
-            // 지원 여부 확인
-            boolean applied = projectDashboardMapper.hasUserApplied(projectId, userId);
-            detail.setApplied(applied);
-
-            // 북마크 여부 확인
-            int bookmarkCount = projectBookmarkMapper.isBookmarked(projectId, userId);
-            detail.setWishlisted(bookmarkCount > 0);
-        } else {
-            // 비로그인 시 기본값
-            detail.setApplied(false);
-            detail.setWishlisted(false);
-        }
-
-        return detail;
     }
 }

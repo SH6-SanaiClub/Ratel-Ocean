@@ -37,14 +37,10 @@ public interface ProjectDashboardMapper {
     );
 
     List<RequiredStackDTO> selectStacksByProjectId(
-        @Param("projectIds") List<Integer> projectIds
+            @Param("projectIds") List<Integer> projectIds
     );
 
     int todayNewProject();
 
     int deadlineWithin7Days();
-
-    ProjectDetailDTO selectProjectDetail(@Param("projectId") Integer projectId);
-
-    boolean hasUserApplied(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
 }

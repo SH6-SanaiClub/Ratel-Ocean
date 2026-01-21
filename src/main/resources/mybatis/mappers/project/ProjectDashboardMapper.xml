@@ -60,13 +60,13 @@
     <!--  시작일(start_date) 관련 로직 제거, 마감일 기준으로 계산, 모집중인 것만 select -->
     <select id="selectDashboardProjects" resultType="com.sanaiclub.project.model.dto.ProjectDashboardCardDTO">
         SELECT
-        p.project_id      AS projectId,
-        p.title           AS title,
-        p.est_duration    AS estDuration,
+        p.project_id AS projectId,
+        p.title AS title,
+        p.est_duration AS estDuration,
         p.applicant_count AS applicantCount,
-        p.budget          AS budget,
-        c.company_name    AS companyName,
-        u.name            AS clientName,
+        p.budget AS budget,
+        c.company_name AS companyName,
+        u.name AS clientName,
         DATEDIFF(p.deadline_date, CURDATE()) AS dday,
         CASE
         WHEN #{userId} IS NULL THEN 0
@@ -81,7 +81,7 @@
         LEFT JOIN companies c ON c.company_id = cp.company_id
         WHERE p.is_public = TRUE AND p.project_status = 'READY'
 
-        <include refid="dashboardFilters" />
+        <include refid="dashboardFilters"/>
 
         ORDER BY
         <choose>
@@ -101,19 +101,19 @@
         JOIN client_profiles cp ON cp.client_id = p.client_id
         WHERE p.is_public = TRUE AND p.project_status = 'READY'
 
-        <include refid="dashboardFilters" />
+        <include refid="dashboardFilters"/>
     </select>
 
 
     <select id="selectStacksByProjectId" resultType="com.sanaiclub.project.model.dto.RequiredStackDTO">
         SELECT
         ps.project_stack_id AS projectStackId,
-        ps.project_id       AS projectId,
-        ps.stack_id         AS stackId,
-        s.stack_name        AS stackName,
-        s.category          AS category,
-        ps.stack_level      AS stackLevel,
-        ps.stack_year       AS stackYear
+        ps.project_id AS projectId,
+        ps.stack_id AS stackId,
+        s.stack_name AS stackName,
+        s.category AS category,
+        ps.stack_level AS stackLevel,
+        ps.stack_year AS stackYear
         FROM project_stacks ps
         JOIN stacks s ON s.stack_id = ps.stack_id
         WHERE ps.project_id IN
@@ -122,7 +122,6 @@
         </foreach>
         ORDER BY ps.project_id, s.category, s.stack_name
     </select>
-
 
 
     <select id="todayNewProject" resultType="int">
@@ -147,30 +146,35 @@
     <select id="selectProjectDetail"
             parameterType="Integer"
             resultType="com.sanaiclub.project.model.dto.ProjectDetailDTO">
-        SELECT
-            project_id          AS projectId,
-            client_id           AS clientId,
-            title               AS title,
-            description         AS description,
-            start_date          AS startDate,
-            deadline_date       AS deadlineDate,
-            est_duration        AS estDuration,
-            budget              AS budget,
-            communicate_method  AS communicateMethod,
-            payment_method      AS paymentMethod,
-            change_policy       AS changePolicy,
-            max_revision_count  AS maxRevisionCount,
-            project_status      AS projectStatus,
-            is_public           AS isPublic,
-            created_at          AS createdAt,
-            updated_at          AS updatedAt,
-            view_count          AS viewCount,
-            applicant_count     AS applicantCount,
-            budget_negotiable   AS budgetNegotiable,
-            duration_negotiable AS durationNegotiable,
-            plan_url            AS planUrl
-        FROM projects
-        WHERE project_id = #{projectId}
+        SELECT p.project_id          AS projectId,
+               p.client_id           AS clientId,
+               p.title               AS title,
+               p.description         AS description,
+               p.start_date          AS startDate,
+               p.deadline_date       AS deadlineDate,
+               p.est_duration        AS estDuration,
+               p.budget              AS budget,
+               p.communicate_method  AS communicateMethod,
+               p.payment_method      AS paymentMethod,
+               p.project_status      AS projectStatus,
+               p.is_public           AS isPublic,
+               p.created_at          AS createdAt,
+               p.view_count          AS viewCount,
+               p.applicant_count     AS applicantCount,
+               p.budget_negotiable   AS budgetNegotiable,
+               p.duration_negotiable AS durationNegotiable,
+               p.plan_url            AS planUrl,
+               u.name                AS clientName,
+               c.company_name        AS companyName,
+               cp.client_type        AS clientType,
+               c.industry            AS companyIndustry
+
+
+        FROM projects p
+                 JOIN users u ON u.user_id = p.client_id
+                 LEFT JOIN client_profiles cp ON cp.client_id = p.client_id
+                 LEFT JOIN companies c ON c.company_id = cp.company_id
+        WHERE p.project_id = #{projectId}
     </select>
 
     <select id="hasUserApplied" resultType="boolean">
@@ -180,5 +184,19 @@
           AND freelancer_id = #{userId}
     </select>
 
+    <!-- 지원자 저장 -->
+    <insert id="insertApplication">
+        INSERT INTO project_applications (project_id, freelancer_id, is_contracted, applied_at)
+        VALUES (#{projectId}, #{userId}, false, NOW())
+    </insert>
+
+    <delete id="deleteApplication">
+        DELETE FROM project_applications
+        WHERE project_id = #{projectId} AND freelancer_id = #{userId}
+    </delete>
+
+    <select id="selectUserType" resultType="string">
+        SELECT user_type FROM users WHERE user_id = #{userId}
+    </select>
 
 </mapper>
