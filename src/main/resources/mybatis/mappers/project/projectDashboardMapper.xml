@@ -5,7 +5,6 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ProjectDashboardMapper">
 
-    <!-- 대시보드 필터 -->
     <sql id="dashboardFilters">
         <choose>
             <when test="summary == 'today'">
@@ -18,8 +17,7 @@
 
         <choose>
             <when test="onlyActive">
-                AND (p.deadline_date <![CDATA[ < ]]> CURDATE()
-                OR p.project_status = 'CLOSED')
+                AND p.deadline_date <![CDATA[ < ]]> CURDATE()
             </when>
             <otherwise>
                 AND p.deadline_date >= CURDATE()
@@ -57,8 +55,6 @@
         </if>
     </sql>
 
-    <!-- 삭제된 client인 경우 프로젝트를 가져오지 않도록 where 조건 추가 필요 -->
-    <!--  시작일(start_date) 관련 로직 제거, 마감일 기준으로 계산, 모집중인 것만 select -->
     <select id="selectDashboardProjects" resultType="com.sanaiclub.project.model.dto.ProjectDashboardCardDTO">
         SELECT
         p.project_id AS projectId,
@@ -93,8 +89,6 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 시작일 조건 제외, 프로젝트 상태가 READY인 것들만 count -->
-    <!-- 개수 -->
     <select id="countDashboardProjects" resultType="int">
         SELECT COUNT(DISTINCT p.project_id)
         FROM projects p
@@ -133,12 +127,11 @@
           AND created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
         ]]>
     </select>
-
     <select id="deadlineWithin7Days" resultType="int">
         <![CDATA[
         SELECT COUNT(*)
         FROM projects
-        WHERE project_status = 'READY' /* 모집 중인 건만 집계 (모집 종료된 건은 집계 제외) */
+        WHERE project_status = 'READY'
           AND deadline_date >= CURDATE()
           AND deadline_date < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
         ]]>
