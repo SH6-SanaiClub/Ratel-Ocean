@@ -2,7 +2,7 @@ package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
-import com.sanaiclub.project.service.ProjectService;
+import com.sanaiclub.project.service.ProjectCreateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,10 +14,10 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/project")
-public class ProjectController {
+public class ProjectCreateController {
 
     @Autowired
-    private ProjectService projectService;
+    private ProjectCreateService projectCreateService;
 
     // 프로젝트 등록 페이지 보여주기
     @GetMapping("/create")
@@ -34,7 +34,7 @@ public class ProjectController {
         }
 
         // 스택 목록을 담기 위한 서비스 호출
-        projectService.setStackListToModel(model);
+        projectCreateService.setStackListToModel(model);
 
         return "project/create";
     }
@@ -49,7 +49,7 @@ public class ProjectController {
         Integer clientId = AuthContext.getCurrentUserId();
 
         try {
-            projectService.createProject(request, clientId, planFile);
+            projectCreateService.createProject(request, clientId, planFile);
         } catch (Exception e) {
             e.printStackTrace();
             return "redirect:/project/create?error=true";

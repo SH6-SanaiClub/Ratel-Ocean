@@ -2,17 +2,14 @@ package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
-import com.sanaiclub.project.model.dto.ProjectDetailDTO;
-import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
-import com.sanaiclub.project.service.ProjectService;
+import com.sanaiclub.project.service.ProjectCreateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,7 +17,7 @@ import java.util.Map;
 public class ProjectDashboardController {
 
     private final ProjectDashboardService projectDashboardService;
-    private final ProjectService projectService;
+    private final ProjectCreateService projectCreateService;
 
     @GetMapping("/dashboard")
     public String dashboard(
@@ -46,7 +43,7 @@ public class ProjectDashboardController {
         );
 
         // 필터 패널에 보여줄 포지션/스킬 목록 가져오기
-        projectService.setStackListToModel(model);
+        projectCreateService.setStackListToModel(model);
 
         model.addAttribute("projectList", pageDTO.getProjectList());
 
