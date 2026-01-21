@@ -266,6 +266,34 @@
       border: 1px solid #f5c6cb;
       color: #721c24;
     }
+
+    /* ⭐ 추가: 필드 잠금 스타일 */
+    .locked-field {
+      background-color: #f0f0f0 !important;
+      border: 2px solid #1F7A8C !important;
+      color: #666 !important;
+      cursor: not-allowed !important;
+      font-weight: 500;
+    }
+
+    .lock-notice {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #e8f4f8;
+      border-left: 4px solid #1F7A8C;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #0d5a6b;
+      line-height: 1.5;
+    }
+
+    #checkBusinessBtn:disabled {
+      background-color: #28a745;
+      border-color: #28a745;
+      color: white;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -528,8 +556,18 @@
       });
     });
 
-    // 사업자 진위확인
+    // ⭐ 사업자 진위확인 (필드 잠금 기능 추가)
     $('#verifyBusinessBtn').click(function() {
+      // ⭐ 재인증 확인
+      if (isBusinessVerified && $(this).hasClass('btn-secondary')) {
+        if (confirm('진위확인을 다시 진행하시겠습니까?\n정보를 수정한 후 다시 인증해야 합니다.')) {
+          unlockVerifiedFields();
+          $('#verificationResult').addClass('hidden').html('');
+          alert('필드가 잠금 해제되었습니다. 정보를 수정한 후 다시 진위확인을 진행해주세요.');
+        }
+        return;
+      }
+
       const businessNumber = $('#businessNumber').val().trim();
       const ceoName = $('#ceoName').val().trim();
       const openingDate = $('#openingDate').val();
@@ -562,11 +600,15 @@
             resultDiv.html('✅ ' + response.message)
                     .removeClass('error').addClass('success');
             isBusinessVerified = true;
+            // ⭐ 필드 잠금
+            lockVerifiedFields();
             checkCompletionReady();
           } else {
             resultDiv.html('❌ ' + response.message)
                     .removeClass('success').addClass('error');
             isBusinessVerified = false;
+            // ⭐ 잠금 해제
+            unlockVerifiedFields();
           }
         },
         error: function(xhr) {
@@ -575,6 +617,7 @@
                   .removeClass('hidden success').addClass('error')
                   .text('❌ 인증 중 오류가 발생했습니다.');
           isBusinessVerified = false;
+          unlockVerifiedFields();
         },
         complete: function() {
           $('#verifyBusinessBtn').prop('disabled', false).text('🔍 사업자 진위확인');
@@ -619,6 +662,65 @@
         }
       });
     });
+
+    // ═══════════════════════════════════════════════════════════════
+    // ⭐ 추가: 필드 잠금/해제 함수
+    // ═══════════════════════════════════════════════════════════════
+
+    function lockVerifiedFields() {
+      // 1. 필수 필드 readonly
+      $('#businessNumber').prop('readonly', true).addClass('locked-field');
+      $('#ceoName').prop('readonly', true).addClass('locked-field');
+      $('#openingDate').prop('readonly', true).addClass('locked-field');
+
+      // 2. 중복확인 버튼 비활성화
+      $('#checkBusinessBtn').prop('disabled', true).text('확인완료');
+
+      // 3. 진위확인 버튼 → 재인증 버튼으로 변경
+      $('#verifyBusinessBtn')
+              .removeClass('btn-primary')
+              .addClass('btn-secondary')
+              .html('🔄 다시 인증하기');
+
+      // 4. 안내 메시지 추가
+      if ($('#lockNotice').length === 0) {
+        $('#verificationResult').after(
+                '<div id="lockNotice" class="lock-notice">' +
+                '🔒 진위확인이 완료된 정보는 수정할 수 없습니다. ' +
+                '정보를 변경하려면 다시 "사업자 진위확인"을 클릭하세요.' +
+                '</div>'
+        );
+      }
+
+      console.log('✅ 진위확인 완료: 필드 잠금');
+    }
+
+    function unlockVerifiedFields() {
+      // 1. readonly 해제
+      $('#businessNumber').prop('readonly', false).removeClass('locked-field');
+      $('#ceoName').prop('readonly', false).removeClass('locked-field');
+      $('#openingDate').prop('readonly', false).removeClass('locked-field');
+
+      // 2. 중복확인 버튼 활성화
+      $('#checkBusinessBtn').prop('disabled', false).text('중복확인');
+
+      // 3. 진위확인 버튼 복구
+      $('#verifyBusinessBtn')
+              .removeClass('btn-secondary')
+              .addClass('btn-primary')
+              .html('🔍 사업자 진위확인');
+
+      // 4. 안내 메시지 제거
+      $('#lockNotice').remove();
+
+      // 5. 상태 초기화
+      isBusinessNumberChecked = false;
+      isBusinessVerified = false;
+      $('#businessMsg').text('');
+      $('#completeCorporation').prop('disabled', true);
+
+      console.log('🔓 필드 잠금 해제');
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // 공통 함수
