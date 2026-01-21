@@ -10,13 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/join")
 public class JoinController {
+
+    // 세션 키 상수
+    private static final String SESSION_USER_TYPE = "selectedUserType";
+    private static final String SESSION_USER_DATA = "userSignupData";
 
     private final JoinService joinService;
 
@@ -25,21 +28,36 @@ public class JoinController {
         this.joinService = joinService;
     }
 
+    /**
+     * 유저 타입 선택 페이지
+     * GET /join/select-role
+     */
     @GetMapping("/select-role")
     public String selectRolePage() {
         return "user/selectRole";
     }
 
+    /**
+     * 유저 타입 선택 처리
+     * POST /join/select-role
+     *
+     * @param userType FREELANCER 또는 CLIENT
+     */
     @PostMapping("/select-role")
     public String selectRoleProcess(@RequestParam("userType") UserType userType, HttpSession session) {
-        session.setAttribute("joinUserType", userType);
+        session.setAttribute(SESSION_USER_TYPE, userType);
         return "redirect:/join/signup";
     }
 
+    /**
+     * 공통 정보 입력 페이지
+     * GET /join/signup
+     */
     @GetMapping("/signup")
     public String signupPage(HttpSession session, Model model) {
-        UserType userType = (UserType) session.getAttribute("joinUserType");
+        UserType userType = (UserType) session.getAttribute(SESSION_USER_TYPE);
 
+        // 유저 타입 선택 안 했으면 처음부터
         if (userType == null) {
             return "redirect:/join/select-role";
         }
@@ -48,21 +66,43 @@ public class JoinController {
         return "user/signup";
     }
 
+    /**
+     * 공통 정보 제출 처리
+     * POST /join/signup
+     *
+     * 플로우:
+     * - FREELANCER: 세션 저장 → /join/freelancer/signup (미구현)
+     * - CLIENT: 세션 저장 → /join/client/signup
+     */
     @PostMapping("/signup")
-    public String signupProcess(UserDefaultDTO userDto, HttpSession session) {
-        // 세션의 역할 정보 DTO에 주입
-        UserType userType = (UserType) session.getAttribute("joinUserType");
-        userDto.setUserType(userType);
+    public String signupProcess(@ModelAttribute UserSignupRequestDTO dto, HttpSession session) {
+        UserType userType = (UserType) session.getAttribute(SESSION_USER_TYPE);
 
-        // 공통 정보 세션 저장
-        session.setAttribute("tempUser", userDto);
+        // 유저 타입 확인
+        if (userType == null) {
+            return "redirect:/join/select-role";
+        }
 
+        // DTO에 유저 타입 설정
+        dto.setUserType(userType);
+
+        // 비밀번호 일치 확인
+        if (!dto.isPasswordMatching()) {
+            session.setAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/join/signup";
+          
+        // 공통 정보를 세션에 저장
+        session.setAttribute(SESSION_USER_DATA, dto);
+          
         // 역할에 따라 이동 경로 분기
         if (UserType.FREELANCER.equals(userType)) {
             return "redirect:/join/freelancer-profile";
-        } else {
-            return "redirect:/join/client-profile";
+        } else if (UserType.CLIENT.equals(userType)) {
+            return "redirect:/join/client/signup";
         }
+          
+        // 예외 처리
+        return "redirect:/join/select-role";
     }
 
     @GetMapping("/freelancer-profile")
@@ -76,19 +116,6 @@ public class JoinController {
         session.setAttribute("tempFreeProfile", freeDto);
         return "redirect:/join/register-account";
     }
-
-    @GetMapping("/client-profile")
-    public String clientProfilePage(HttpSession session) {
-        if (session.getAttribute("tempUser") == null) return "redirect:/join/select-role";
-        return "user/client/client_profile";
-    }
-
-    @PostMapping("/client-profile")
-    public String clientProfileProcess(ClientProfileDTO clientDto, HttpSession session) {
-        session.setAttribute("tempClientProfile", clientDto);
-        return "redirect:/join/register-account";
-    }
-
 
     @GetMapping("/register-account")
     public String registerAccountPage(HttpSession session, Model model) {
@@ -108,12 +135,12 @@ public class JoinController {
             UserDefaultDTO user = (UserDefaultDTO) session.getAttribute("tempUser");
             if (user == null) throw new IllegalStateException("세션 만료: 기본 정보 없음");
 
-            // 역할에 따라 다른 서비스 메서드 호출 (깔끔!)
+            // 역할에 따라 다른 서비스 메서드 호출
             if (UserType.FREELANCER.equals(user.getUserType())) {
 
                 FreelancerProfileDTO freeProfile = (FreelancerProfileDTO) session.getAttribute("tempFreeProfile");
                 if (freeProfile == null) throw new IllegalStateException("프리랜서 프로필 정보 없음");
-
+                
                 // 프리랜서 전용 메서드 호출
                 joinService.signUpFreelancer(user, freeProfile, accountDto);
 
@@ -134,20 +161,23 @@ public class JoinController {
             rttr.addFlashAttribute("error", "회원가입 실패: " + e.getMessage());
             return "redirect:/join/select-role";
         }
-    }
 
+    /**
+     * 아이디 중복 확인
+     */
     @GetMapping("/check-id")
     @ResponseBody
     public ResponseEntity<String> checkId(@RequestParam("loginId") String loginId) {
-        // 4. 아이디 중복체크 호출부 수정
         boolean isDuplicate = joinService.isIdDuplicate(loginId);
         return isDuplicate ? ResponseEntity.ok("DUPLICATE") : ResponseEntity.ok("AVAILABLE");
     }
 
+    /**
+     * 이메일 중복 확인
+     */
     @GetMapping("/check-email")
     @ResponseBody
     public ResponseEntity<String> checkEmail(@RequestParam("email") String email) {
-        // 5. 이메일 중복체크 호출부 수정
         boolean isDuplicate = joinService.isEmailDuplicate(email);
         return isDuplicate ? ResponseEntity.ok("DUPLICATE") : ResponseEntity.ok("AVAILABLE");
     }

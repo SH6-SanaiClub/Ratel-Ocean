@@ -78,8 +78,10 @@ public class JoinServiceImpl implements JoinService {
     //  Private Helper Methods (중복 제거용 내부 메서드)
     // ========================================================
 
+    // 공통정보 DB 저장
     private int insertCommonUser(UserDefaultDTO userDto) {
         String encodedPw = passwordEncoder.encode(userDto.getPassword());
+        // dto -> vo 변환
         UserVO userVO = UserVO.builder()
                 .loginId(userDto.getLoginId())
                 .password(encodedPw)
@@ -103,7 +105,7 @@ public class JoinServiceImpl implements JoinService {
                 .accountNumber(encryptedAccountNumber)
                 .accountHolder(accountDto.getAccountHolder())
                 .build();
-
+      
         userMapper.insertAccount(accountVO);
     }
 }

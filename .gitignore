@@ -57,6 +57,7 @@ buildNumber.properties
 .env.local
 .env.*.local
 **/jwt.properties
+**/bizno-api.properties
 
 # ===== 로그 파일 =====
 logs/
