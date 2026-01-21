@@ -66,18 +66,56 @@
 ORDER BY
     m.created_at DESC
     </select>
+    <resultMap id="chatMessageMap" type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
+        <id property="message_id" column="message_id"/>
+        <result property="sender_id" column="sender_id"/>
+        <result property="room_id" column="room_id"/>
+        <result property="project_id" column="project_id"/>
+        <result property="title" column="title"/>
+        <result property="user_id" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="profile_image_url" column="profile_image_url"/>
+        <result property="content" column="content"/>
+        <result property="created_at" column="created_at"/>
+        <result property="deleted_at" column="deleted_at"/>
+        <result property="is_read" column="is_read"/>
+        <result property="is_deleted" column="is_deleted"/>
+        <result property="file_name" column="file_name"/>
+        <result property="file_url" column="file_url"/>
+        <result property="file_size" column="file_size"/>
+    </resultMap>
 
-    <select id="find_room_by_id" resultType="com.sanaiclub.chat.model.dto.ChatRoomDTO">
+    <select id="find_room_by_id" resultMap="chatMessageMap">
         SELECT
             cr.room_id,
-            cr.last_message_at,
-            cr.last_message_content,
+            cr.project_id,
+            p.title,
+            u.user_id,
             u.name,
-            u.profile_image_url
+            u.profile_image_url,
+            m.message_id,
+            m.content,
+            m.sender_id,
+            m.created_at,
+            m.deleted_at,
+            m.is_read,
+            m.is_deleted,
+            m.file_name,
+            m.file_url,
+            m.file_size
         FROM chat_rooms cr
+                 JOIN projects p
+                      ON cr.project_id = p.project_id
                  JOIN users u
-                      ON u.user_id = cr.freelancer_id
+                      ON u.user_id =
+                         CASE
+                             WHEN p.client_id = #{login_user_id}
+                                 THEN cr.freelancer_id
+                             ELSE p.client_id
+                             END
+                 LEFT JOIN messages m ON m.room_id = cr.room_id
         WHERE cr.room_id = #{room_id}
+        ORDER BY m.created_at ASC
     </select>
     <update id="update_last_message" parameterType="map">
         UPDATE chat_rooms
