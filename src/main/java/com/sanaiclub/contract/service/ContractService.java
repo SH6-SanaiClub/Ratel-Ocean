@@ -4,7 +4,7 @@ package com.sanaiclub.contract.service;
 import com.sanaiclub.contract.model.ContractFreelancerVO;
 import com.sanaiclub.contract.model.ContractProjectVO;
 import com.sanaiclub.contract.model.ContractClientVO;
-import com.sanaiclub.contract.model.ContractFreelancerEntity;
+import com.sanaiclub.contract.model.ContractFreelancerDTO;
 import com.sanaiclub.contract.dao.ContractProjectDao;
 import com.sanaiclub.contract.dao.ContractFreelancerDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,23 +31,22 @@ public class ContractService {
 	public ContractClientVO getClientByLoginUser() {
 		Integer rawId = com.sanaiclub.common.util.AuthContext.getCurrentUserId();
 		if (rawId == null) return null;
-		Long loginUserId = rawId.longValue();
-		return contractClientDao.findByUserId(loginUserId);
+		return contractClientDao.findByUserId(rawId);
 	}
 
 		// 클라이언트별 프로젝트 목록 조회
-		public List<ContractProjectVO> getProjectsByClientId(Long clientId) {
+		public List<ContractProjectVO> getProjectsByClientId(Integer clientId) {
 			return contractProjectDao.findByClientId(clientId);
 		}
 
 		// 프로젝트별 지원 프리랜서 목록 조회
-		public List<ContractFreelancerVO> getFreelancersByProjectId(Long projectId) {
+		public List<ContractFreelancerVO> getFreelancersByProjectId(Integer projectId) {
 			return contractFreelancerDao.findByProjectId(projectId);
 		}
 
 	// DB에서 프로젝트 정보 조회
-	public ContractProjectVO getProjectById(Long id) { return contractProjectDao.findById(id); }
+	public ContractProjectVO getProjectById(Integer id) { return contractProjectDao.findById(id); }
 
 	// DB에서 프리랜서 정보 조회
-	public ContractFreelancerVO getFreelancerById(Long id) { return contractFreelancerDao.findById(id); }
+	public ContractFreelancerVO getFreelancerById(Integer id) { return contractFreelancerDao.findById(id); }
 }

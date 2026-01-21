@@ -14,16 +14,16 @@
 
 
     -->
-    <select id="findByClientId"
-            parameterType="long"
+        <select id="findByClientId"
+            parameterType="int"
             resultType="com.sanaiclub.contract.model.ContractProjectVO">
         SELECT *
         FROM projects
         WHERE client_id = #{clientId}
     </select>
 
-    <select id="findById"
-            parameterType="long"
+        <select id="findById"
+            parameterType="int"
             resultType="com.sanaiclub.contract.model.ContractProjectVO">
         SELECT project_id, title, description, budget, est_duration, start_date, deadline_date
         FROM projects
@@ -37,8 +37,8 @@
     </select>
 
     <!-- 기존 쿼리 예시 (프로젝트 지원자 조회) -->
-    <select id="findByProjectId"
-            parameterType="long"
+        <select id="findByProjectId"
+            parameterType="int"
             resultType="com.sanaiclub.contract.model.ContractFreelancerVO">
         SELECT * from project_applications
         WHERE project_id = #{projectId}

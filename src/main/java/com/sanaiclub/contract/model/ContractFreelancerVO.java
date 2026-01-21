@@ -7,7 +7,7 @@ import lombok.Data;
 public class ContractFreelancerVO {
 
 
-    private Long id;
+    private Integer id;
     private String name;
     private String email;
     private String phone;
