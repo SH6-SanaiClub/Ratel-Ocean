@@ -53,11 +53,14 @@ public class CompanyRegistrationDTO {
     private String businessNumber;
 
     /**
-     * 개업일자
-     * - 사업자등록증에 기재된 개업일자
+     * 개업일자 (String 타입)
+     * - JSP에서 "2025-01-15" 형식으로 전송
+     * - 진위확인 API: "20250115" 형식으로 변환
+     * - DB 저장: LocalDate로 변환
      */
-    @NotNull(message = "개업일자를 입력해주세요.")
-    private LocalDate openingDate;
+    @NotBlank(message = "개업일자를 입력해주세요.")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "올바른 날짜 형식이 아닙니다. (YYYY-MM-DD)")
+    private String openingDate;
 
     /**
      * 업종
@@ -98,16 +101,20 @@ public class CompanyRegistrationDTO {
     }
 
     /**
-     * 개업일자를 YYYYMMDD 형식 문자열로 반환 (API 요청용)
+     * 개업일자를 LocalDate로 변환 (DB 저장용)
+     * "2025-01-15" → LocalDate
      *
-     * @return "20260101" 형식 문자열
+     * @return LocalDate 객체
      */
-    public String getOpeningDateAsString() {
-        if (this.openingDate == null) {
+    public LocalDate getOpeningDateAsLocalDate() {
+        if (this.openingDate == null || this.openingDate.trim().isEmpty()) {
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        return this.openingDate.format(formatter);
+        try {
+            return LocalDate.parse(this.openingDate, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("개업일자 형식이 올바르지 않습니다: " + this.openingDate);
+        }
     }
 
     /**

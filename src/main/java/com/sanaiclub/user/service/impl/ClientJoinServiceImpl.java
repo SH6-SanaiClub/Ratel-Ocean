@@ -99,7 +99,7 @@ public class ClientJoinServiceImpl implements ClientJoinService {
                     .ceoName(companyDTO.getCeoName())
                     .ceoEmail(companyDTO.getCeoEmail())
                     .businessNumber(companyDTO.getCleanBusinessNumber())  // 하이픈 제거
-                    .openingDate(companyDTO.getOpeningDate())  // ⭐ 추가
+                    .openingDate(companyDTO.getOpeningDateAsLocalDate())
                     .businessVerified(companyDTO.isVerified())
                     .industry(companyDTO.getIndustry())
                     .address(companyDTO.getAddress())
