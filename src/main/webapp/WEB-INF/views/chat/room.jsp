@@ -22,7 +22,7 @@
     <main class="chat-area">
         <div class="chat-header" id="chatHeader">채팅방</div>
         <div class="chat-body" id="chatBody"></div>
-        <div class="typing" id="typingIndicator">
+        <div class="typing" id="typingIndicator"  style="display:none">
             상대방이 입력 중입니다...
         </div>
         <div class="chat-input">
@@ -38,6 +38,8 @@
 </div>
 
 <script>
+    const messageInput = document.getElementById("messageInput");
+
     function escapeHtml(text) {
         if (!text) return "";
         return text
@@ -46,8 +48,8 @@
             .replace(/>/g, "&gt;");
     }
 
-    let selectedRoomId = null;
-    const loginUserId = '${sessionScope.loginUser != null ? sessionScope.loginUser.user_id : 0}';
+    let selectedRoom_id = null;
+    const login_user_id = '${sessionScope.loginUser != null ? sessionScope.loginUser.user_id : 0}';
 
     // ================== 채팅방 목록 로드 ==================
     function loadChatRooms() {
@@ -66,8 +68,8 @@
                     }
 
                     const roomDiv = document.createElement("div");
-                    roomDiv.dataset.roomId = room.room_id;
-                    roomDiv.className = "chat-room" + (room.room_id === selectedRoomId ? " selected" : "");
+                    roomDiv.dataset.room_id = room.room_id;
+                    roomDiv.className = "chat-room" + (room.room_id === selectedRoom_id ? " selected" : "");
                     roomDiv.innerHTML = `
                         <img src="${room.profile_image_url || '/assets/img/default-profile.png'}" class="avatar">
                         <div style="flex:1;">
@@ -89,34 +91,40 @@
     // ================== 방 선택 ==================
 
     let typingTimer = null;
+    let isTyping = false;
 
-    document.getElementById("messageInput").addEventListener("input", () => {
-        if (!selectedRoomId) return;
 
-        fetch(`/ratelocean/chat/room/${selectedRoomId}/typing`, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "typing=true"
-        });
+    messageInput.addEventListener("keydown", () => {
+        if (!selectedRoom_id) return;
+        if (!isTyping) {
+            isTyping = true;
+
+            fetch(`/chat/room/${selectedRoom_id}/typing`, {
+                method: "POST",
+                body: new URLSearchParams({ typing: true })
+            });
+        }
 
         clearTimeout(typingTimer);
+
         typingTimer = setTimeout(() => {
-            fetch(`/ratelocean/chat/room/${selectedRoomId}/typing`, {
+            isTyping = false;
+
+            fetch(`/chat/room/${selectedRoom_id}/typing`, {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "typing=false"
+                body: new URLSearchParams({ typing: false })
             });
-        }, 1500);
+        }, 1000); // 1초 동안 입력 없으면 typing 종료
     });
     function loadTypingStatus() {
-        if (!selectedRoomId) return;
+        if (!selectedRoom_id) return;
 
-        fetch(`/ratelocean/chat/room/${selectedRoomId}/typing`)
+        fetch(`/ratelocean/chat/room/${selectedRoom_id}/typing`)
             .then(res => res.json())
-            .then(userId => {
+            .then(user_id => {
                 const el = document.getElementById("typingIndicator");
 
-                if (userId && userId !== loginUserId) {
+                if (user_id && user_id !== login_user_id) {
                     el.style.display = "block";
                 } else {
                     el.style.display = "none";
@@ -127,15 +135,15 @@
         document.querySelectorAll(".chat-room").forEach(div => {
             div.classList.toggle(
                 "selected",
-                div.dataset.roomId == selectedRoomId
+                div.dataset.room_id == selectedRoom_id
             );
         });
     }
 
     // ================== 메시지 로드 ==================
     function loadMessages() {
-        if (!selectedRoomId) return;
-        fetch(`/ratelocean/chat/room/${selectedRoomId}/messages`)
+        if (!selectedRoom_id) return;
+        fetch(`/ratelocean/chat/room/${selectedRoom_id}/messages`)
             .then(res => res.json())
             .then(list => {
                 const body = document.getElementById("chatBody");
@@ -148,7 +156,7 @@
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
 
-                    const mine = msg.sender_id === loginUserId;
+                    const mine = msg.sender_id === login_user_id;
 
                     let readMark = "";
 
@@ -160,15 +168,14 @@
                     const div = document.createElement("div");
                     div.className = "message " + (mine ? "mine" : "");
 
-                    div.innerHTML = `
-        <div class="bubble">
-            ${escapeHtml(msg.content || "")}
-            <div class="meta">
-                        ${timeText}
-                <span class="read-mark">${readMark}</span>
-            </div>
-        </div>
-    `;
+                    div.innerHTML =
+    '<div class="bubble">'
+  + escapeHtml(msg.content || '')
+  + '<div class="meta">'
+  + timeText
+  + '<span class="read-mark">' + readMark + '</span>'
+  + '</div></div>';
+
 
                     body.appendChild(div);
                 });
@@ -181,9 +188,9 @@
     function sendMessage() {
         const input = document.getElementById("messageInput");
         const content = input.value.trim();
-        if (!content || !selectedRoomId) return;
+        if (!content || !selectedRoom_id) return;
 
-        fetch("/ratelocean/chat/room/" + selectedRoomId + "/message", {
+        fetch("/ratelocean/chat/room/" + selectedRoom_id + "/message", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({ content: content })
@@ -197,9 +204,9 @@
 
     // ================== 우측 방 정보 로드 ==================
     function loadRoomInfo() {
-        if (!selectedRoomId) return;
+        if (!selectedRoom_id) return;
 
-        fetch(`/ratelocean/chat/room/${selectedRoomId}/info`)
+        fetch(`/ratelocean/chat/room/${selectedRoom_id}/info`)
             .then(res => res.json())
             .then(room => {
                 const info = document.getElementById("roomInfo");
@@ -218,13 +225,15 @@
     }
 
     function selectRoom(room_id) {
-        selectedRoomId = room_id;
+        selectedRoom_id = room_id;
 
         // ✅ 읽음 처리
         fetch(`/ratelocean/chat/room/${room_id}/read`, {
             method: "POST"
         });
-
+        fetch(`/ratelocean/chat/room/${room_id}/typing/reset`, {
+            method: "POST"
+        });
         loadMessages();
         loadChatRooms();
         loadRoomInfo(); // 누락되지 않도록
@@ -235,8 +244,9 @@
     loadChatRooms();
     setInterval(() => {
         loadChatRooms();
-        if (selectedRoomId) {
+        if (selectedRoom_id) {
             loadMessages();
+            loadTypingStatus();
         }
     }, 3000);
 
