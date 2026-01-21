@@ -18,27 +18,53 @@
 
     <select id="find_my_rooms"  parameterType="int"
               resultMap="chatRoomMap" >
-        SELECT rooms.*, m.content AS last_message_content,
-               m.sender_id AS last_message_sender_id,
-               m.created_at AS last_message_at,
-               (
-                   SELECT COUNT(*)
-                   FROM messages m3
-                   WHERE m3.room_id = rooms.room_id
-                     AND m3.sender_id != #{login_user_id}
+        SELECT
+            rooms.*,
+
+            m.content     AS last_message_content,
+            m.sender_id   AS last_message_sender_id,
+            m.created_at  AS last_message_at,
+
+            u.name,
+            u.profile_image_url,
+
+            (
+                SELECT COUNT(*)
+                FROM messages m3
+                WHERE m3.room_id = rooms.room_id
+                  AND m3.sender_id != #{login_user_id}
             AND m3.is_read = 0
             ) AS unread_count
+
         FROM chat_rooms rooms
+
+            JOIN projects p
+        ON p.project_id = rooms.project_id
+
             LEFT JOIN messages m
-        ON m.message_id = (
+            ON m.message_id = (
             SELECT m2.message_id
             FROM messages m2
             WHERE m2.room_id = rooms.room_id
             ORDER BY m2.created_at DESC
             LIMIT 1
             )
-        WHERE rooms.freelancer_id = #{login_user_id}
-        ORDER BY rooms.last_message_at DESC
+
+-- ⭐ 상대방 user join
+            JOIN users u
+            ON u.user_id =
+            CASE
+            WHEN rooms.freelancer_id = #{login_user_id}
+            THEN p.client_id
+            ELSE rooms.freelancer_id
+        END
+
+        WHERE
+    rooms.freelancer_id = #{login_user_id}
+ OR p.client_id = #{login_user_id}
+
+ORDER BY
+    m.created_at DESC
     </select>
 
     <select id="find_room_by_id" resultType="com.sanaiclub.chat.model.dto.ChatRoomDTO">
