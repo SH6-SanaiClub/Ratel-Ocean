@@ -48,6 +48,7 @@ buildNumber.properties
 # ===== 민감정보 =====
 **/db.properties
 **/database.properties
+**/security.properties
 **/application-local.properties
 **/application-dev.properties
 **/*-local.yml

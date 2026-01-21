@@ -1,7 +1,12 @@
 package com.sanaiclub.user.service.impl;
 
+import com.sanaiclub.common.util.EncryptionUtil;
 import com.sanaiclub.user.dao.UserMapper;
-import com.sanaiclub.user.model.dto.UserSignupRequestDTO;
+import com.sanaiclub.user.model.dto.AccountDTO;
+import com.sanaiclub.user.model.dto.ClientProfileDTO;
+import com.sanaiclub.user.model.dto.FreelancerProfileDTO;
+import com.sanaiclub.user.model.dto.UserDefaultDTO;
+import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.user.model.vo.UserStatus;
 import com.sanaiclub.user.model.vo.UserVO;
 import com.sanaiclub.user.service.JoinService;
@@ -19,10 +24,12 @@ public class JoinServiceImpl implements JoinService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EncryptionUtil encryptionUtil;
 
-    public JoinServiceImpl(UserMapper userMapper) {
+    public JoinServiceImpl(UserMapper userMapper, EncryptionUtil encryptionUtil, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.encryptionUtil = encryptionUtil;
+        this.passwordEncoder = passwordEncoder; // 스프링이 가져다주는 빈을 그대로 사용!
     }
 
     @Override
@@ -38,33 +45,67 @@ public class JoinServiceImpl implements JoinService {
     /**
      * 회원가입 핵심 로직
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    @Transactional
-    public boolean signUp(UserSignupRequestDTO dto) {
-        // 비밀번호 암호화 (BCrypt)
-        String encodedPassword = passwordEncoder.encode(dto.getPassword());
+    public boolean signUpFreelancer(UserDefaultDTO userDto, FreelancerProfileDTO freeDto, AccountDTO accountDto) throws Exception {
+        try {
+            int userId = insertCommonUser(userDto); // 유저 기본 정보 저장
+            userMapper.insertFreelancerProfile(userId, freeDto); // 프로필 저장
+            insertCommonAccount(userId, accountDto); // 계좌 정보 저장 (암호화 포함)
+            return true;
+        } catch (Exception e) {
+            logger.error("프리랜서 가입 실패: {}", e.getMessage());
+            throw e; // 예외를 던져야 @Transactional이 롤백을 수행함
+        }
+    }
 
-        // DTO -> VO 변환
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean signUpClient(UserDefaultDTO userDto, ClientProfileDTO clientDto, AccountDTO accountDto) throws Exception {
+        try {
+            int userId = insertCommonUser(userDto);
+            userMapper.insertCompany(clientDto); // 기업 정보 저장 (Key 식별)
+            userMapper.insertClientProfile(userId, clientDto); // 클라이언트 프로필 저장
+            insertCommonAccount(userId, accountDto);
+            return true;
+        } catch (Exception e) {
+            logger.error("클라이언트 가입 실패: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    // ========================================================
+    //  Private Helper Methods (중복 제거용 내부 메서드)
+    // ========================================================
+
+    // 공통정보 DB 저장
+    private int insertCommonUser(UserDefaultDTO userDto) {
+        String encodedPw = passwordEncoder.encode(userDto.getPassword());
+        // dto -> vo 변환
         UserVO userVO = UserVO.builder()
-                .loginId(dto.getLoginId())
-                .password(encodedPassword)
-                .email(dto.getEmail())
-                .name(dto.getName())
-                .phone(dto.getPhone())
-                .userType(dto.getUserType())
-                .birthDate(dto.getBirth())
-                .status(UserStatus.ACTIVE) // 기본 활성화 상태
+                .loginId(userDto.getLoginId())
+                .password(encodedPw)
+                .email(userDto.getEmail())
+                .name(userDto.getName())
+                .phone(userDto.getPhone())
+                .birthDate(userDto.getBirth())
+                .userType(userDto.getUserType())
+                .status(UserStatus.ACTIVE)
                 .build();
 
-        // DB 저장
-        int inserted = userMapper.insertUser(userVO);
+        userMapper.insertUser(userVO);
+        return userVO.getUserId(); // useGeneratedKeys로 받아온 ID 리턴
+    }
 
-        if (inserted > 0) {
-            logger.info("회원가입 성공: loginId={}", dto.getLoginId());
-            return true;
-        } else {
-            logger.error("회원가입 실패: loginId={}", dto.getLoginId());
-            return false;
-        }
+    private void insertCommonAccount(int userId, AccountDTO accountDto) throws Exception {
+        String encryptedAccountNumber = encryptionUtil.encrypt(accountDto.getAccountNumber());;
+        AccountVO accountVO = AccountVO.builder()
+                .userId(userId)
+                .bankName(accountDto.getBankName())
+                .accountNumber(encryptedAccountNumber)
+                .accountHolder(accountDto.getAccountHolder())
+                .build();
+      
+        userMapper.insertAccount(accountVO);
     }
 }
