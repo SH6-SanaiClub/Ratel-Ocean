@@ -2,6 +2,46 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.sanaiclub.contract.dao.ContractDao">
+<mapper namespace="com.sanaiclub.contract.dao.ContractProjectDao">
     <!-- Contract 관련 쿼리를 여기에 작성하세요. -->
+
+    <!--
+        ContractProjectVO의 project_id 필드에 DB의 project_id 값을 정확히 매핑하기 위해
+        select 쿼리에서 project_id 컬럼을 명시적으로 조회합니다.
+        (MyBatis는 컬럼명과 VO 필드명이 다르면 자동 매핑이 되지 않으므로 반드시 필요)
+
+        project_id, title, description, budget, est_duration, start_date, deadline_date
+
+
+    -->
+    <select id="findByClientId"
+            parameterType="long"
+            resultType="com.sanaiclub.contract.model.ContractProjectVO">
+        SELECT *
+        FROM projects
+        WHERE client_id = #{clientId}
+    </select>
+
+    <select id="findById"
+            parameterType="long"
+            resultType="com.sanaiclub.contract.model.ContractProjectVO">
+        SELECT project_id, title, description, budget, est_duration, start_date, deadline_date
+        FROM projects
+        WHERE project_id = #{id}
+    </select>
+
+    <select id="findAll"
+            resultType="com.sanaiclub.contract.model.ContractProjectVO">
+        SELECT project_id, title, description, budget, est_duration, start_date, deadline_date
+        FROM projects
+    </select>
+
+    <!-- 기존 쿼리 예시 (프로젝트 지원자 조회) -->
+    <select id="findByProjectId"
+            parameterType="long"
+            resultType="com.sanaiclub.contract.model.ContractFreelancerVO">
+        SELECT * from project_applications
+        WHERE project_id = #{projectId}
+    </select>
+
 </mapper>

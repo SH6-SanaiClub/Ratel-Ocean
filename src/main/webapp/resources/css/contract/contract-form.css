@@ -2,5 +2,27 @@
 .contract-container { font-family: 'Noto Sans KR', sans-serif; }
 .section-title { color: #2d3a4b; }
 input[type="file"] { margin-top: 8px; }
-button[type="submit"] { margin-left: 12px; background: #2d3a4b; color: #fff; border: none; padding: 8px 18px; border-radius: 4px; cursor: pointer; }
-button[type="submit"]:hover { background: #1a2230; }
+button[type="submit"] { margin-left: 12px; background: #2d3a4b; color: #fff; border: none; padding: 8px 18px; border-radius: 4px; cursor: pointer; transition: background 0.2s, opacity 0.2s; }
+button[type="submit"]:hover:enabled { background: #1a2230; }
+button[type="submit"][disabled], button[type="submit"]:disabled, button[type="submit"].disabled, button[type="submit"][aria-disabled="true"] {
+	background: repeating-linear-gradient(135deg, #e0e3e7, #f5f6fa 10px, #e0e3e7 20px) !important;
+	color: #b0b0b0 !important;
+	border: 2px dashed #bfc5cd !important;
+	opacity: 0.7 !important;
+	cursor: not-allowed !important;
+	box-shadow: 0 0 0 2px #f5f6fa inset !important;
+	filter: grayscale(80%) blur(0.5px);
+	pointer-events: auto;
+	text-decoration: line-through;
+	letter-spacing: 1px;
+	font-style: italic;
+	transition: background 0.2s, color 0.2s, border 0.2s, opacity 0.2s !important;
+}
+button[type="submit"][disabled]:hover, button[type="submit"]:disabled:hover, button[type="submit"].disabled:hover, button[type="submit"][aria-disabled="true"]:hover {
+	background: #e0e3e7 !important;
+	color: #b0b0b0 !important;
+	border: 2px dashed #bfc5cd !important;
+	cursor: not-allowed !important;
+	filter: grayscale(80%) blur(0.5px);
+	text-decoration: line-through;
+}
