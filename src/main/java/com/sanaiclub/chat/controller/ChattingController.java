@@ -98,6 +98,11 @@ public class ChattingController {
     ) {
         chatService.updateTyping(room_id, typing);
     }
+    @PostMapping("/room/{room_id}/typing/reset")
+    @ResponseBody
+    public void resetTyping(@PathVariable Integer room_id) {
+        chatService.resetTyping(room_id);
+    }
 
     // 메시지 전송
     @PostMapping("/room/{room_id}/message")
