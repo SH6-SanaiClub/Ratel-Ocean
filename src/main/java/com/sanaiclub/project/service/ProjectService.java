@@ -3,7 +3,7 @@ package com.sanaiclub.project.service;
 import com.sanaiclub.project.dao.ProjectMapper;
 import com.sanaiclub.project.dao.StackMapper;
 import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
-import com.sanaiclub.project.model.dto.StackDto;
+import com.sanaiclub.project.model.dto.StackDTO;
 import com.sanaiclub.project.model.vo.ProjectStackVO;
 import com.sanaiclub.project.model.vo.ProjectsVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +34,14 @@ public class ProjectService {
     // 기술 스택을 가져오는 메서드
     public void setStackListToModel(Model model) {
         // DB에서 모든 스택을 가져옴
-        List<StackDto> allStack = stackMapper.findAll();
+        List<StackDTO> allStack = stackMapper.findAll();
 
         // 데이터를 담기 위한 리스트 생성
-        List<StackDto> positionList = new ArrayList<>();
-        List<StackDto> skillList = new ArrayList<>();
+        List<StackDTO> positionList = new ArrayList<>();
+        List<StackDTO> skillList = new ArrayList<>();
 
         // 가져온 스택 분류
-        for (StackDto stack : allStack) {
+        for (StackDTO stack : allStack) {
             // 카테고리가 포지션이면 포지션 리스트에 저장
             if ("POSITION".equals(stack.getCategory())) {
                 positionList.add(stack);
