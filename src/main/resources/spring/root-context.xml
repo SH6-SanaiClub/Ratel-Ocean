@@ -11,14 +11,17 @@
            http://mybatis.org/schema/mybatis-spring
            http://mybatis.org/schema/mybatis-spring.xsd">
 
+    <!-- Properties 파일 로드 -->
+    <context:property-placeholder
+            location="classpath:db.properties,classpath:jwt.properties,classpath:bizno-api.properties"
+            ignore-unresolvable="true"
+            order="1"/>
+
     <!-- Component Scan (Controller 제외) -->
     <context:component-scan base-package="com.sanaiclub">
         <context:exclude-filter type="annotation"
                                 expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
-
-    <!-- Properties 파일 로드 -->
-    <context:property-placeholder location="classpath:db.properties, classpath:jwt.properties"/>
 
     <!-- BCrypt 비밀번호 암호화 설정 -->
     <bean id="passwordEncoder"
@@ -50,6 +53,6 @@
     </bean>
 
     <!-- MapperScanner -->
-    <mybatis-spring:scan base-package="com.sanaiclub.user.dao"/>
+    <mybatis-spring:scan base-package="com.sanaiclub.**.dao"/>
 
 </beans>
