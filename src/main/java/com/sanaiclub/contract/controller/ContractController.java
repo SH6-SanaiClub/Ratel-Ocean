@@ -27,6 +27,27 @@ import com.sanaiclub.contract.service.ContractCheckService;
 @RequestMapping({"/contract", "/client/contract"})
 public class ContractController {
 
+    /**
+     * 업로드된 계약서 PDF 파일을 바이너리로 반환하는 엔드포인트 (404 해결)
+     * 실제 저장 경로와 일치해야 하며, 보안상 파일명 검증 필요(여기선 단순 구현)
+     */
+    @GetMapping("/file/{fileName:.+}")
+    public void servePdf(@PathVariable String fileName, javax.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        // 실제 저장 경로와 반드시 일치시켜야 함 (Tomcat bin 폴더)
+        String uploadDir = "C:/program/apache-tomcat-9.0.112/bin/uploaded-contracts";
+        java.nio.file.Path file = java.nio.file.Paths.get(uploadDir, fileName);
+        if (!java.nio.file.Files.exists(file)) {
+            response.setStatus(javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("text/plain;charset=UTF-8");
+            response.getWriter().write("파일을 찾을 수 없습니다.");
+            return;
+        }
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
+        java.nio.file.Files.copy(file, response.getOutputStream());
+        response.getOutputStream().flush();
+    }
+
         @PostMapping(value = "/uploadPdf", produces = MediaType.APPLICATION_JSON_VALUE)
         @ResponseBody
         public ResponseEntity<Map<String, Object>> uploadPdf(@RequestParam("contractPdf") MultipartFile contractPdf) {
@@ -64,20 +85,29 @@ public class ContractController {
     }
 
     @PostMapping("/contractCheck")
-    public String contractCheck(@RequestParam Long projectId,
-                                @RequestParam Long freelancerId,
-                                @RequestParam String contractContent,
-                                @RequestParam(value = "uploadedPdfFileName", required = false) String uploadedPdfFileName,
-                                Model model) {
+        public String contractCheck(
+            @org.springframework.web.bind.annotation.ModelAttribute com.sanaiclub.contract.model.ContractFormDto formDto,
+            @RequestParam(value = "uploadedPdfFileName", required = false) String uploadedPdfFileName,
+            Model model) {
         // 프로젝트, 프리랜서, 클라이언트 정보 조회
-        var project = contractService.getProjectById(projectId);
-        var freelancer = contractService.getFreelancerById(freelancerId);
+        var project = contractService.getProjectById(formDto.getProjectId());
+        var freelancer = contractService.getFreelancerById(formDto.getFreelancerId());
         var client = contractService.getClientByLoginUser();
+        if (client == null) {
+            System.out.println("[ERROR] contractCheck: 로그인한 클라이언트 정보가 없습니다. 세션 userId=" + com.sanaiclub.common.util.AuthContext.getCurrentUserId());
+            model.addAttribute("errorMessage", "클라이언트 정보가 없습니다. 관리자에게 문의하세요.");
+        }
+        // PDF 업로드 후 uploadedPdfFileName 파라미터가 전달되면 formDto에 세팅
+        if (uploadedPdfFileName != null && !uploadedPdfFileName.isEmpty()) {
+            formDto.setUploadedPdfFileName(uploadedPdfFileName);
+        }
         model.addAttribute("project", project);
         model.addAttribute("freelancer", freelancer);
         model.addAttribute("client", client);
-        model.addAttribute("contractContent", contractContent);
-        model.addAttribute("uploadedPdfFileName", uploadedPdfFileName);
+        model.addAttribute("formDto", formDto);
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.util.Date contractedAtDate = java.util.Date.from(now.atZone(java.time.ZoneId.systemDefault()).toInstant());
+        model.addAttribute("contractedAt", contractedAtDate);
         return "contract/contractCheck";
     }
 
@@ -133,13 +163,26 @@ public class ContractController {
             System.out.println("!!![DEBUG] 프로젝트 목록: " + projectList);
             model.addAttribute("projectList", projectList != null ? projectList : java.util.Collections.emptyList());
 
+            // 선택된 프로젝트
+            ContractProjectVO selectedProject = null;
+            if (projectId != null) {
+                selectedProject = contractService.getProjectById(projectId);
+            }
+            model.addAttribute("selectedProject", selectedProject);
 
+            // 프리랜서 목록 (프로젝트가 선택된 경우에만)
+            List<ContractFreelancerVO> freelancerList = java.util.Collections.emptyList();
+            if (projectId != null) {
+                freelancerList = contractService.getFreelancersByProjectId(projectId);
+            }
+            model.addAttribute("freelancerList", freelancerList);
 
-
-//            // 선택된 프리랜서 정보
-//            var selectedFreelancer = (freelancerId != null) ? contractService.getFreelancerById(freelancerId) : null;
-//            model.addAttribute("selectedFreelancer", selectedFreelancer);
-
+            // 선택된 프리랜서
+            ContractFreelancerVO selectedFreelancer = null;
+            if (freelancerId != null) {
+                selectedFreelancer = contractService.getFreelancerById(freelancerId);
+            }
+            model.addAttribute("selectedFreelancer", selectedFreelancer);
 
         } catch (Exception e) {
             model.addAttribute("errorMessage", "일시적인 오류가 발생했습니다. (" + e.getMessage() + ")");
@@ -147,7 +190,6 @@ public class ContractController {
             model.addAttribute("freelancerList", java.util.Collections.emptyList());
             model.addAttribute("selectedProject", null);
             model.addAttribute("selectedFreelancer", null);
-
         }
         return "contract/contractForm";
     }
