@@ -12,6 +12,7 @@ import java.util.Date;
 public class ChatRoomDTO {
     private Integer room_id;
     private Integer project_id;
+    private String project_name;
     private Integer sender_id;
     private Boolean is_active;
     private String profile_image_url;
