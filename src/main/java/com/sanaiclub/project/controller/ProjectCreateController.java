@@ -30,7 +30,7 @@ public class ProjectCreateController {
         // 클라이언트가 아니거나 로그인이 안 된 경우 차단
         if (userId == null || !isClient) {
             rttr.addFlashAttribute("alertMsg", "클라이언트 전용 메뉴입니다. 프로젝트 등록은 클라이언트 계정으로만 가능합니다.");
-            return "redirect:/project/dashboard"; // 대시보드로 즉시 리다이렉트
+            return "redirect:/project/dashboard";
         }
 
         // 스택 목록을 담기 위한 서비스 호출
@@ -54,7 +54,7 @@ public class ProjectCreateController {
             e.printStackTrace();
             return "redirect:/project/create?error=true";
         }
-        // 등록 성공 시 success 페이지로 리다이렉트
+        // 등록 성공 시
         return "redirect:/project/success";
     }
 

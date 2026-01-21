@@ -62,11 +62,4 @@
         SELECT user_type FROM users WHERE user_id = #{userId}
     </select>
 
-    <select id="isBookmarked" resultType="int">
-        SELECT COUNT(*)
-        FROM project_bookmarks
-        WHERE project_id = #{projectId}
-          AND user_id = #{userId}
-    </select>
-
 </mapper>

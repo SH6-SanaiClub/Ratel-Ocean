@@ -18,7 +18,8 @@
 
         <choose>
             <when test="onlyActive">
-                AND p.deadline_date <![CDATA[ < ]]> CURDATE()
+                AND (p.deadline_date <![CDATA[ < ]]> CURDATE()
+                OR p.project_status = 'CLOSED')
             </when>
             <otherwise>
                 AND p.deadline_date >= CURDATE()
@@ -132,6 +133,7 @@
           AND created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
         ]]>
     </select>
+
     <select id="deadlineWithin7Days" resultType="int">
         <![CDATA[
         SELECT COUNT(*)
@@ -140,63 +142,6 @@
           AND deadline_date >= CURDATE()
           AND deadline_date < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
         ]]>
-    </select>
-
-    <!-- 상세보기 -->
-    <select id="selectProjectDetail"
-            parameterType="Integer"
-            resultType="com.sanaiclub.project.model.dto.ProjectDetailDTO">
-        SELECT p.project_id          AS projectId,
-               p.client_id           AS clientId,
-               p.title               AS title,
-               p.description         AS description,
-               p.start_date          AS startDate,
-               p.deadline_date       AS deadlineDate,
-               p.est_duration        AS estDuration,
-               p.budget              AS budget,
-               p.communicate_method  AS communicateMethod,
-               p.payment_method      AS paymentMethod,
-               p.project_status      AS projectStatus,
-               p.is_public           AS isPublic,
-               p.created_at          AS createdAt,
-               p.view_count          AS viewCount,
-               p.applicant_count     AS applicantCount,
-               p.budget_negotiable   AS budgetNegotiable,
-               p.duration_negotiable AS durationNegotiable,
-               p.plan_url            AS planUrl,
-               u.name                AS clientName,
-               c.company_name        AS companyName,
-               cp.client_type        AS clientType,
-               c.industry            AS companyIndustry
-
-
-        FROM projects p
-                 JOIN users u ON u.user_id = p.client_id
-                 LEFT JOIN client_profiles cp ON cp.client_id = p.client_id
-                 LEFT JOIN companies c ON c.company_id = cp.company_id
-        WHERE p.project_id = #{projectId}
-    </select>
-
-    <select id="hasUserApplied" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM project_applications
-        WHERE project_id = #{projectId}
-          AND freelancer_id = #{userId}
-    </select>
-
-    <!-- 지원자 저장 -->
-    <insert id="insertApplication">
-        INSERT INTO project_applications (project_id, freelancer_id, is_contracted, applied_at)
-        VALUES (#{projectId}, #{userId}, false, NOW())
-    </insert>
-
-    <delete id="deleteApplication">
-        DELETE FROM project_applications
-        WHERE project_id = #{projectId} AND freelancer_id = #{userId}
-    </delete>
-
-    <select id="selectUserType" resultType="string">
-        SELECT user_type FROM users WHERE user_id = #{userId}
     </select>
 
 </mapper>

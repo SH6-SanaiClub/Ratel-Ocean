@@ -21,18 +21,18 @@ public class ProjectDetailService {
     private final ProjectBookmarkMapper projectBookmarkMapper;
 
     public ProjectDetailDTO getProjectDetail(Integer projectId, Integer userId) {
-        // 1. 프로젝트 기본 정보 조회
+        // 프로젝트 기본 정보 조회
         ProjectDetailDTO detail = projectDetailMapper.selectProjectDetail(projectId);
 
         if (detail == null) {
-            throw new RuntimeException("프로젝트를 찾을 수 없습니다."); // 또는 null 리턴 처리
+            throw new RuntimeException("프로젝트를 찾을 수 없습니다.");
         }
 
-        // 2. 기술 스택 조회 및 세팅
+        // 기술 스택 조회 및 세팅
         List<RequiredStackDTO> stacks = projectDashboardMapper.selectStacksByProjectId(Collections.singletonList(projectId));
         detail.setStacks(stacks);
 
-        // 3. 로그인 사용자 관련 정보 세팅
+        // 로그인 사용자 관련 정보 세팅
         if (userId != null) {
             // 지원 여부 확인
             boolean applied = projectDetailMapper.hasUserApplied(projectId, userId);

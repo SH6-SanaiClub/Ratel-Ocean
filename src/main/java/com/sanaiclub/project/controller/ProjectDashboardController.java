@@ -2,6 +2,7 @@ package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
+import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
 import com.sanaiclub.project.service.ProjectCreateService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class ProjectDashboardController {
 
     private final ProjectDashboardService projectDashboardService;
     private final ProjectCreateService projectCreateService;
+    private final ProjectBookmarkService projectBookmarkService;
 
     @GetMapping("/dashboard")
     public String dashboard(
@@ -76,5 +79,20 @@ public class ProjectDashboardController {
         model.addAttribute("isClient", AuthContext.isClient());
 
         return "project/projectDashboard";
+    }
+
+    @PostMapping("/bookmark/toggle")
+    @ResponseBody
+    public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
+
+        // 로그인 체크 및 실제 ID 사용
+        if (!AuthContext.isAuthenticated()) {
+            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
+        }
+
+        Integer userId = AuthContext.getCurrentUserId();
+
+        boolean bookmarked = projectBookmarkService.toggle(projectId, userId);
+        return Map.of("ok", true, "bookmarked", bookmarked);
     }
 }

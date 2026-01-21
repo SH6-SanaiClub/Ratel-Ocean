@@ -2,7 +2,6 @@ package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.ProjectDetailDTO;
-import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -17,7 +16,6 @@ import java.util.Map;
 public class ProjectDetailController {
 
     private final ProjectDetailService projectDetailService;
-    private final ProjectBookmarkService projectBookmarkService;
 
     @GetMapping("/detail")
     public String detail(@RequestParam("projectId") Integer projectId,
@@ -54,21 +52,6 @@ public class ProjectDetailController {
         model.addAttribute("keyword", keyword);
 
         return "project/detail";
-    }
-
-    @PostMapping("/bookmark/toggle")
-    @ResponseBody
-    public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
-
-        // 로그인 체크 및 실제 ID 사용
-        if (!AuthContext.isAuthenticated()) {
-            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
-        }
-
-        Integer userId = AuthContext.getCurrentUserId();
-
-        boolean bookmarked = projectBookmarkService.toggle(projectId, userId);
-        return Map.of("ok", true, "bookmarked", bookmarked);
     }
 
     // 지원하기 토글

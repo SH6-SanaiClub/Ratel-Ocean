@@ -6,27 +6,20 @@
 <mapper namespace="com.sanaiclub.project.dao.ProjectBookmarkMapper">
 
     <select id="isBookmarked" resultType="int">
-    <![CDATA[
         SELECT COUNT(*)
         FROM project_bookmarks
         WHERE project_id = #{projectId}
           AND user_id = #{userId}
-        ]]>
-  </select>
+    </select>
 
     <insert id="insertBookmark">
-    <![CDATA[
-        INSERT INTO project_bookmarks(project_id, user_id)
-        VALUES (#{projectId}, #{userId})
-        ]]>
-  </insert>
+        INSERT INTO project_bookmarks (project_id, user_id, created_at)
+        VALUES (#{projectId}, #{userId}, NOW())
+    </insert>
 
     <delete id="deleteBookmark">
-    <![CDATA[
         DELETE FROM project_bookmarks
-        WHERE project_id = #{projectId}
-          AND user_id = #{userId}
-        ]]>
-  </delete>
+        WHERE project_id = #{projectId} AND user_id = #{userId}
+    </delete>
 
 </mapper>
