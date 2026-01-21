@@ -10,26 +10,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(callSuper = true) // 부모 클래스(ProjectsVO)의 데이터까지 출력
+@ToString(callSuper = true)
 public class ProjectDetailDTO extends ProjectsVO {
 
-    private Boolean budgetNegotiable;   // 예산 협의 가능 여부
-    private Boolean durationNegotiable; // 기간 협의 가능 여부
-    private String planUrl;             // 기획서 파일 경로
+    private Boolean budgetNegotiable;   // 예산 협의 여부
+    private Boolean durationNegotiable; // 기간 협의 여부
+    private String planUrl;             // 기획서 파일
 
-    private List<RequiredStackDTO> stacks; // 기술 스택 목록
+    private List<RequiredStackDTO> stacks; // 기술 스택
 
     private boolean isApplied;    // 지원 여부
-    private boolean isWishlisted; // 찜하기 여부
+    private boolean isWishlisted; // 찜 여부
 
-    /**
-     * DTO 생성 편의 메서드
-     * * @param budgetNegotiable 예산 협의 여부
-     * @param durationNegotiable 기간 협의 여부
-     * @param planUrl 기획서 경로
-     * @param stacks 기술 스택
-     * @return ProjectDetailDTO
-     */
+    private String clientName;  // 개인 이름
+    private String companyName; // 회사명
+    private String clientType;  // 유형
+    private String companyIndustry; // 업종
+
+    // DTO 생성 편의 메서드
     public static ProjectDetailDTO of(Boolean budgetNegotiable,
                                       Boolean durationNegotiable,
                                       String planUrl,
