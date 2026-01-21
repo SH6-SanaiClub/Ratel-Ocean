@@ -92,10 +92,11 @@ public class ChattingController {
     // 메시지 전송
     @PostMapping("/room/{room_id}/message")
     @ResponseBody
-    public void sendMessage(
+    public ChatMessageDTO sendMessage(
             @PathVariable Integer room_id,
             @RequestParam(required = false) String content,
-            @RequestParam(required = false) MultipartFile file
+            @RequestParam(required = false) MultipartFile file,
+            HttpSession session
     ) throws IOException{
         String file_name = null;
         String file_url = null;
@@ -113,8 +114,8 @@ public class ChattingController {
             file.transferTo(savedFile);
             file_url = "/upload/chat/" + file_name;
         }
-            chatService.send_message(room_id, content, file_name, file_url, file_size);
-
+        Integer sender_id = 1;
+        return chatService.send_and_return_message(room_id, sender_id, content, file_name, file_url, file_size);
 
     }
 

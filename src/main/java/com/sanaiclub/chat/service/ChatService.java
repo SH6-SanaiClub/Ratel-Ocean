@@ -47,7 +47,20 @@ public class ChatService {
         System.out.println(rooms);*/
         return rooms;
     }
+    @Transactional
+    public ChatMessageDTO send_and_return_message(Integer room_id, Integer sender_id, String content, String file_name, String file_url, Long file_size) {
+        // 1. 메시지 저장
+        chatMessageMapper.insertMessage(room_id, sender_id, content, file_name, file_url, file_size);
 
+        // 2. 방금 저장된 메시지를 다시 조회 (가장 최근 것 하나)
+        List<ChatMessageDTO> messages = chatMessageMapper.findMessages(room_id);
+        ChatMessageDTO newMessage = messages.get(messages.size() - 1);
+
+        // 3. 마지막 메시지 업데이트
+        chatRoomMapper.update_last_message(room_id, content != null ? content : "파일을 보냈습니다.");
+
+        return newMessage;
+    }
     // =========================================
     // 2. 단일 채팅방 조회
     // =========================================
