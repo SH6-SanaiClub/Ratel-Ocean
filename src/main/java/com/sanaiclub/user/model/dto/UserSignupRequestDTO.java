@@ -4,6 +4,7 @@ import com.sanaiclub.user.model.vo.UserType;
 import java.time.LocalDate;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 @Setter
@@ -22,6 +23,8 @@ public class UserSignupRequestDTO {
     private String email;
     private String name;
     private String phone;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birth;
 
     // 약관 및 선택 사항
