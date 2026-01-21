@@ -1,8 +1,10 @@
 package com.sanaiclub.user.model.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ClientProfileDTO {
     // 기업 정보 (companies 테이블)
     private String companyName;     // 회사명
