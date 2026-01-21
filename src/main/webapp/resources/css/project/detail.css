@@ -2,14 +2,14 @@
 
 /* 변수 및 공통 스타일 */
 :root {
-    --primary-blue: #186EEB;       /* 이미지의 파란색 버튼/강조 */
+    --primary-blue: #186EEB;
     --primary-hover: #135BBF;
-    --text-black: #111111;         /* 진한 검정 */
-    --text-gray: #767676;          /* 회색 텍스트 */
-    --text-light: #999999;         /* 연한 회색 */
-    --border-color: #EEEEEE;       /* 연한 테두리 */
-    --bg-base: #F8F9FA;            /* 배경색 */
-    --box-radius: 12px;            /* 둥근 모서리 */
+    --text-black: #111111;
+    --text-gray: #767676;
+    --text-light: #999999;
+    --border-color: #EEEEEE;
+    --bg-base: #F8F9FA;
+    --box-radius: 12px;
 }
 
 body {
@@ -61,9 +61,20 @@ body {
     font-weight: 700;
 }
 
-.badge-blue { background: #EAF4FF; color: var(--primary-blue); }
-.badge-red { background: #FFF0F0; color: #E74C3C; }
-.badge-gray { background: #F2F4F7; color: #555; }
+.badge-blue {
+    background: #EAF4FF;
+    color: var(--primary-blue);
+}
+
+.badge-red {
+    background: #FFF0F0;
+    color: #E74C3C;
+}
+
+.badge-gray {
+    background: #F2F4F7;
+    color: #555;
+}
 
 .project-title {
     font-size: 28px;
@@ -164,7 +175,7 @@ body {
     font-size: 16px;
     line-height: 1.7;
     color: #333;
-    white-space: pre-wrap; /* 줄바꿈 유지 */
+    white-space: pre-wrap;
 }
 
 /* 상세 업무 범위 리스트 스타일 */
@@ -173,18 +184,40 @@ body {
     padding: 24px;
     border-radius: 8px;
 }
+
 .task-item {
     display: flex;
     gap: 12px;
     margin-bottom: 16px;
 }
-.task-item:last-child { margin-bottom: 0; }
-.task-icon { color: var(--primary-blue); margin-top: 4px; }
-.task-title { font-weight: 700; display: block; margin-bottom: 4px; }
-.task-desc { font-size: 14px; color: #666; }
+
+.task-item:last-child {
+    margin-bottom: 0;
+}
+
+.task-icon {
+    color: var(--primary-blue);
+    margin-top: 4px;
+}
+
+.task-title {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.task-desc {
+    font-size: 14px;
+    color: #666;
+}
 
 /* 기술 스택 칩 */
-.tech-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.tech-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .tech-chip {
     padding: 8px 16px;
     background: #F2F4F7;
@@ -207,9 +240,22 @@ body {
     color: var(--text-black);
     background: #fff;
 }
-.file-card:hover { border-color: var(--primary-blue); }
-.file-icon { font-size: 20px; color: var(--primary-blue); margin-right: 12px; }
-.file-name { font-weight: 600; font-size: 14px; flex: 1; }
+
+.file-card:hover {
+    border-color: var(--primary-blue);
+}
+
+.file-icon {
+    font-size: 20px;
+    color: var(--primary-blue);
+    margin-right: 12px;
+}
+
+.file-name {
+    font-weight: 600;
+    font-size: 14px;
+    flex: 1;
+}
 
 /* 사이드바 카드 */
 .sidebar-box {
@@ -227,10 +273,33 @@ body {
     align-items: flex-end;
     margin-bottom: 20px;
 }
-.status-title { font-size: 13px; color: var(--text-gray); display: block; margin-bottom: 6px; }
-.status-count { font-size: 20px; font-weight: 700; color: var(--text-black); }
-.status-views { font-size: 13px; color: var(--text-black); font-weight: 600; text-align: right; }
-.status-views small { display: block; font-weight: 400; color: var(--text-gray); margin-bottom: 4px;}
+
+.status-title {
+    font-size: 13px;
+    color: var(--text-gray);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.status-count {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-black);
+}
+
+.status-views {
+    font-size: 13px;
+    color: var(--text-black);
+    font-weight: 600;
+    text-align: right;
+}
+
+.status-views small {
+    display: block;
+    font-weight: 400;
+    color: var(--text-gray);
+    margin-bottom: 4px;
+}
 
 /* 버튼 그룹 */
 .btn-primary {
@@ -243,11 +312,17 @@ body {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     margin-bottom: 10px;
     transition: 0.2s;
 }
-.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
 
 .btn-outline {
     width: 100%;
@@ -259,10 +334,16 @@ body {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     transition: 0.2s;
 }
-.btn-outline:hover { background: #f9f9f9; }
+
+.btn-outline:hover {
+    background: #f9f9f9;
+}
 
 /* 안전결제 배너 */
 .safe-banner {
@@ -273,27 +354,66 @@ body {
     gap: 12px;
     margin-top: 20px;
 }
-.safe-icon { color: var(--primary-blue); font-size: 18px; margin-top: 2px; }
-.safe-text strong { display: block; font-size: 13px; color: var(--primary-blue); margin-bottom: 4px; }
-.safe-text p { font-size: 12px; color: #555; margin: 0; line-height: 1.4; }
+
+.safe-icon {
+    color: var(--primary-blue);
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.safe-text strong {
+    display: block;
+    font-size: 13px;
+    color: var(--primary-blue);
+    margin-bottom: 4px;
+}
+
+.safe-text p {
+    font-size: 12px;
+    color: #555;
+    margin: 0;
+    line-height: 1.4;
+}
 
 /* 클라이언트 정보 */
-.client-label { font-size: 12px; color: var(--text-gray); margin-bottom: 12px; display: block; }
+.client-label {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    display: block;
+}
+
 .client-profile {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
 }
+
 .cp-img {
-    width: 48px; height: 48px;
+    width: 48px;
+    height: 48px;
     background: #FFD966;
     border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: #fff; font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    font-size: 20px;
 }
-.cp-info div { font-weight: 700; font-size: 15px; color: var(--text-black); margin-bottom: 2px; }
-.cp-info span { font-size: 12px; color: var(--text-gray); }
+
+.cp-info div {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-black);
+    margin-bottom: 2px;
+}
+
+.cp-info span {
+    font-size: 12px;
+    color: var(--text-gray);
+}
 
 .cp-stats {
     display: flex;
@@ -301,16 +421,58 @@ body {
     border-radius: 6px;
     padding: 12px;
 }
-.cp-stat-item { flex: 1; }
-.cp-stat-label { font-size: 11px; color: var(--text-gray); display: block; margin-bottom: 4px; }
-.cp-stat-val { font-size: 14px; font-weight: 700; color: var(--text-black); }
-.cp-stat-val.rating { color: #F39C12; }
+
+.cp-stat-item {
+    flex: 1;
+}
+
+.cp-stat-label {
+    font-size: 11px;
+    color: var(--text-gray);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.cp-stat-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-black);
+}
+
+.cp-stat-val.rating {
+    color: #F39C12;
+}
 
 /* 찜하기 */
-.wish-btn-wrap { text-align: center; margin-top: 10px; }
-.btn-wish-text {
-    background: none; border: none; font-size: 13px; color: var(--text-gray);
-    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+.wish-btn-wrap {
+    text-align: center;
+    margin-top: 10px;
 }
-.btn-wish-text i { color: #ccc; }
-.btn-wish-text.active i { color: #E74C3C; }
+
+.btn-wish-text {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: var(--text-gray);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-wish-text i {
+    color: #ccc;
+}
+
+.btn-wish-text.active i {
+    color: #E74C3C;
+}
+
+#btnChat:disabled {
+    border-color: #ddd;
+    background-color: #f9f9f9;
+    color: #bbb;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+}

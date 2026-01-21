@@ -17,7 +17,7 @@
 
     <div class="detail-main">
 
-        <div class="breadcrumb">프로젝트 탐색 &gt; 프로젝트 상세 정보</div>
+        <div class="breadcrumb">프로젝트 찾기 &gt; 프로젝트 상세 정보</div>
 
         <div class="project-header">
             <div class="badge-row">
@@ -40,43 +40,96 @@
                         <span class="status-badge badge-gray">상시 모집</span>
                     </c:otherwise>
                 </c:choose>
-
-                <span class="status-badge badge-blue">PUBLIC CLOUD</span> </div>
+            </div>
 
             <h1 class="project-title">${project.title}</h1>
 
             <div class="project-meta">
-                <span><i class="fa-regular fa-building"></i> 클라이언트 (ID: ${project.clientId})</span>
+                <span>
+                    <i class="fa-regular fa-building"></i>
+                    클라이언트 :
+                    <span style="font-weight:600; color:#333;">
+                        <c:choose>
+                            <%-- 법인이고 회사명이 있으면 회사명 출력 --%>
+                            <c:when test="${project.clientType eq 'CORPORATION' and not empty project.companyName}">
+                                ${project.companyName}
+                            </c:when>
+                            <%-- 그 외는 실명 출력 --%>
+                            <c:otherwise>
+                                ${project.clientName}
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                </span>
                 <span class="meta-divider"></span>
                 <span><i class="fa-regular fa-calendar"></i> 등록일 ${fn:substring(project.createdAt, 0, 10)}</span>
             </div>
         </div>
 
         <div class="info-card-row">
+
+            <div class="info-card">
+                <span class="info-label">예상 시작일</span>
+                <span class="info-value">
+                    <%-- 날짜 비교를 위한 변수 설정 (String 변환) --%>
+                    <c:set var="regDateStr" value="${fn:substring(project.createdAt, 0, 10)}" />
+                    <fmt:formatDate value="${project.startDate}" pattern="yyyy-MM-dd" var="startDateStr" />
+
+                    <%-- 로직: (등록일 == 시작일) AND (기간협의 == true) 인 경우 --%>
+                    <c:choose>
+                        <c:when test="${(regDateStr eq startDateStr) and project.durationNegotiable}">
+                            <span style="font-size: 0.85em; letter-spacing: -0.5px;">협의 가능 / 즉시착수</span>
+                        </c:when>
+                        <c:otherwise>
+                            ${startDateStr}
+                        </c:otherwise>
+                    </c:choose>
+                </span>
+                <span class="info-sub">
+                    <c:choose>
+                        <c:when test="${(regDateStr eq startDateStr) and project.durationNegotiable}">
+                            일정 조율 가능
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                    </c:choose>
+                </span>
+            </div>
+
             <div class="info-card">
                 <span class="info-label">예상 예산</span>
                 <span class="info-value">
                     <fmt:formatNumber value="${project.budget}" type="number"/>원
                 </span>
                 <span class="info-sub">
-                    <c:if test="${project.budgetNegotiable}">(협의 가능)</c:if>
-                    <c:if test="${!project.budgetNegotiable}">-</c:if>
+                    <%-- DTO의 getBudgetNegotiable()이 true일 때만 출력 --%>
+                    <c:choose>
+                        <c:when test="${project.budgetNegotiable == true}">
+                            (협의 가능)
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                    </c:choose>
                 </span>
             </div>
+
             <div class="info-card">
                 <span class="info-label">예상 기간</span>
                 <span class="info-value">${project.estDuration}</span>
                 <span class="info-sub">
-                    <c:if test="${project.durationNegotiable}">(협의 가능)</c:if>
-                    <c:if test="${!project.durationNegotiable}">-</c:if>
+                    <%-- DTO의 getDurationNegotiable()이 true일 때만 출력 --%>
+                    <c:choose>
+                        <c:when test="${project.durationNegotiable == true}">
+                            (협의 가능)
+                        </c:when>
+                        <c:otherwise>-</c:otherwise>
+                    </c:choose>
                 </span>
             </div>
         </div>
 
         <div class="anchor-nav">
             <a href="#section-desc" class="anchor-item active">프로젝트 개요</a>
-            <a href="#section-task" class="anchor-item">상세 업무</a>
-            <a href="#section-stack" class="anchor-item">기술 스택</a>
+            <a href="#section-position" class="anchor-item">모집 분야</a>
+            <a href="#section-skill" class="anchor-item">기술 스택</a>
         </div>
 
         <div id="section-desc" class="content-section">
@@ -86,48 +139,49 @@
             </div>
         </div>
 
-        <div id="section-task" class="content-section">
-            <h3 class="section-head"><i class="fa-solid fa-list-check"></i> 상세 업무 범위</h3>
-            <div class="task-list">
-                <div class="task-item">
-                    <div class="task-icon"><i class="fa-solid fa-check-circle"></i></div>
-                    <div>
-                        <span class="task-title">프로젝트 상세 분석 및 설계</span>
-                        <span class="task-desc">클라이언트와 협의하여 요구사항을 구체화합니다.</span>
-                    </div>
-                </div>
-                <div class="task-item">
-                    <div class="task-icon"><i class="fa-solid fa-check-circle"></i></div>
-                    <div>
-                        <span class="task-title">핵심 기능 개발</span>
-                        <span class="task-desc">요구사항 명세서에 따른 기능 구현을 진행합니다.</span>
-                    </div>
-                </div>
-                <div class="task-item">
-                    <div class="task-icon"><i class="fa-solid fa-check-circle"></i></div>
-                    <div>
-                        <span class="task-title">테스트 및 안정화</span>
-                        <span class="task-desc">기능 테스트 후 배포 및 인수인계를 진행합니다.</span>
-                    </div>
-                </div>
+        <div id="section-position" class="content-section">
+            <h3 class="section-head"><i class="fa-solid fa-briefcase"></i> 모집 분야</h3>
+            <div class="tech-chips">
+                <c:set var="hasPosition" value="false" />
+                <c:if test="${not empty project.stacks}">
+                    <c:forEach var="stack" items="${project.stacks}">
+                        <%-- 카테고리가 'POSITION'인 경우만 출력 --%>
+                        <c:if test="${stack.category eq 'POSITION'}">
+                            <c:set var="hasPosition" value="true" />
+                            <span class="tech-chip" style="background-color: #E8F0FE; color: #1967D2;">
+                                    ${stack.stackName}
+                            </span>
+                        </c:if>
+                    </c:forEach>
+                </c:if>
+
+                <%-- 데이터가 없을 경우 안내 --%>
+                <c:if test="${not hasPosition}">
+                    <span class="tech-chip" style="background:#f5f5f5; color:#999;">기타/잘 모르겠어요(협의)</span>
+                </c:if>
             </div>
         </div>
 
-        <div id="section-stack" class="content-section">
+        <div id="section-skill" class="content-section">
             <h3 class="section-head"><i class="fa-solid fa-code"></i> 필요 기술 스택</h3>
             <div class="tech-chips">
-                <c:choose>
-                    <c:when test="${not empty project.stacks}">
-                        <c:forEach var="stack" items="${project.stacks}">
+                <c:set var="hasSkill" value="false" />
+                <c:if test="${not empty project.stacks}">
+                    <c:forEach var="stack" items="${project.stacks}">
+                        <%-- 카테고리가 'SKILL'인 경우만 출력 --%>
+                        <c:if test="${stack.category eq 'SKILL'}">
+                            <c:set var="hasSkill" value="true" />
                             <span class="tech-chip">
                                     ${stack.stackName}
                             </span>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <span class="tech-chip">등록된 기술 스택 없음</span>
-                    </c:otherwise>
-                </c:choose>
+                        </c:if>
+                    </c:forEach>
+                </c:if>
+
+                <%-- 데이터가 없을 경우 안내 --%>
+                <c:if test="${not hasSkill}">
+                    <span class="tech-chip" style="background:#f5f5f5; color:#999;">전문가와 협의(잘 모르겠어요)</span>
+                </c:if>
             </div>
         </div>
 
@@ -150,43 +204,48 @@
             <div class="status-header">
                 <div>
                     <span class="status-title">현재 지원 현황</span>
-                    <span class="status-count">${project.applicantCount}명 지원 중</span>
+                    <span class="status-count">
+                        <span id="applyCount">${project.applicantCount}</span>명 지원 중
+                    </span>
                 </div>
-                <div class="status-views">
+                <%--<div class="status-views">
                     <small>조회수</small>
                     <fmt:formatNumber value="${project.viewCount}"/>
-                </div>
+                </div>--%>
             </div>
 
             <c:choose>
-                <%-- 비로그인 --%>
-                <c:when test="${empty sessionScope.loginMember}">
+                <%-- 1. 비로그인 상태 (loginUserId가 없음) --%>
+                <c:when test="${empty loginUserId}">
                     <button type="button" class="btn-primary" onclick="alert('로그인이 필요한 서비스입니다.'); location.href='/login';">
                         <i class="fa-solid fa-paper-plane"></i> 지원하기
                     </button>
                 </c:when>
 
-                <%-- 클라이언트 (본인 글 관리 / 타인 글 지원불가) --%>
-                <c:when test="${sessionScope.loginMember.type == 'CLIENT'}">
+                <%-- 2. 클라이언트인 경우 --%>
+                <c:when test="${loginUserType eq 'CLIENT'}">
                     <c:choose>
-                        <c:when test="${sessionScope.loginMember.id == project.clientId}">
+                        <%-- 본인 글이면 관리 버튼 --%>
+                        <c:when test="${loginUserId eq project.clientId}">
                             <button type="button" class="btn-primary" style="background:#333;" onclick="location.href='/project/edit/${project.projectId}'">
                                 <i class="fa-solid fa-gear"></i> 프로젝트 관리
                             </button>
                         </c:when>
+                        <%-- 남의 글이면 지원 불가 안내 --%>
                         <c:otherwise>
-                            <button type="button" class="btn-primary" onclick="alert('클라이언트는 지원할 수 없습니다.');">
+                            <button type="button" class="btn-primary" onclick="alert('클라이언트는 프로젝트에 지원할 수 없습니다.');">
                                 <i class="fa-solid fa-paper-plane"></i> 지원하기
                             </button>
                         </c:otherwise>
                     </c:choose>
                 </c:when>
 
-                <%-- 프리랜서 --%>
-                <c:when test="${sessionScope.loginMember.type == 'FREELANCER'}">
+                <%-- 3. 프리랜서인 경우 --%>
+                <c:when test="${loginUserType eq 'FREELANCER'}">
+                    <%-- [지원하기 / 지원취소 버튼] --%>
                     <c:choose>
                         <c:when test="${isApplied}">
-                            <button type="button" class="btn-primary" style="background:#E74C3C;" id="btnApplyToggle" onclick="toggleApply()">
+                            <button type="button" class="btn-primary cancel" id="btnApplyToggle" onclick="toggleApply()">
                                 <i class="fa-solid fa-xmark"></i> 지원 취소
                             </button>
                         </c:when>
@@ -199,7 +258,9 @@
                 </c:when>
             </c:choose>
 
-            <button type="button" class="btn-outline" onclick="openChat('${project.clientId}')">
+            <button type="button" class="btn-outline" id="btnChat"
+                    onclick="openChat('${project.clientId}')"
+            ${isApplied ? '' : 'disabled'}>
                 <i class="fa-regular fa-comments"></i> 클라이언트와 채팅하기
             </button>
 
@@ -213,8 +274,8 @@
 
             <div class="wish-btn-wrap">
                 <button type="button" class="btn-wish-text ${isWishlisted ? 'active' : ''}" onclick="toggleWish(this)">
-                    <i class="${isWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
-                    <span>나중에 보기</span>
+                    <i class="${isWishlisted ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+                    <span>북마크 (찜하기)</span>
                 </button>
             </div>
         </div>
@@ -223,13 +284,45 @@
             <span class="client-label">클라이언트 정보</span>
 
             <div class="client-profile">
-                <div class="cp-img"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="cp-img">
+                    <c:choose>
+                        <c:when test="${project.clientType eq 'CORPORATION'}">
+                            <i class="fa-regular fa-building"></i>
+                        </c:when>
+                        <c:otherwise>
+                            <i class="fa-solid fa-user-tie"></i>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
                 <div class="cp-info">
-                    <div>클라이언트 ${project.clientId}</div>
-                    <span>IT / 소프트웨어</span>
+                    <div>
+                        <c:choose>
+                            <c:when test="${project.clientType eq 'CORPORATION' and not empty project.companyName}">
+                                ${project.companyName}
+                            </c:when>
+                            <c:otherwise>
+                                ${project.clientName}
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <span>
+                        <c:choose>
+                            <c:when test="${project.clientType eq 'CORPORATION'}">
+                                법인 사업자 /
+                                <%-- 법인이면 업종 출력 (없으면 미기재) --%>
+                                ${not empty project.companyIndustry ? project.companyIndustry : '업종 미기재'}
+                            </c:when>
+                            <c:otherwise>
+                                개인 클라이언트 / -
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
                 </div>
             </div>
 
+            <%-- (평점/계약수 영역은 그대로 유지) --%>
             <div class="cp-stats">
                 <div class="cp-stat-item">
                     <span class="cp-stat-label">누적 계약</span>
