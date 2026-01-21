@@ -23,7 +23,7 @@ public class ProjectDetailDTO extends ProjectsVO {
     private boolean isWishlisted; // 찜하기 여부
 
     /**
-     * DTO 생성 편의 메서드 (필요 시 사용)
+     * DTO 생성 편의 메서드
      * * @param budgetNegotiable 예산 협의 여부
      * @param durationNegotiable 기간 협의 여부
      * @param planUrl 기획서 경로
