@@ -105,6 +105,9 @@ public class ChatService {
         chatMessageMapper.markRoomMessagesAsRead(room_id,login_user_id);
     }
 
+    public void resetTyping(Integer room_id) {
+        typingMap.remove(room_id);
+    }
 
     // =========================================
     // 7. 메시지 삭제
@@ -118,6 +121,6 @@ public class ChatService {
     // =========================================
     private Integer getLogin_user_id() {
         // 실제 구현에서는 SecurityContext, Session 등에서 가져오기
-        return 11; // 테스트용 하드코딩
+        return 1; // 테스트용 하드코딩
     }
 }
