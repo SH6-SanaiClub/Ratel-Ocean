@@ -1,6 +1,6 @@
 package com.sanaiclub.project.service;
 
-import com.sanaiclub.project.dao.ProjectMapper;
+import com.sanaiclub.project.dao.ProjectCreateMapper;
 import com.sanaiclub.project.dao.StackMapper;
 import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
 import com.sanaiclub.project.model.dto.StackDTO;
@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ProjectService {
+public class ProjectCreateService {
 
     private static final String UPLOAD_DIR = "D:\\workspace\\Ratel-Ocean\\src\\main\\webapp\\resources\\upload\\project\\";
 
     @Autowired
-    private ProjectMapper projectMapper;
+    private ProjectCreateMapper projectCreateMapper;
 
     @Autowired
     private StackMapper stackMapper;
@@ -148,7 +148,7 @@ public class ProjectService {
         }
 
         // 프로젝트 메인 정보 INSERT
-        projectMapper.insertProject(projectsVO);
+        projectCreateMapper.insertProject(projectsVO);
         Integer projectId = projectsVO.getProjectId();
 
         // 스택 저장
@@ -156,15 +156,17 @@ public class ProjectService {
         int inputYear = (request.getMinYear() != null) ? request.getMinYear() : 0;
 
         // 포지션(직군) 저장
-        if (request.getPositionId() != null) {
-            ProjectStackVO positionVO = new ProjectStackVO(
-                    null,
-                    projectId,
-                    request.getPositionId(),
-                    inputLevel,
-                    inputYear
-            );
-            projectMapper.insertProjectStack(positionVO);
+        if (request.getPositionIds() != null) { // getPositionId() -> getPositionIds()
+            for (Integer posId : request.getPositionIds()) {
+                ProjectStackVO positionVO = new ProjectStackVO(
+                        null,
+                        projectId,
+                        posId,
+                        inputLevel,
+                        inputYear
+                );
+                projectCreateMapper.insertProjectStack(positionVO);
+            }
         }
 
         // 기술 스택 저장
@@ -177,7 +179,7 @@ public class ProjectService {
                         inputLevel,
                         inputYear
                 );
-                projectMapper.insertProjectStack(skillVO);
+                projectCreateMapper.insertProjectStack(skillVO);
             }
         }
     }

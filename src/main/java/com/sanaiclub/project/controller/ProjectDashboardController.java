@@ -2,15 +2,15 @@ package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
-import com.sanaiclub.project.model.dto.ProjectDashboardCardDTO;
-import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
+import com.sanaiclub.project.service.ProjectCreateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -19,6 +19,8 @@ import java.util.Map;
 public class ProjectDashboardController {
 
     private final ProjectDashboardService projectDashboardService;
+    private final ProjectCreateService projectCreateService;
+    private final ProjectBookmarkService projectBookmarkService;
 
     @GetMapping("/dashboard")
     public String dashboard(
@@ -27,14 +29,24 @@ public class ProjectDashboardController {
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false, defaultValue = "all") String summary,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) List<Integer> positionIds,
+            @RequestParam(required = false) List<Integer> stackIds,
+            @RequestParam(required = false) Integer minBudget,
+            @RequestParam(required = false) Integer maxBudget,
             Model model
     ) {
         boolean active = Boolean.TRUE.equals(onlyActive);
 
-        Integer userId = AuthContext.getCurrentUserId();
+        // 쿠키에서 현재 사용자 ID 가져오기
+        Integer userId = AuthContext.getCurrentUserId() != null ? AuthContext.getCurrentUserId() : null;
 
-        DashboardPageDTO pageDTO =
-                projectDashboardService.getDashboardProjects(keyword, active, page, size, summary, userId);
+        DashboardPageDTO pageDTO = projectDashboardService.getDashboardProjects(
+                keyword, active, page, size, summary, sort, positionIds, stackIds, minBudget, maxBudget, userId
+        );
+
+        // 필터 패널에 보여줄 포지션/스킬 목록 가져오기
+        projectCreateService.setStackListToModel(model);
 
         model.addAttribute("projectList", pageDTO.getProjectList());
 
@@ -50,9 +62,13 @@ public class ProjectDashboardController {
         model.addAttribute("nextBlockPage", pageDTO.getNextBlockPage());
 
         // keep params
+        model.addAttribute("sort", sort);
         model.addAttribute("keyword", keyword);
         model.addAttribute("onlyActive", active);
         model.addAttribute("summary", summary);
+
+        model.addAttribute("minBudget", minBudget);
+        model.addAttribute("maxBudget", maxBudget);
 
         // 요약 카운트
         int todayNewCount = projectDashboardService.countTodayNewProjects();
@@ -60,39 +76,23 @@ public class ProjectDashboardController {
 
         model.addAttribute("todayNewCount", todayNewCount);
         model.addAttribute("deadline7Count", deadline7Count);
+        model.addAttribute("isClient", AuthContext.isClient());
 
         return "project/projectDashboard";
     }
 
-    @GetMapping("/detail")
-    public String detail(@RequestParam("projectId") Integer projectId,
-                         @RequestParam(value="page", required=false, defaultValue="1") int page,
-                         @RequestParam(value="size", required=false, defaultValue="10") int size,
-                         @RequestParam(value="onlyActive", required=false, defaultValue="false") boolean onlyActive,
-                         @RequestParam(value="keyword", required=false, defaultValue="") String keyword,
-                         Model model) {
-
-        model.addAttribute("project", projectDashboardService.getProjectDetail(projectId));
-
-        // 목록으로 돌아갈 때 쓰라고 다시 담아줌
-        model.addAttribute("page", page);
-        model.addAttribute("size", size);
-        model.addAttribute("onlyActive", onlyActive);
-        model.addAttribute("keyword", keyword);
-
-        return "project/detail";
-    }
-
-    private final ProjectBookmarkService projectBookmarkService;
-
     @PostMapping("/bookmark/toggle")
     @ResponseBody
     public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
+
+        // 로그인 체크 및 실제 ID 사용
+        if (!AuthContext.isAuthenticated()) {
+            return Map.of("ok", false, "message", "LOGIN_REQUIRED");
+        }
 
         Integer userId = AuthContext.getCurrentUserId();
 
         boolean bookmarked = projectBookmarkService.toggle(projectId, userId);
         return Map.of("ok", true, "bookmarked", bookmarked);
     }
-
 }
