@@ -38,6 +38,7 @@ public class ClientJoinController {
     private static final String SESSION_USER_TYPE = "selectedUserType";
     private static final String SESSION_USER_DATA = "userSignupData";
     private static final String SESSION_CLIENT_TYPE = "clientType";
+    private static final String SESSION_VERIFIED_COMPANY = "verifiedCompanyData";
 
     private final JoinService joinService;
     private final ClientJoinService clientJoinService;
@@ -164,7 +165,8 @@ public class ClientJoinController {
     public ResponseEntity<Map<String, Object>> verifyBusiness(
             @RequestParam("businessNumber") String businessNumber,
             @RequestParam("ceoName") String ceoName,
-            @RequestParam("openingDate") String openingDate
+            @RequestParam("openingDate") String openingDate,
+            HttpSession session
     ) {
         Map<String, Object> response = new HashMap<>();
 
@@ -183,10 +185,21 @@ public class ClientJoinController {
             );
 
             if (isValid) {
+                // 진위확인 성공 → 세션에 검증된 데이터 저장
+                Map<String, String> verifiedData = new HashMap<>();
+                verifiedData.put("businessNumber", cleanNumber);      // 하이픈 제거된 사업자번호
+                verifiedData.put("ceoName", ceoName);                // 대표자명
+                verifiedData.put("openingDate", openingDate);        // YYYY-MM-DD 형식
+
+                session.setAttribute(SESSION_VERIFIED_COMPANY, verifiedData);
+
                 response.put("success", true);
                 response.put("verified", true);
                 response.put("message", "사업자 인증이 완료되었습니다.");
             } else {
+                // 인증 실패 → 세션 데이터 삭제
+                session.removeAttribute(SESSION_VERIFIED_COMPANY);
+
                 response.put("success", true);
                 response.put("verified", false);
                 response.put("message", "입력하신 정보가 국세청 등록 정보와 일치하지 않습니다.");
@@ -195,6 +208,8 @@ public class ClientJoinController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            session.removeAttribute(SESSION_VERIFIED_COMPANY);
+
             response.put("success", false);
             response.put("verified", false);
             response.put("message", "인증 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
@@ -314,7 +329,35 @@ public class ClientJoinController {
                 return ResponseEntity.ok(response);
             }
 
-            // 1. users 테이블 INSERT
+            // 3. 세션에서 진위확인된 사업자 정보 가져오기
+            @SuppressWarnings("unchecked")
+            Map<String, String> verifiedData =
+                    (Map<String, String>) session.getAttribute(SESSION_VERIFIED_COMPANY);
+
+            if (verifiedData == null) {
+                response.put("success", false);
+                response.put("message", "사업자 진위확인이 완료되지 않았습니다.");
+                return ResponseEntity.ok(response);
+            }
+
+            // 4. 검증된 데이터로 DTO 재구성 (위조 방지)
+            CompanyRegistrationDTO securedDto = CompanyRegistrationDTO.builder()
+                    // ===== 필수 정보: 세션의 검증된 데이터 사용 (위조 불가) =====
+                    .businessNumber(verifiedData.get("businessNumber"))  // 진위확인된 사업자번호
+                    .ceoName(verifiedData.get("ceoName"))                // 진위확인된 대표자명
+                    .openingDate(verifiedData.get("openingDate"))        // 진위확인된 개업일자
+                    .businessVerified(true)                              // 진위확인 완료
+
+                    // ===== 선택 정보: 프론트에서 전송된 데이터 사용 =====
+                    .companyName(companyDto.getCompanyName())
+                    .ceoEmail(companyDto.getCeoEmail())
+                    .industry(companyDto.getIndustry())
+                    .address(companyDto.getAddress())
+                    .companySize(companyDto.getCompanySize())
+                    .websiteUrl(companyDto.getWebsiteUrl())
+                    .build();
+
+            // users 테이블 INSERT
             boolean userCreated = joinService.signUp(commonData);
 
             if (!userCreated) {
@@ -334,7 +377,7 @@ public class ClientJoinController {
 
             // 3. companies + client_profiles INSERT (법인)
             boolean profileCreated = clientJoinService.registerClientProfileWithCompany(
-                    userId, companyDto);
+                    userId, securedDto); // 검증된 DTO 사용
 
             if (!profileCreated) {
                 response.put("success", false);
@@ -346,6 +389,7 @@ public class ClientJoinController {
             session.removeAttribute(SESSION_USER_TYPE);
             session.removeAttribute(SESSION_USER_DATA);
             session.removeAttribute(SESSION_CLIENT_TYPE);
+            session.removeAttribute(SESSION_VERIFIED_COMPANY);
 
             response.put("success", true);
             response.put("message", "회원가입이 완료되었습니다.");
