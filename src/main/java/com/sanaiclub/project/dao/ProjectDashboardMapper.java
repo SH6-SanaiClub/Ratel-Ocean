@@ -16,7 +16,7 @@ public interface ProjectDashboardMapper {
         @Param("onlyActive") boolean onlyActive,
         @Param("limit") int limit,
         @Param("offset") int offset,
-        @Param("userId") int userId,
+        @Param("userId") Integer userId,
         @Param("summary") String summary
     );
 

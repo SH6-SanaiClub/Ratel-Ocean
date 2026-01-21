@@ -21,7 +21,7 @@ public class ProjectDashboardService {
     @Autowired
     private ProjectDashboardMapper projectDashboardMapper;
 
-    public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam, String summary) {
+    public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam, String summary, Integer userId) {
 
         int size = (sizeParam == null || sizeParam < 1) ? 10 : Math.min(sizeParam, 50);
         int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
@@ -32,8 +32,6 @@ public class ProjectDashboardService {
         if (page > totalPages) page = totalPages;
 
         int offset = (page - 1) * size;
-
-        int userId = 1; // 임시
 
         // 프로젝트만 페이징 조회
         List<ProjectDashboardCardDTO> projects =

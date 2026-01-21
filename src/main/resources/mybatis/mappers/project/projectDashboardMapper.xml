@@ -58,8 +58,8 @@
         </if>
         <if test="onlyActive">
             <![CDATA[
-            AND p.deadline_date < CURDATE()
-            OR project_status = 'CLOSED'
+            AND (p.deadline_date < CURDATE()
+            OR project_status = 'CLOSED')
             ]]>
         </if>
 

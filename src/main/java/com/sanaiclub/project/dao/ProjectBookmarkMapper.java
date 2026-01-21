@@ -15,7 +15,7 @@ public interface ProjectBookmarkMapper {
 
     List<ProjectDashboardCardDTO> selectBookmarkedDashboardProjects(
             @Param("keyword") String keyword,
-            @Param("userId") int userId
+            @Param("userId") Integer userId
     );
 
     List<RequiredStackDTO> selectStacksByProjectId(

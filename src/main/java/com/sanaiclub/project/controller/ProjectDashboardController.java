@@ -1,5 +1,6 @@
 package com.sanaiclub.project.controller;
 
+import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
 import com.sanaiclub.project.service.ProjectBookmarkService;
 import com.sanaiclub.project.service.ProjectDashboardService;
@@ -24,12 +25,13 @@ public class ProjectDashboardController {
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false, defaultValue = "all") String summary,
+            @RequestParam(required = false) Integer userId,
             Model model
     ) {
         boolean active = Boolean.TRUE.equals(onlyActive);
 
         DashboardPageDTO pageDTO =
-                projectDashboardService.getDashboardProjects(keyword, active, page, size, summary);
+                projectDashboardService.getDashboardProjects(keyword, active, page, size, summary, userId);
 
         model.addAttribute("projectList", pageDTO.getProjectList());
 
@@ -84,7 +86,7 @@ public class ProjectDashboardController {
     @ResponseBody
     public Map<String, Object> toggleBookmark(@RequestParam("projectId") Integer projectId) {
 
-        int userId = 1;
+        Integer userId = AuthContext.getCurrentUserId();
 
         boolean bookmarked = projectBookmarkService.toggle(projectId, userId);
         return Map.of("ok", true, "bookmarked", bookmarked);

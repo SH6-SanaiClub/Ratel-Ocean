@@ -31,7 +31,7 @@ public class ProjectBookmarkService {
 
     public DashboardPageDTO getBookmarkedDashboardPage(
             String keyword,
-            int userId
+            Integer userId
     ) {
 
         List<ProjectDashboardCardDTO> list = projectBookmarkMapper.selectBookmarkedDashboardProjects(
