@@ -18,8 +18,8 @@
 
         <choose>
             <when test="onlyActive">
-                AND (p.deadline_date <![CDATA[ < ]]> CURDATE()
-                OR p.project_status = 'CLOSED')
+                AND p.deadline_date <![CDATA[ < ]]> CURDATE()
+                OR p.project_status = 'CLOSED'
             </when>
             <otherwise>
                 AND p.deadline_date >= CURDATE()
@@ -80,7 +80,8 @@
         JOIN users u ON u.user_id = p.client_id
         JOIN client_profiles cp ON cp.client_id = p.client_id
         LEFT JOIN companies c ON c.company_id = cp.company_id
-        WHERE p.is_public = TRUE AND p.project_status = 'READY'
+        WHERE p.is_public = TRUE
+          AND p.project_status = 'READY'
 
         <include refid="dashboardFilters"/>
 
