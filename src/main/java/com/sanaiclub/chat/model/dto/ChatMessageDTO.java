@@ -13,6 +13,11 @@ public class ChatMessageDTO {
     private Integer message_id;
     private Integer sender_id;
     private Integer room_id;
+    private Integer project_id;
+    private String title;
+    private Integer user_id;
+    private String name;
+    private String profile_image_url;
     private String content;
     private Date created_at;
     private Date deleted_at;
