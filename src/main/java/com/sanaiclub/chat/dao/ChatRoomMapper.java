@@ -20,6 +20,8 @@ public interface ChatRoomMapper {
             @Param("login_user_id") Integer login_user_id
     );
 
+    // ChatRoomMapper.java
+    ChatRoomDTO findRoomInfo(@Param("room_id") Integer room_id, @Param("login_user_id") Integer login_user_id);
 
     // 마지막 메시지 업데이트
     void update_last_message(@Param("room_id") Integer room_id,

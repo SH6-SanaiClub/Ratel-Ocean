@@ -117,6 +117,22 @@ ORDER BY
         WHERE cr.room_id = #{room_id}
         ORDER BY m.created_at ASC
     </select>
+
+    <select id="findRoomInfo" resultMap="chatRoomMap">
+        SELECT
+            r.room_id,
+            r.project_id,
+            p.title,
+            u.user_id,
+            u.name,
+            u.profile_image_url
+        FROM chat_rooms r
+                 JOIN projects p ON r.project_id = p.project_id
+                 JOIN users u
+                      ON (CASE WHEN r.freelancer_id = #{login_user_id} THEN p.client_id ELSE r.freelancer_id END) = u.user_id
+        WHERE r.room_id = #{room_id}
+    </select>
+
     <update id="update_last_message" parameterType="map">
         UPDATE chat_rooms
         SET last_message_at = CURRENT_TIMESTAMP,
