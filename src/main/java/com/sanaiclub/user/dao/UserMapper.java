@@ -1,5 +1,7 @@
 package com.sanaiclub.user.dao;
 
+import com.sanaiclub.user.model.dto.ClientProfileDTO;
+import com.sanaiclub.user.model.dto.FreelancerProfileDTO;
 import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.user.model.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -67,4 +69,15 @@ public interface UserMapper {
      * @return 등록된 행 수 (정상이면 1)
      */
     int insertUser(UserVO user);
+
+    // 프리랜서 프로필 등록
+    int insertFreelancerProfile(@Param("userId") int userId,
+                                @Param("dto") FreelancerProfileDTO dto);
+
+    // 3. 기업 정보 등록
+    int insertCompany(ClientProfileDTO dto);
+
+    // 4. 클라이언트 프로필 등록
+    int insertClientProfile(@Param("userId") int userId,
+                            @Param("dto") ClientProfileDTO dto);
 }

@@ -1,7 +1,11 @@
 package com.sanaiclub.user.service.impl;
 
+import com.sanaiclub.common.util.EncryptionUtil;
 import com.sanaiclub.user.dao.UserMapper;
-import com.sanaiclub.user.model.dto.UserSignupRequestDTO;
+import com.sanaiclub.user.model.dto.AccountDTO;
+import com.sanaiclub.user.model.dto.ClientProfileDTO;
+import com.sanaiclub.user.model.dto.FreelancerProfileDTO;
+import com.sanaiclub.user.model.dto.UserDefaultDTO;
 import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.user.model.vo.UserStatus;
 import com.sanaiclub.user.model.vo.UserVO;
@@ -20,10 +24,12 @@ public class JoinServiceImpl implements JoinService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EncryptionUtil encryptionUtil;
 
-    public JoinServiceImpl(UserMapper userMapper) {
+    public JoinServiceImpl(UserMapper userMapper, EncryptionUtil encryptionUtil, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.encryptionUtil = encryptionUtil;
+        this.passwordEncoder = passwordEncoder; // 스프링이 가져다주는 빈을 그대로 사용!
     }
 
     @Override
@@ -39,41 +45,65 @@ public class JoinServiceImpl implements JoinService {
     /**
      * 회원가입 핵심 로직
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    @Transactional // 모든 데이터가 성공해야만 Commit, 하나라도 실패하면 Rollback
-    public boolean signUp(UserSignupRequestDTO dto) {
+    public boolean signUpFreelancer(UserDefaultDTO userDto, FreelancerProfileDTO freeDto, AccountDTO accountDto) throws Exception {
         try {
-            // 1. 비밀번호 암호화 및 UserVO 빌드
-            String encodedPassword = passwordEncoder.encode(dto.getPassword());
-            UserVO userVO = UserVO.builder()
-                    .loginId(dto.getLoginId())
-                    .password(encodedPassword)
-                    .email(dto.getEmail())
-                    .name(dto.getName())
-                    .phone(dto.getPhone())
-                    .userType(dto.getUserType())
-                    .birthDate(dto.getBirth())
-                    .status(UserStatus.ACTIVE)
-                    .build();
-
-            // 2. 유저 정보 저장 (MyBatis useGeneratedKeys로 userId 확보)
-            userMapper.insertUser(userVO);
-
-            // 3. 계좌 정보 저장 (User 가입 후 생성된 PK 사용)
-            AccountVO accountVO = AccountVO.builder()
-                    .userId(userVO.getUserId()) // insertUser 후 채워진 ID
-                    .bankName(dto.getBankName())
-                    .accountNumber(dto.getAccountNumber())
-                    .accountHolder(dto.getAccountHolder())
-                    .build();
-
-            // userMapper에 계좌 저장 메서드가 있다고 가정 (또는 AccountMapper 별도 사용)
-            int result = userMapper.insertAccount(accountVO);
-
-            return result > 0;
+            int userId = insertCommonUser(userDto); // 유저 기본 정보 저장
+            userMapper.insertFreelancerProfile(userId, freeDto); // 프로필 저장
+            insertCommonAccount(userId, accountDto); // 계좌 정보 저장 (암호화 포함)
+            return true;
         } catch (Exception e) {
-            // 로깅 후 false 반환 (Spring의 @Transactional이 런타임 예외 시 롤백 수행)
-            return false;
+            logger.error("프리랜서 가입 실패: {}", e.getMessage());
+            throw e; // 예외를 던져야 @Transactional이 롤백을 수행함
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean signUpClient(UserDefaultDTO userDto, ClientProfileDTO clientDto, AccountDTO accountDto) throws Exception {
+        try {
+            int userId = insertCommonUser(userDto);
+            userMapper.insertCompany(clientDto); // 기업 정보 저장 (Key 식별)
+            userMapper.insertClientProfile(userId, clientDto); // 클라이언트 프로필 저장
+            insertCommonAccount(userId, accountDto);
+            return true;
+        } catch (Exception e) {
+            logger.error("클라이언트 가입 실패: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    // ========================================================
+    //  Private Helper Methods (중복 제거용 내부 메서드)
+    // ========================================================
+
+    private int insertCommonUser(UserDefaultDTO userDto) {
+        String encodedPw = passwordEncoder.encode(userDto.getPassword());
+        UserVO userVO = UserVO.builder()
+                .loginId(userDto.getLoginId())
+                .password(encodedPw)
+                .email(userDto.getEmail())
+                .name(userDto.getName())
+                .phone(userDto.getPhone())
+                .birthDate(userDto.getBirth())
+                .userType(userDto.getUserType())
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        userMapper.insertUser(userVO);
+        return userVO.getUserId(); // useGeneratedKeys로 받아온 ID 리턴
+    }
+
+    private void insertCommonAccount(int userId, AccountDTO accountDto) throws Exception {
+        String encryptedAccountNumber = encryptionUtil.encrypt(accountDto.getAccountNumber());;
+        AccountVO accountVO = AccountVO.builder()
+                .userId(userId)
+                .bankName(accountDto.getBankName())
+                .accountNumber(encryptedAccountNumber)
+                .accountHolder(accountDto.getAccountHolder())
+                .build();
+
+        userMapper.insertAccount(accountVO);
     }
 }
