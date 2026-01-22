@@ -4,6 +4,7 @@ import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import com.sanaiclub.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,14 +31,7 @@ public class ChattingController {
         return "chat/roomList";
     }
 
-    // 채팅방 진입 (화면)
-    @GetMapping("/room/{room_id}")
-    public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
-        Integer login_user_id = (Integer) httpSession.getAttribute("login_user_id");
-        model.addAttribute("room_id", room_id);
-        //model.addAttribute("login_user_id", login_user_id);
-        return "chat/room";
-    }
+
     @GetMapping("/room/{room_id}/info")
     @ResponseBody
     public ChatRoomDTO roomInfo(
@@ -50,7 +44,7 @@ public class ChattingController {
         return chatService.findRoomInfo(room_id, login_user_id);
     }
 
-    @PostMapping("/chat/room/{room_id}/read")
+    @PostMapping("/room/{room_id}/read")
     @ResponseBody
     public void markAsRead(@PathVariable Integer room_id) {
         chatService.markRoomAsRead(room_id);
@@ -91,34 +85,42 @@ public class ChattingController {
 
     // 메시지 전송
     @PostMapping("/room/{room_id}/message")
-    @ResponseBody
-    public ChatMessageDTO sendMessage(
+    public ResponseEntity<ChatMessageDTO> sendMessage(
             @PathVariable Integer room_id,
-            @RequestParam(required = false) String content,
+            @RequestParam String content,
             @RequestParam(required = false) MultipartFile file,
             HttpSession session
-    ) throws IOException{
+    ) throws IOException {
         String file_name = null;
         String file_url = null;
         Long file_size = null;
-
-        // 파일 처리
-        if (file != null && !file.isEmpty()) {
-            file_name = file.getOriginalFilename();
+        if (file != null && !file.isEmpty())
+        { file_name = file.getOriginalFilename();
             file_size = file.getSize();
-
             String uploadDir = "C:/upload/chat";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
             File savedFile = new File(uploadDir, file_name);
             file.transferTo(savedFile);
-            file_url = "/upload/chat/" + file_name;
-        }
+            file_url = "/upload/chat/" + file_name; }
         Integer sender_id = 1;
-        return chatService.send_and_return_message(room_id, sender_id, content, file_name, file_url, file_size);
-
+        ChatMessageDTO message =
+                chatService.send_and_return_message(
+                        room_id,
+                        sender_id,
+                        content,
+                        file_name,
+                        file_url,
+                        file_size
+                ); // ✅ 타입 완벽 일치
+        return ResponseEntity.ok(message);
     }
-
-
+    // 채팅방 진입 (화면)
+    @GetMapping("/room/{room_id}")
+    public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
+        Integer login_user_id = (Integer) httpSession.getAttribute("login_user_id");
+        model.addAttribute("room_id", room_id);
+        model.addAttribute("login_user_id", login_user_id);
+        return "chat/room";
+    }
 }
-

@@ -24,7 +24,12 @@
                 }
 
                 /* ================= LEFT ================= */
-
+                .meta {
+                    font-size: 11px;
+                    color: #666;
+                    margin-top: 4px;
+                    text-align: right;
+                }
                 .chat-list {
                     width: 320px;
                     background: #fff;
@@ -274,7 +279,8 @@
     }
 
     let selectedRoom_id = null;
-    const login_user_id = '${sessionScope.loginUser != null ? sessionScope.loginUser.user_id : 0}';
+    const login_user_id =  Number('${login_user_id}');
+
 
     // ================== 채팅방 목록 로드 ==================
     // ================== 채팅방 목록 로드 (왼쪽 사이드바) ==================
@@ -385,11 +391,13 @@
     }
 
     // ================== 메시지 로드 ==================
-    function loadMessages() {
-        if (!selectedRoom_id) return;
-        fetch(`/ratelocean/chat/room/${selectedRoom_id}/messages`)
+    function loadMessages(room_id) {
+        //if (selectedRoom_id == null) return;
+        console.log(room_id);
+        fetch(`/ratelocean/chat/room/\${room_id}/messages`)
             .then(res => res.json())
             .then(list => {
+                console.log(list);
                 const body = document.getElementById("chatBody");
                 body.innerHTML = "";
                 list.forEach(msg => {
@@ -400,7 +408,7 @@
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
 
-                    const mine = msg.sender_id === login_user_id;
+                    const mine = msg.sender_id == login_user_id;
 
                     let readMark = "";
 
@@ -430,25 +438,27 @@
 
     // ================== 메시지 전송 ==================
     function sendMessage() {
-        const input = document.getElementById("messageInput");
-        const content = input.value.trim();
+        const content = messageInput.value.trim();
         if (!content || !selectedRoom_id) return;
+
+        const formData = new FormData();
+        formData.append("content", content);
 
         fetch("/ratelocean/chat/room/" + selectedRoom_id + "/message", {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ content: content })
-        }).then(res => {
-            if (!res.ok) throw new Error("send fail");
-            input.value = "";
-            input.disabled = false;
-            input.focus();
-            loadMessages();
-        }).catch(err => {
-            alert("메시지 전송에 실패했습니다.");
-            input.disabled = false;
-        });
+            body: formData
+        })
+            .then(res => res.json())
+            .then(msg => {
+                messageInput.value = "";
+                loadMessages();
+            })
+            .catch(err => {
+                console.error(err);
+            });
+
     }
+
 
     // ================== 우측 방 정보 로드 ==================
     function loadRoomInfo() {
@@ -480,11 +490,11 @@
     function selectRoom(room_id) {
         console.log("selectRoom메서드 room_id:" , room_id)
         selectedRoom_id = room_id;
-        fetch(`/ratelocean/chat/room/\${room_id}/typing/reset`, {
-            method: "POST"
-        });
+        // fetch(`/ratelocean/chat/room/\${room_id}/typing/reset`, {
+        //     method: "POST"
+        // });
         loadRoomInfo(room_id);
-        loadMessages();
+        loadMessages(room_id);
         // ✅ 읽음 처리
         fetch(`/ratelocean/chat/room/\${room_id}/read`, {
             method: "POST"
