@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.user.dao.FreelancerProfileMapper">
+
+    <resultMap id="FreelancerProfileResultMap" type="com.sanaiclub.user.model.vo.FreelancerProfileVO">
+        <id property="freelancerId" column="freelancer_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="introduction" column="introduction"/>
+        <result property="githubUrl" column="github_url"/>
+        <result property="websiteUrl" column="website_url"/>
+        <result property="schoolName" column="school_name"/>
+        <result property="major" column="major"/>
+        <result property="degree" column="degree"/>
+        <result property="gradStatus" column="grad_status"/>
+        <result property="isProfileComplete" column="is_profile_complete"/>
+    </resultMap>
+
+    <!--
+        프리랜서 프로필 등록
+        - freelancer_id = user_id (PK이자 FK)
+    -->
+    <insert id="insertFreelancerProfile">
+        INSERT INTO freelancer_profiles (
+            freelancer_id,
+            nickname,
+            introduction,
+            school_name,
+            major,
+            degree,
+            grad_status,
+            github_url,
+            website_url,
+            is_profile_complete
+        ) VALUES (
+                     #{userId},
+                     #{dto.nickname},
+                     #{dto.introduction},
+                     #{dto.schoolName},
+                     #{dto.major},
+                     #{dto.degree},
+                     #{dto.gradStatus},
+                     #{dto.githubUrl},
+                     #{dto.websiteUrl},
+                     1
+                 )
+    </insert>
+
+    <!--
+        프리랜서 프로필 조회
+    -->
+    <select id="findByUserId" resultMap="FreelancerProfileResultMap">
+        SELECT
+            freelancer_id,
+            nickname,
+            introduction,
+            github_url,
+            website_url,
+            school_name,
+            major,
+            degree,
+            grad_status,
+            is_profile_complete
+        FROM freelancer_profiles
+        WHERE freelancer_id = #{freelancerId}
+    </select>
+
+    <!--
+        프리랜서 프로필 수정
+    -->
+    <update id="updateFreelancerProfile">
+        UPDATE freelancer_profiles
+        SET
+            nickname = #{nickname},
+            introduction = #{introduction},
+            github_url = #{githubUrl},
+            website_url = #{websiteUrl},
+            school_name = #{schoolName},
+            major = #{major},
+            degree = #{degree},
+            grad_status = #{gradStatus},
+            is_profile_complete = #{isProfileComplete}
+        WHERE freelancer_id = #{freelancerId}
+    </update>
+
+</mapper>
