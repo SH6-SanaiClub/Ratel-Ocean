@@ -1,18 +1,12 @@
 package com.sanaiclub.user.service.impl;
 
 import com.sanaiclub.common.util.EncryptionUtil;
-import com.sanaiclub.user.dao.UserMapper;
-import com.sanaiclub.user.model.dto.AccountDTO;
-import com.sanaiclub.user.model.dto.ClientProfileDTO;
-import com.sanaiclub.user.model.dto.FreelancerProfileDTO;
-import com.sanaiclub.user.model.dto.UserDefaultDTO;
-import com.sanaiclub.user.model.vo.AccountVO;
-import com.sanaiclub.user.model.vo.UserStatus;
-import com.sanaiclub.user.model.vo.UserVO;
+import com.sanaiclub.user.dao.*;
+import com.sanaiclub.user.model.dto.*;
+import com.sanaiclub.user.model.vo.*;
 import com.sanaiclub.user.service.JoinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,14 +17,33 @@ public class JoinServiceImpl implements JoinService {
     private static final Logger logger = LoggerFactory.getLogger(JoinServiceImpl.class);
 
     private final UserMapper userMapper;
+    private final FreelancerProfileMapper freelancerProfileMapper;
+    private final ClientProfileMapper clientProfileMapper;
+    private final CompanyMapper companyMapper;
+    private final AccountMapper accountMapper;
     private final PasswordEncoder passwordEncoder;
     private final EncryptionUtil encryptionUtil;
 
-    public JoinServiceImpl(UserMapper userMapper, EncryptionUtil encryptionUtil, PasswordEncoder passwordEncoder) {
+    public JoinServiceImpl(
+            UserMapper userMapper,
+            FreelancerProfileMapper freelancerProfileMapper,
+            ClientProfileMapper clientProfileMapper,
+            CompanyMapper companyMapper,
+            AccountMapper accountMapper,
+            PasswordEncoder passwordEncoder,
+            EncryptionUtil encryptionUtil) {
         this.userMapper = userMapper;
+        this.freelancerProfileMapper = freelancerProfileMapper;
+        this.clientProfileMapper = clientProfileMapper;
+        this.companyMapper = companyMapper;
+        this.accountMapper = accountMapper;
+        this.passwordEncoder = passwordEncoder;
         this.encryptionUtil = encryptionUtil;
-        this.passwordEncoder = passwordEncoder; // 스프링이 가져다주는 빈을 그대로 사용!
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 중복 확인
+    // ═══════════════════════════════════════════════════════════════
 
     @Override
     public boolean isIdDuplicate(String loginId) {
@@ -42,70 +55,187 @@ public class JoinServiceImpl implements JoinService {
         return userMapper.checkEmail(email) > 0;
     }
 
-    /**
-     * 회원가입 핵심 로직
-     */
-    @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean signUpFreelancer(UserDefaultDTO userDto, FreelancerProfileDTO freeDto, AccountDTO accountDto) throws Exception {
-        try {
-            int userId = insertCommonUser(userDto); // 유저 기본 정보 저장
-            userMapper.insertFreelancerProfile(userId, freeDto); // 프로필 저장
-            insertCommonAccount(userId, accountDto); // 계좌 정보 저장 (암호화 포함)
-            return true;
-        } catch (Exception e) {
-            logger.error("프리랜서 가입 실패: {}", e.getMessage());
-            throw e; // 예외를 던져야 @Transactional이 롤백을 수행함
-        }
+    public boolean isBusinessNumberDuplicate(String businessNumber) {
+        String cleanNumber = businessNumber.replaceAll("-", "");
+        return companyMapper.checkBusinessNumber(cleanNumber) > 0;
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // 회원가입
+    // ═══════════════════════════════════════════════════════════════
+
+    // 프리랜서 회원가입
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public boolean signUpClient(UserDefaultDTO userDto, ClientProfileDTO clientDto, AccountDTO accountDto) throws Exception {
+    public boolean signUpFreelancer(
+            UserSignupRequestDTO userDto,
+            FreelancerProfileDTO profileDto,
+            AccountDTO accountDto) throws Exception {
         try {
-            int userId = insertCommonUser(userDto);
-            userMapper.insertCompany(clientDto); // 기업 정보 저장 (Key 식별)
-            userMapper.insertClientProfile(userId, clientDto); // 클라이언트 프로필 저장
+            // 1. User INSERT
+            Integer userId = insertCommonUser(userDto);
+            logger.debug("User 등록 완료: userId={}", userId);
+
+            // 2. FreelancerProfile INSERT
+            int profileInserted = freelancerProfileMapper.insertFreelancerProfile(userId, profileDto);
+            if (profileInserted == 0) {
+                throw new IllegalStateException("프리랜서 프로필 등록 실패");
+            }
+            logger.debug("프리랜서 프로필 등록 완료: userId={}", userId);
+
+            // 3. Account INSERT
             insertCommonAccount(userId, accountDto);
+            logger.debug("계좌 정보 등록 완료: userId={}", userId);
+
+            logger.info("✅ 프리랜서 회원가입 완료: userId={}, loginId={}", userId, userDto.getLoginId());
             return true;
+
         } catch (Exception e) {
-            logger.error("클라이언트 가입 실패: {}", e.getMessage());
+            logger.error("❌ 프리랜서 회원가입 실패: {}", e.getMessage(), e);
             throw e;
         }
     }
 
-    // ========================================================
-    //  Private Helper Methods (중복 제거용 내부 메서드)
-    // ========================================================
+    // 클라이언트 회원가입 (개인)
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean signUpClientPersonal(UserSignupRequestDTO userDto, AccountDTO accountDto) throws Exception {
+        try {
+            // 1. User INSERT
+            Integer userId = insertCommonUser(userDto);
+            logger.debug("User 등록 완료: userId={}", userId);
 
-    // 공통정보 DB 저장
-    private int insertCommonUser(UserDefaultDTO userDto) {
-        String encodedPw = passwordEncoder.encode(userDto.getPassword());
+            // 2. ClientProfile INSERT (개인 - company_id는 null)
+            int profileInserted = clientProfileMapper.insertClientProfile(
+                    userId,
+                    null,  // 개인은 회사 없음
+                    ClientType.PERSONAL
+            );
+            if (profileInserted == 0) {
+                throw new IllegalStateException("클라이언트 프로필 등록 실패");
+            }
+            logger.debug("클라이언트 프로필 등록 완료 (개인): userId={}", userId);
+
+            // 3. Account INSERT
+            insertCommonAccount(userId, accountDto);
+            logger.debug("계좌 정보 등록 완료: userId={}", userId);
+
+            logger.info("✅ 개인 클라이언트 회원가입 완료: userId={}, loginId={}", userId, userDto.getLoginId());
+            return true;
+
+        } catch (Exception e) {
+            logger.error("❌ 개인 클라이언트 회원가입 실패: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    // 클라이언트 회원가입 (법인)
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean signUpClientCorporation(UserSignupRequestDTO userDto, CompanyRegistrationDTO companyDto, AccountDTO accountDto) throws Exception {
+        try {
+            // 1. User INSERT
+            Integer userId = insertCommonUser(userDto);
+            logger.debug("User 등록 완료: userId={}", userId);
+
+            // 2. Company INSERT
+            CompanyVO company = CompanyVO.builder()
+                    .companyName(companyDto.getCompanyName())
+                    .ceoName(companyDto.getCeoName())
+                    .ceoEmail(companyDto.getCeoEmail())
+                    .businessNumber(companyDto.getCleanBusinessNumber())
+                    .openingDate(companyDto.getOpeningDateAsLocalDate())
+                    .businessVerified(companyDto.isVerified())
+                    .industry(companyDto.getIndustry())
+                    .address(companyDto.getAddress())
+                    .companySize(companyDto.getCompanySize())
+                    .websiteUrl(companyDto.getWebsiteUrl())
+                    .build();
+
+            int companyInserted = companyMapper.insertCompany(company);
+            if (companyInserted == 0) {
+                throw new IllegalStateException("회사 정보 등록 실패");
+            }
+
+            Integer companyId = company.getCompanyId();  // AUTO_INCREMENT ID
+            logger.debug("회사 정보 등록 완료: companyId={}", companyId);
+
+            // 3. ClientProfile INSERT (법인 - company_id 포함)
+            int profileInserted = clientProfileMapper.insertClientProfile(
+                    userId,
+                    companyId,
+                    ClientType.CORPORATION
+            );
+            if (profileInserted == 0) {
+                throw new IllegalStateException("클라이언트 프로필 등록 실패");
+            }
+            logger.debug("클라이언트 프로필 등록 완료 (법인): userId={}, companyId={}", userId, companyId);
+
+            // 4. Account INSERT
+            insertCommonAccount(userId, accountDto);
+            logger.debug("계좌 정보 등록 완료: userId={}", userId);
+
+            logger.info("✅ 법인 클라이언트 회원가입 완료: userId={}, companyId={}, loginId={}",
+                    userId, companyId, userDto.getLoginId());
+            return true;
+
+        } catch (Exception e) {
+            logger.error("❌ 법인 클라이언트 회원가입 실패: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 헬퍼 메서드
+    // ═══════════════════════════════════════════════════════════════
+
+    // 공통 User 정보 INSERT
+    private Integer insertCommonUser(UserSignupRequestDTO userDto) {
+
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+
         // dto -> vo 변환
         UserVO userVO = UserVO.builder()
                 .loginId(userDto.getLoginId())
-                .password(encodedPw)
+                .password(encodedPassword)
                 .email(userDto.getEmail())
                 .name(userDto.getName())
                 .phone(userDto.getPhone())
-                .birthDate(userDto.getBirth())
+                .birthDate(userDto.getBirthDate())
                 .userType(userDto.getUserType())
                 .status(UserStatus.ACTIVE)
                 .build();
 
-        userMapper.insertUser(userVO);
-        return userVO.getUserId(); // useGeneratedKeys로 받아온 ID 리턴
+        // INSERT
+        int inserted = userMapper.insertUser(userVO);
+        if (inserted == 0) {
+            throw new IllegalStateException("사용자 정보 등록 실패");
+        }
+
+        // useGeneratedKeys로 받아온 ID 리턴
+        return userVO.getUserId();
     }
 
-    private void insertCommonAccount(int userId, AccountDTO accountDto) throws Exception {
-        String encryptedAccountNumber = encryptionUtil.encrypt(accountDto.getAccountNumber());;
+    // 공통 계좌 정보 INSERT
+    private void insertCommonAccount(Integer userId, AccountDTO accountDto) throws Exception {
+
+        // 계좌번호 암호화
+        String encryptedAccountNumber = encryptionUtil.encrypt(accountDto.getAccountNumber());
+
+        // DTO → VO 변환
         AccountVO accountVO = AccountVO.builder()
                 .userId(userId)
                 .bankName(accountDto.getBankName())
                 .accountNumber(encryptedAccountNumber)
                 .accountHolder(accountDto.getAccountHolder())
                 .build();
-      
-        userMapper.insertAccount(accountVO);
+
+        // INSERT
+        int inserted = accountMapper.insertAccount(accountVO);
+        if (inserted == 0) {
+            throw new IllegalStateException("계좌 정보 등록 실패");
+        }
     }
 }
