@@ -1,36 +1,32 @@
 package com.sanaiclub.user.dao;
 
 import com.sanaiclub.user.model.vo.ClientProfileVO;
+import com.sanaiclub.user.model.vo.ClientType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * 클라이언트 프로필 DAO
- * ═══════════════════════════════════════════════════════════════════════
- *
- * [역할]
- * - client_profiles 테이블 CRUD
- *
- */
 @Mapper
 public interface ClientProfileMapper {
 
     /**
      * 클라이언트 프로필 등록
      *
-     * @param profile 등록할 프로필 정보
+     * @param userId     사용자 PK (= client_id)
+     * @param companyId  회사 PK (법인만, 개인은 null)
+     * @param clientType 클라이언트 유형 (PERSONAL / CORPORATION)
      * @return 등록된 행 수
      */
-    int insertClientProfile(ClientProfileVO profile);
+    int insertClientProfile(@Param("userId") Integer userId,
+                            @Param("companyId") Integer companyId,
+                            @Param("clientType") ClientType clientType);
 
     /**
-     * 클라이언트 ID로 프로필 조회
+     * 클라이언트 프로필 조회
      *
-     * @param clientId 클라이언트 PK (= userId)
-     * @return 클라이언트 프로필 (없으면 null)
+     * @param clientId 클라이언트 PK (= user_id)
+     * @return 프로필 정보 (없으면 null)
      */
-    ClientProfileVO findByClientId(@Param("clientId") Integer clientId);
+    ClientProfileVO findByUserId(@Param("clientId") Integer clientId);
 
     /**
      * 클라이언트 프로필 수정
