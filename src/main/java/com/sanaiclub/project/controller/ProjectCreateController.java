@@ -36,7 +36,7 @@ public class ProjectCreateController {
         // 스택 목록을 담기 위한 서비스 호출
         projectCreateService.setStackListToModel(model);
 
-        return "project/create";
+        return "project/client/create";
     }
 
     // 프로젝트 등록
@@ -61,6 +61,6 @@ public class ProjectCreateController {
     // 등록 완료 페이지 이동
     @GetMapping("/success")
     public String successPage() {
-        return "project/success";
+        return "project/client/success";
     }
 }
