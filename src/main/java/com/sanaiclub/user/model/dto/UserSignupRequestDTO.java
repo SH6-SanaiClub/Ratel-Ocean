@@ -13,19 +13,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 @AllArgsConstructor
 @Builder
 public class UserSignupRequestDTO {
-    // 1단계 선택 값
-    private UserType userType;
 
-    // 공통 필수 정보
-    private String loginId;
-    private String password;
-    private String passwordConfirm; // 비밀번호 일치 확인용
-    private String email;
-    private String name;
-    private String phone;
+    private UserType userType;          // 역할 (FREELANCER / CLIENT)
+    private String loginId;             // 로그인 ID
+    private String password;            // 비밀번호
+    private String passwordConfirm;     // 비밀번호 확인
+    private String email;               // 이메일
+    private String name;                // 실명
+    private String phone;               // 전화번호
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate birth;
+    private LocalDate birthDate;
 
     // 약관 및 선택 사항
     private boolean termAgreed; // 이용약관 동의
@@ -36,10 +34,28 @@ public class UserSignupRequestDTO {
     private String accountNumber;
     private String accountHolder;
 
+
     /**
-     * 비즈니스 로직: 비밀번호 일치 여부 확인
+     * 비밀번호 일치 여부 확인
      */
     public boolean isPasswordMatching() {
-        return password != null && password.equals(passwordConfirm);
+        if (password == null || passwordConfirm == null) {
+            return false;
+        }
+        return password.equals(passwordConfirm);
+    }
+
+    /**
+     * 프리랜서 여부 확인
+     */
+    public boolean isFreelancer() {
+        return UserType.FREELANCER.equals(userType);
+    }
+
+    /**
+     * 클라이언트 여부 확인
+     */
+    public boolean isClient() {
+        return UserType.CLIENT.equals(userType);
     }
 }
