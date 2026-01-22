@@ -118,6 +118,22 @@ ORDER BY
         WHERE cr.room_id = #{room_id}
         ORDER BY m.created_at ASC
     </select>
+    //채팅방 나가기
+    <update id="exitRoom" parameterType="map">
+        UPDATE chat_rooms
+        SET
+            freelancer_exited = CASE
+                                    WHEN freelancer_id = #{user_id} THEN 1
+                                    ELSE freelancer_exited
+                END,
+            client_exited = CASE
+                                WHEN p.client_id = #{user_id} THEN 1
+                                ELSE client_exited
+                END
+            FROM chat_rooms r
+        JOIN projects p ON r.project_id = p.project_id
+        WHERE r.room_id = #{room_id};
+    </update>
 
     <select id="findRoomInfo" resultMap="chatRoomMap">
         SELECT

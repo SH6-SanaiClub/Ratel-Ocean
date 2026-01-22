@@ -19,7 +19,9 @@ public interface ChatRoomMapper {
             @Param("room_id") Integer room_id,
             @Param("login_user_id") Integer login_user_id
     );
-
+    //채팅방나가기
+    void exitRoom(@Param("room_id") Integer room_id,
+                  @Param("user_id") Integer user_id);
     // ChatRoomMapper.java
     ChatRoomDTO findRoomInfo(@Param("room_id") Integer room_id, @Param("login_user_id") Integer login_user_id);
 

@@ -303,6 +303,19 @@
                     color: #999;
                 }
 
+                #exitRoomBtn {
+                    background: #ff5555;
+                    color: #fff;
+                    border: none;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    cursor: pointer;
+                }
+
+                #exitRoomBtn:hover {
+                    background: #e04848;
+                }
 
                 .delete-btn {
                     display: none; /* 기본 숨김 */
@@ -333,9 +346,15 @@
     <!-- CENTER: 채팅 영역 -->
     <main class="chat-area">
         <div class="chat-header" id="chatHeader">
-            <div class="header-name" id="headerName">상대방</div>
-            <div class="header-project" id="headerProject">프로젝트</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div class="header-name" id="headerName">상대방</div>
+                    <div class="header-project" id="headerProject">프로젝트</div>
+                </div>
+                <button id="exitRoomBtn" onclick="exitRoom()">나가기</button>
+            </div>
         </div>
+
         <div class="chat-body" id="chatBody"></div>
         <div class="typing" id="typingIndicator"  style="display:none">
             상대방이 입력 중입니다...

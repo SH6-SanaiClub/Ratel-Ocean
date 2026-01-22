@@ -64,6 +64,18 @@ public class ChattingController {
     public List<ChatMessageDTO> getMessages(@PathVariable Integer room_id) {
         return chatService.find_messages(room_id);
     }
+    //방 나가기
+    @PostMapping("/room/{room_id}/exit")
+    @ResponseBody
+    public ResponseEntity<?> exitRoom(@PathVariable Integer room_id) {
+        try {
+            chatService.exitRoom(room_id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅방 나가기 실패");
+        }
+    }
 
     @GetMapping("/room/{room_id}/typing")
     @ResponseBody

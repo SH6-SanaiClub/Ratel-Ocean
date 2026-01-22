@@ -133,6 +133,12 @@ public class ChatService {
 
         chatMessageMapper.deleteMessage(message_id);
     }
+    //방 나가기
+    @Transactional
+    public void exitRoom(Integer room_id) {
+        Integer user_id = getLogin_user_id();
+        chatRoomMapper.exitRoom(room_id, user_id);
+    }
 
     // =========================================
     // 로그인 유저 ID 가져오기 (테스트용)
