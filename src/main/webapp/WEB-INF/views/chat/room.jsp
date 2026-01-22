@@ -250,6 +250,32 @@
                     color: #777;
                     margin-top: 2px;
                 }
+                .date-label {
+                    display: flex;
+                    align-items: center;
+                    color: #888;
+                    font-size: 12px;
+                    margin: 20px 0;
+                    text-align: center;
+                }
+
+                /* 날짜 왼쪽 선 */
+                .date-label::before {
+                    content: "";
+                    flex: 1;
+                    height: 1px;
+                    background: #ddd; /* 선 색상 */
+                    margin-right: 15px; /* 날짜와 선 사이 간격 */
+                }
+
+                /* 날짜 오른쪽 선 */
+                .date-label::after {
+                    content: "";
+                    flex: 1;
+                    height: 1px;
+                    background: #ddd; /* 선 색상 */
+                    margin-left: 15px; /* 날짜와 선 사이 간격 */
+                }
             </style>
 </head>
 <body>
@@ -407,50 +433,117 @@
 
     // ================== 메시지 로드 ==================
     function loadMessages(room_id) {
-        //if (selectedRoom_id == null) return;
+
+//if (selectedRoom_id == null) return;
+
         console.log(room_id);
+
         fetch(`/ratelocean/chat/room/\${room_id}/messages`)
+
             .then(res => res.json())
+
             .then(list => {
-                console.log(list);
+
                 const body = document.getElementById("chatBody");
+
                 body.innerHTML = "";
+
+                let prevDate = "";
+
                 list.forEach(msg => {
+
+                    const msgDate = new Date(msg.created_at).toLocaleDateString('ko-KR');
+
+
+
+// 2. 이전 메시지와 날짜가 다를 때만 날짜 표시
+
+                    if (msgDate !== prevDate) {
+
+                        const dateDiv = document.createElement("div");
+
+                        dateDiv.className = "date-label";
+
+                        dateDiv.innerText = msgDate; // "2024. 5. 20." 형태로 출력됨
+
+                        body.appendChild(dateDiv);
+
+
+
+                        prevDate = msgDate; // 날짜 갱신
+
+                    }
+
                     let timeText = "";
 
+
+
                     if (msg.created_at) {
+
                         timeText = new Date(msg.created_at)
+
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
                     }
+
+
 
                     const mine = msg.sender_id == '${login_user_id}';
 
+
+
                     let readMark = "";
 
-                    // ✅ 내가 보낸 메시지만 체크
+
+
+// ✅ 내가 보낸 메시지만 체크
+
                     if (mine) {
+
                         readMark = msg.is_read === 1 ? "0" : "1";
+
                     }
 
+
+
                     const div = document.createElement("div");
+
                     div.className = "message " + (mine ? "mine" : "");
 
+
+
                     div.innerHTML =
+
                         '<div class="bubble">'
+
                         + escapeHtml(msg.content || '')
+
                         + '</div>'
+
                         + '<div class="meta">'
+
                         + timeText
+
                         + (readMark ? ' · ' + readMark : '')
+
                         + '</div>';
 
 
 
+
+
+
+
                     body.appendChild(div);
+
                 });
 
+
+
                 body.scrollTop = body.scrollHeight;
+
             });
+
     }
 
     // ================== 메시지 전송 ==================

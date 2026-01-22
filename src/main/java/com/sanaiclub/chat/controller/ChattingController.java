@@ -103,7 +103,7 @@ public class ChattingController {
             File savedFile = new File(uploadDir, file_name);
             file.transferTo(savedFile);
             file_url = "/upload/chat/" + file_name; }
-        Integer sender_id = 3;
+        Integer sender_id = 1;
         ChatMessageDTO message =
                 chatService.send_and_return_message(
                         room_id,
@@ -120,7 +120,7 @@ public class ChattingController {
     public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
         Integer login_user_id = (Integer) httpSession.getAttribute("login_user_id");
         model.addAttribute("room_id", room_id);
-        httpSession.setAttribute("login_user_id", 3);
+        httpSession.setAttribute("login_user_id", 1);
         return "chat/room";
     }
 }
