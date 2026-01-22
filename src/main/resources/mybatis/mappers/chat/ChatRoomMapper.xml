@@ -5,20 +5,19 @@
 
 <mapper namespace="com.sanaiclub.chat.dao.ChatRoomMapper">
     <resultMap id="chatRoomMap" type="com.sanaiclub.chat.model.dto.ChatRoomDTO">
-        <id property="room_id" column="room_id"/>
-        <result property="project_id" column="project_id"/>
-        <result property="is_active" column="is_active"/>
+        <id property="roomId" column="room_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="isActive" column="is_active"/>
         <result property="title" column="title"/>
-        <result property="profile_image_url" column="profile_image_url"/>
-        <result property="last_message_content" column="last_message_content"/>
-        <result property="last_message_sender_id" column="last_message_sender_id"/>
-        <result property="last_message_at" column="last_message_at"/>
-        <result property="unread_count" column="unread_count"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="lastMessageContent" column="last_message_content"/>
+        <result property="lastMessageSenderId" column="last_message_sender_id"/>
+        <result property="lastMessageAt" column="last_message_at"/>
+        <result property="unreadCount" column="unread_count"/>
         <result property="name" column="name"/>
     </resultMap>
 
-    <select id="find_my_rooms"  parameterType="int"
-              resultMap="chatRoomMap" >
+    <select id="findMyRooms" parameterType="int" resultMap="chatRoomMap">
         SELECT
             rooms.*,
 
@@ -33,7 +32,7 @@
                 SELECT COUNT(*)
                 FROM messages m3
                 WHERE m3.room_id = rooms.room_id
-                  AND m3.sender_id != #{login_user_id}
+                  AND m3.sender_id != #{loginUserId}
             AND m3.is_read = 0
             ) AS unread_count
 
@@ -55,38 +54,38 @@
             JOIN users u
             ON u.user_id =
             CASE
-            WHEN rooms.freelancer_id = #{login_user_id}
+            WHEN rooms.freelancer_id = #{loginUserId}
             THEN p.client_id
             ELSE rooms.freelancer_id
         END
 
         WHERE
-    rooms.freelancer_id = #{login_user_id}
- OR p.client_id = #{login_user_id}
+    rooms.freelancer_id = #{loginUserId}
+ OR p.client_id = #{loginUserId}
 
 ORDER BY
     m.created_at DESC
     </select>
     <resultMap id="chatMessageMap" type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
-        <id property="message_id" column="message_id"/>
-        <result property="sender_id" column="sender_id"/>
-        <result property="room_id" column="room_id"/>
-        <result property="project_id" column="project_id"/>
+        <id property="messageId" column="message_id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="projectId" column="project_id"/>
         <result property="title" column="title"/>
-        <result property="user_id" column="user_id"/>
+        <result property="userId" column="user_id"/>
         <result property="name" column="name"/>
-        <result property="profile_image_url" column="profile_image_url"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
         <result property="content" column="content"/>
-        <result property="created_at" column="created_at"/>
-        <result property="deleted_at" column="deleted_at"/>
-        <result property="is_read" column="is_read"/>
-        <result property="is_deleted" column="is_deleted"/>
-        <result property="file_name" column="file_name"/>
-        <result property="file_url" column="file_url"/>
-        <result property="file_size" column="file_size"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <result property="isRead" column="is_read"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="fileName" column="file_name"/>
+        <result property="fileUrl" column="file_url"/>
+        <result property="fileSize" column="file_size"/>
     </resultMap>
 
-    <select id="find_room_by_id" resultMap="chatMessageMap">
+    <select id="findRoomById" resultMap="chatMessageMap">
         SELECT
             cr.room_id,
             cr.project_id,
@@ -110,29 +109,27 @@ ORDER BY
                  JOIN users u
                       ON u.user_id =
                          CASE
-                             WHEN p.client_id = #{login_user_id}
+                             WHEN p.client_id = #{loginUserId}
                                  THEN cr.freelancer_id
                              ELSE p.client_id
                              END
                  LEFT JOIN messages m ON m.room_id = cr.room_id
-        WHERE cr.room_id = #{room_id}
+        WHERE cr.room_id = #{roomId}
         ORDER BY m.created_at ASC
     </select>
-    //채팅방 나가기
     <update id="exitRoom" parameterType="map">
-        UPDATE chat_rooms
+        UPDATE chat_rooms r
+            JOIN projects p ON r.project_id = p.project_id
         SET
-            freelancer_exited = CASE
-                                    WHEN freelancer_id = #{user_id} THEN 1
-                                    ELSE freelancer_exited
+            r.freelancer_exited = CASE
+                                    WHEN r.freelancer_id = #{userId} THEN 1
+                                    ELSE r.freelancer_exited
                 END,
-            client_exited = CASE
-                                WHEN p.client_id = #{user_id} THEN 1
-                                ELSE client_exited
+            r.client_exited = CASE
+                                WHEN p.client_id = #{userId} THEN 1
+                                ELSE r.client_exited
                 END
-            FROM chat_rooms r
-        JOIN projects p ON r.project_id = p.project_id
-        WHERE r.room_id = #{room_id};
+        WHERE r.room_id = #{roomId}
     </update>
 
     <select id="findRoomInfo" resultMap="chatRoomMap">
@@ -146,15 +143,15 @@ ORDER BY
         FROM chat_rooms r
                  JOIN projects p ON r.project_id = p.project_id
                  JOIN users u
-                      ON (CASE WHEN r.freelancer_id = #{login_user_id} THEN p.client_id ELSE r.freelancer_id END) = u.user_id
-        WHERE r.room_id = #{room_id}
+                      ON (CASE WHEN r.freelancer_id = #{loginUserId} THEN p.client_id ELSE r.freelancer_id END) = u.user_id
+        WHERE r.room_id = #{roomId}
     </select>
 
     <update id="update_last_message" parameterType="map">
         UPDATE chat_rooms
         SET last_message_at = CURRENT_TIMESTAMP,
         last_message_content = #{content}
-        WHERE room_id = #{room_id}
+        WHERE room_id = #{roomId}
     </update>
 
 </mapper>

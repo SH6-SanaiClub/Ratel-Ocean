@@ -11,21 +11,23 @@ import java.util.Map;
 @Mapper
 public interface ChatRoomMapper {
 
-    // 내 채팅방 목록 조회
-    List<ChatRoomDTO> find_my_rooms(@Param("login_user_id") Integer login_user_id);
+    // 내 채팅방 목록 조회 (find_my_rooms -> findMyRooms)
+    List<ChatRoomDTO> findMyRooms(@Param("loginUserId") Integer loginUserId);
 
-    // 단일 채팅방 상세 조회
-    List<ChatMessageDTO> find_room_by_id(
-            @Param("room_id") Integer room_id,
-            @Param("login_user_id") Integer login_user_id
+    // 단일 채팅방 상세 조회 (find_room_by_id -> findRoomById)
+    List<ChatMessageDTO> findRoomById(
+            @Param("roomId") Integer roomId,
+            @Param("loginUserId") Integer loginUserId
     );
-    //채팅방나가기
-    void exitRoom(@Param("room_id") Integer room_id,
-                  @Param("user_id") Integer user_id);
-    // ChatRoomMapper.java
-    ChatRoomDTO findRoomInfo(@Param("room_id") Integer room_id, @Param("login_user_id") Integer login_user_id);
 
-    // 마지막 메시지 업데이트
-    void update_last_message(@Param("room_id") Integer room_id,
-                             @Param("content") String content);
+    // 채팅방 나가기
+    void exitRoom(@Param("roomId") Integer roomId,
+                  @Param("userId") Integer userId);
+
+    // 채팅방 정보 조회
+    ChatRoomDTO findRoomInfo(@Param("roomId") Integer roomId, @Param("loginUserId") Integer loginUserId);
+
+    // 마지막 메시지 업데이트 (update_last_message -> updateLastMessage)
+    void updateLastMessage(@Param("roomId") Integer roomId,
+                           @Param("content") String content);
 }

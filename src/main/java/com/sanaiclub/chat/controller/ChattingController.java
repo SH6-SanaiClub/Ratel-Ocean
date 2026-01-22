@@ -33,43 +33,43 @@ public class ChattingController {
     }
 
 
-    @GetMapping("/room/{room_id}/info")
+    @GetMapping("/room/{roomId}/info")
     @ResponseBody
     public ChatRoomDTO roomInfo(
-            @PathVariable Integer room_id,
+            @PathVariable Integer roomId,
             HttpSession session
     ) {
-        Integer login_user_id = 3; // 실제 세션 로그인 유저 id로 교체
+        Integer loginUserId = 3; // 실제 세션 로그인 유저 id로 교체
 
         // 서비스에서 ChatRoomDTO 반환하도록
-        return chatService.findRoomInfo(room_id, login_user_id);
+        return chatService.findRoomInfo(roomId, loginUserId);
     }
 
-    @PostMapping("/room/{room_id}/read")
+    @PostMapping("/room/{roomId}/read")
     @ResponseBody
-    public void markAsRead(@PathVariable Integer room_id) {
-        chatService.markRoomAsRead(room_id);
+    public void markAsRead(@PathVariable Integer roomId) {
+        chatService.markRoomAsRead(roomId);
     }
 
     // 채팅방 목록 데이터 (AJAX)
     @GetMapping("/rooms")
     @ResponseBody
     public List<ChatRoomDTO> rooms() {
-        return chatService.find_my_rooms();
+        return chatService.findMyRooms();
     }
 
     // 메시지 목록 조회
-    @GetMapping("/room/{room_id}/messages")
+    @GetMapping("/room/{roomId}/messages")
     @ResponseBody
-    public List<ChatMessageDTO> getMessages(@PathVariable Integer room_id) {
-        return chatService.find_messages(room_id);
+    public List<ChatMessageDTO> getMessages(@PathVariable Integer roomId) {
+        return chatService.findMessages(roomId);
     }
     //방 나가기
-    @PostMapping("/room/{room_id}/exit")
+    @PostMapping("/room/{roomId}/exit")
     @ResponseBody
-    public ResponseEntity<?> exitRoom(@PathVariable Integer room_id) {
+    public ResponseEntity<?> exitRoom(@PathVariable Integer roomId) {
         try {
-            chatService.exitRoom(room_id);
+            chatService.exitRoom(roomId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,75 +77,76 @@ public class ChattingController {
         }
     }
 
-    @GetMapping("/room/{room_id}/typing")
+    @GetMapping("/room/{roomId}/typing")
     @ResponseBody
-    public Integer getTyping(@PathVariable Integer room_id) {
-        return chatService.getTypingUser(room_id);
+    public Integer getTyping(@PathVariable Integer roomId) {
+        return chatService.getTypingUser(roomId);
     }
 
-    @PostMapping("/room/{room_id}/typing")
+    @PostMapping("/room/{roomId}/typing")
     @ResponseBody
     public void typing(
-            @PathVariable Integer room_id,
+            @PathVariable Integer roomId,
             @RequestParam boolean typing
     ) {
-        chatService.updateTyping(room_id, typing);
+        chatService.updateTyping(roomId, typing);
     }
 
-    @PostMapping("/room/{room_id}/typing/reset")
+    @PostMapping("/room/{roomId}/typing/reset")
     @ResponseBody
-    public void resetTyping(@PathVariable Integer room_id) {
-        chatService.resetTyping(room_id);
+    public void resetTyping(@PathVariable Integer roomId) {
+        chatService.resetTyping(roomId);
     }
 
     // 메시지 전송
-    @PostMapping("/room/{room_id}/message")
+    @PostMapping("/room/{roomId}/message")
     public ResponseEntity<ChatMessageDTO> sendMessage(
-            @PathVariable Integer room_id,
+            @PathVariable Integer roomId,
             @RequestParam String content,
             @RequestParam(required = false) MultipartFile file,
             HttpSession session
     ) throws IOException {
-        String file_name = null;
-        String file_url = null;
-        Long file_size = null;
+        String fileName = null;
+        String fileUrl = null;
+        Long fileSize = null;
         if (file != null && !file.isEmpty()) {
-            file_name = file.getOriginalFilename();
-            file_size = file.getSize();
+            fileName = file.getOriginalFilename();
+            fileSize = file.getSize();
             String uploadDir = "C:/upload/chat";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
-            File savedFile = new File(uploadDir, file_name);
+            File savedFile = new File(uploadDir, fileName);
             file.transferTo(savedFile);
-            file_url = "/upload/chat/" + file_name;
+            fileUrl = "/upload/chat/" + fileName;
         }
-        Integer sender_id = 1;
+        Integer senderId = 1;
         ChatMessageDTO message =
-                chatService.send_and_return_message(
-                        room_id,
-                        sender_id,
+                chatService.sendAndReturnMessage(
+                        roomId,
+                        senderId,
                         content,
-                        file_name,
-                        file_url,
-                        file_size
-                ); // ✅ 타입 완벽 일치
+                        fileName,
+                        fileUrl,
+                        fileSize
+                );
         return ResponseEntity.ok(message);
     }
 
     // 채팅방 진입 (화면)
-    @GetMapping("/room/{room_id}")
-    public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
-        Integer login_user_id = (Integer) httpSession.getAttribute("login_user_id");
-        model.addAttribute("room_id", room_id);
-        httpSession.setAttribute("login_user_id", 1);
+    @GetMapping("/room/{roomId}") // room_id -> roomId
+    public String roomPage(@PathVariable Integer roomId, Model model, HttpSession httpSession) {
+        // login_user_id -> loginUserId
+        Integer loginUserId = (Integer) httpSession.getAttribute("loginUserId");
+        model.addAttribute("roomId", roomId); // room_id -> roomId
+        httpSession.setAttribute("loginUserId", 1);
         return "chat/room";
     }
 
-    @PostMapping("/message/{message_id}/delete")
+    @PostMapping("/message/{messageId}/delete") // message_id -> messageId
     @ResponseBody
-    public ResponseEntity<?> deleteMessage(@PathVariable int message_id) {
+    public ResponseEntity<?> deleteMessage(@PathVariable int messageId) {
         try {
-            chatService.delete_message(message_id);
+            chatService.deleteMessage(messageId); // delete_message -> deleteMessage
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
             e.printStackTrace();

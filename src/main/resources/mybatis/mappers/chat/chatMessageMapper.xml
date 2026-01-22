@@ -7,17 +7,16 @@
     <resultMap id="messageMap"
                type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
 
-        <id column="message_id" property="message_id"/>
-        <result column="room_id" property="room_id"/>
-        <result column="sender_id" property="sender_id"/>
+        <id column="message_id" property="messageId"/>
+        <result column="room_id" property="roomId"/>
+        <result column="sender_id" property="senderId"/>
         <result column="content" property="content"/>
-        <result column="created_at" property="created_at"/>
-        <result column="is_read" property="is_read"/>
-        <result column="is_deleted" property="is_deleted"/>
-        <result column="file_name" property="file_name"/>
-        <result column="file_url" property="file_url"/>
-        <result column="file_size" property="file_size"/>
-
+        <result column="created_at" property="createdAt"/>
+        <result column="is_read" property="isRead"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="file_size" property="fileSize"/>
     </resultMap>
 
     <select id="findMessages"
@@ -26,7 +25,7 @@
         SELECT
             *
         FROM messages m
-        WHERE m.room_id = #{room_id}
+        WHERE m.room_id = #{roomId}
         ORDER BY m.created_at ASC
 
     </select>
@@ -42,13 +41,13 @@
             created_at,
             is_read
         ) VALUES (
-                     #{room_id},
-                     #{sender_id},
-                     #{content},
-                     #{file_name},
-                     #{file_url},
-                     #{file_size},
-                    CURRENT_TIMESTAMP,
+                  #{roomId},
+                  #{senderId},
+                  #{content},
+                  #{fileName},
+                  #{fileUrl},
+                  #{fileSize},
+                  CURRENT_TIMESTAMP,
                   0
                  )
     </insert>
@@ -56,8 +55,8 @@
     <update id="markRoomMessagesAsRead">
         UPDATE messages
         SET is_read = 1
-        WHERE room_id = #{room_id}
-          AND sender_id != #{login_user_id}
+        WHERE room_id = #{roomId}
+          AND sender_id != #{loginUserId}
           AND is_read = 0
     </update>
 
@@ -65,7 +64,7 @@
     <update id="deleteMessage">
         UPDATE messages
         SET is_deleted = 1, deleted_at = CURRENT_TIMESTAMP
-        WHERE message_id = #{message_id}
+        WHERE message_id = #{messageId}
     </update>
 
 

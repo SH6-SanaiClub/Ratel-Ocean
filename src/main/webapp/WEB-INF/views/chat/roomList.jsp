@@ -148,25 +148,25 @@
 
                     // ✅ 시간 문자열
                     let timeText = "";
-                    if (room.last_message_at) {
-                        timeText = new Date(room.last_message_at)
+                    if (room.lastMessageAt) {
+                        timeText = new Date(room.lastMessageAt)
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
 
                     // ✅ 안 읽은 메시지 개수
                     let unreadHtml = "";
-                    if (room.unread_count > 0) {
+                    if (room.unreadCount > 0) {
                         unreadHtml =
                             '<span class="unread-badge">' +
-                            room.unread_count +
+                            room.unreadCount +
                             '</span>';
                     }
 
                     container.innerHTML +=
-                        '<a href="/ratelocean/chat/room/' + room.room_id + '" class="chat-room-link">' +
+                        '<a href="/ratelocean/chat/room/' + room.roomId + '" class="chat-room-link">' +
                         '<div class="chat-room">' +
 
-                        '<img src="' + (room.profile_image_url || '/assets/img/default-profile.png') +
+                        '<img src="' + (room.profileImageUrl || '/assets/img/default-profile.png') +
                         '" class="avatar">' +
 
                         '<div class="room-info">' +
@@ -177,7 +177,7 @@
                         '</div>' +
 
                         '<div class="room-bottom">' +
-                        (room.last_message_content || '아직 메시지가 없습니다.') +
+                        (room.lastMessageContent || '아직 메시지가 없습니다.') +
                         '</div>' +
                         '</div>' +
 

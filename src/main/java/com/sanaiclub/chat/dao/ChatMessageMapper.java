@@ -8,25 +8,21 @@ import java.util.List;
 
 @Mapper
 public interface ChatMessageMapper {
-
-    List<ChatMessageDTO> findMessages(@Param("room_id")Integer room_id);
+    List<ChatMessageDTO> findMessages(@Param("roomId") Integer roomId);
 
     void insertMessage(
-            @Param("room_id") Integer room_id,
-            @Param("sender_id") Integer sender_id,
+            @Param("roomId") Integer roomId,
+            @Param("senderId") Integer senderId,
             @Param("content") String content,
-            @Param("file_name") String file_name,
-            @Param("file_url") String file_url,
-            @Param("file_size") Long file_size
+            @Param("fileName") String fileName,
+            @Param("fileUrl") String fileUrl,
+            @Param("fileSize") Long fileSize
     );
+
     void markRoomMessagesAsRead(
-            @Param("room_id") Integer room_id,
-            @Param("login_user_id") Integer login_user_id
+            @Param("roomId") Integer roomId,
+            @Param("loginUserId") Integer loginUserId
     );
 
-
-    // 메시지 삭제 처리
-    void deleteMessage(
-            @Param("message_id") Integer message_id
-    );
+    void deleteMessage(@Param("messageId") Integer messageId);
 }

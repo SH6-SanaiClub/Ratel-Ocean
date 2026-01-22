@@ -10,17 +10,17 @@ import java.util.Date;
 @Setter
 @ToString
 public class ChatRoomDTO {
-    private Integer room_id;
-    private Integer project_id;
+    private Integer roomId;
+    private Integer projectId;
     private String title;
-    private Integer sender_id;
-    private Boolean is_active;
-    private String profile_image_url;
-    private Date created_at;
-    private Date last_message_at;
-    private String last_message_content;
-    private Integer last_message_sender_id;
-    private Integer unread_count;
+    private Integer senderId;
+    private Boolean isActive;
+    private String profileImageUrl;
+    private Date createdAt;
+    private Date lastMessageAt;
+    private String lastMessageContent;
+    private Integer lastMessageSenderId;
+    private Integer unreadCount;
     private String name;
-    private boolean has_new_message;
+    private boolean hasNewMessage;
 }

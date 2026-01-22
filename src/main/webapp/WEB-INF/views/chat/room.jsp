@@ -382,8 +382,8 @@
             .replace(/>/g, "&gt;");
     }
 
-    let selectedRoom_id = null;
-    const login_user_id =  Number('${login_user_id}');
+    let selectedRoomId = null;
+    const loginUserId =  Number('${loginUserId}');
 
 
     // ================== 채팅방 목록 로드 ==================
@@ -398,29 +398,29 @@
                 list.forEach(room => {
                     // ✅ 시간 문자열 처리
                     let timeText = "";
-                    if (room.last_message_at) {
-                        timeText = new Date(room.last_message_at)
+                    if (room.lastMessageAt) {
+                        timeText = new Date(room.lastMessageAt)
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
 
                     // ✅ 안 읽은 메시지 개수 (보내주신 코드 로직)
                     let unreadHtml = "";
-                    if (room.unread_count > 0) {
+                    if (room.unreadCount > 0) {
                         unreadHtml =
                             '<span class="unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; margin-left: 8px;">' +
-                            room.unread_count +
+                            room.unreadCount +
                             '</span>';
                     }
 
                     // ✅ HTML 생성 (보내주신 목록 코드 스타일 적용)
                     // 현재 선택된 방이면 배경색 강조를 위해 클래스 추가
-                    const isSelected = (room.room_id == selectedRoom_id) ? " selected" : "";
-                     console.log("room.room_id :" , room.room_id )
+                    const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
+                     console.log("room.roomId :" , room.roomId )
                     container.innerHTML +=
-                        '<div class="chat-room' + isSelected + '" onclick="selectRoom(' + room.room_id + ')" style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">' +
+                        '<div class="chat-room' + isSelected + '" onclick="selectRoom(' + room.roomId + ')" style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">' +
 
                         '<div class="avatar-box">' +
-                        '<img src="' + (room.profile_image_url || '/ratelocean/assets/img/default-profile.png') + '" class="avatar">' +
+                        '<img src="' + (room.profileImageUrl || '/ratelocean/assets/img/default-profile.png') + '" class="avatar">' +
                         '<div class="room-name">' + room.name + '</div>' +
                         '</div>' +
                         '<div class="room-info" style="flex: 1;">' +
@@ -430,7 +430,7 @@
                         '</div>' +
 
                         '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
-                        (room.last_message_content || '아직 메시지가 없습니다.') +
+                        (room.lastMessageContent || '아직 메시지가 없습니다.') +
                         '</div>' +
                         '</div>' +
 
@@ -441,7 +441,7 @@
                 });
             });
 
-        selectRoom(${room_id});
+        selectRoom(${roomId});
     }
     // ================== 방 선택 ==================
 
@@ -450,11 +450,11 @@
 
 
     messageInput.addEventListener("keydown", () => {
-        if (!selectedRoom_id) return;
+        if (!selectedRoomId) return;
         if (!isTyping) {
             isTyping = true;
 
-            fetch(`/chat/room/\${selectedRoom_id}/typing`, {
+            fetch(`/chat/room/\${selectedRoomId}/typing`, {
                 method: "POST",
                 body: new URLSearchParams({ typing: true })
             });
@@ -465,21 +465,21 @@
         typingTimer = setTimeout(() => {
             isTyping = false;
 
-            fetch(`/chat/room/\${selectedRoom_id}/typing`, {
+            fetch(`/chat/room/\${selectedRoomId}/typing`, {
                 method: "POST",
                 body: new URLSearchParams({ typing: false })
             });
         }, 1000); // 1초 동안 입력 없으면 typing 종료
     });
     function loadTypingStatus() {
-        if (!selectedRoom_id) return;
+        if (!selectedRoomId) return;
 
-        fetch(`/ratelocean/chat/room/\${selectedRoom_id}/typing`)
+        fetch(`/ratelocean/chat/room/\${selectedRoomId}/typing`)
             .then(res => res.json())
-            .then(user_id => {
+            .then(userId => {
                 const el = document.getElementById("typingIndicator");
 
-                if (user_id && user_id !== login_user_id) {
+                if (userId && userId !== loginUserId) {
                     el.style.display = "block";
                 } else {
                     el.style.display = "none";
@@ -490,19 +490,19 @@
         document.querySelectorAll(".chat-room").forEach(div => {
             div.classList.toggle(
                 "selected",
-                div.dataset.room_id == selectedRoom_id
+                div.dataset.roomId == selectedRoom_Id
             );
         });
     }
-    function deleteMessage(message_id) {
+    function deleteMessage(messageId) {
         if (!confirm("메시지를 삭제할까요?")) return;
 
-        fetch("/ratelocean/chat/message/" + message_id + "/delete", {
+        fetch("/ratelocean/chat/message/" + messageId + "/delete", {
             method: "POST"
         })
             .then(res => {
                 if (res.ok) {
-                    loadMessages(selectedRoom_id);
+                    loadMessages(selectedRoomId);
                 } else {
                     alert("삭제에 실패했습니다.");
                 }
@@ -511,13 +511,10 @@
     }
 
     // ================== 메시지 로드 ==================
-    function loadMessages(room_id) {
+    function loadMessages(roomId) {
 
-//if (selectedRoom_id == null) return;
 
-        console.log(room_id);
-
-        fetch(`/ratelocean/chat/room/\${room_id}/messages`)
+        fetch(`/ratelocean/chat/room/\${roomId}/messages`)
 
             .then(res => res.json())
 
@@ -531,7 +528,7 @@
 
                 list.forEach(msg => {
 
-                    const msgDate = new Date(msg.created_at).toLocaleDateString('ko-KR');
+                    const msgDate = new Date(msg.createdAt).toLocaleDateString('ko-KR');
 
 
 
@@ -557,9 +554,9 @@
 
 
 
-                    if (msg.created_at) {
+                    if (msg.createdAt) {
 
-                        timeText = new Date(msg.created_at)
+                        timeText = new Date(msg.createdAt)
 
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -567,7 +564,7 @@
 
 
 
-                    const mine = msg.sender_id == '${login_user_id}';
+                    const mine = msg.senderId == '${loginUserId}';
 
 
 
@@ -579,15 +576,15 @@
 
                     if (mine) {
 
-                        readMark = msg.is_read === 1 ? "읽음" : "";
+                        readMark = msg.isRead === 1 ? "읽음" : "";
 
                     }
 
 
                     const div = document.createElement("div");
                     div.className = "message " + (mine ? "mine" : "");
-                    div.dataset.messageId = msg.message_id; // 메시지 ID 저장
-                    if (msg.is_deleted == 1) {
+                    div.dataset.messageId = msg.messageId; // 메시지 ID 저장
+                    if (msg.isDeleted == 1) {
                         div.innerHTML =
                             '<div class="bubble deleted">삭제된 메시지입니다.</div>';
                         body.appendChild(div);
@@ -595,7 +592,7 @@
                     }else {
                         let deleteBtn = "";
                         if (mine) {
-                            deleteBtn = '<span class="delete-btn" onclick="deleteMessage(' + msg.message_id + ')">delete</span>';
+                            deleteBtn = '<span class="delete-btn" onclick="deleteMessage(' + msg.messageId + ')">delete</span>';
                         }
 
 // 메시지 HTML
@@ -625,19 +622,19 @@
     // ================== 메시지 전송 ==================
     function sendMessage() {
         const content = messageInput.value.trim();
-        if (!content || !selectedRoom_id) return;
+        if (!content || !selectedRoomId) return;
 
         const formData = new FormData();
         formData.append("content", content);
 
-        fetch("/ratelocean/chat/room/" + selectedRoom_id + "/message", {
+        fetch("/ratelocean/chat/room/" + selectedRoomId + "/message", {
             method: "POST",
             body: formData
         })
             .then(res => res.json())
             .then(msg => {
                 messageInput.value = "";
-                loadMessages(selectedRoom_id);
+                loadMessages(selectedRoomId);
             })
             .catch(err => {
                 console.error(err);
@@ -647,10 +644,9 @@
 
 
     // ================== 우측 방 정보 로드 ==================
-    function loadRoomInfo(room_id) {
-        //if (!selectedRoom_id) return;
+    function loadRoomInfo(roomId) {
 
-        fetch(`/ratelocean/chat/room/\${selectedRoom_id}/info`)
+        fetch(`/ratelocean/chat/room/\${selectedRoomId}/info`)
             .then(res => res.json())
             .then(room => {
                 document.getElementById("headerName").innerText = room.name;
@@ -658,11 +654,11 @@
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =
                     '<div class="profile-card">' +
-                    '<img src="' + (room.profile_image_url || '/assets/img/default-profile.png') + '">' +
+                    '<img src="' + (room.profileImageUrl || '/assets/img/default-profile.png') + '">' +
                     '<h3>' + room.name + '</h3>' +
                     '<div class="action-buttons">' +
-                    '<a href="/user/profile/' + room.sender_id + '">프로필</a>' +
-                    '<a href="/project/' + room.project_id + '" class="secondary">프로젝트</a>' +
+                    '<a href="/user/profile/' + room.senderId + '">프로필</a>' +
+                    '<a href="/project/' + room.projectId+ '" class="secondary">프로젝트</a>' +
                     '</div>' +
                     '</div>' +
                     '<div class="info-section">' +
@@ -673,23 +669,19 @@
             });
     }
 
-    function selectRoom(room_id) {
-        console.log("selectRoom메서드 room_id:" , room_id)
-        selectedRoom_id = room_id;
-        // fetch(`/ratelocean/chat/room/\${room_id}/typing/reset`, {
-        //     method: "POST"
-        // });
-        //loadRoomInfo(room_id);
-        loadMessages(room_id);
+    function selectRoom(roomId) {
+        console.log("selectRoom메서드 roomId:" , roomId)
+        selectedRoomId = roomId;
+        loadMessages(roomId);
 
         // ✅ 읽음 처리
-        fetch(`/ratelocean/chat/room/\${room_id}/read`, {
+        fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
         }).then(() => {
         });
 
 
-        fetch(`/ratelocean/chat/room/\${room_id}/info`)
+        fetch(`/ratelocean/chat/room/\${roomId}/info`)
             .then(res => res.json())
             .then(room => {
                 // DTO 필드 그대로 사용
@@ -699,11 +691,11 @@
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =
                     `<div class="profile-card">
-                    <img src="\${room.profile_image_url || '/assets/img/default-profile.png'}">
+                    <img src="\${room.profileImageUrl || '/assets/img/default-profile.png'}">
                     <h3>\${room.name || "상대방"}</h3>
                     <div class="action-buttons">
-                        <a href="/user/profile/\${room.room_id}">프로필</a>
-                        <a href="/project/\${room.project_id}" class="secondary">프로젝트</a>
+                        <a href="/user/profile/\${room.userId}">프로필</a>
+                        <a href="/project/\${room.projectId}" class="secondary">프로젝트</a>
                     </div>
                 </div>
                 <div class="info-section">
@@ -718,13 +710,6 @@
 
     // ================== 자동 갱신 ==================
     loadChatRooms();
-    // setInterval(() => {
-    //     loadChatRooms();
-    //     if (selectedRoom_id) {
-    //         loadMessages();
-    //         loadTypingStatus();
-    //     }
-    // }, 3000);
 
 </script>
 </body>

@@ -10,20 +10,20 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 public class ChatMessageDTO {
-    private Integer message_id;
-    private Integer sender_id;
-    private Integer room_id;
-    private Integer project_id;
+    private Integer messageId; // message_id -> messageId
+    private Integer senderId; // sender_id -> senderId
+    private Integer roomId; // room_id -> roomId
+    private Integer projectId; // project_id -> projectId
     private String title;
-    private Integer user_id;
+    private Integer userId; // user_id -> userId
     private String name;
-    private String profile_image_url;
+    private String profileImageUrl; // profile_image_url -> profileImageUrl
     private String content;
-    private Date created_at;
-    private Date deleted_at;
-    private int is_read;
-    private int is_deleted;
-    private String file_name;
-    private String file_url;
-    private Long file_size;
+    private Date createdAt; // created_at -> createdAt
+    private Date deletedAt; // deleted_at -> deletedAt
+    private int isRead; // is_read -> isRead
+    private int isDeleted; // is_deleted -> isDeleted
+    private String fileName; // file_name -> fileName
+    private String fileUrl; // file_url -> fileUrl
+    private Long fileSize; // file_size -> fileSize
 }
