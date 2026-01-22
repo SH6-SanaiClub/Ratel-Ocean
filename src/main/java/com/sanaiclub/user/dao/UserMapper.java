@@ -1,8 +1,5 @@
 package com.sanaiclub.user.dao;
 
-import com.sanaiclub.user.model.dto.ClientProfileDTO;
-import com.sanaiclub.user.model.dto.FreelancerProfileDTO;
-import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.user.model.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -31,34 +28,18 @@ public interface UserMapper {
     UserVO findByRefreshToken(@Param("refreshToken") String refreshToken);
 
     /**
-     * Refresh Token 저장/갱신
-     * - 로그인 성공 시: 새 토큰 저장
-     * - 토큰 재발급 시: 새 토큰으로 갱신
-     * - 로그아웃 시: null로 설정하여 무효화
-     *
-     * @param userId       사용자 PK
-     * @param refreshToken 저장할 Refresh Token (로그아웃 시 null)
-     * @return 수정된 행 수 (정상이면 1)
-     */
-    int updateRefreshToken(@Param("userId") Integer userId,
-                           @Param("refreshToken") String refreshToken);
-
-    /**
-     * 로그인 ID 중복 확인
+     * 아이디 중복 체크
      *
      * @param loginId 확인할 로그인 ID
-     * @return 존재하면 true
+     * @return 존재하면 1, 없으면 0
      */
-    int insertAccount(AccountVO account);
-
-    // 아이디 중복 체크 (존재하면 1, 없으면 0 반환)
     int checkId(@Param("loginId") String loginId);
 
     /**
      * 이메일 중복 확인
      *
      * @param email 확인할 이메일
-     * @return 존재하면 true
+     * @return 존재하면 1, 없으면 0
      */
     int checkEmail(@Param("email") String email);
 
@@ -66,18 +47,25 @@ public interface UserMapper {
      * 신규 사용자 등록
      *
      * @param user 등록할 사용자 정보
-     * @return 등록된 행 수 (정상이면 1)
+     * @return 등록된 행 수
      */
     int insertUser(UserVO user);
 
-    // 프리랜서 프로필 등록
-    int insertFreelancerProfile(@Param("userId") int userId,
-                                @Param("dto") FreelancerProfileDTO dto);
+    /**
+     * Refresh Token 저장/갱신
+     *
+     * @param userId       사용자 PK
+     * @param refreshToken 저장할 Refresh Token (로그아웃 시 null)
+     * @return 수정된 행 수
+     */
+    int updateRefreshToken(@Param("userId") Integer userId,
+                           @Param("refreshToken") String refreshToken);
 
-    // 3. 기업 정보 등록
-    int insertCompany(ClientProfileDTO dto);
-
-    // 4. 클라이언트 프로필 등록
-    int insertClientProfile(@Param("userId") int userId,
-                            @Param("dto") ClientProfileDTO dto);
+    /**
+     * 사용자 정보 수정
+     *
+     * @param user 수정할 사용자 정보
+     * @return 수정된 행 수
+     */
+    int updateUser(UserVO user);
 }
