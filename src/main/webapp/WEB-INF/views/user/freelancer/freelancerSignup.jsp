@@ -1,19 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RatelOcean | Freelancer Profile</title>
+    <title>RatelOcean | 프리랜서 프로필</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --brand-main: #2C1A52;      /* Deep Purple */
-            --brand-accent: #00F0FF;    /* Neon Cyan */
-            --brand-purple: #8A2BE2;    /* Radiant Purple */
-            --bg-light: #F8F9FD;        /* 아주 밝은 라벤더 톤 배경 */
+            --brand-main: #2C1A52;
+            --brand-accent: #00F0FF;
+            --brand-purple: #8A2BE2;
+            --bg-light: #F8F9FD;
             --text-dark: #2D2D2D;
             --text-muted: #6C757D;
             --white: #FFFFFF;
@@ -41,19 +40,15 @@
             background: var(--white);
             border-radius: 20px;
             padding: 50px 45px;
-            box-shadow: 0 10px 30px rgba(44, 26, 82, 0.08); /* 브랜드 컬러를 섞은 그림자 */
+            box-shadow: 0 10px 30px rgba(44, 26, 82, 0.08);
             border: 1px solid var(--border-color);
         }
 
-        /* 헤더 섹션 */
         .header {
             text-align: center;
             margin-bottom: 35px;
         }
-        .header img {
-            width: 170px;
-            margin-bottom: 15px;
-        }
+
         .header h1 {
             font-size: 1.6rem;
             font-weight: 700;
@@ -61,77 +56,56 @@
             margin: 0;
         }
 
-        /* 단계 표시기 */
-        .step-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px;
-            gap: 20px;
-        }
-        .step-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .step-box.active {
-            color: var(--brand-purple);
-        }
-        .step-number {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--border-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-        }
-        .active .step-number {
-            background: var(--brand-purple);
-            box-shadow: 0 0 8px rgba(138, 43, 226, 0.4);
-        }
-
-        /* 폼 구성 */
         .form-body {
             display: flex;
             flex-direction: column;
-            gap: 22px;
+            gap: 24px;
         }
+
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-        }
-        .label-text {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--brand-main);
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        input[type="text"], input[type="url"], textarea, select {
-            width: 100%;
-            padding: 13px 16px;
+        .label-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-text i {
+            color: var(--brand-purple);
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        select {
+            padding: 14px 16px;
             border: 1.5px solid var(--border-color);
             border-radius: 10px;
             font-size: 0.95rem;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
             color: var(--text-dark);
-            background-color: #FAFAFA;
+            transition: all 0.2s ease;
+            background: var(--white);
         }
 
-        input:focus, textarea:focus, select:focus {
+        input:focus,
+        textarea:focus,
+        select:focus {
             outline: none;
-            border-color: var(--brand-accent);
-            background-color: var(--white);
-            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+            border-color: var(--brand-purple);
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
         }
 
         .grid-row {
@@ -140,25 +114,14 @@
             gap: 12px;
         }
 
-        textarea {
-            height: 110px;
-            resize: none;
-            line-height: 1.5;
-        }
-
-        /* 버튼 */
-        .submit-area {
-            margin-top: 15px;
-        }
         .btn-primary {
-            width: 100%;
-            background: var(--brand-main);
-            color: white;
+            background: linear-gradient(135deg, var(--brand-main) 0%, var(--brand-purple) 100%);
+            color: var(--white);
             border: none;
-            padding: 16px;
+            padding: 18px;
             border-radius: 12px;
             font-size: 1.05rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -166,6 +129,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .btn-primary:hover {
             background: var(--brand-purple);
             transform: translateY(-2px);
@@ -176,7 +140,6 @@
             color: #ADB5BD;
         }
 
-        /* 커스텀 셀렉트 화살표 */
         select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%232C1A52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
@@ -193,7 +156,7 @@
         <h1>전문가 프로필 등록</h1>
     </header>
 
-    <form action="${pageContext.request.contextPath}/join/freelancer-profile" method="post" class="form-body">
+    <form action="${pageContext.request.contextPath}/join/freelancer/signup" method="post" class="form-body">
 
         <div class="input-group">
             <label class="label-text"><i class="fas fa-id-badge"></i> 활동 닉네임</label>
@@ -202,7 +165,7 @@
 
         <div class="input-group">
             <label class="label-text"><i class="fas fa-user-edit"></i> 전문 분야 및 소개</label>
-            <textarea name="introduction" placeholder="본인의 전문 스택 및 프로젝트 강점을 200자 내외로 요약해 주세요."></textarea>
+            <textarea name="introduction" placeholder="본인의 전문 스택 및 프로젝트 강점을 200자 내외로 요약해 주세요." required></textarea>
         </div>
 
         <div class="input-group">
