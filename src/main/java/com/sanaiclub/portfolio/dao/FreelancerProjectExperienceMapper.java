@@ -14,6 +14,6 @@ public interface FreelancerProjectExperienceMapper {
 
     int updateExperience(FreelancerProjectExperienceVO vo);
 
-    int deleteExperience(@Param("experienceId") Long experienceId,
+    int deleteExperience(@Param("experienceId") Integer experienceId,
                          @Param("freelancerId") Integer freelancerId);
 }

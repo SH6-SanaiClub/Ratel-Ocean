@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class FreelancerCareerVO {
-    private Long careerId;
+    private Integer careerId;
     private Integer freelancerId;
 
     private String companyName;

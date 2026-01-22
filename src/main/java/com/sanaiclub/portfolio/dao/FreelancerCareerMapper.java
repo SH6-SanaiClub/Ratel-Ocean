@@ -14,6 +14,6 @@ public interface FreelancerCareerMapper {
 
     int updateCareer(FreelancerCareerVO vo);
 
-    int deleteCareer(@Param("careerId") Long careerId,
+    int deleteCareer(@Param("careerId") Integer careerId,
                      @Param("freelancerId") Integer freelancerId);
 }
