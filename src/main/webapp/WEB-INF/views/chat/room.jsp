@@ -385,6 +385,39 @@
     let selectedRoomId = null;
     const loginUserId =  Number('${loginUserId}');
 
+    function exitRoom() {
+        if (!selectedRoomId) return;
+        if (!confirm("채팅방을 나가시겠습니까?")) return;
+
+        fetch(`/ratelocean/chat/room/${selectedRoomId}/exit`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.text())
+            .then(resText => {
+                if (resText === "ok") {
+                    alert("채팅방을 나갔습니다.");
+
+                    // 채팅방 목록에서 방 제거 또는 새로고침
+                    loadChatRooms();
+
+                    // 선택된 방 초기화
+                    selectedRoomId = null;
+                    document.getElementById("chatBody").innerHTML = "";
+                    document.getElementById("headerName").innerText = "";
+                    document.getElementById("headerProject").innerText = "";
+                    document.getElementById("roomInfo").innerHTML = "";
+                } else {
+                    alert("채팅방 나가기에 실패했습니다.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("채팅방 나가기에 실패했습니다.");
+            });
+    }
 
     // ================== 채팅방 목록 로드 ==================
     // ================== 채팅방 목록 로드 (왼쪽 사이드바) ==================

@@ -131,7 +131,12 @@ ORDER BY
                 END
         WHERE r.room_id = #{roomId}
     </update>
-
+    <insert id="insertExitMessage" parameterType="map">
+        INSERT INTO messages
+            (room_id, sender_id, content, created_at, is_read)
+        VALUES
+            (#{roomId}, #{userId}, #{exitMessage}, NOW(), 0)
+    </insert>
     <select id="findRoomInfo" resultMap="chatRoomMap">
         SELECT
             r.room_id,

@@ -108,10 +108,18 @@ public class ChatService {
         chatMessageMapper.deleteMessage(messageId);
     }
     //방 나가기
-    @Transactional
-    public void exitRoom(Integer roomId) {
-        Integer userId = getLoginUserId();
-        chatRoomMapper.exitRoom(roomId, userId);
+    public void exitRoom(Integer roomId, Integer userId) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("roomId", roomId);
+        param.put("userId", userId);
+
+        // 1. 채팅방 상태 업데이트
+        chatRoomMapper.exitRoom(param);
+
+        // 2. 상대방에게 보여줄 메시지
+        String exitMessage = "사용자가 채팅방을 나갔습니다";
+        param.put("exitMessage", exitMessage);
+        chatRoomMapper.insertExitMessage(param);
     }
 
     // =========================================

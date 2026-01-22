@@ -67,15 +67,14 @@ public class ChattingController {
     //방 나가기
     @PostMapping("/room/{roomId}/exit")
     @ResponseBody
-    public ResponseEntity<?> exitRoom(@PathVariable Integer roomId) {
-        try {
-            chatService.exitRoom(roomId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅방 나가기 실패");
-        }
+    public String exitRoom(@PathVariable Integer roomId, HttpSession session) {
+        Integer loginUserId = (Integer) session.getAttribute("login_user_id");
+
+        chatService.exitRoom(roomId, loginUserId);
+
+        return "ok";
     }
+
 
     @GetMapping("/room/{roomId}/typing")
     @ResponseBody
