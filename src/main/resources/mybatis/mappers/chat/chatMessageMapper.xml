@@ -4,10 +4,25 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.sanaiclub.chat.dao.ChatMessageMapper">
+    <resultMap id="messageMap"
+               type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
+
+        <id column="message_id" property="message_id"/>
+        <result column="room_id" property="room_id"/>
+        <result column="sender_id" property="sender_id"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="created_at"/>
+        <result column="is_read" property="is_read"/>
+        <result column="is_deleted" property="is_deleted"/>
+        <result column="file_name" property="file_name"/>
+        <result column="file_url" property="file_url"/>
+        <result column="file_size" property="file_size"/>
+
+    </resultMap>
 
     <select id="findMessages"
             parameterType="int"
-            resultType="com.sanaiclub.chat.model.dto.ChatMessageDTO">
+            resultMap="messageMap">
         SELECT
             *
         FROM messages m

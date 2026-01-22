@@ -26,9 +26,13 @@
                 /* ================= LEFT ================= */
                 .meta {
                     font-size: 11px;
-                    color: #666;
+                    color: #777;
                     margin-top: 4px;
                     text-align: right;
+                }
+
+                .message.mine .meta {
+                    color: #555;
                 }
                 .chat-list {
                     width: 320px;
@@ -98,13 +102,14 @@
                 }
 
                 .message {
-                    margin-bottom: 10px;
+                    display: flex;
+                    align-items: flex-end;
+                    gap: 6px;
                 }
 
                 .message.mine {
-                    text-align: right;
+                    justify-content: flex-end;
                 }
-
                 .bubble {
                     display: inline-block;
                     padding: 10px 14px;
@@ -117,6 +122,15 @@
                     background: #9ad9db;
                 }
 
+                .meta {
+                    font-size: 11px;
+                    color: #777;
+                    margin-top: 3px;
+                }
+
+                .message.mine .meta {
+                    color: #555;
+                }
                 .chat-input {
                     display: flex;
                     padding: 12px;
@@ -421,12 +435,14 @@
                     div.className = "message " + (mine ? "mine" : "");
 
                     div.innerHTML =
-    '<div class="bubble">'
-  + escapeHtml(msg.content || '')
-  + '<div class="meta">'
-  + timeText
-  + '<span class="read-mark">' + readMark + '</span>'
-  + '</div></div>';
+                        '<div class="bubble">'
+                        + escapeHtml(msg.content || '')
+                        + '</div>'
+                        + '<div class="meta">'
+                        + timeText
+                        + (readMark ? ' · ' + readMark : '')
+                        + '</div>';
+
 
 
                     body.appendChild(div);
