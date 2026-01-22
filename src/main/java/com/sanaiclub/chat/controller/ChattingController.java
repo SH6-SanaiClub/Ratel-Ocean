@@ -4,6 +4,7 @@ import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import com.sanaiclub.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -63,6 +64,7 @@ public class ChattingController {
     public List<ChatMessageDTO> getMessages(@PathVariable Integer room_id) {
         return chatService.find_messages(room_id);
     }
+
     @GetMapping("/room/{room_id}/typing")
     @ResponseBody
     public Integer getTyping(@PathVariable Integer room_id) {
@@ -77,6 +79,7 @@ public class ChattingController {
     ) {
         chatService.updateTyping(room_id, typing);
     }
+
     @PostMapping("/room/{room_id}/typing/reset")
     @ResponseBody
     public void resetTyping(@PathVariable Integer room_id) {
@@ -94,15 +97,16 @@ public class ChattingController {
         String file_name = null;
         String file_url = null;
         Long file_size = null;
-        if (file != null && !file.isEmpty())
-        { file_name = file.getOriginalFilename();
+        if (file != null && !file.isEmpty()) {
+            file_name = file.getOriginalFilename();
             file_size = file.getSize();
             String uploadDir = "C:/upload/chat";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
             File savedFile = new File(uploadDir, file_name);
             file.transferTo(savedFile);
-            file_url = "/upload/chat/" + file_name; }
+            file_url = "/upload/chat/" + file_name;
+        }
         Integer sender_id = 1;
         ChatMessageDTO message =
                 chatService.send_and_return_message(
@@ -115,6 +119,7 @@ public class ChattingController {
                 ); // ✅ 타입 완벽 일치
         return ResponseEntity.ok(message);
     }
+
     // 채팅방 진입 (화면)
     @GetMapping("/room/{room_id}")
     public String roomPage(@PathVariable Integer room_id, Model model, HttpSession httpSession) {
@@ -122,5 +127,17 @@ public class ChattingController {
         model.addAttribute("room_id", room_id);
         httpSession.setAttribute("login_user_id", 1);
         return "chat/room";
+    }
+
+    @PostMapping("/message/{message_id}/delete")
+    @ResponseBody
+    public ResponseEntity<?> deleteMessage(@PathVariable int message_id) {
+        try {
+            chatService.delete_message(message_id);
+            return ResponseEntity.ok().build(); // 200 OK
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패");
+        }
     }
 }
