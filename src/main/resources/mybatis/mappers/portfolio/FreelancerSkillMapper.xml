@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.portfolio.dao.FreelancerSkillMapper">
+
+    <!-- 내 저장값 조회 (카테고리별) -->
+    <select id="selectMyStacks" resultType="com.sanaiclub.portfolio.model.dto.MyStackItemDTO">
+        SELECT
+            fs.stack_id AS stackId,
+            s.stack_name AS stackName,
+            s.category AS category,
+            fs.stack_level AS stackLevel,
+            fs.stack_year AS stackYear
+        FROM freelancer_skills fs
+                 JOIN stacks s ON s.stack_id = fs.stack_id
+        WHERE fs.freelancer_id = #{freelancerId}
+          AND s.category = #{category}
+        ORDER BY s.stack_name ASC
+    </select>
+
+    <!-- 카테고리별 기존값 삭제 -->
+    <delete id="deleteMyStacks">
+        DELETE fs
+        FROM freelancer_skills fs
+        JOIN stacks s ON s.stack_id = fs.stack_id
+        WHERE fs.freelancer_id = #{freelancerId}
+        AND s.category = #{category}
+    </delete>
+
+    <!-- 배치 삽입 -->
+    <insert id="insertBatch">
+        INSERT INTO freelancer_skills (
+        freelancer_id, stack_id, stack_level, stack_year
+        )
+        VALUES
+        <foreach collection="list" item="it" separator=",">
+            (#{freelancerId}, #{it.stackId}, #{it.stackLevel}, #{it.stackYear})
+        </foreach>
+    </insert>
+
+</mapper>
