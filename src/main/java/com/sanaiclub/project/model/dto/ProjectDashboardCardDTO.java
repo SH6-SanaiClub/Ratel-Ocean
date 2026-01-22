@@ -16,8 +16,8 @@ public class ProjectDashboardCardDTO {
     private Integer applicantCount;
     private Integer budget;
 
-    private Integer dday;        // DATEDIFF(deadline_date, CURDATE())
-    private String deadlineDate; // 화면 표시용
+    private Integer dday;
+    private String deadlineDate;
 
     private List<RequiredStackDTO> stacks;
 

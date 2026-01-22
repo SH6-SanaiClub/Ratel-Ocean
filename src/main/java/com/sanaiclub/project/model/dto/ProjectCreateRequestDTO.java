@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ProjectCreateRequestDTO {
     // Step 1
-    private Integer positionId;
+    private List<Integer> positionIds;
     private String title;
 
     // Step 2

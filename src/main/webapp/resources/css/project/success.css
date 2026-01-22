@@ -1,69 +1,158 @@
 @charset "UTF-8";
 
-/* 성공 페이지 컨테이너 */
-.success-container {
+:root {
+    --primary: #1F7A8C;
+    --primary-bg: #E8F7F8;
+    --primary-dark: #165b69;
+    --text-main: #333;
+    --text-sub: #666;
+}
+
+/* 전체 래퍼 */
+.wrapper {
+    max-width: 960px;
+    margin: 60px auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center; /* 카드 중앙 정렬 */
+}
+
+/* 성공 메시지 카드 */
+.success-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 80px 50px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     text-align: center;
-    padding: 80px 0;
+    border: 1px solid #eee;
+    width: 100%;
+    max-width: 600px; /* 너무 넓어지지 않게 제한 */
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* 체크 아이콘 원형 배경 */
 .icon-circle {
     width: 100px;
     height: 100px;
-    background-color: #E8F7F8;
+    background-color: var(--primary-bg); /* 연한 청록색 */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 30px;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s backwards;
 }
 
-/* 아이콘 크기 및 색상 */
 .icon-circle i {
-    font-size: 50px;
-    color: #1F7A8C;
+    font-size: 40px;
+    color: var(--primary); /* 메인 청록색 */
+}
+
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 /* 제목 텍스트 */
 .success-title {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 800;
-    color: #333;
+    color: var(--text-main);
     margin-bottom: 15px;
 }
 
 /* 설명 텍스트 */
-.success-desc {
+.success-message {
     font-size: 16px;
-    color: #666;
-    margin-bottom: 50px;
+    color: var(--text-sub);
+    margin-bottom: 40px;
     line-height: 1.6;
 }
 
-/* 버튼 영역 재정의 (중앙 정렬) */
+/* 안내 박스 (회색 톤) */
+.info-box {
+    background-color: #F8F9FA;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: left;
+    margin-bottom: 40px;
+    border: 1px solid #eee;
+}
+
+.info-box p {
+    color: var(--primary);
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    position: relative;
+    padding-left: 18px;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.info-list li::before {
+    content: "•";
+    color: #bbb;
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: bold;
+}
+
+/* 버튼 영역 */
 .btn-area-center {
     display: flex;
     justify-content: center;
     gap: 15px;
-    border: none;
-    padding-top: 0;
-    margin-top: 0;
 }
 
-/* 메인으로 가기 버튼 */
-.btn-home {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    color: #555;
-    padding: 14px 40px;
-    border-radius: 4px;
+/* 버튼 공통 스타일 */
+.btn {
+    padding: 14px 30px;
+    border-radius: 8px;
     font-weight: 700;
     font-size: 15px;
+    text-decoration: none;
     cursor: pointer;
     transition: 0.2s;
+    display: inline-block;
+    border: none;
+}
+
+.btn-home {
+    background-color: #f0f0f0;
+    color: #555;
 }
 
 .btn-home:hover {
-    background-color: #f9f9f9;
-    border-color: #ccc;
+    background-color: #e0e0e0;
+}
+
+.btn-submit {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+.btn-submit:hover {
+    background-color: var(--primary-dark);
 }

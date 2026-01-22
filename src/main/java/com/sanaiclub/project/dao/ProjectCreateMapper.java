@@ -5,7 +5,7 @@ import com.sanaiclub.project.model.vo.ProjectStackVO;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface ProjectMapper {
+public interface ProjectCreateMapper {
 
     // 1. 프로젝트 저장 (VO 사용)
     void insertProject(ProjectsVO projectsVO);
