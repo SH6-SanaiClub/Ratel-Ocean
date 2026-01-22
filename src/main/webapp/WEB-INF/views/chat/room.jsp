@@ -330,7 +330,6 @@
                 });
             });
 
-        //console.log("selected room_id:", ${room_id});
         selectRoom(${room_id});
     }
     // ================== 방 선택 ==================
@@ -445,7 +444,6 @@
             input.disabled = false;
             input.focus();
             loadMessages();
-            //loadChatRooms();
         }).catch(err => {
             alert("메시지 전송에 실패했습니다.");
             input.disabled = false;
@@ -491,8 +489,6 @@
         fetch(`/ratelocean/chat/room/\${room_id}/read`, {
             method: "POST"
         }).then(() => {
-            // 2. 읽음 처리 성공 후 목록을 다시 불러와 'N' 표시 제거
-            //loadChatRooms();
         });
 
 
