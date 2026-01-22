@@ -91,6 +91,32 @@
             border-radius: 12px;
             margin-left: 8px;
         }
+        .room-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 이름 (작게) */
+        .room-name {
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* 프로젝트명 (크게, 강조) */
+        .room-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        /* 시간 */
+        .room-time {
+            margin-left: auto;
+            font-size: 11px;
+            color: #999;
+        }
+
     </style>
 </head>
 
@@ -100,7 +126,7 @@
 
     <!-- 상단 -->
     <div class="chat-header">
-        메시지
+        채팅
     </div>
 
     <!-- 채팅방 목록 -->
@@ -145,8 +171,9 @@
 
                         '<div class="room-info">' +
                         '<div class="room-top">' +
-                        '<span>' + room.name + '</span>' +
-                        '<span>' + timeText + '</span>' +
+                        '<span class="room-title">' + room.title + '</span>' + "  -  "+
+                        '<span class="room-name">' + room.name + '</span>' +
+                        '<span class="room-time">' + timeText + '</span>' +
                         '</div>' +
 
                         '<div class="room-bottom">' +
