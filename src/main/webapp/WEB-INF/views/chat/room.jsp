@@ -108,13 +108,16 @@
                 }
 
                 .message.mine {
-                    justify-content: flex-end;
+                    display: flex;
+                    justify-content: flex-end; /* 말풍선+아이콘 오른쪽 정렬 */
+                    align-items: center;
+                    gap: 6px; /* 말풍선과 아이콘 사이 간격 */
+                    position: relative;
                 }
                 .bubble {
-                    display: inline-block;
                     padding: 10px 14px;
                     border-radius: 16px;
-                    background: #fff;
+                    background: #9ad9db;
                     max-width: 60%;
                 }
 
@@ -284,7 +287,7 @@
 
                 /* 이름 (작게) */
                 .room-name {
-                    font-size: 12px;
+                    font-size: 9px;
                     color: #777;
                 }
 
@@ -299,7 +302,25 @@
                     font-size: 11px;
                     color: #999;
                 }
-            </style>
+
+
+                .delete-btn {
+                    display: none; /* 기본 숨김 */
+                    font-size: 10px;
+                    cursor: pointer;
+                    color: #ff5555;
+                }
+
+                .message.mine:hover .delete-btn {
+                    display: inline-block;
+                }
+                .bubble.deleted {
+                    background: #f1f1f1;
+                    color: #888;
+                    font-style: italic;
+                }
+
+    </style>
 </head>
 <body>
 <div class="app">
@@ -379,13 +400,13 @@
                     container.innerHTML +=
                         '<div class="chat-room' + isSelected + '" onclick="selectRoom(' + room.room_id + ')" style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">' +
 
-                        '<img src="' + (room.profile_image_url || '/ratelocean/assets/img/default-profile.png') +
-                        '" class="avatar" style="width: 44px; height: 44px; border-radius: 50%; margin-right: 12px; object-fit: cover;">' +
-
+                        '<div class="avatar-box">' +
+                        '<img src="' + (room.profile_image_url || '/ratelocean/assets/img/default-profile.png') + '" class="avatar">' +
+                        '<div class="room-name">' + room.name + '</div>' +
+                        '</div>' +
                         '<div class="room-info" style="flex: 1;">' +
                         '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
-                        '<span class="room-title">' + room.title + '</span>' + "  -  "+
-                        '<span class="room-name">' + room.name + '</span>' +
+                        '<span class="room-title">' + room.title + '</span>' +
                         '<span class="room-time">' + timeText + '</span>' +
                         '</div>' +
 
@@ -414,7 +435,7 @@
         if (!isTyping) {
             isTyping = true;
 
-            fetch(`/chat/room/${selectedRoom_id}/typing`, {
+            fetch(`/chat/room/\${selectedRoom_id}/typing`, {
                 method: "POST",
                 body: new URLSearchParams({ typing: true })
             });
@@ -425,7 +446,7 @@
         typingTimer = setTimeout(() => {
             isTyping = false;
 
-            fetch(`/chat/room/${selectedRoom_id}/typing`, {
+            fetch(`/chat/room/\${selectedRoom_id}/typing`, {
                 method: "POST",
                 body: new URLSearchParams({ typing: false })
             });
@@ -434,7 +455,7 @@
     function loadTypingStatus() {
         if (!selectedRoom_id) return;
 
-        fetch(`/ratelocean/chat/room/${selectedRoom_id}/typing`)
+        fetch(`/ratelocean/chat/room/\${selectedRoom_id}/typing`)
             .then(res => res.json())
             .then(user_id => {
                 const el = document.getElementById("typingIndicator");
@@ -453,6 +474,21 @@
                 div.dataset.room_id == selectedRoom_id
             );
         });
+    }
+    function deleteMessage(message_id) {
+        if (!confirm("메시지를 삭제할까요?")) return;
+
+        fetch("/ratelocean/chat/message/" + message_id + "/delete", {
+            method: "POST"
+        })
+            .then(res => {
+                if (res.ok) {
+                    loadMessages(selectedRoom_id);
+                } else {
+                    alert("삭제에 실패했습니다.");
+                }
+            })
+            .catch(err => console.error(err));
     }
 
     // ================== 메시지 로드 ==================
@@ -529,31 +565,28 @@
                     }
 
 
-
                     const div = document.createElement("div");
-
                     div.className = "message " + (mine ? "mine" : "");
+                    div.dataset.messageId = msg.message_id; // 메시지 ID 저장
+                    if (msg.is_deleted == 1) {
+                        div.innerHTML =
+                            '<div class="bubble deleted">삭제된 메시지입니다.</div>';
+                        body.appendChild(div);
+                        return;
+                    }else {
+                        let deleteBtn = "";
+                        if (mine) {
+                            deleteBtn = '<span class="delete-btn" onclick="deleteMessage(' + msg.message_id + ')">delete</span>';
+                        }
+
+// 메시지 HTML
+                        div.innerHTML =
+                            deleteBtn + // 삭제 버튼 먼저
+                            '<div class="bubble">' + escapeHtml(msg.content || '') + '</div>' +
+                            '<div class="meta">' + timeText + (readMark ? ' · ' + readMark : '') + '</div>';
 
 
-
-                    div.innerHTML =
-
-                        '<div class="bubble">'
-
-                        + escapeHtml(msg.content || '')
-
-                        + '</div>'
-
-                        + '<div class="meta">'
-
-                        + timeText
-
-                        + (readMark ? ' · ' + readMark : '')
-
-                        + '</div>';
-
-
-
+                    }
 
 
 
@@ -585,7 +618,7 @@
             .then(res => res.json())
             .then(msg => {
                 messageInput.value = "";
-                loadMessages();
+                loadMessages(selectedRoom_id);
             })
             .catch(err => {
                 console.error(err);

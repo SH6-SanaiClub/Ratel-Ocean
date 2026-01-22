@@ -130,6 +130,7 @@ public class ChatService {
     // 7. 메시지 삭제
     // =========================================
     public void delete_message(Integer message_id) {
+
         chatMessageMapper.deleteMessage(message_id);
     }
 
