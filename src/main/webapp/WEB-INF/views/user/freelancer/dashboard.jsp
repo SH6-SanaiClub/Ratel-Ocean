@@ -411,18 +411,16 @@
 <!-- 헤더 네비게이션 -->
 <header class="header">
   <div class="header-inner">
-    <a href="${pageContext.request.contextPath}/" class="logo">
+    <a href="${pageContext.request.contextPath}/freelancer/dashboard" class="logo">
       <div class="logo-icon">R</div>
       <span>Ratel-Ocean</span>
     </a>
 
     <nav class="nav-menu">
-      <a href="${pageContext.request.contextPath}/freelancer/dashboard" class="nav-link active">대시보드</a>
       <a href="${pageContext.request.contextPath}/project/dashboard" class="nav-link">프로젝트 찾기</a>
-      <a href="${pageContext.request.contextPath}/freelancer/applications" class="nav-link">내 지원 현황</a>
       <a href="${pageContext.request.contextPath}/freelancer/finance" class="nav-link">내 금융 관리</a>
-      <a href="${pageContext.request.contextPath}/freelancer/career" class="nav-link">내 경력 관리</a>
-      <a href="${pageContext.request.contextPath}/freelancer/queue" class="nav-link">기회 큐</a>
+      <a href="${pageContext.request.contextPath}/freelancer/career" class="nav-link">내 프로젝트 관리</a>
+      <a href="${pageContext.request.contextPath}/freelancer/career" class="nav-link">내 프로필</a>
     </nav>
 
     <div class="nav-icons">

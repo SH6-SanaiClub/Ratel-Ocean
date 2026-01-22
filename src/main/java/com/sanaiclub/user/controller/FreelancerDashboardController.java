@@ -102,11 +102,11 @@ public class FreelancerDashboardController {
      * 마이 페이지
      * TODO: 추후 구현
      */
-    @GetMapping("/mypage")
-    public String mypage() {
-        logger.info("마이 페이지 접근");
-        return "redirect:/freelancer/dashboard";
-    }
+//    @GetMapping("/mypage")
+//    public String mypage() {
+//        logger.info("마이 페이지 접근");
+//        return "redirect:/freelancer/dashboard";
+//    }
 
     /**
      * 지갑 페이지
