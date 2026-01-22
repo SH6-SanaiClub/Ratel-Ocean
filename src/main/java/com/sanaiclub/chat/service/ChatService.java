@@ -138,6 +138,6 @@ public class ChatService {
     // =========================================
     private Integer getLogin_user_id() {
         // 실제 구현에서는 SecurityContext, Session 등에서 가져오기
-        return 1; // 테스트용 하드코딩
+        return 3; // 테스트용 하드코딩
     }
 }

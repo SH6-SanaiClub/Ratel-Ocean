@@ -129,6 +129,7 @@
                 }
 
                 .message.mine .meta {
+                    order: -1;
                     color: #555;
                 }
                 .chat-input {
@@ -422,7 +423,7 @@
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
 
-                    const mine = msg.sender_id == login_user_id;
+                    const mine = msg.sender_id == '${login_user_id}';
 
                     let readMark = "";
 
@@ -477,21 +478,21 @@
 
 
     // ================== 우측 방 정보 로드 ==================
-    function loadRoomInfo() {
-        if (!selectedRoom_id) return;
+    function loadRoomInfo(room_id) {
+        //if (!selectedRoom_id) return;
 
-        fetch(`/ratelocean/chat/room/${selectedRoom_id}/info`)
+        fetch(`/ratelocean/chat/room/\${selectedRoom_id}/info`)
             .then(res => res.json())
             .then(room => {
                 document.getElementById("headerName").innerText = room.name;
-                document.getElementById("headerProject").innerText = room.project_name;
+                document.getElementById("headerProject").innerText = room.title;
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =
                     '<div class="profile-card">' +
                     '<img src="' + (room.profile_image_url || '/assets/img/default-profile.png') + '">' +
                     '<h3>' + room.name + '</h3>' +
                     '<div class="action-buttons">' +
-                    '<a href="/user/profile/' + room.user_id + '">프로필</a>' +
+                    '<a href="/user/profile/' + room.sender_id + '">프로필</a>' +
                     '<a href="/project/' + room.project_id + '" class="secondary">프로젝트</a>' +
                     '</div>' +
                     '</div>' +
@@ -509,8 +510,9 @@
         // fetch(`/ratelocean/chat/room/\${room_id}/typing/reset`, {
         //     method: "POST"
         // });
-        loadRoomInfo(room_id);
+        //loadRoomInfo(room_id);
         loadMessages(room_id);
+
         // ✅ 읽음 처리
         fetch(`/ratelocean/chat/room/\${room_id}/read`, {
             method: "POST"
@@ -523,7 +525,7 @@
             .then(room => {
                 // DTO 필드 그대로 사용
                 document.getElementById("headerName").innerText = room.name || "상대방";
-                document.getElementById("headerProject").innerText = room.project_name || "프로젝트";
+                document.getElementById("headerProject").innerText = room.title || "프로젝트";
 
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =

@@ -8,6 +8,7 @@
         <id property="room_id" column="room_id"/>
         <result property="project_id" column="project_id"/>
         <result property="is_active" column="is_active"/>
+        <result property="title" column="title"/>
         <result property="profile_image_url" column="profile_image_url"/>
         <result property="last_message_content" column="last_message_content"/>
         <result property="last_message_sender_id" column="last_message_sender_id"/>
@@ -24,7 +25,7 @@
             m.content     AS last_message_content,
             m.sender_id   AS last_message_sender_id,
             m.created_at  AS last_message_at,
-
+            p.title,
             u.name,
             u.profile_image_url,
 
