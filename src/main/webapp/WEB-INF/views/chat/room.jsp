@@ -276,6 +276,29 @@
                     background: #ddd; /* 선 색상 */
                     margin-left: 15px; /* 날짜와 선 사이 간격 */
                 }
+                .room-top {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                /* 이름 (작게) */
+                .room-name {
+                    font-size: 12px;
+                    color: #777;
+                }
+
+                /* 프로젝트명 (크게, 강조) */
+                .room-title {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #222;
+                }
+                .room-time {
+                    margin-left: auto;
+                    font-size: 11px;
+                    color: #999;
+                }
             </style>
 </head>
 <body>
@@ -361,8 +384,9 @@
 
                         '<div class="room-info" style="flex: 1;">' +
                         '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
-                        '<span>' + room.name + '</span>' +
-                        '<span>' + timeText + '</span>' +
+                        '<span class="room-title">' + room.title + '</span>' + "  -  "+
+                        '<span class="room-name">' + room.name + '</span>' +
+                        '<span class="room-time">' + timeText + '</span>' +
                         '</div>' +
 
                         '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
@@ -500,7 +524,7 @@
 
                     if (mine) {
 
-                        readMark = msg.is_read === 1 ? "0" : "1";
+                        readMark = msg.is_read === 1 ? "읽음" : "";
 
                     }
 
