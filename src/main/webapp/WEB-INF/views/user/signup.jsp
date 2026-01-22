@@ -122,7 +122,7 @@
 
             <div class="space-y-1.5">
                 <label class="text-[13px] font-bold text-gray-700 ml-1">생년월일</label>
-                <input type="date" name="birth" required
+                <input type="date" name="birthDate" required
                        class="w-full px-4 rounded-xl input-field text-[14px]">
             </div>
 
@@ -213,8 +213,8 @@
     // 아이디 중복 확인
     $("#id-check-btn").on("click", function() {
         const id = $("#loginId").val();
-        if(!id || id.length < 6) {
-            alert("아이디는 6자 이상 입력해주세요.");
+        if(!id || id.length < 4) {
+            alert("아이디는 4자 이상 입력해주세요.");
             return;
         }
         $.ajax({
