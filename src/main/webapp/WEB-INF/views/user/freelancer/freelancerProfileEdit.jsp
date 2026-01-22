@@ -401,7 +401,7 @@
 
           <form class="form"
                 method="post"
-                action="${pageContext.request.contextPath}/freelancer/profile/stack/save"
+                action="${pageContext.request.contextPath}/freelancer/profile/edit/stack/save"
                 id="positionForm">
 
             <input type="hidden" name="tab" value="position"/>
@@ -458,7 +458,7 @@
 
           <form class="form"
                 method="post"
-                action="${pageContext.request.contextPath}/freelancer/profile/stack/save"
+                action="${pageContext.request.contextPath}/freelancer/profile/edit/stack/save"
                 id="skillForm">
 
             <input type="hidden" name="tab" value="skill"/>
@@ -519,7 +519,7 @@
           <div class="form">
             <!-- 추가 폼 (토글) -->
             <form method="post"
-                  action="${pageContext.request.contextPath}/freelancer/profile/career/add"
+                  action="${pageContext.request.contextPath}/freelancer/profile/edit/career/add"
                   id="careerAddForm"
                   style="display:none;">
 
@@ -581,7 +581,7 @@
                     <div class="mini">
                       <button type="button" class="btn ghost small careerEditBtn">수정</button>
                       <form method="post"
-                            action="${pageContext.request.contextPath}/freelancer/profile/career/delete"
+                            action="${pageContext.request.contextPath}/freelancer/profile/edit/career/delete"
                             onsubmit="return confirm('삭제할까요?');">
                         <input type="hidden" name="careerId" value="${c.careerId}" />
                         <button type="submit" class="btn danger small">삭제</button>
@@ -592,7 +592,7 @@
                   <!-- 인라인 수정 폼 -->
                   <form class="editForm careerEditForm"
                         method="post"
-                        action="${pageContext.request.contextPath}/freelancer/profile/career/update">
+                        action="${pageContext.request.contextPath}/freelancer/profile/edit/career/update">
 
                     <input type="hidden" name="careerId" value="${c.careerId}"/>
 
@@ -651,7 +651,7 @@
 
             <!-- 추가 폼 (토글) -->
             <form method="post"
-                  action="${pageContext.request.contextPath}/freelancer/profile/experience/add"
+                  action="${pageContext.request.contextPath}/freelancer/profile/edit/experience/add"
                   id="expAddForm"
                   style="display:none;">
 
@@ -714,7 +714,7 @@
                     <div class="mini">
                       <button type="button" class="btn ghost small expEditBtn">수정</button>
                       <form method="post"
-                            action="${pageContext.request.contextPath}/freelancer/profile/experience/delete"
+                            action="${pageContext.request.contextPath}/freelancer/profile/edit/experience/delete"
                             onsubmit="return confirm('삭제할까요?');">
                         <input type="hidden" name="experienceId" value="${e.experienceId}" />
                         <button type="submit" class="btn danger small">삭제</button>
@@ -724,7 +724,7 @@
 
                   <form class="editForm expEditForm"
                         method="post"
-                        action="${pageContext.request.contextPath}/freelancer/profile/experience/update">
+                        action="${pageContext.request.contextPath}/freelancer/profile/edit/experience/update">
                     <input type="hidden" name="experienceId" value="${e.experienceId}"/>
 
                     <div class="split">

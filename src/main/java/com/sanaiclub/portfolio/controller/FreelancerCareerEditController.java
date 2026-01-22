@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/freelancer/profile")
+@RequestMapping("/freelancer/profile/edit")
 public class FreelancerCareerEditController {
 
     private final FreelancerCareerEditService freelancerCareerEditService;
@@ -23,7 +23,7 @@ public class FreelancerCareerEditController {
 
         freelancerCareerEditService.addCareer(vo);
         ra.addFlashAttribute("msg", "경력이 추가되었습니다.");
-        return "redirect:/freelancer/mypage?tab=career";
+        return "redirect:/freelancer/profile/edit?tab=career";
     }
 
     @PostMapping("/career/update")
@@ -33,7 +33,7 @@ public class FreelancerCareerEditController {
 
         freelancerCareerEditService.updateCareer(vo);
         ra.addFlashAttribute("msg", "경력이 수정되었습니다.");
-        return "redirect:/freelancer/mypage?tab=career";
+        return "redirect:/freelancer/profile/edit?tab=career";
     }
 
     @PostMapping("/career/delete")
@@ -42,7 +42,7 @@ public class FreelancerCareerEditController {
 
         freelancerCareerEditService.deleteCareer(careerId, freelancerId);
         ra.addFlashAttribute("msg", "경력이 삭제되었습니다.");
-        return "redirect:/freelancer/mypage?tab=career";
+        return "redirect:/freelancer/profile/edit?tab=career";
     }
 
 }

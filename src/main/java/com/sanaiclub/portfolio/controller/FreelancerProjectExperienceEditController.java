@@ -13,7 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/freelancer/profile")
+@RequestMapping("/freelancer/profile/edit")
 public class FreelancerProjectExperienceEditController {
 
     private final FreelancerProjectExperienceEditService freelancerProjectExperienceEditService;
@@ -26,7 +26,7 @@ public class FreelancerProjectExperienceEditController {
 
         freelancerProjectExperienceEditService.addExperience(vo);
         ra.addFlashAttribute("msg", "프로젝트 경험이 추가되었습니다.");
-        return "redirect:/freelancer/mypage?tab=external";
+        return "redirect:/freelancer/profile/edit?tab=external";
 
     }
 
@@ -37,7 +37,7 @@ public class FreelancerProjectExperienceEditController {
 
         freelancerProjectExperienceEditService.updateExperience(vo);
         ra.addFlashAttribute("msg", "프로젝트 경험이 수정되었습니다.");
-        return "redirect:/freelancer/mypage?tab=external";
+        return "redirect:/freelancer/profile/edit?tab=external";
 
     }
 
@@ -47,7 +47,7 @@ public class FreelancerProjectExperienceEditController {
 
         freelancerProjectExperienceEditService.deleteExperience(experienceId, freelancerId);
         ra.addFlashAttribute("msg", "프로젝트 경험이 삭제되었습니다.");
-        return "redirect:/freelancer/mypage?tab=external";
+        return "redirect:/freelancer/profile/edit?tab=external";
 
     }
 }

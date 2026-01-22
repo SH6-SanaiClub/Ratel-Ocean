@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/freelancer")
+@RequestMapping("/freelancer/profile")
 @RequiredArgsConstructor
 public class FreelancerProfileEditController {
 
@@ -19,7 +19,7 @@ public class FreelancerProfileEditController {
     private final FreelancerCareerEditService freelancerCareerEditService;
     private final FreelancerStackProfileService stackService;
 
-    @GetMapping("/mypage")
+    @GetMapping("/edit")
     public String profileEdit(Model model) {
         if (!AuthContext.isAuthenticated()) return "redirect:/login";
 
