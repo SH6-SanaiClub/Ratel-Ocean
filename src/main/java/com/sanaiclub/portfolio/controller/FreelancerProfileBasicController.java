@@ -17,57 +17,6 @@ public class FreelancerProfileBasicController {
 
     private final FreelancerProfileBasicService freelancerProfileBasicService;
 
-    @PostMapping("/education/delete")
-    public String deleteEducation(RedirectAttributes ra) {
-        Integer userId = AuthContext.getCurrentUserId();
-        freelancerProfileBasicService.deleteEducation(userId);
-        ra.addFlashAttribute("msg", "학력이 삭제되었습니다.");
-        return "redirect:/freelancer/profile/edit?tap=settings";
-    }
-
-    @PostMapping("/image")
-    public String uploadImage(@RequestParam("imageFile") MultipartFile imageFile,
-                              RedirectAttributes ra) {
-        Integer userId = AuthContext.getCurrentUserId();
-        try {
-            freelancerProfileBasicService.uploadProfileImage(userId, imageFile);
-            ra.addFlashAttribute("msg", "프로필 이미지가 변경되었습니다.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("msg", "이미지 업로드 실패");
-        }
-        return "redirect:/freelancer/profile/edit?tap=settings";
-    }
-
-    @PostMapping("/image/delete")
-    public String deleteImage(RedirectAttributes ra) {
-        Integer userId = AuthContext.getCurrentUserId();
-        freelancerProfileBasicService.deleteProfileImage(userId);
-        ra.addFlashAttribute("msg", "프로필 이미지가 삭제되었습니다.");
-        return "redirect:/freelancer/profile/edit?tap=settings";
-    }
-
-    @PostMapping("/portfolio")
-    public String uploadPortfolio(@RequestParam("portfolioFile") MultipartFile portfolioFile,
-                                  RedirectAttributes ra) {
-        Integer userId = AuthContext.getCurrentUserId();
-        try {
-            freelancerProfileBasicService.uploadPortfolio(userId, portfolioFile);
-            ra.addFlashAttribute("msg", "포트폴리오가 업로드되었습니다.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("msg", "포트폴리오 업로드 실패");
-        }
-        return "redirect:/freelancer/profile/edit?tap=settings";
-    }
-
-    @PostMapping("/portfolio/delete")
-    public String deletePortfolio(@RequestParam("portfolioId") Integer portfolioId,
-                                  RedirectAttributes ra) {
-        Integer userId = AuthContext.getCurrentUserId();
-        freelancerProfileBasicService.deletePortfolio(userId, portfolioId);
-        ra.addFlashAttribute("msg", "포트폴리오가 삭제되었습니다.");
-        return "redirect:/freelancer/profile/edit?tap=settings";
-    }
-
     @PostMapping("/all/save")
     public String saveAll(
             @ModelAttribute FreelancerProfileBasicSaveRequestDTO dto,

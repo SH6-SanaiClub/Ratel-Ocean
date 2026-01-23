@@ -64,16 +64,6 @@
         WHERE user_id = #{userId}
     </update>
 
-    <update id="clearEducation" parameterType="Integer">
-        UPDATE freelancer_profiles
-        SET
-            school_name = NULL,
-            major       = NULL,
-            degree      = NULL,
-            grad_status = NULL
-        WHERE user_id = #{userId}
-    </update>
-
     <select id="selectProfileImageUrl" parameterType="Integer" resultType="string">
         SELECT profile_image_url
         FROM users

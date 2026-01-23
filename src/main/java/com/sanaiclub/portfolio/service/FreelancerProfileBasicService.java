@@ -12,8 +12,6 @@ public interface FreelancerProfileBasicService {
 
     void saveBasic(FreelancerProfileBasicSaveRequestDTO dto);
 
-    void deleteEducation(Integer userId);
-
     void uploadProfileImage(Integer userId, MultipartFile imageFile) throws IOException;
 
     void deleteProfileImage(Integer userId);

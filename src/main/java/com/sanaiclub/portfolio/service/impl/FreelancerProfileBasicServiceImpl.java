@@ -55,13 +55,6 @@ public class FreelancerProfileBasicServiceImpl implements FreelancerProfileBasic
         }
     }
 
-
-    @Override
-    @Transactional
-    public void deleteEducation(Integer userId) {
-        freelancerProfileBasicMapper.clearEducation(userId);
-    }
-
     @Override
     @Transactional
     public void uploadProfileImage(Integer userId, MultipartFile imageFile) throws IOException {
