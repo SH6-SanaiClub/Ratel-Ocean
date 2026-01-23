@@ -32,8 +32,6 @@ import java.util.List;
  *   ]
  * }
  *
- * @author sanaiclub
- * @version 3.0 (실제 API 응답 구조 반영)
  */
 @Data
 @NoArgsConstructor

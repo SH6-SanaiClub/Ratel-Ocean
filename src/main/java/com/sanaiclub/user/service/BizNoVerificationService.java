@@ -2,16 +2,6 @@ package com.sanaiclub.user.service;
 
 import com.sanaiclub.user.model.dto.BizNoVerificationResponseDTO;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * 사업자번호 진위확인 서비스
- * ═══════════════════════════════════════════════════════════════════════
- *
- * [역할]
- * - 국세청 사업자번호 진위확인 API 호출
- * - 사업자 유효성 검증
- *
- */
 public interface BizNoVerificationService {
 
     /**
