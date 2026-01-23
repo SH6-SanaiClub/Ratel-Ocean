@@ -10,6 +10,7 @@ import java.util.Date;
 @Setter
 @ToString
 public class ChatRoomDTO {
+
     private Integer roomId;
     private Integer projectId;
     private String title;
@@ -20,9 +21,13 @@ public class ChatRoomDTO {
     private Date lastMessageAt;
     private String lastMessageContent;
     private Integer lastMessageSenderId;
-    private Boolean freelancer_exited;
-    private Boolean client_exited;
+    private Boolean freelancerExited;
+    private Boolean clientExited;
     private Integer unreadCount;
     private String name;
     private boolean hasNewMessage;
+
+
 }
+
+

@@ -12,6 +12,8 @@
         <result property="profileImageUrl" column="profile_image_url"/>
         <result property="lastMessageContent" column="last_message_content"/>
         <result property="lastMessageSenderId" column="last_message_sender_id"/>
+        <result property="freelancerExited" column="freelancer_exited"/>
+        <result property="clientExited" column="client_exited"/>
         <result property="lastMessageAt" column="last_message_at"/>
         <result property="unreadCount" column="unread_count"/>
         <result property="name" column="name"/>
@@ -19,10 +21,18 @@
 
     <select id="findMyRooms" parameterType="int" resultMap="chatRoomMap">
         SELECT
-            rooms.*,
+            rooms.room_id,
+            rooms.freelancer_id,
+            rooms.project_id,
+            rooms.is_active,
+            rooms.last_message_at,
+            rooms.created_at,
+            rooms.freelancer_exited,
+            rooms.client_exited,
 
-            m.content     AS last_message_content,
-            m.sender_id   AS last_message_sender_id,
+            CASE
+                WHEN is_deleted=1 THEN '삭제되었습니다.' else  m.content  end
+                AS last_message_content,            m.sender_id   AS last_message_sender_id,
             m.created_at  AS last_message_at,
             p.title,
             u.name,

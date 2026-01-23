@@ -26,4 +26,6 @@ public class ChatMessageDTO {
     private String fileName; // file_name -> fileName
     private String fileUrl; // file_url -> fileUrl
     private Long fileSize; // file_size -> fileSize
+    private Boolean freelancerExited;
+    private Boolean clientExited;
 }

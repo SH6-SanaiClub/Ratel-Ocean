@@ -39,10 +39,12 @@ public class ChattingController {
             @PathVariable Integer roomId,
             HttpSession session
     ) {
-        Integer loginUserId = 5; // 실제 세션 로그인 유저 id로 교체
+        Integer loginUserId = chatService.getLoginUserId(); // 실제 세션 로그인 유저 id로 교체
 
         // 서비스에서 ChatRoomDTO 반환하도록
-        return chatService.findRoomInfo(roomId, loginUserId);
+        ChatRoomDTO dto = chatService.findRoomInfo(roomId, loginUserId);
+        System.out.println(" ChatRoomDTO:" + dto);
+        return dto;
     }
 
     @PostMapping("/room/{roomId}/read")

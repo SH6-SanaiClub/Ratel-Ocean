@@ -6,359 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <title>채팅</title>
-
-    <style>
-                * {
-                    box-sizing: border-box;
-                    font-family: Arial;
-                }
-
-                body {
-                    margin: 0;
-                    background: #f5f6f7;
-                }
-
-                .app {
-                    display: flex;
-                    height: 100vh;
-                }
-
-                /* ================= LEFT ================= */
-                .meta {
-                    font-size: 11px;
-                    color: #777;
-                    margin-top: 4px;
-                    text-align: right;
-                }
-
-                .message.mine .meta {
-                    color: #555;
-                }
-                .chat-list {
-                    width: 320px;
-                    background: #fff;
-                    border-right: 1px solid #ddd;
-                    overflow-y: auto;
-                }
-
-                .chat-room {
-                    display: flex;
-                    gap: 12px;
-                    padding: 14px;
-                    cursor: pointer;
-                    border-bottom: 1px solid #f0f0f0;
-                }
-
-                .chat-room:hover {
-                    background: #f7f9fa;
-                }
-
-                .chat-room.selected {
-                    background: #e8f4f5;
-                }
-
-                .chat-room img {
-                    width: 48px;
-                    height: 48px;
-                    border-radius: 50%;
-                }
-
-                .room-text {
-                    flex: 1;
-                }
-
-                .room-name {
-                    font-weight: bold;
-                    font-size: 14px;
-                }
-
-                .room-last {
-                    font-size: 13px;
-                    color: #777;
-                    margin-top: 4px;
-                }
-
-                /* ================= CENTER ================= */
-
-                .chat-area {
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    background: #f9fafb;
-                }
-
-                .chat-header {
-                    height: 60px;
-                    border-bottom: 1px solid #ddd;
-                    padding: 16px;
-                    font-weight: bold;
-                    background: #fff;
-                }
-
-                .chat-body {
-                    flex: 1;
-                    padding: 20px;
-                    overflow-y: auto;
-                }
-
-                .message {
-                    display: flex;
-                    align-items: flex-end;
-                    gap: 6px;
-                }
-
-                .message.mine {
-                    display: flex;
-                    justify-content: flex-end; /* 말풍선+아이콘 오른쪽 정렬 */
-                    align-items: center;
-                    gap: 6px; /* 말풍선과 아이콘 사이 간격 */
-                    position: relative;
-                }
-                .bubble {
-                    padding: 10px 14px;
-                    border-radius: 16px;
-                    background: #9ad9db;
-                    max-width: 60%;
-                }
-
-                .message.mine .bubble {
-                    background: #9ad9db;
-                }
-
-                .meta {
-                    font-size: 11px;
-                    color: #777;
-                    margin-top: 3px;
-                }
-
-                .message.mine .meta {
-                    order: -1;
-                    color: #555;
-                }
-                .chat-input {
-                    display: flex;
-                    padding: 12px;
-                    background: #fff;
-                    border-top: 1px solid #ddd;
-                }
-
-                .chat-input input {
-                    flex: 1;
-                    padding: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 6px;
-                }
-
-                .chat-input button {
-                    margin-left: 10px;
-                    padding: 10px 16px;
-                }
-                /* ================= RIGHT INFO ================= */
-
-                .info {
-                    width: 280px;
-                    background: #ffffff;
-                    border-left: 1px solid #ddd;
-                    padding: 20px;
-                    overflow-y: auto;
-                }
-
-                .profile-card {
-                    text-align: center;
-                    padding: 20px 10px;
-                    border-bottom: 1px solid #eee;
-                }
-
-                .profile-card img {
-                    width: 80px;
-                    height: 80px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    margin-bottom: 12px;
-                }
-
-                .profile-card h3 {
-                    margin: 0;
-                    font-size: 16px;
-                }
-
-                .profile-card p {
-                    font-size: 13px;
-                    color: #777;
-                    margin-top: 6px;
-                }
-
-                /* 버튼 영역 */
-                .action-buttons {
-                    margin-top: 14px;
-                    display: flex;
-                    gap: 8px;
-                }
-
-                .action-buttons a {
-                    flex: 1;
-                    text-align: center;
-                    padding: 8px 0;
-                    border-radius: 6px;
-                    font-size: 13px;
-                    text-decoration: none;
-                    color: #fff;
-                    background: #4bb6b8;
-                }
-
-                .action-buttons a.secondary {
-                    background: #9aa0a6;
-                }
-
-                /* 섹션 공통 */
-                .info-section {
-                    margin-top: 20px;
-                }
-
-                .info-section h4 {
-                    font-size: 13px;
-                    margin-bottom: 10px;
-                    color: #444;
-                }
-
-                /* 파일 리스트 */
-                .file-item {
-                    font-size: 13px;
-                    padding: 6px 0;
-                    border-bottom: 1px solid #f0f0f0;
-                    color: #555;
-                    cursor: pointer;
-                }
-
-                .file-item:hover {
-                    text-decoration: underline;
-                }
-                .chat-header {
-                    height: 64px;
-                    padding: 10px 16px;
-                    border-bottom: 1px solid #ddd;
-                    background: #fff;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                }
-
-                .header-name {
-                    font-size: 15px;
-                    font-weight: bold;
-                }
-
-                .header-project {
-                    font-size: 12px;
-                    color: #777;
-                    margin-top: 2px;
-                }
-                .date-label {
-                    display: flex;
-                    align-items: center;
-                    color: #888;
-                    font-size: 12px;
-                    margin: 20px 0;
-                    text-align: center;
-                }
-
-                /* 날짜 왼쪽 선 */
-                .date-label::before {
-                    content: "";
-                    flex: 1;
-                    height: 1px;
-                    background: #ddd; /* 선 색상 */
-                    margin-right: 15px; /* 날짜와 선 사이 간격 */
-                }
-
-                /* 날짜 오른쪽 선 */
-                .date-label::after {
-                    content: "";
-                    flex: 1;
-                    height: 1px;
-                    background: #ddd; /* 선 색상 */
-                    margin-left: 15px; /* 날짜와 선 사이 간격 */
-                }
-                .room-top {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                }
-
-                /* 이름 (작게) */
-                .room-name {
-                    font-size: 9px;
-                    color: #777;
-                }
-
-                /* 프로젝트명 (크게, 강조) */
-                .room-title {
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: #222;
-                }
-                .room-time {
-                    margin-left: auto;
-                    font-size: 11px;
-                    color: #999;
-                }
-
-                #exitRoomBtn {
-                    background: #ff5555;
-                    color: #fff;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    cursor: pointer;
-                }
-
-                #exitRoomBtn:hover {
-                    background: #e04848;
-                }
-
-                .delete-btn {
-                    display: none; /* 기본 숨김 */
-                    font-size: 10px;
-                    cursor: pointer;
-                    color: #ff5555;
-                }
-
-                .message.mine:hover .delete-btn {
-                    display: inline-block;
-                }
-                .bubble.deleted {
-                    background: #f1f1f1;
-                    color: #888;
-                    font-style: italic;
-                }
-                .system-label {
-                    display: flex;
-                    align-items: center;
-                    color: #888;
-                    font-size: 12px;
-                    margin: 20px 0;
-                    text-align: center;
-                }
-
-                .system-label::before,
-                .system-label::after {
-                    content: "";
-                    flex: 1;
-                    height: 1px;
-                    background: #ddd;
-                }
-
-                .system-label::before {
-                    margin-right: 15px;
-                }
-
-                .system-label::after {
-                    margin-left: 15px;
-                }
-
-
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/room.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -409,7 +58,7 @@
 
     let selectedRoomId = null;
     const loginUserId =  Number('${loginUserId}');
-
+    let opponentExited = false;
     function exitRoom() {
         if (!selectedRoomId) return;
         if (!confirm("채팅방을 나가시겠습니까?")) return;
@@ -472,7 +121,10 @@
                             room.unreadCount +
                             '</span>';
                     }
-
+                    let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
+                    if (room.lastMessageDeleted === 1) { // 서버에서 삭제 여부를 flag로 보내도록
+                        lastMsg = "메시지가 삭제되었습니다.";
+                    }
                     // ✅ HTML 생성 (보내주신 목록 코드 스타일 적용)
                     // 현재 선택된 방이면 배경색 강조를 위해 클래스 추가
                     const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
@@ -492,12 +144,14 @@
                         '</div>' +
 
                         '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
-                        (room.lastMessageContent || '아직 메시지가 없습니다.') +
+                        lastMsg +
+                        '<div class="find-out" data-roomid="' + room.roomId + '">' +
+                        '<span class="freelancerExited" data-free="' + (room.freelancerExited?1:0 )+ '"/>'+
+                        '<span class="clientExited" data-client="' + (room.clientExited?1:0 )+ '"/>'+
                         '</div>' +
                         '</div>' +
-
+                        '</div>' +
                         unreadHtml +
-
                         '</div>';
 
                 });
@@ -597,9 +251,7 @@
 // 2. 이전 메시지와 날짜가 다를 때만 날짜 표시
 
                     if (msgDate !== prevDate) {
-
                         const dateDiv = document.createElement("div");
-
                         dateDiv.className = "date-label";
 
                         dateDiv.innerText = msgDate; // "2024. 5. 20." 형태로 출력됨
@@ -671,7 +323,20 @@
 
                 });
 
+                if (opponentExited) {
+                    const exitDiv = document.createElement("div");
+                    exitDiv.className = "system-label";
+                    exitDiv.innerText = "상대방이 채팅방을 나갔습니다.";
 
+                    body.appendChild(exitDiv);
+
+                    messageInput.disabled = true;
+                    messageInput.placeholder = "상대방이 나간 방에서는 메시지를 보낼 수 없습니다.";
+                    document.querySelector(".send-btn").disabled = true;
+                } else {
+                    messageInput.disabled = false;
+                    messageInput.placeholder = "메시지를 입력하세요";
+                }
                 body.scrollTop = body.scrollHeight;
 
             });
@@ -727,22 +392,11 @@
 
             });
     }
-
-    function selectRoom(roomId) {
-        console.log("selectRoom메서드 roomId:" , roomId)
-        selectedRoomId = roomId;
-        loadMessages(roomId);
-
-        // ✅ 읽음 처리
-        fetch(`/ratelocean/chat/room/\${roomId}/read`, {
-            method: "POST"
-        }).then(() => {
-        });
-
-
+    function profileDisplay(roomId){
         fetch(`/ratelocean/chat/room/\${roomId}/info`)
             .then(res => res.json())
             .then(room => {
+                console.log(room);
                 // DTO 필드 그대로 사용
                 document.getElementById("headerName").innerText = room.name || "상대방";
                 document.getElementById("headerProject").innerText = room.title || "프로젝트";
@@ -761,8 +415,36 @@
                     <h4>공유 파일</h4>
                     <div class="file-item">공유된 파일 없음</div>
                 </div>`;
-            })
-            .catch(err => console.error("방 정보 로드 실패:", err));
+        }).catch(err => console.error("방 정보 로드 실패:", err));
+    }
+    function selectRoom( roomId) {
+        console.log("selectRoom메서드 roomId:" , roomId)
+
+        //let value = $(this).find("span.freelancerExited").attr("data-freelancerExited");
+        //console.log("freelancerExited:", value);
+
+        selectedRoomId = roomId;
+        loadMessages(roomId);
+        // ✅ 읽음 처리
+        fetch(`/ratelocean/chat/room/\${roomId}/read`, {
+            method: "POST"
+        }).then(() => {
+        });
+
+        profileDisplay(roomId);
+        opponentExited = false;
+                let roomDiv = $('.find-out[data-roomid="' + roomId + '"]');
+                console.log(roomDiv.html());
+                // 자식 span.clientExited의 data-freelancerexited 값 가져오기
+                let freelancerexitedValue = roomDiv.find('span.freelancerExited').attr('data-free');
+                let clientExitedValue = roomDiv.find('span.clientExited').attr('data-client');
+                console.log("freelancerexitedValue:", freelancerexitedValue);
+                console.log("clientExitedValue:", clientExitedValue);
+
+                opponentExited = freelancerexitedValue == 1 || clientExitedValue == 1;
+                console.log("opponentExited", opponentExited);
+
+                loadMessages(roomId);
 
         highlightSelectedRoom();
     }
