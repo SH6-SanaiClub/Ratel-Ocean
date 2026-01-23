@@ -1,6 +1,7 @@
 package com.sanaiclub.user.controller;
 
 import com.sanaiclub.user.model.dto.*;
+import com.sanaiclub.user.model.vo.ClientType;
 import com.sanaiclub.user.model.vo.UserType;
 import com.sanaiclub.user.service.BizNoVerificationService;
 import com.sanaiclub.user.service.JoinService;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -96,7 +96,7 @@ public class JoinController {
         logger.info("공통 정보 저장: {}", userDto.getLoginId());
 
         // 역할에 따라 이동 경로 분기
-        if (UserType.FREELANCER.equals(userType)) {
+        if (userDto.isFreelancer()) {
             return "redirect:/join/freelancer/signup";
         } else {
             return "redirect:/join/client/select-type";
@@ -122,24 +122,34 @@ public class JoinController {
     }
 
     @PostMapping("/freelancer/signup")
-    public String freelancerProfileProcess(
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> freelancerProfileProcess(
             @ModelAttribute FreelancerProfileDTO freeDto,
-            HttpSession session,
-            RedirectAttributes rttr) {
+            HttpSession session) {
 
+        Map<String, Object> response = new HashMap<>();
         // 공통 정보 확인
         UserSignupRequestDTO userDto = (UserSignupRequestDTO) session.getAttribute(SESSION_USER_DATA);
 
         if (userDto == null) {
-            rttr.addFlashAttribute("error", "세션이 만료되었습니다.");
-            return "redirect:/join/select-role";
+            response.put("success", false);
+            response.put("message", "세션이 만료되었습니다.");
+            return ResponseEntity.ok(response);
         }
 
-        // 프리랜서 프로필 세션 저장
-        session.setAttribute(SESSION_FREELANCER_PROFILE, freeDto);
-        logger.info("프리랜서 프로필 저장 완료: {}", userDto.getLoginId());
+        try {
+            // 프리랜서 프로필 세션 저장
+            session.setAttribute(SESSION_FREELANCER_PROFILE, freeDto);
+            logger.info("프리랜서 프로필 저장 완료: {}", userDto.getLoginId());
+            response.put("success", true);
+            response.put("redirect", "/join/register-account");
+        } catch (Exception e) {
+            logger.error("프리랜서 프로필 저장 실패", e);
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다.");
+        }
 
-        return "redirect:/join/register-account";
+        return ResponseEntity.ok(response);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -163,7 +173,7 @@ public class JoinController {
     @PostMapping("/client/select-type")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> clientSelectTypeProcess(
-            @RequestParam("clientType") String clientType,
+            @RequestParam("clientType") ClientType clientType,
             HttpSession session) {
 
         Map<String, Object> response = new HashMap<>();
@@ -176,18 +186,23 @@ public class JoinController {
             return ResponseEntity.ok(response);
         }
 
-        session.setAttribute(SESSION_CLIENT_TYPE, clientType);
-        logger.info("클라이언트 타입 선택: {}", clientType);
+        try {
+            session.setAttribute(SESSION_CLIENT_TYPE, clientType);
+            logger.info("클라이언트 타입 선택: {}", clientType);
+            response.put("success", true);
 
-        response.put("success", true);
-
-        // 개인 → 계좌 입력
-        if ("PERSONAL".equals(clientType)) {
-            response.put("redirect", "/join/register-account");
-        }
-        // 법인 → 회사 정보 입력
-        else {
-            response.put("redirect", "NEXT_STEP");
+            // 개인 → 계좌 입력
+            if (clientType.PERSONAL.equals(clientType)) {
+                response.put("redirect", "/join/register-account");
+            }
+            // 법인 → 회사 정보 입력
+            else {
+                response.put("redirect", "/join/client/company-signup");
+            }
+        } catch (Exception e) {
+            logger.error("클라이언트 타입 저장 실패", e);
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다.");
         }
 
         return ResponseEntity.ok(response);
@@ -198,7 +213,7 @@ public class JoinController {
     // ═══════════════════════════════════════════════════════════════
 
     // 법인 회사 정보 입력 페이지
-    @GetMapping("/client/company")
+    @GetMapping("/client/company-signup")
     public String clientCompanyPage(HttpSession session, Model model) {
 
         UserSignupRequestDTO userDto = (UserSignupRequestDTO) session.getAttribute(SESSION_USER_DATA);
@@ -207,9 +222,9 @@ public class JoinController {
             return "redirect:/join/select-role";
         }
 
-        String clientType = (String) session.getAttribute(SESSION_CLIENT_TYPE);
+        ClientType clientType = (ClientType) session.getAttribute(SESSION_CLIENT_TYPE);
 
-        if (!"CORPORATION".equals(clientType)) {
+        if (!ClientType.CORPORATION.equals(clientType)) {
             return "redirect:/join/client/select-type";
         }
 
@@ -244,8 +259,18 @@ public class JoinController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            // 하이픈 제거
+            String cleanNumber = businessNumber.replaceAll("-", "");
+
+            // YYYY-MM-DD → YYYYMMDD 변환
+            String formattedDate = openingDate.replaceAll("-", "");
+
+            // 국세청 API 호출
             boolean isValid = bizNoVerificationService.isValidBusinessNumber(
-                    businessNumber, ceoName, openingDate);
+                    cleanNumber,
+                    ceoName,
+                    formattedDate
+            );
 
             if (isValid) {
                 // 진위확인 데이터 세션 저장
@@ -265,8 +290,6 @@ public class JoinController {
                 response.put("message", "진위확인에 실패했습니다.");
             }
 
-            return ResponseEntity.ok(response);
-
         } catch (Exception e) {
             logger.error("사업자 진위확인 실패", e);
             session.removeAttribute(SESSION_VERIFIED_COMPANY);
@@ -274,42 +297,59 @@ public class JoinController {
             response.put("success", false);
             response.put("verified", false);
             response.put("message", "오류가 발생했습니다.");
-
-            return ResponseEntity.ok(response);
         }
+
+        return ResponseEntity.ok(response);
     }
 
     // 법인 회사 정보 제출
-    @PostMapping("/client/company")
-    public String submitCompany(
+    @PostMapping("/client/company-signup")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> clientCompanyProcess(
             @ModelAttribute CompanyRegistrationDTO companyDto,
-            HttpSession session,
-            RedirectAttributes rttr) {
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        UserSignupRequestDTO userDto = (UserSignupRequestDTO) session.getAttribute(SESSION_USER_DATA);
+
+        if (userDto == null) {
+            response.put("success", false);
+            response.put("message", "세션이 만료되었습니다.");
+            return ResponseEntity.ok(response);
+        }
 
         try {
-            UserSignupRequestDTO userDto = (UserSignupRequestDTO) session.getAttribute(SESSION_USER_DATA);
+            // 클라이언트 타입 확인
+            ClientType clientType =
+                    (ClientType) session.getAttribute(SESSION_CLIENT_TYPE);
 
-            if (userDto == null) {
-                rttr.addFlashAttribute("error", "세션이 만료되었습니다.");
-                return "redirect:/join/select-role";
+            if (clientType == null || !ClientType.CORPORATION.equals(clientType)) {
+                response.put("success", false);
+                response.put("message", "클라이언트 타입이 올바르지 않습니다.");
+                return ResponseEntity.ok(response);
             }
 
-            // 진위확인 데이터 검증
+            // 세션에서 진위확인된 사업자 정보 가져오기
             @SuppressWarnings("unchecked")
             Map<String, String> verifiedData =
                     (Map<String, String>) session.getAttribute(SESSION_VERIFIED_COMPANY);
 
             if (verifiedData == null) {
-                rttr.addFlashAttribute("error", "사업자 진위확인이 필요합니다.");
-                return "redirect:/join/client/select-type";
+                response.put("success", false);
+                response.put("message", "사업자 진위확인이 완료되지 않았습니다.");
+                return ResponseEntity.ok(response);
             }
 
-            // 검증된 데이터로 DTO 재구성
+            // 검증된 데이터로 DTO 재구성 (위조 방지)
             CompanyRegistrationDTO securedDto = CompanyRegistrationDTO.builder()
-                    .businessNumber(verifiedData.get("businessNumber"))
-                    .ceoName(verifiedData.get("ceoName"))
-                    .openingDate(verifiedData.get("openingDate"))
-                    .businessVerified(true)
+                    // ===== 필수 정보: 세션의 검증된 데이터 사용 (위조 불가) =====
+                    .businessNumber(verifiedData.get("businessNumber"))  // 진위확인된 사업자번호
+                    .ceoName(verifiedData.get("ceoName"))                // 진위확인된 대표자명
+                    .openingDate(verifiedData.get("openingDate"))        // 진위확인된 개업일자
+                    .businessVerified(true)                              // 진위확인 완료
+
+                    // ===== 선택 정보: 프론트에서 전송된 데이터 사용 =====
                     .companyName(companyDto.getCompanyName())
                     .ceoEmail(companyDto.getCeoEmail())
                     .industry(companyDto.getIndustry())
@@ -319,15 +359,15 @@ public class JoinController {
                     .build();
 
             session.setAttribute(SESSION_COMPANY_DATA, securedDto);
-            logger.info("회사 정보 저장: {}", securedDto.getCompanyName());
-
-            return "redirect:/join/register-account";
-
+            response.put("success", true);
+            response.put("redirect", "/join/register-account");
         } catch (Exception e) {
-            logger.error("회사 정보 제출 실패", e);
-            rttr.addFlashAttribute("error", "오류가 발생했습니다.");
-            return "redirect:/join/client/select-type";
+            logger.error("회사 정보 저장 실패", e);
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다.");
         }
+
+        return ResponseEntity.ok(response);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -354,7 +394,7 @@ public class JoinController {
         }
         // 클라이언트: 클라이언트 타입 확인
         else {
-            String clientType = (String) session.getAttribute(SESSION_CLIENT_TYPE);
+            ClientType clientType = (ClientType) session.getAttribute(SESSION_CLIENT_TYPE);
 
             if (clientType == null) {
                 return "redirect:/join/client/select-type";
@@ -372,10 +412,12 @@ public class JoinController {
 
     // 계좌 정보 입력 -> 회원가입 완료 (/register-account 페이지에서의 POST 요청)
     @PostMapping("/complete")
-    public String completeJoin(
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> completeJoin(
             AccountDTO accountDto,
-            HttpSession session,
-            RedirectAttributes rttr) {
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
 
         try {
             UserSignupRequestDTO userDto = (UserSignupRequestDTO) session.getAttribute(SESSION_USER_DATA);
@@ -405,14 +447,14 @@ public class JoinController {
 
             else {
 
-                String clientType = (String) session.getAttribute(SESSION_CLIENT_TYPE);
+                ClientType clientType = (ClientType) session.getAttribute(SESSION_CLIENT_TYPE);
 
                 if (clientType == null) {
                     throw new IllegalStateException("클라이언트 타입 정보 없음");
                 }
 
                 // 개인
-                if ("PERSONAL".equals(clientType)) {
+                if (ClientType.PERSONAL.equals(clientType)) {
                     joinService.signUpClientPersonal(userDto, accountDto);
                 }
                 // 법인
@@ -430,18 +472,19 @@ public class JoinController {
 
             // 세션 정리
             session.invalidate();
+            logger.info("회원가입 완료: {}", userDto.getLoginId());
 
-            rttr.addFlashAttribute("message", "회원가입이 완료되었습니다!");
-            rttr.addFlashAttribute("messageType", "success");
-
-            return "redirect:/login";
+            response.put("success", true);
+            response.put("message", "회원가입이 완료되었습니다!");
+            response.put("redirectUrl", "/login");
 
         } catch (Exception e) {
             logger.error("회원가입 실패", e);
-            rttr.addFlashAttribute("error", "회원가입 실패: " + e.getMessage());
-            rttr.addFlashAttribute("messageType", "error");
-            return "redirect:/join/select-role";
+            response.put("success", false);
+            response.put("message", "회원가입 실패: " + e.getMessage());
         }
+
+        return ResponseEntity.ok(response);
     }
 
     // ═══════════════════════════════════════════════════════════════
