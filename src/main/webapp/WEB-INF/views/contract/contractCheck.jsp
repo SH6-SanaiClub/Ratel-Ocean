@@ -545,8 +545,22 @@
 							</tbody>
 						</table>
 						<button type="button" class="btn btn-primary" onclick="addMilestone()" style="margin-top: 12px;">+ 마일스톤 추가</button>
-						<div id="milestoneWarning" class="warning" style="display:none;">
-							⚠️ 경고: 마일스톤 금액 합계가 총 예산을 초과했습니다. 금액을 조정해주세요.
+						<div id="milestoneSummary" style="margin-top: 16px; padding: 16px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+							<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+								<span style="font-weight: 600; color: #495057;">마일스톤 금액 합계:</span>
+								<span id="milestoneTotal" style="font-size: 18px; font-weight: 700; color: var(--deep-teal);">0원</span>
+							</div>
+							<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+								<span style="font-weight: 600; color: #495057;">총 계약금액:</span>
+								<span id="totalBudgetDisplay" style="font-size: 18px; font-weight: 700; color: var(--dark);">0원</span>
+							</div>
+							<div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 2px solid #dee2e6;">
+								<span style="font-weight: 600; color: #495057;">차이:</span>
+								<span id="amountDifference" style="font-size: 18px; font-weight: 700;">0원</span>
+							</div>
+						</div>
+						<div id="milestoneWarning" class="warning" style="display:none; margin-top: 12px;">
+							⚠️ 경고: 마일스톤 금액 합계가 총 계약금액과 일치하지 않습니다. 금액을 조정해주세요.
 						</div>
 					</div>
 				</div>
@@ -674,19 +688,19 @@ function toggleMilestoneSection() {
 
 $('#paymentMethod').on('change', function() {
 	toggleMilestoneSection();
+	checkMilestoneBudget();
 	checkRequiredFields();
 });
 
 $(document).ready(function() {
 	toggleMilestoneSection();
 	
-	// PDF 업로드 시에는 계약서 보내기 버튼 활성화
+	// 초기 마일스톤 금액 표시 업데이트
+	checkMilestoneBudget();
+	
+	// PDF 업로드 시에도 마일스톤 검증 필요
 	var contractInputType = '<c:out value="${contractInputType}" />';
-	if (contractInputType === 'PDF') {
-		$('#sendContractBtn').prop('disabled', false);
-	} else {
-		checkRequiredFields();
-	}
+	checkRequiredFields();
 });
 
 // 마일스톤 추가
@@ -701,6 +715,11 @@ function addMilestone() {
 		'<td style="text-align: center;"><button type="button" class="btn btn-secondary" onclick="removeMilestone(this)" style="padding: 6px 12px; font-size: 12px;">삭제</button></td>' +
 		'</tr>';
 	$('#milestoneTableBody').append(newRow);
+	// 이벤트 리스너 추가
+	$('#milestoneTableBody tr:last .milestone-amount').on('input', function() {
+		checkMilestoneBudget();
+		checkRequiredFields();
+	});
 	checkMilestoneBudget();
 	checkRequiredFields();
 }
@@ -718,27 +737,66 @@ function removeMilestone(btn) {
 
 // 마일스톤 금액 합계 검증
 function checkMilestoneBudget() {
+	// 지급 방식이 마일스톤이 아닌 경우 검증하지 않음
+	if ($('#paymentMethod').val() !== 'MILESTONE') {
+		$('#milestoneWarning').hide();
+		$('#milestoneSummary').hide();
+		return true; // 검증 통과
+	}
+	
+	$('#milestoneSummary').show();
+	
 	var total = 0;
 	$('.milestone-amount').each(function() {
-		var val = parseInt($(this).val(), 10);
-		if (!isNaN(val)) total += val;
+		var val = parseFloat($(this).val()) || 0;
+		total += val;
 	});
-	var budget = parseInt($('input[name="totalBudget"]').val(), 10);
-	if (!isNaN(budget) && total > budget) {
+	var budget = parseFloat($('input[name="totalBudget"]').val()) || 0;
+	var difference = total - budget;
+	
+	// 금액 표시 업데이트
+	$('#milestoneTotal').text(total.toLocaleString('ko-KR') + '원');
+	$('#totalBudgetDisplay').text(budget.toLocaleString('ko-KR') + '원');
+	
+	// 차이 표시
+	var differenceText = difference.toLocaleString('ko-KR') + '원';
+	if (difference > 0) {
+		$('#amountDifference').text('+' + differenceText).css('color', '#dc3545');
+	} else if (difference < 0) {
+		$('#amountDifference').text(differenceText).css('color', '#dc3545');
+	} else {
+		$('#amountDifference').text('0원').css('color', '#28a745');
+	}
+	
+	// 마일스톤 금액 합계가 총 계약금액과 일치하지 않으면 경고 표시 및 버튼 비활성화
+	if (Math.abs(difference) > 0.01) { // 부동소수점 오차 고려
 		$('#milestoneWarning').show();
-		$('#sendContractBtn').prop('disabled', true);
+		return false; // 검증 실패
 	} else {
 		$('#milestoneWarning').hide();
-		checkRequiredFields();
+		return true; // 검증 통과
 	}
 }
 
 // 필수 필드 검증
 function checkRequiredFields() {
 	var contractInputType = '<c:out value="${contractInputType}" />';
+	
+	// 마일스톤 모드일 경우 금액 일치 여부 먼저 확인
+	var milestoneValid = true;
+	if ($('#paymentMethod').val() === 'MILESTONE') {
+		milestoneValid = checkMilestoneBudget();
+		if (!milestoneValid) {
+			$('#sendContractBtn').prop('disabled', true);
+			return;
+		}
+	}
+	
 	if (contractInputType === 'PDF') {
-		// PDF 업로드 시에는 항상 활성화
-		$('#sendContractBtn').prop('disabled', false);
+		// PDF 업로드 시에는 마일스톤 검증 통과 시 활성화
+		if (milestoneValid) {
+			$('#sendContractBtn').prop('disabled', false);
+		}
 		return;
 	}
 	
@@ -766,7 +824,7 @@ function checkRequiredFields() {
 		}
 	}
 	
-	if (allFilled && $('#milestoneWarning').is(':hidden')) {
+	if (allFilled && milestoneValid) {
 		$('#sendContractBtn').prop('disabled', false);
 	} else {
 		$('#sendContractBtn').prop('disabled', true);
@@ -791,12 +849,15 @@ $(document).ready(function() {
 	});
 });
 
-$(document).on('input', '.milestone-amount, input[name="totalBudget"], input[name="contractStartDate"], input[name="contractEndDate"], textarea[name="contractPurpose"], textarea[name="workScope"], textarea[name="deliverables"], textarea[name="paymentCondition"], textarea[name="scheduleCondition"]', function() {
+$(document).on('input change', '.milestone-amount, input[name="totalBudget"], input[name="contractStartDate"], input[name="contractEndDate"], textarea[name="contractPurpose"], textarea[name="workScope"], textarea[name="deliverables"], textarea[name="paymentCondition"], textarea[name="scheduleCondition"]', function() {
 	// textarea인 경우 자동 높이 조절
 	if (this.tagName === 'TEXTAREA') {
 		autoResizeTextarea(this);
 	}
-	checkMilestoneBudget();
+	// 마일스톤 금액이나 총 계약금액이 변경되면 검증
+	if ($(this).hasClass('milestone-amount') || $(this).attr('name') === 'totalBudget') {
+		checkMilestoneBudget();
+	}
 	checkRequiredFields();
 });
 

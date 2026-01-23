@@ -13,7 +13,7 @@
 
     <!-- Properties 파일 로드 -->
     <context:property-placeholder
-            location="classpath:db.properties,classpath:jwt.properties,classpath:bizno-api.properties,classpath:deepseek-api.properties"
+            location="classpath:db.properties,classpath:jwt.properties,classpath:bizno-api.properties,classpath:deepseek-api.properties,classpath:security.properties"
             ignore-unresolvable="true"
             order="1"/>
 

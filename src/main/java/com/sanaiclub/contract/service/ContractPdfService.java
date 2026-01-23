@@ -1,9 +1,11 @@
 package com.sanaiclub.contract.service;
 
-import com.sanaiclub.contract.model.vo.ContractClientVO;
-import com.sanaiclub.contract.model.vo.ContractFreelancerVO;
 import com.sanaiclub.contract.model.dto.ContractCreateRequestDTO;
 import com.sanaiclub.contract.model.dto.ContractMilestoneRequestDTO;
+import com.sanaiclub.user.model.vo.UserVO;
+import com.sanaiclub.user.model.vo.FreelancerProfileVO;
+import com.sanaiclub.user.model.vo.ClientProfileVO;
+import com.sanaiclub.user.model.vo.CompanyVO;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,24 +18,64 @@ import java.io.OutputStream;
 import java.text.NumberFormat;
 
 /**
- * 계약서 PDF 생성 서비스
+ * ============================================================================
+ * ContractPdfService - 계약서 PDF 생성 서비스
+ * ============================================================================
  * 
  * [역할]
  * - HTML 템플릿을 생성하고 OpenHTMLToPDF를 사용하여 PDF로 변환
  * - 계약서 양식에 클라이언트/프리랜서 정보 및 계약 내용을 채워서 PDF 생성
+ * - 전문적인 계약서 양식 제공 (제1조~제7조)
  * 
  * [기술 스택]
  * - OpenHTMLToPDF: HTML → PDF 변환 라이브러리
  * - 한글 폰트 지원: 맑은 고딕 (Windows 시스템 폰트)
+ * - A4 페이지 크기 지원
  * 
  * [처리 흐름]
  * 1. generateContractHtml(): HTML 템플릿 생성
+ *    - 클라이언트/프리랜서 정보 입력
+ *    - 계약 내용 (목적, 범위, 기간, 금액 등) 입력
+ *    - 마일스톤 정보 입력 (MILESTONE 타입일 때)
+ * 
  * 2. OpenHTMLToPDF로 HTML → PDF 변환
+ *    - 한글 폰트 로드 (맑은 고딕)
+ *    - A4 페이지 크기 설정
+ *    - PDF 생성
+ * 
  * 3. 파일 저장 및 유효성 검증
+ *    - PDF 헤더 확인 (%PDF)
+ *    - 파일 크기 확인 (0 bytes 체크)
+ *    - 디버그용 HTML 파일 저장 (선택적)
+ * 
+ * [계약서 구조]
+ * - 제1조: 당사자 (발주자/수주자)
+ * - 제2조: 계약의 목적 및 범위
+ * - 제3조: 계약 기간 및 금액
+ * - 제4조: 지급 방식
+ * - 제5조: 마일스톤 및 단계별 지급 (MILESTONE 타입일 때)
+ * - 제6조: 지급 조건 및 일정
+ * - 제7조: 기타 특약 사항
+ * 
+ * [한글 폰트 처리]
+ * - Windows 시스템 폰트 경로에서 맑은 고딕 로드
+ * - 폰트 로드 실패 시 기본 폰트 사용 (한글 깨짐 가능)
+ * - 폰트 패밀리 이름: "Malgun Gothic", "맑은 고딕"
+ * 
+ * [보안]
+ * - HTML 이스케이프: XSS 방지
+ * - null/빈 문자열 체크 및 trim 처리
  * 
  * [사용 시나리오]
- * - ContractController.confirmContract()에서 직접 작성(FORM) 시 호출
+ * - ContractController.confirmContract(): 직접 작성(FORM) 시 호출
  * - 저장 경로: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
+ * 
+ * [의존성]
+ * - OpenHTMLToPDF: PDF 생성 라이브러리
+ * - user 도메인: UserVO, FreelancerProfileVO, ClientProfileVO, CompanyVO
+ * - project 도메인: ProjectsVO (간접 참조)
+ * 
+ * ============================================================================
  */
 @Service
 public class ContractPdfService {
@@ -58,8 +100,11 @@ public class ContractPdfService {
      * - Windows 시스템 폰트 경로에서 맑은 고딕 로드
      * - 폰트 로드 실패 시 기본 폰트 사용 (한글 깨짐 가능)
      * 
-     * @param client 클라이언트 정보
-     * @param freelancer 프리랜서 정보
+     * @param clientUser 클라이언트 사용자 정보 (user 도메인의 UserVO)
+     * @param clientProfile 클라이언트 프로필 정보 (user 도메인의 ClientProfileVO, null 가능)
+     * @param company 회사 정보 (user 도메인의 CompanyVO, null 가능)
+     * @param freelancerUser 프리랜서 사용자 정보 (user 도메인의 UserVO)
+     * @param freelancerProfile 프리랜서 프로필 정보 (user 도메인의 FreelancerProfileVO, null 가능)
      * @param form 계약 내용 (계약 목적, 업무 범위, 지급 조건 등)
      * @param saveDir PDF 저장 디렉토리 (절대 경로)
      * @param fileName PDF 파일명
@@ -67,8 +112,11 @@ public class ContractPdfService {
      * @throws IOException PDF 생성 실패 시
      */
     public File generateContractPdf(
-            ContractClientVO client,
-            ContractFreelancerVO freelancer,
+            UserVO clientUser,
+            ClientProfileVO clientProfile,
+            CompanyVO company,
+            UserVO freelancerUser,
+            FreelancerProfileVO freelancerProfile,
             ContractCreateRequestDTO form,
             String saveDir,
             String fileName
@@ -76,7 +124,7 @@ public class ContractPdfService {
         logger.info("PDF 생성 시작 (OpenHTMLToPDF) - 저장 경로: {}, 파일명: {}", saveDir, fileName);
         
         // HTML 생성
-        String html = generateContractHtml(client, freelancer, form);
+        String html = generateContractHtml(clientUser, clientProfile, company, freelancerUser, freelancerProfile, form);
         
         // 디렉토리 생성
         File dir = new File(saveDir);
@@ -214,31 +262,37 @@ public class ContractPdfService {
      * - HTML 이스케이프 (XSS 방지)
      * - 숫자 포맷팅 (금액)
      * 
-     * @param client 클라이언트 정보
-     * @param freelancer 프리랜서 정보
+     * @param clientUser 클라이언트 사용자 정보 (user 도메인의 UserVO)
+     * @param clientProfile 클라이언트 프로필 정보 (user 도메인의 ClientProfileVO, null 가능)
+     * @param company 회사 정보 (user 도메인의 CompanyVO, null 가능)
+     * @param freelancerUser 프리랜서 사용자 정보 (user 도메인의 UserVO)
+     * @param freelancerProfile 프리랜서 프로필 정보 (user 도메인의 FreelancerProfileVO, null 가능)
      * @param form 계약 내용
      * @return HTML 템플릿 문자열
      * @throws IllegalArgumentException 필수 파라미터가 null일 때
      */
     private String generateContractHtml(
-            ContractClientVO client,
-            ContractFreelancerVO freelancer,
+            UserVO clientUser,
+            ClientProfileVO clientProfile,
+            CompanyVO company,
+            UserVO freelancerUser,
+            FreelancerProfileVO freelancerProfile,
             ContractCreateRequestDTO form
     ) {
         // null 체크
-        if (client == null) {
-            throw new IllegalArgumentException("client는 null일 수 없습니다.");
+        if (clientUser == null) {
+            throw new IllegalArgumentException("clientUser는 null일 수 없습니다.");
         }
-        if (freelancer == null) {
-            throw new IllegalArgumentException("freelancer는 null일 수 없습니다.");
+        if (freelancerUser == null) {
+            throw new IllegalArgumentException("freelancerUser는 null일 수 없습니다.");
         }
         if (form == null) {
             throw new IllegalArgumentException("form은 null일 수 없습니다.");
         }
         
         logger.debug("PDF 생성 데이터 - Client: {}, Freelancer: {}, StartDate: {}, EndDate: {}, Budget: {}", 
-            client.getClientName(),
-            freelancer.getName(),
+            clientUser.getName(),
+            freelancerUser.getName(),
             form.getContractStartDate(),
             form.getContractEndDate(),
             form.getTotalBudget());
@@ -405,15 +459,15 @@ public class ContractPdfService {
         html.append("        <div class=\"party-box\">\n");
         html.append("            <h3>발주자 (갑)</h3>\n");
         html.append("            <p style=\"font-size: 12pt; font-weight: bold; color: #2c3e50; margin-bottom: 10px;\">")
-            .append(escapeHtml(client.getClientName() != null ? client.getClientName() : "-")).append("</p>\n");
-        if (client.getEmail() != null) {
-            html.append("            <p><strong>이메일:</strong> ").append(escapeHtml(client.getEmail())).append("</p>\n");
+            .append(escapeHtml(clientUser.getName() != null ? clientUser.getName() : "-")).append("</p>\n");
+        if (clientUser.getEmail() != null) {
+            html.append("            <p><strong>이메일:</strong> ").append(escapeHtml(clientUser.getEmail())).append("</p>\n");
         }
-        if (client.getPhone() != null) {
-            html.append("            <p><strong>연락처:</strong> ").append(escapeHtml(client.getPhone())).append("</p>\n");
+        if (clientUser.getPhone() != null) {
+            html.append("            <p><strong>연락처:</strong> ").append(escapeHtml(clientUser.getPhone())).append("</p>\n");
         }
-        if (client.getCompanyName() != null && !client.getCompanyName().trim().isEmpty()) {
-            html.append("            <p><strong>회사명:</strong> ").append(escapeHtml(client.getCompanyName())).append("</p>\n");
+        if (company != null && company.getCompanyName() != null && !company.getCompanyName().trim().isEmpty()) {
+            html.append("            <p><strong>회사명:</strong> ").append(escapeHtml(company.getCompanyName())).append("</p>\n");
         }
         html.append("        </div>\n");
         
@@ -421,12 +475,12 @@ public class ContractPdfService {
         html.append("        <div class=\"party-box\">\n");
         html.append("            <h3>수주자 (을)</h3>\n");
         html.append("            <p style=\"font-size: 12pt; font-weight: bold; color: #2c3e50; margin-bottom: 10px;\">")
-            .append(escapeHtml(freelancer.getName() != null ? freelancer.getName() : "-")).append("</p>\n");
-        if (freelancer.getEmail() != null) {
-            html.append("            <p><strong>이메일:</strong> ").append(escapeHtml(freelancer.getEmail())).append("</p>\n");
+            .append(escapeHtml(freelancerUser.getName() != null ? freelancerUser.getName() : "-")).append("</p>\n");
+        if (freelancerUser.getEmail() != null) {
+            html.append("            <p><strong>이메일:</strong> ").append(escapeHtml(freelancerUser.getEmail())).append("</p>\n");
         }
-        if (freelancer.getPhone() != null) {
-            html.append("            <p><strong>연락처:</strong> ").append(escapeHtml(freelancer.getPhone())).append("</p>\n");
+        if (freelancerUser.getPhone() != null) {
+            html.append("            <p><strong>연락처:</strong> ").append(escapeHtml(freelancerUser.getPhone())).append("</p>\n");
         }
         html.append("        </div>\n");
         
@@ -576,8 +630,8 @@ public class ContractPdfService {
         html.append("<div class=\"footer\">\n");
         html.append("    <p>본 계약서는 양 당사자가 서명함으로써 효력을 발생합니다.</p>\n");
         html.append("    <p style=\"margin-top: 20px;\">\n");
-        html.append("        <strong>발주자 (갑)</strong> ").append(escapeHtml(client.getClientName() != null ? client.getClientName() : "")).append(" (서명) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
-        html.append("        <strong>수주자 (을)</strong> ").append(escapeHtml(freelancer.getName() != null ? freelancer.getName() : "")).append(" (서명)\n");
+        html.append("        <strong>발주자 (갑)</strong> ").append(escapeHtml(clientUser.getName() != null ? clientUser.getName() : "")).append(" (서명) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+        html.append("        <strong>수주자 (을)</strong> ").append(escapeHtml(freelancerUser.getName() != null ? freelancerUser.getName() : "")).append(" (서명)\n");
         html.append("    </p>\n");
         html.append("</div>\n");
         

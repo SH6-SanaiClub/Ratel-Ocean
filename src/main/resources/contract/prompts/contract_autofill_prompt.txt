@@ -58,8 +58,8 @@
 -------------------------
 [PROJECT_DB_INFO]
 projectId: ${projectId}
-projectTitle: 웹 서비스 초기 구축
-projectDescription: 기존 시스템 고도화 및 신규 기능 개발
+projectTitle: ${projectTitle}
+projectDescription: ${projectDescription}
 projectStartDate: ${projectStartDate}            (YYYY-MM-DD or empty)
 projectDeadlineDate: ${projectDeadlineDate}      (YYYY-MM-DD or empty)
 projectEstimatedDuration: ${projectEstDuration}  (예: "2개월", "6주" 등 or empty)
@@ -69,14 +69,14 @@ communicationMethod: ${communicateMethod}        (선택)
 -------------------------
 [FREELANCER_INFO]
 freelancerId: ${freelancerId}
-freelancerName: clin
+freelancerName: ${freelancerName}
 freelancerEmail: ${freelancerEmail}
 -------------------------
 [CLIENT_DIRECT_TEXT]  (사용자가 직접 작성했을 때만 값이 들어온다)
-
+${manualContractText}
 -------------------------
 [PDF_TEXT]  (PDF 업로드 했을 때만 값이 들어온다. 텍스트 추출 실패면 빈 문자열일 수 있다)
-
+${pdfText}
 -------------------------
 
 [INFERENCE GUIDELINES - 추론 규칙]

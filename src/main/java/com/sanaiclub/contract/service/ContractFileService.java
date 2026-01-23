@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,26 +15,58 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 계약서 파일 관리 서비스
+ * ============================================================================
+ * ContractFileService - 계약서 파일 관리 서비스
+ * ============================================================================
  * 
  * [역할]
- * - PDF 파일 업로드/다운로드/삭제/이동 처리
+ * - 계약서 PDF 파일의 업로드, 다운로드, 삭제, 이동 처리
  * - 파일 경로 정규화 및 관리
- * - 미확정 PDF 정리
+ * - 미확정 PDF 파일 정리 및 중복 파일 관리
+ * - 파일 보안 검증 (Path Traversal 방지)
  * 
- * [경로 규칙]
+ * [파일 저장 구조]
  * - 기본 경로: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
  * - freelancerId는 선택적 (업로드 시점에는 null일 수 있음)
+ * - 파일명 형식: {timestamp}_{originalFilename} (중복 방지)
+ * 
+ * [경로 규칙]
+ * - 상대 경로 형식: "contracts/{clientId}/{projectId}/{freelancerId}/{fileName}"
+ * - 절대 경로: {user.dir}/contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
+ * - 경로 구분자: Windows는 '\', Unix는 '/' (자동 변환)
  * 
  * [주요 기능]
- * - uploadPdf: PDF 파일 업로드
- * - normalizeAndMovePdfPath: 경로 정규화 및 파일 이동 (freelancerId 추가)
- * - cleanupUnconfirmedPdfs: 미확정 PDF 삭제
- * - deletePdfIfNotUsed: 사용하지 않는 PDF 삭제
+ * 1. 파일 업로드
+ *    - uploadPdf: PDF 파일 업로드 및 경로 반환
+ * 
+ * 2. 경로 관리
+ *    - normalizeAndMovePdfPath: 경로 정규화 및 파일 이동 (freelancerId 추가)
+ *    - getPdfFile: 경로에서 File 객체 반환
+ *    - existsPdfFile: 파일 존재 여부 확인
+ * 
+ * 3. 파일 정리
+ *    - cleanupUnconfirmedPdfs: 미확정 PDF 삭제
+ *    - deletePdfIfNotUsed: 사용하지 않는 PDF 삭제
+ * 
+ * 4. 파일 제공
+ *    - servePdfResource: HTTP 응답으로 PDF 파일 제공 (보안 검증 포함)
+ * 
+ * [보안]
+ * - Path Traversal 방지: baseDir 밖으로 나가는 경로 차단
+ * - contracts/로 시작하는 경로만 허용
+ * - URL 디코딩 후 경로 검증
  * 
  * [사용 시나리오]
  * - ContractController.uploadPdf(): PDF 업로드
  * - ContractController.confirmContract(): PDF 경로 정규화 및 이동
+ * - ContractController.servePdf(): PDF 파일 다운로드
+ * - FreelancerContractController.servePdf(): 프리랜서 PDF 다운로드
+ * 
+ * [의존성]
+ * - Spring Web: MultipartFile 처리
+ * - Java NIO: 파일 복사 및 경로 처리
+ * 
+ * ============================================================================
  */
 @Service
 public class ContractFileService {
@@ -319,22 +352,118 @@ public class ContractFileService {
     /**
      * PDF 파일 경로에서 File 객체 반환
      * 
-     * @param relativePath 상대 경로 (contracts/...)
-     * @return File 객체
+     * [기능]
+     * - 상대 경로를 절대 경로로 변환하여 File 객체 생성
+     * - 경로 구분자를 OS에 맞게 변환
+     * 
+     * [경로 변환]
+     * - 상대 경로: "contracts/1/100/50/file.pdf"
+     * - 절대 경로: "{user.dir}/contracts/1/100/50/file.pdf"
+     * - Windows: "\" 구분자 사용
+     * - Unix: "/" 구분자 사용
+     * 
+     * [주의사항]
+     * - 파일이 실제로 존재하는지는 확인하지 않음
+     * - existsPdfFile()로 존재 여부 확인 필요
+     * 
+     * @param relativePath 상대 경로 (contracts/{clientId}/{projectId}/{freelancerId}/{fileName})
+     * @return File 객체 (절대 경로)
      */
     public File getPdfFile(String relativePath) {
         String baseDir = System.getProperty("user.dir");
+        // 경로 구분자를 OS에 맞게 변환
         return new File(baseDir, relativePath.replace("/", File.separator));
     }
 
     /**
      * PDF 파일 존재 여부 확인
      * 
-     * @param relativePath 상대 경로
-     * @return 존재 여부
+     * [기능]
+     * - 상대 경로로 파일이 존재하는지 확인
+     * - 파일이 존재하고 일반 파일인지 확인 (디렉토리가 아닌지)
+     * 
+     * [사용 시나리오]
+     * - 파일 다운로드 전 존재 여부 확인
+     * - 파일 삭제 전 존재 여부 확인
+     * 
+     * @param relativePath 상대 경로 (contracts/{clientId}/{projectId}/{freelancerId}/{fileName})
+     * @return 파일 존재 여부 (true: 존재, false: 없음 또는 디렉토리)
      */
     public boolean existsPdfFile(String relativePath) {
         File file = getPdfFile(relativePath);
+        // 파일이 존재하고 일반 파일인지 확인 (디렉토리가 아닌지)
         return file.exists() && file.isFile();
+    }
+
+    /**
+     * PDF 파일 제공 (HTTP 응답용)
+     * 
+     * [기능]
+     * - 저장된 PDF 파일을 HTTP 응답으로 반환
+     * - 경로 디코딩 및 보안 검증 포함
+     * 
+     * [보안]
+     * - baseDir 밖으로 나가는 경로 차단 (Path Traversal 방지)
+     * - contracts/로 시작하는 경로만 허용
+     * 
+     * [사용 시나리오]
+     * - ContractController.servePdf()에서 호출
+     * - FreelancerContractController.servePdf()에서 호출
+     * 
+     * @param requestURI HTTP 요청 URI (예: /client/contract/file/contracts/...)
+     * @return PDF 파일 리소스 (application/pdf)
+     */
+    public ResponseEntity<org.springframework.core.io.Resource> servePdfResource(String requestURI) {
+        try {
+            String baseDir = System.getProperty("user.dir");
+            
+            // /file/ 이후의 경로 추출
+            String filePathStr = requestURI.substring(requestURI.indexOf("/file/") + "/file/".length());
+            
+            // 경로 세그먼트별로 디코딩 (슬래시는 유지)
+            String[] segments = filePathStr.split("/");
+            StringBuilder decodedPath = new StringBuilder();
+            for (int i = 0; i < segments.length; i++) {
+                if (i > 0) decodedPath.append("/");
+                try {
+                    decodedPath.append(java.net.URLDecoder.decode(segments[i], "UTF-8"));
+                } catch (java.io.UnsupportedEncodingException e) {
+                    decodedPath.append(segments[i]);
+                }
+            }
+            
+            // 경로 정규화
+            String normalizedPath = decodedPath.toString().replace("\\", "/");
+            
+            // 보안 검증: contracts/로 시작하는지 확인
+            if (!normalizedPath.startsWith("contracts/")) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).build();
+            }
+            
+            // 파일 경로 구성
+            java.nio.file.Path filePath = java.nio.file.Paths.get(baseDir)
+                .resolve(normalizedPath.replace("/", java.io.File.separator))
+                .normalize();
+            
+            // 보안 검증: baseDir 밖으로 나가는 경로 차단
+            java.nio.file.Path basePath = java.nio.file.Paths.get(baseDir).normalize();
+            if (!filePath.startsWith(basePath)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+            }
+            
+            // 파일 존재 여부 확인
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(filePath.toUri());
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(resource);
+                
+        } catch (Exception e) {
+            logger.error("PDF 파일 제공 중 오류: {}", e.getMessage(), e);
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

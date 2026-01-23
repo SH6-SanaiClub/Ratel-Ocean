@@ -1,15 +1,14 @@
 package com.sanaiclub.contract.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sanaiclub.contract.service.PDFProcessingService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 
-@Service
+@Slf4j
+@Service("pdfProcessingServiceImpl")
 public class PDFProcessingServiceImpl implements PDFProcessingService {
-
-    private static final Logger logger = LoggerFactory.getLogger(PDFProcessingServiceImpl.class);
 
     @Override
     public String extractText(File pdfFile) throws IOException {
@@ -17,7 +16,7 @@ public class PDFProcessingServiceImpl implements PDFProcessingService {
             org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper();
             return stripper.getText(doc);
         } catch (Exception e) {
-            logger.error("PDF 텍스트 추출 실패: {}", e.getMessage(), e);
+            log.error("PDF 텍스트 추출 실패: {}", e.getMessage(), e);
             return "";
         }
     }
@@ -36,7 +35,7 @@ public class PDFProcessingServiceImpl implements PDFProcessingService {
         try (org.apache.pdfbox.pdmodel.PDDocument doc = org.apache.pdfbox.pdmodel.PDDocument.load(pdfFile)) {
             return doc.getNumberOfPages();
         } catch (Exception e) {
-            logger.error("PDF 페이지 수 조회 실패: {}", e.getMessage(), e);
+            log.error("PDF 페이지 수 조회 실패: {}", e.getMessage(), e);
             return 0;
         }
     }
