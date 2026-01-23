@@ -1,4 +1,0 @@
-Fix: contractMapper.xml 파일 구조 정리
-
-- 원격 브랜치 병합 후 발생한 contractMapper.xml 변경사항 반영
-- namespace 및 쿼리 구조 정리
