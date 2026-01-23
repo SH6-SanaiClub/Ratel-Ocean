@@ -2,6 +2,7 @@ package com.sanaiclub.portfolio.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.portfolio.service.FreelancerCareerEditService;
+import com.sanaiclub.portfolio.service.FreelancerProfileBasicService;
 import com.sanaiclub.portfolio.service.FreelancerProjectExperienceEditService;
 import com.sanaiclub.portfolio.service.FreelancerStackProfileService;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,16 @@ public class FreelancerProfileEditController {
     private final FreelancerProjectExperienceEditService freelancerProjectExperienceEditService;
     private final FreelancerCareerEditService freelancerCareerEditService;
     private final FreelancerStackProfileService stackService;
+    private final FreelancerProfileBasicService freelancerProfileBasicService;
 
     @GetMapping("/edit")
     public String profileEdit(Model model) {
         if (!AuthContext.isAuthenticated()) return "redirect:/login";
 
         Integer freelancerId = AuthContext.getCurrentUserId();
+
+        // 프로필 기본 정보
+        model.addAttribute("profile", freelancerProfileBasicService.getView(freelancerId));
 
         // 스택
         model.addAttribute("skillOptions", stackService.getSkillOptions());

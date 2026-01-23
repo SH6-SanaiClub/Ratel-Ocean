@@ -3,7 +3,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%
   String tab = request.getParameter("tab");
-  if (tab == null || tab.isBlank()) tab = "skill";
+  if (tab == null || tab.isBlank()) tab = "settings";
   request.setAttribute("tab", tab);
 %>
 <!DOCTYPE html>
@@ -342,6 +342,226 @@
       align-items:center;
     }
 
+    /* ====== settings(프로필 기본정보) : 스케치 정렬 ====== */
+    .settingsWrap{
+      max-width: 980px;
+    }
+
+    .settingsGrid{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-areas:
+    "photo info"
+    "git blog"
+    "edu edu"
+    "port port"
+    "save save";
+      gap: 16px 18px;
+      align-items:start;
+    }
+
+    .setBox{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background:#fff;
+      padding: 16px;
+    }
+
+    .setLabel{
+      font-size: 13px;
+      color:#374151;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .setInput, .setTextarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size:14px;
+      outline:none;
+    }
+    .setTextarea{
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .setInput:focus, .setTextarea:focus{
+      border-color: rgba(109,77,253,0.55);
+      box-shadow: 0 0 0 4px rgba(109,77,253,0.12);
+    }
+
+    .setPhoto{ grid-area: photo; }
+    .setInfo{ grid-area: info; }
+    .setGit{ grid-area: git; }
+    .setBlog{ grid-area: blog; }
+    .setEdu{ grid-area: edu; }
+    .setPort{ grid-area: port; }
+    .setSave{ grid-area: save; display:flex; justify-content:flex-end; }
+    /* photo/info 같은 줄 높이 맞추기 */
+    .setPhoto, .setInfo{ height: 100%; }
+    .setInfo{
+      display:flex;
+      flex-direction:column;
+    }
+    .setInfo .setTextarea{
+      flex: 1;
+      min-height: 0;
+      resize: none;
+    }
+
+    .avatarLg{
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      overflow:hidden;
+      background:#f3f4f6;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin: 8px auto 14px;
+    }
+    .avatarLg img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .avatarLg .ph{ color:#9ca3af; font-weight:900; }
+
+    .photoBtns{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+    }
+
+    .eduGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .fileBar{
+      border:1px dashed rgba(109,77,253,0.35);
+      background: rgba(109,77,253,0.06);
+      border-radius: 16px;
+      padding: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      cursor:pointer;
+    }
+    .fileBar strong{ font-weight: 900; }
+    .fileBar span{ color: var(--muted); font-size: 12px; font-weight: 800; }
+
+    .fileBar.dragover{
+      background: rgba(109,77,253,0.12);
+      border-color: rgba(109,77,253,0.55);
+      transform: translateY(-1px);
+    }
+
+    /* Git/Blog를 반반으로 나누는 내부 그리드 */
+    .urlRow{
+      grid-column: 1 / -1;            /* settingsGrid 두 칸 전체를 사용 */
+      display:grid;
+      grid-template-columns: 1fr 1fr;  /* 반반 */
+      gap: 16px 18px;
+    }
+    .fileBar.dragover{
+      background: rgba(109,77,253,0.12);
+      border-color: rgba(109,77,253,0.55);
+      transform: translateY(-1px);
+    }
+    /* 포트폴리오 드롭 영역 텍스트 정렬 */
+    .fileLeft{
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+    }
+    .fileLeft b{ font-weight: 900; }
+    .fileLeft .muted{ color: var(--muted); font-size: 12px; font-weight: 800; }
+    .levelGuide{
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfaff;
+      padding: 14px;
+      margin: 0 0 14px;
+    }
+    .levelGuide h3{
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .levelGuide p{
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .levelTable{
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+    .levelTable th, .levelTable td{
+      border: 1px solid var(--line);
+      padding: 10px 10px;
+      font-size: 12px;
+      vertical-align: top;
+      background: #fff;
+    }
+    .levelTable th{
+      background: rgba(109,77,253,0.06);
+      font-weight: 900;
+    }
+    .levelTable td:first-child{
+      width: 70px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .levelGuide{
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfaff;
+      padding: 14px;
+      margin: 0 0 14px;
+    }
+    .levelGuide h3{
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .levelGuide p{
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .levelTable{
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+    .levelTable th, .levelTable td{
+      border: 1px solid var(--line);
+      padding: 10px 10px;
+      font-size: 12px;
+      vertical-align: top;
+      background: #fff;
+    }
+    .levelTable th{
+      background: rgba(109,77,253,0.06);
+      font-weight: 900;
+    }
+    .levelTable td:first-child{
+      width: 70px;
+      text-align: center;
+      font-weight: 900;
+    }
+
   </style>
 </head>
 
@@ -385,9 +605,139 @@
               <p class="desc">프로필 기본 정보 수정 페이지 입니다.</p>
             </div>
           </div>
-          <div class="form">
-            <div style="color:var(--muted); font-size:13px;">TODO: freelancer_profile, portfolio 파트 / 이미지,포트폴리오, 닉네임, 이메일, git or 블로그 url (어떤거쓸지 중복선택가능), 자기소개작성, 최종학력 </div>
+          <div class="form settingsWrap">
+
+            <form id="basicAllForm"
+                  method="post"
+                  action="${pageContext.request.contextPath}/freelancer/profile/edit/all/save"
+                  enctype="multipart/form-data">
+
+              <input type="hidden" name="tab" value="settings"/>
+
+              <div class="settingsGrid">
+
+                <!-- (좌) 프로필 사진 -->
+                <div class="setBox setPhoto">
+                  <div class="setLabel">프로필 사진</div>
+
+                  <div class="avatarLg">
+                    <c:choose>
+                      <c:when test="${not empty profile.profileImageUrl}">
+                        <!-- 캐시 무효화 + id 부여 -->
+                        <img id="avatarImg"
+                             src="${pageContext.request.contextPath}${profile.profileImageUrl}?v=<%=System.currentTimeMillis()%>"
+                             alt="profile"/>
+                      </c:when>
+                      <c:otherwise>
+                        <div class="ph" id="avatarPh">No Image</div>
+                      </c:otherwise>
+                    </c:choose>
+                  </div>
+
+                  <input id="profileImageFile" type="file" name="profileImageFile" accept="image/*" style="display:none;" />
+
+                  <div class="photoBtns">
+                    <button type="button" class="btn ghost" id="btnChangeImg">사진변경</button>
+                    <!-- 삭제는 서버 로직 있으면 hidden flag로 처리 -->
+                    <button type="button" class="btn danger" id="btnDeleteImg"
+                            <c:if test="${empty profile.profileImageUrl}">disabled</c:if>>삭제</button>
+                  </div>
+
+                  <!-- 서버에서 delete 처리할 거면 같이 쓰기 -->
+                  <input type="hidden" name="deleteProfileImage" id="deleteProfileImage" value="false"/>
+                </div>
+
+                <!-- (우) 닉네임 + 자기소개 -->
+                <div class="setBox setInfo">
+                  <div class="setLabel">닉네임</div>
+                  <input class="setInput" name="nickname"
+                         value="${fn:escapeXml(profile.nickname)}" required />
+
+                  <div style="height:12px;"></div>
+
+                  <div class="setLabel">자기소개</div>
+                  <textarea class="setTextarea" name="introduction"
+                            placeholder="자기소개를 입력하세요.">${fn:escapeXml(profile.introduction)}</textarea>
+                </div>
+
+                <!-- Git URL -->
+                <div class="urlRow">
+                  <div class="setBox">
+                    <div class="setLabel">Git URL</div>
+                    <input class="setInput" name="githubUrl"
+                           value="${fn:escapeXml(profile.githubUrl)}"
+                           placeholder="https://github.com/..." />
+                  </div>
+
+                  <div class="setBox">
+                    <div class="setLabel">블로그 URL</div>
+                    <input class="setInput" name="websiteUrl"
+                           value="${fn:escapeXml(profile.websiteUrl)}"
+                           placeholder="https://..." />
+                  </div>
+                </div>
+
+
+                <!-- 학력 (큰 박스) -->
+                <div class="setBox setEdu">
+                  <div class="setLabel">학력</div>
+
+                  <div class="eduGrid">
+                    <input class="setInput" name="schoolName" placeholder="학교명"
+                           value="${fn:escapeXml(profile.schoolName)}"/>
+                    <input class="setInput" name="major" placeholder="전공"
+                           value="${fn:escapeXml(profile.major)}"/>
+                    <input class="setInput" name="degree" placeholder="학위 (예: 학사/석사/박사)"
+                           value="${fn:escapeXml(profile.degree)}"/>
+                    <input class="setInput" name="gradStatus" placeholder="졸업상태 (예: 졸업/재학/휴학/수료)"
+                           value="${fn:escapeXml(profile.gradStatus)}"/>
+                  </div>
+                </div>
+
+                <!-- 포트폴리오 파일 (긴 바) -->
+                <!-- 포트폴리오 파일 (긴 바) -->
+                <div class="setBox setPort">
+                  <div class="setLabel">포트폴리오 파일</div>
+
+                  <c:if test="${not empty profile.portfolioId}">
+                    <div style="margin-bottom:10px; font-size:13px;">
+                      현재 파일:
+                      <a href="${pageContext.request.contextPath}${profile.portfolioUrl}" target="_blank" rel="noopener"
+                         style="font-weight:900; color:#2b1cc9; text-decoration:none;">
+                        <c:out value="${profile.portfolioTitle}" />
+                      </a>
+                    </div>
+                  </c:if>
+
+                  <!-- 실제 파일 인풋 -->
+                  <input id="portfolioFile" type="file" name="portfolioFile" style="display:none;" />
+                  <input type="hidden" name="deletePortfolio" id="deletePortfolio" value="false"/>
+
+                  <!-- 드롭 영역 -->
+                  <div id="pfDrop" class="fileBar" tabindex="0">
+                    <div class="fileLeft">
+                      <b>파일 선택</b>
+                      <span id="portfolioName" class="muted">선택된 파일 없음</span>
+                    </div>
+                    <button type="button" class="btn ghost small" id="pfPick">찾기</button>
+                  </div>
+
+                  <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+                    <button type="button" class="btn danger small" id="btnPortfolioDelete"
+                            <c:if test="${empty profile.portfolioId}">disabled</c:if>>삭제</button>
+                  </div>
+                </div>
+
+
+                <!-- 저장 버튼 (오른쪽 아래) -->
+                <div class="setSave">
+                  <button class="btn primary" type="submit">저장</button>
+                </div>
+
+              </div>
+            </form>
           </div>
+
         </section>
 
         <!-- ===================== 포지션 ===================== -->
@@ -395,9 +745,55 @@
           <div class="card-head">
             <div>
               <h2 class="title">포지션</h2>
-              <p class="desc">가능한 포지션을 선택하고 경력을 입력하세요. (0년 부터 기입 가능)</p>
+              <p class="desc">가능한 포지션을 선택하고 레벨과 경력을 입력하세요. 실무 경력이 없거나, 1년 미만의 경우 0년으로 기입해주세요.</p>
             </div>
           </div>
+
+          <!-- ===================== 스킬 ===================== -->
+
+            <div class="levelGuide">
+              <h3>포지션 레벨 기준표</h3>
+              <p>
+                포지션별로 “지금 실무에서 어느 정도까지 혼자 할 수 있는지” 기준으로 선택해주세요.
+              </p>
+
+              <table class="levelTable">
+                <thead>
+                <tr>
+                  <th>레벨</th>
+                  <th>명칭</th>
+                  <th>설명</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>입문/초급</td>
+                  <td>문법 및 기초 개념만 이해, 간단한 코드/수정만 가능</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>기초</td>
+                  <td>기본적인 CRUD, 단순 기능 구현 가능, 문서/예제 참고 필요</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>중급</td>
+                  <td>실무 프로젝트 투입 가능, 독립적 기능 구현, 오류 해결 가능</td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>고급</td>
+                  <td>복잡한 로직/구조 설계, 코드 리뷰/리딩, 성능 개선 가능</td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>전문가</td>
+                  <td>아키텍처 설계, 기술 리딩, 최적화, 타인 멘토링 가능</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
 
           <form class="form"
                 method="post"
@@ -452,9 +848,54 @@
           <div class="card-head">
             <div>
               <h2 class="title">스킬</h2>
-              <p class="desc">보유 스킬을 선택하고 레벨(1~5) / 경력(0년~)을 입력하세요.</p>
+              <p class="desc">보유 스킬을 선택하고 레벨과 경력을 입력하세요. 실무 경력이 없거나, 1년 미만의 경우 0년으로 기입해주세요.</p>
             </div>
           </div>
+
+          <div class="levelGuide">
+            <h3>기술스택 레벨 기준표</h3>
+            <p>
+              스킬별로 “지금 실무에서 어느 정도까지 혼자 할 수 있는지” 기준으로 선택해주세요.
+            </p>
+
+            <table class="levelTable">
+              <thead>
+              <tr>
+                <th>레벨</th>
+                <th>명칭</th>
+                <th>설명</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td>1</td>
+                <td>입문/초급</td>
+                <td>문법 및 기초 개념만 이해, 간단한 코드/수정만 가능</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>기초</td>
+                <td>기본적인 CRUD, 단순 기능 구현 가능, 문서/예제 참고 필요</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>중급</td>
+                <td>실무 프로젝트 투입 가능, 독립적 기능 구현, 오류 해결 가능</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>고급</td>
+                <td>복잡한 로직/구조 설계, 코드 리뷰/리딩, 성능 개선 가능</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>전문가</td>
+                <td>아키텍처 설계, 기술 리딩, 최적화, 타인 멘토링 가능</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
 
           <form class="form"
                 method="post"
@@ -651,7 +1092,7 @@
 
             <!-- 추가 폼 (토글) -->
             <form method="post"
-                  action="${pageContext.request.contextPath}/freelancer/profile/edit/experience/add"
+                  action="${pageContext.request.contextPath}/freelancer/profile/experience/add"
                   id="expAddForm"
                   style="display:none;">
 
@@ -820,9 +1261,15 @@
   ];
   const initPositions = [
     <c:forEach var="x" items="${myPositions}" varStatus="st">
-    {"stackId": ${x.stackId}, "name": "${fn:escapeXml(x.stackName)}", "level": 1, "years": ${x.stackYear}}${st.last ? "" : ","}
+    {
+      "stackId": ${x.stackId},
+      "name": "${fn:escapeXml(x.stackName)}",
+      "level": ${empty x.stackLevel ? 1 : x.stackLevel},
+      "years": ${empty x.stackYear ? 0 : x.stackYear}
+    }${st.last ? "" : ","}
     </c:forEach>
   ];
+
 
   initSkills.forEach(s => mySkills.set(String(s.stackId), s));
   initPositions.forEach(p => myPositions.set(String(p.stackId), p));
@@ -876,6 +1323,8 @@
       div.innerHTML =
               '<div><b>'+esc(v.name)+'</b></div>' +
               '<div class="right">' +
+              '<span style="font-weight:800; font-size:12px; color:#6b7280;">Level</span>' +
+              '<select class="posLevel" data-id="'+v.stackId+'">' + levelOptions(v.level) + '</select>' +
               '<span style="font-weight:800; font-size:12px; color:#6b7280;">경력</span>' +
               '<input type="number" min="0" step="1" class="posYears" data-id="'+v.stackId+'" value="'+Number(v.years||0)+'" style="width:90px"/> <span>년</span>' +
               '<button type="button" class="btn danger small removePos" data-id="'+v.stackId+'">X</button>' +
@@ -883,6 +1332,7 @@
       box.appendChild(div);
     });
   }
+
 
   // 태그 클릭 토글 (버튼 내부 클릭 포함)
   document.getElementById("skillButtons")?.addEventListener("click", (e) => {
@@ -900,10 +1350,13 @@
     if(!btn) return;
     const id = String(btn.dataset.id);
     const name = btn.dataset.name || btn.textContent.trim();
+
     if(myPositions.has(id)) myPositions.delete(id);
     else myPositions.set(id, {stackId:Number(id), name:name, level:1, years:0});
+
     renderPositions();
   });
+
 
   // 값 변경 반영
   document.addEventListener("change", (e) => {
@@ -916,6 +1369,11 @@
       const id = String(e.target.dataset.id);
       const v = mySkills.get(id);
       if(v) v.years = Math.max(0, Number(e.target.value || 0));
+    }
+    if(e.target.classList.contains("posLevel")){
+      const id = String(e.target.dataset.id);
+      const v = myPositions.get(id);
+      if(v) v.level = Number(e.target.value || 1);
     }
     if(e.target.classList.contains("posYears")){
       const id = String(e.target.dataset.id);
@@ -1055,6 +1513,159 @@
       showToast(serverMsg.trim(), 2000);
     }
   })();
+
+  // ===== settings: 프로필 기본정보(스케치 폼) =====
+  (function(){
+    const form = document.getElementById("basicAllForm");
+    if(!form) return;
+
+    // 프로필 이미지
+    const imgInput = document.getElementById("profileImageFile");
+    const btnChange = document.getElementById("btnChangeImg");
+    const btnDelete = document.getElementById("btnDeleteImg");
+    const delFlag = document.getElementById("deleteProfileImage");
+
+    btnChange?.addEventListener("click", () => imgInput?.click());
+
+    imgInput?.addEventListener("change", () => {
+      if(!imgInput.files || imgInput.files.length === 0) return;
+      delFlag.value = "false";
+
+      // 즉시 미리보기
+      const file = imgInput.files[0];
+      const url = URL.createObjectURL(file);
+
+      const avatar = document.querySelector(".avatarLg");
+      const oldImg = document.getElementById("avatarImg");
+      const ph = document.getElementById("avatarPh");
+
+      if(ph) ph.style.display = "none";
+
+      if(oldImg){
+        oldImg.src = url;
+        oldImg.style.display = "block";
+      }else if(avatar){
+        avatar.innerHTML = "";
+        const newImg = document.createElement("img");
+        newImg.id = "avatarImg";
+        newImg.alt = "profile";
+        newImg.src = url;
+        avatar.appendChild(newImg);
+      }
+
+      showToast("프로필 이미지가 선택됐어요. 저장을 누르면 반영됩니다.", 1800);
+    });
+
+    btnDelete?.addEventListener("click", () => {
+      if(btnDelete.disabled) return;
+      if(!confirm("프로필 이미지를 삭제할까요?")) return;
+      delFlag.value = "true";
+      if(imgInput) imgInput.value = "";
+
+      // 화면도 즉시 No Image처럼 보이게
+      const avatar = document.querySelector(".avatarLg");
+      if(avatar){
+        avatar.innerHTML = '<div class="ph" id="avatarPh">No Image</div>';
+      }
+      showToast("프로필 이미지 삭제 예약됨. 저장을 누르면 반영됩니다.", 1800);
+    });
+
+    // ===== Portfolio Drag & Drop (중복클릭/중복리스너 방지 포함) =====
+    (function(){
+      const pfDrop = document.getElementById("pfDrop");
+      const pf = document.getElementById("portfolioFile");
+      const pfName = document.getElementById("portfolioName");
+      const pfPick = document.getElementById("pfPick");
+
+      if(!pfDrop || !pf || !pfName) return;
+
+      // 같은 스크립트가 2번 실행되어 리스너가 중복 등록되는 것 방지
+      if(pfDrop.dataset.bound === "1") return;
+      pfDrop.dataset.bound = "1";
+
+      // 드롭 시 브라우저가 파일을 열어버리는 기본동작 방지(필수)
+      ["dragenter","dragover","dragleave","drop"].forEach(evt=>{
+        window.addEventListener(evt, (e)=>{ e.preventDefault(); }, false);
+        document.addEventListener(evt, (e)=>{ e.preventDefault(); }, false);
+      });
+
+      // 찾기 버튼 클릭은 버블링 막고 한 번만 열기
+      pfPick?.addEventListener("click", (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        pf.click();
+      });
+
+      // 바(div) 클릭은 버튼 말고 빈 공간 클릭일 때만 열기
+      pfDrop.addEventListener("click", (e)=>{
+        if(e.target.closest("button")) return; // 버튼 누른 경우는 위에서 처리
+        pf.click();
+      });
+
+      pf.addEventListener("change", ()=>{
+        if(pf.files && pf.files.length > 0){
+          pfName.textContent = pf.files[0].name;
+        }else{
+          pfName.textContent = "선택된 파일 없음";
+        }
+      });
+
+      pfDrop.addEventListener("dragover", ()=>{
+        pfDrop.classList.add("dragover");
+      });
+      pfDrop.addEventListener("dragleave", ()=>{
+        pfDrop.classList.remove("dragover");
+      });
+
+      pfDrop.addEventListener("drop", (e)=>{
+        pfDrop.classList.remove("dragover");
+
+        const files = e.dataTransfer?.files;
+        if(!files || files.length === 0) return;
+
+        const dt = new DataTransfer();
+        dt.items.add(files[0]);   // 1개만
+        pf.files = dt.files;
+
+        pfName.textContent = files[0].name;
+      });
+    })();
+
+    // ===== Portfolio 삭제 버튼 =====
+    (function(){
+      const btnDel = document.getElementById("btnPortfolioDelete");
+      const delFlag = document.getElementById("deletePortfolio");
+      const pf = document.getElementById("portfolioFile");
+      const pfName = document.getElementById("portfolioName");
+
+      if(!btnDel || !delFlag) return;
+
+      btnDel.addEventListener("click", () => {
+        if(btnDel.disabled) return;
+        if(!confirm("포트폴리오 파일을 삭제할까요?")) return;
+
+        // 삭제 요청 플래그 ON
+        delFlag.value = "true";
+
+        // 새 파일 선택도 취소(있으면)
+        if(pf) pf.value = "";
+
+        // 화면 표시도 초기화
+        if(pfName) pfName.textContent = "선택된 파일 없음";
+
+        showToast("포트폴리오 삭제 예약됨. 저장을 누르면 반영됩니다.", 1800);
+      });
+
+      // 새 파일을 선택하면 삭제 플래그 OFF
+      pf?.addEventListener("change", () => {
+        if(pf.files && pf.files.length > 0){
+          delFlag.value = "false";
+        }
+      });
+    })();
+
+  })();
+
 </script>
 
 </body>
