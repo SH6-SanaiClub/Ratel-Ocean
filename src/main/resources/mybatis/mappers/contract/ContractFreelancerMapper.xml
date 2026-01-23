@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sanaiclub.contract.dao.ContractFreelancerDao">
+    <select id="findByProjectId" parameterType="int" resultType="com.sanaiclub.contract.model.vo.ContractFreelancerVO">
+        SELECT 
+            u.user_id AS id,
+            u.name AS name,
+            u.email AS email,
+            u.phone AS phone,
+            fp.nickname AS nickname,
+            fp.introduction AS introduction
+        FROM project_applications pa
+        JOIN users u ON pa.freelancer_id = u.user_id
+        LEFT JOIN freelancer_profiles fp ON u.user_id = fp.user_id
+        WHERE pa.project_id = #{projectId}
+    </select>
+    <select id="findById" parameterType="int" resultType="com.sanaiclub.contract.model.vo.ContractFreelancerVO">
+        SELECT 
+            u.user_id AS id,
+            u.name AS name,
+            u.email AS email,
+            u.phone AS phone,
+            fp.nickname AS nickname,
+            fp.introduction AS introduction
+        FROM users u
+        LEFT JOIN freelancer_profiles fp ON u.user_id = fp.user_id
+        WHERE u.user_id = #{id}
+    </select>
+    <select id="findAll" resultType="com.sanaiclub.contract.model.vo.ContractFreelancerVO">
+        SELECT 
+            user_id AS id,
+            nickname,
+            introduction,
+            NULL AS name,
+            NULL AS email,
+            NULL AS phone
+        FROM freelancer_profiles
+    </select>
+</mapper>

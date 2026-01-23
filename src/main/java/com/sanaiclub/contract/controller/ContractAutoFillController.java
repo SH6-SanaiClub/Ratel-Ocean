@@ -1,6 +1,6 @@
 package com.sanaiclub.contract.controller;
 
-import com.sanaiclub.contract.model.ContractAutoFillDTO;
+import com.sanaiclub.contract.model.dto.ContractAutoFillDTO;
 import com.sanaiclub.contract.service.ContractAutoFillService;
 import com.sanaiclub.contract.service.PDFProcessingService;
 import org.springframework.stereotype.Controller;

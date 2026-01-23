@@ -18,7 +18,7 @@
     </context:component-scan>
 
     <!-- Properties 파일 로드 -->
-    <context:property-placeholder location="classpath:db.properties, classpath:jwt.properties"/>
+    <context:property-placeholder location="classpath:db.properties, classpath:jwt.properties, classpath:deepseek-api.properties" ignore-unresolvable="true"/>
 
     <!-- BCrypt 비밀번호 암호화 설정 -->
     <bean id="passwordEncoder"

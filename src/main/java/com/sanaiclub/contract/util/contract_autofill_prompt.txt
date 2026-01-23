@@ -1,0 +1,288 @@
+[ROLE]
+너는 "Ratel-Ocean(레거시 Spring MVC2)"의 계약서 작성 보조 AI다.
+사용자는 클라이언트이며, 계약서 초안을 자동으로 채우기 위해 너를 호출했다.
+너의 출력은 곧바로 계약서 작성 화면의 입력값으로 바인딩될 수 있어야 한다.
+
+[ABSOLUTE OUTPUT RULES - 반드시 지켜]
+1) 출력은 오직 "JSON 객체 1개"만 허용한다. (설명, 문장, 코드블록, 마크다운, 링크 금지)
+2) JSON 앞/뒤에 공백 외의 다른 텍스트를 절대 쓰지 마라.
+3) 키 이름은 정확히 아래 스키마와 일치해야 한다. 추가 키 금지.
+4) 값에 URL/링크/마크다운 문법(예: [..](..))이 포함되면 실패다.
+5) null은 허용하지만, 가능하면 추정해서 채워라. 단, 근거가 없으면 과감히 null로 둬라.
+6) 날짜는 반드시 YYYY-MM-DD 형식 문자열로 출력한다.
+7) 금액은 정수(원 단위)로 출력한다. 콤마 금지.
+8) paymentMethod는 오직 "FULL" 또는 "MILESTONE" 중 하나다.
+9) paymentMethod가 "FULL"이면 milestones는 반드시 [] (빈 배열)이어야 한다.
+10) paymentMethod가 "MILESTONE"이면 milestones는 2~6개 사이로 생성한다.
+11) milestones.amount 합계는 totalBudget과 정확히 일치해야 한다. (불일치 금지)
+12) milestones.step은 1부터 시작해서 1씩 증가해야 한다.
+13) milestones.title은 짧고 명확한 단계명(예: "요구사항 분석", "개발 1차", "테스트/배포")으로 쓴다.
+14) requirements는 4~10개 사이의 간단한 문장/구절 목록으로 작성한다.
+15) 요구사항/단계명/설명은 한국어로 작성한다.
+
+[SCHEMA - 출력 JSON 스키마]
+{
+  "contractStartDate": "YYYY-MM-DD",
+  "contractEndDate": "YYYY-MM-DD",
+  "totalBudget": 0,
+  "paymentMethod": "FULL|MILESTONE",
+  "milestones": [
+    {
+      "step": 1,
+      "title": "string",
+      "description": "string",
+      "amount": 0,
+      "completionCriteria": "string"
+    }
+  ],
+  "requirements": ["string"]
+}
+
+[WHY THIS MATTERS - 너의 결과는 DB로 이어진다]
+- contracts.total_budget  <- totalBudget
+- contracts.payment_method <- paymentMethod
+- contracts.contract_start_date <- contractStartDate
+- contracts.contract_end_date <- contractEndDate
+- contract_milestones.step_order <- milestones.step
+- contract_milestones.milestone_name <- milestones.title
+- contract_milestones.work_scope <- milestones.description
+- contract_milestones.amount <- milestones.amount
+- contract_milestones.status <- 초기값은 시스템에서 설정한다(너는 status를 출력하지 마라)
+
+[INPUT CONTEXT - 아래는 시스템이 제공하는 원문 데이터다]
+- 너는 아래 정보를 근거로 "가장 그럴듯한 초안"을 채워야 한다.
+- 서로 충돌하면 우선순위는 다음과 같다:
+  1) PDF 텍스트(있다면) > 2) 사용자가 직접 작성한 텍스트 > 3) 프로젝트 DB 정보
+- 단, PDF/직접작성 내용이 빈약하면 프로젝트 DB 정보를 적극 사용해라.
+
+-------------------------
+[PROJECT_DB_INFO]
+projectId: ${projectId}
+projectTitle: ${projectTitle}
+projectDescription: ${projectDescription}
+projectStartDate: ${projectStartDate}            (YYYY-MM-DD or empty)
+projectDeadlineDate: ${projectDeadlineDate}      (YYYY-MM-DD or empty)
+projectEstimatedDuration: ${projectEstDuration}  (예: "2개월", "6주" 등 or empty)
+projectBudget: ${projectBudget}                  (정수 or empty)
+projectPaymentHint: ${projectPaymentMethod}      (예: "MILESTONE" or "FULL" or empty)
+communicationMethod: ${communicateMethod}        (선택)
+-------------------------
+[FREELANCER_INFO]
+freelancerId: ${freelancerId}
+freelancerName: ${freelancerName}
+freelancerEmail: ${freelancerEmail}
+-------------------------
+[CLIENT_DIRECT_TEXT]  (사용자가 직접 작성했을 때만 값이 들어온다)
+${manualContractText}
+-------------------------
+[PDF_TEXT]  (PDF 업로드 했을 때만 값이 들어온다. 텍스트 추출 실패면 빈 문자열일 수 있다)
+${pdfText}
+-------------------------
+
+[INFERENCE GUIDELINES - 추론 규칙]
+A) 날짜 추론:
+- contractStartDate:
+  - projectStartDate가 있으면 그것을 우선 사용
+  - 없으면 "오늘+7일"을 사용
+- contractEndDate:
+  - projectDeadlineDate가 있으면 그것을 우선 사용
+  - 없으면 estimatedDuration이 "n개월/주" 형태면 startDate에 더해서 계산
+  - 그것도 없으면 startDate + 2개월을 기본값으로 한다
+
+B) 예산 추론:
+- totalBudget:
+  - PDF/직접작성에 금액이 있으면 그 값을 사용
+  - 없으면 projectBudget 사용
+  - 그것도 없으면 "15000000"(1500만원) 기본값
+
+C) 지급 방식 추론:
+- paymentMethod:
+  - PDF/직접작성/DB 힌트 중 "분할/마일스톤/단계/착수금/중도금/잔금" 같은 표현이 있으면 MILESTONE
+  - "일시/일괄" 표현이 명확하면 FULL
+  - 불명확하면 MILESTONE를 기본값으로 한다 (사용자가 수정 가능)
+
+D) 마일스톤 생성 규칙 (paymentMethod=MILESTONE일 때):
+- 2~6개 단계로 나눈다
+- 프로젝트 성격이 불명확하면 일반적인 SW 개발 단계로 구성한다:
+  1) 요구사항/설계
+  2) 개발 1차
+  3) 개발 2차(또는 통합)
+  4) 테스트/배포
+  5) 안정화/문서화(필요 시)
+- 금액 분배는 다음을 권장:
+  - 20% / 30% / 25% / 15% / 10% (단계 수에 맞게 조정)
+- completionCriteria는 "승인 기준" 형태로 짧게 쓴다.
+- amount 합계 == totalBudget 반드시 맞출 것 (마지막 단계에서 오차 조정)
+
+E) requirements 생성:
+- 4~10개
+- 프로젝트/텍스트 키워드를 반영하되 과장 금지
+- 예: "핵심 기능 구현", "관리자/사용자 화면 개발", "DB 설계 및 연동", "테스트 및 버그 수정", "배포 지원", "기술 문서 작성"
+
+[FINAL CHECKLIST - 출력 직전 스스로 검증]
+- JSON만 출력했는가?
+- 링크/마크다운이 섞이지 않았는가?
+- paymentMethod가 FULL이면 milestones가 []인가?
+- paymentMethod가 MILESTONE이면 milestones가 2~6개인가?
+- milestones.amount 합계가 totalBudget과 일치하는가?
+- 날짜 포맷이 YYYY-MM-DD인가?
+- totalBudget이 정수인가?
+
+package com.sanaiclub.contract.service;
+
+import com.sanaiclub.contract.model.*;
+import com.sanaiclub.contract.service.ai.ContractAIService;
+import com.sanaiclub.contract.util.PromptTemplateLoader;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * ContractAutoFillServiceImpl
+ *
+ * [역할]
+ * - 계약 초안 자동 생성을 담당하는 핵심 Service
+ *
+ * [이 Service가 책임지는 것]
+ * 1. PDF / 직접 작성 계약 텍스트 수집
+ * 2. 프로젝트 / 프리랜서 정보 조회
+ * 3. TXT 프롬프트 템플릿 로딩
+ * 4. 모든 정보를 하나의 "완성된 프롬프트"로 조합
+ * 5. DeepSeek AI로 프롬프트 전송
+ * 6. AI 응답(JSON)을 ContractAutoFillDTO로 변환
+ *
+ * [절대 하지 않는 것]
+ * - Controller 판단 ❌
+ * - DB 저장 ❌
+ * - JSP 접근 ❌
+ */
+@Service
+public class ContractAutoFillServiceImpl implements ContractAutoFillService {
+
+    private final ContractService contractService;
+    private final PDFProcessingService pdfProcessingService;
+    private final ContractAIService contractAIService;
+
+    public ContractAutoFillServiceImpl(
+            ContractService contractService,
+            PDFProcessingService pdfProcessingService,
+            ContractAIService contractAIService
+    ) {
+        this.contractService = contractService;
+        this.pdfProcessingService = pdfProcessingService;
+        this.contractAIService = contractAIService;
+    }
+
+    /**
+     * 계약 초안 자동 생성
+     *
+     * @param pdfFile        업로드된 계약서 PDF (없을 수 있음)
+     * @param manualText    사용자가 직접 작성한 계약 내용 (없을 수 있음)
+     * @param projectId     선택된 프로젝트 ID
+     * @param freelancerId  선택된 프리랜서 ID
+     *
+     * @return ContractAutoFillDTO
+     *  - AI가 생성한 "초안" 데이터
+     */
+    @Override
+    public ContractAutoFillDTO generateDraft(
+            File pdfFile,
+            String manualText,
+            Integer projectId,
+            Integer freelancerId
+    ) {
+
+        /* =========================================================
+         * 1️⃣ 프로젝트 / 프리랜서 정보 조회 (DB)
+         * ========================================================= */
+        ContractProjectVO project = contractService.getProjectById(projectId);
+        ContractFreelancerVO freelancer = contractService.getFreelancerById(freelancerId);
+
+        if (project == null || freelancer == null) {
+            throw new IllegalStateException("프로젝트 또는 프리랜서 정보가 존재하지 않습니다.");
+        }
+
+        /* =========================================================
+         * 2️⃣ PDF → 텍스트 변환 (있을 경우만)
+         * ========================================================= */
+        String pdfText = null;
+        try {
+            if (pdfFile != null) {
+                pdfText = pdfProcessingService.extractText(pdfFile);
+            }
+        } catch (Exception e) {
+            // PDF 파싱 실패는 "치명적 오류"가 아님
+            pdfText = null;
+        }
+
+        /* =========================================================
+         * 3️⃣ 프롬프트 템플릿 로딩 (TXT)
+         * ========================================================= */
+        String promptTemplate = PromptTemplateLoader.load(
+                "com/sanaiclub/contract/util/contract_autofill_prompt.txt"
+        );
+
+        /* =========================================================
+         * 4️⃣ 프롬프트 완성 (치환)
+         * ========================================================= */
+        String finalPrompt = promptTemplate
+                .replace("${projectId}", safe(projectId))
+                .replace("${projectTitle}", safe(project.getTitle()))
+                .replace("${projectDescription}", safe(project.getDescription()))
+                .replace("${projectStartDate}", safe(project.getStartDate()))
+                .replace("${projectDeadlineDate}", safe(project.getDeadlineDate()))
+                .replace("${projectEstDuration}", safe(project.getEstDuration()))
+                .replace("${projectBudget}", safe(project.getBudget()))
+                .replace("${projectPaymentMethod}", safe(project.getPaymentMethod()))
+                .replace("${communicateMethod}", safe(project.getCommunicateMethod()))
+
+                .replace("${freelancerId}", safe(freelancerId))
+                .replace("${freelancerName}", safe(freelancer.getName()))
+                .replace("${freelancerEmail}", safe(freelancer.getEmail()))
+
+                .replace("${manualContractText}", safe(manualText))
+                .replace("${pdfText}", safe(pdfText));
+
+        /* =========================================================
+         * 5️⃣ DeepSeek AI 호출
+         * ========================================================= */
+        String aiRawResponse = contractAIService.requestContractDraft(finalPrompt);
+
+        if (aiRawResponse == null || aiRawResponse.isBlank()) {
+            throw new IllegalStateException("AI 응답이 비어 있습니다.");
+        }
+
+        /* =========================================================
+         * 6️⃣ AI 응답(JSON) → DTO 변환
+         * =========================================================
+         * - JSON 파싱 실패 시 예외 발생
+         * - 이 메서드는 "초안" 생성까지만 책임진다
+         */
+        return parseJsonToDto(aiRawResponse);
+    }
+
+    /* =========================================================
+     * JSON → DTO 변환
+     * (실제 구현은 Jackson / Gson 사용)
+     * ========================================================= */
+    private ContractAutoFillDTO parseJsonToDto(String json) {
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper =
+                    new com.fasterxml.jackson.databind.ObjectMapper();
+
+            return mapper.readValue(json, ContractAutoFillDTO.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("AI 응답 JSON 파싱 실패", e);
+        }
+    }
+
+    /* =========================================================
+     * Null-safe 치환 유틸
+     * ========================================================= */
+    private String safe(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+}
+

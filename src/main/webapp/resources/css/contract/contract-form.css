@@ -1,15 +1,7 @@
 @charset "UTF-8";
 
-/* =========================
-   브랜드 컬러
-   ========================= */
-:root {
-    --dark: #2B2B2B;
-    --gray: #6F7272;
-    --off-white: #F1F6EE;
-    --deep-teal: #1F7A8C;
-    --white: #FFFFFF;
-}
+/* 공통 CSS import */
+@import url('../common/contract-common.css');
 
 /* =========================
    페이지 전체
@@ -24,14 +16,16 @@ body {
    중앙 래퍼
    ========================= */
 .page-wrapper {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 60px 20px;
+    justify-content: flex-start;
+    padding: 40px 20px;
 }
 
 /* =========================
-   카드 공통
+   카드 공통 (contract-form 전용)
    ========================= */
 .card {
     width: 680px;
@@ -51,7 +45,7 @@ body {
 }
 
 /* =========================
-   제목
+   제목 (contract-form 전용)
    ========================= */
 .section-title {
     font-size: 28px;
@@ -140,11 +134,11 @@ textarea:focus {
 }
 
 /* =========================
-   버튼
+   버튼 (contract-form 전용)
    ========================= */
 .action-area {
-    width: 680px;
-    margin-bottom: 60px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .btn-primary {
@@ -166,8 +160,410 @@ textarea:focus {
 }
 
 /* =========================
-   유틸
+   step 애니메이션
    ========================= */
-.hidden {
+.step { display: none; }
+.step.active { display: block; animation: fadeIn 0.5s; }
+.step.open { display: block; animation: fadeIn .35s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* =========================
+   계약서 직접 작성 레이아웃
+   ========================= */
+.contract-form-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 24px;
+    align-items: start;
+}
+
+.contract-form-layout > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    align-items: stretch;
+}
+
+#clauseEditor {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#clauseEditor > div {
+    flex: 1;
+}
+
+.contract-hint-box {
+    margin-top: 16px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid var(--deep-teal);
+    font-size: 13px;
+}
+
+.contract-hint-box strong {
+    color: var(--deep-teal);
+}
+
+.contract-preview-box {
+    border: 2px solid var(--deep-teal);
+    background: #fafbfc;
+    border-radius: 12px;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    margin-top: 0; /* summary-box의 margin-top 오버라이드 */
+}
+
+.contract-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
+    flex-shrink: 0;
+    margin-top: 0;
+}
+
+.contract-preview-header b {
+    font-size: 18px;
+    color: var(--dark);
+}
+
+.progress-badge {
+    font-size: 13px;
+    color: var(--gray);
+    background: #e9ecef;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+#contractDocument {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* =========================
+   계약서 조항 스타일
+   ========================= */
+.contract-clause {
+    padding: 12px 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: border-color .2s ease, box-shadow .2s ease;
+    background: #fff;
+}
+
+.contract-clause:hover {
+    border-color: var(--deep-teal);
+    box-shadow: 0 0 0 1px var(--deep-teal);
+}
+
+.contract-clause h4 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+}
+
+.contract-clause p {
+    margin: 8px 0 0;
+    font-size: 15px;
+    color: var(--gray);
+    line-height: 1.65;
+}
+
+.contract-clause.editing {
+    border: 2px solid var(--deep-teal);
+    background: #f0f9fb;
+    box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.1);
+}
+
+.status-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    color: #fff;
+    margin-right: 8px;
+}
+
+.status-icon.complete {
+    background: #28a745;
+}
+
+.status-icon.incomplete {
+    background: #ffc107;
+}
+
+/* =========================
+   Step Card 애니메이션
+   ========================= */
+.step-card {
+    width: 400px;
+    margin-bottom: 32px;
     display: none;
+    opacity: 0;
+    transform: translateY(30px);
+    pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+.step-card.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+#stepDirectForm.step-card {
+    width: 100%;
+    max-width: 1200px;
+}
+
+#stepFinalAction.step-card {
+    width: 680px;
+}
+
+/* =========================
+   모달 추가 스타일 (contract-form 전용)
+   ========================= */
+.modal-ai-name {
+    color: #1f7a8c;
+    font-size: 18px;
+}
+
+.modal-highlight {
+    color: #2c384d;
+}
+
+.loading-highlight {
+    color: #1f7a8c;
+    font-weight: 600;
+}
+
+.modal-status-box {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+    border-left: 4px solid #1f7a8c;
+}
+
+.modal-status-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #1f7a8c;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+.pulse-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.pulse-dot:nth-child(2) { animation-delay: 0.2s; }
+.pulse-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.modal-status-text {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* =========================
+   완료 메시지
+   ========================= */
+.completion-message {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.completion-message strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.completion-message span {
+    font-size: 13px;
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--gray);
+    margin-top: 8px;
+}
+
+/* =========================
+   조항 에디터 스타일
+   ========================= */
+.clause-editor-card {
+    background: #fff;
+    border: 2px solid var(--deep-teal);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 0;
+}
+
+.progress-bar-container {
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+.progress-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.progress-bar-label {
+    font-size: 14px;
+    color: var(--gray);
+}
+
+.progress-bar-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--deep-teal);
+}
+
+.progress-bar-track {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--deep-teal), #2a9daf);
+    transition: width 0.3s ease;
+}
+
+.clause-header {
+    margin-bottom: 16px;
+}
+
+.clause-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.step-number {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: var(--deep-teal);
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.badge-required {
+    color: var(--deep-teal);
+    font-weight: 700;
+    font-size: 13px;
+    background: #e8f4f7;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.badge-optional {
+    color: var(--gray);
+    font-size: 13px;
+    background: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.clause-guide {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--gray);
+    line-height: 1.6;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid var(--deep-teal);
+}
+
+.clause-guide strong {
+    color: var(--deep-teal);
+}
+
+.clause-input-group {
+    margin-bottom: 20px;
+}
+
+.clause-input-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.clause-textarea {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 15px;
+    resize: vertical;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 200px;
+    line-height: 1.6;
+    font-family: inherit;
+}
+
+.clause-textarea:focus {
+    outline: none;
+    border-color: var(--deep-teal);
+}
+
+.clause-save-btn {
+    width: 100%;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 8px;
 }

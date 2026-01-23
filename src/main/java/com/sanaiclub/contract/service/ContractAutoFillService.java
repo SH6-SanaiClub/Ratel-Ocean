@@ -1,7 +1,7 @@
 package com.sanaiclub.contract.service;
 
 import java.io.File;
-import com.sanaiclub.contract.model.ContractAutoFillDTO;
+import com.sanaiclub.contract.model.dto.ContractAutoFillDTO;
 
 /**
  * 계약 자동 초안 생성 서비스
@@ -11,7 +11,7 @@ import com.sanaiclub.contract.model.ContractAutoFillDTO;
  * - 사용자가 직접 입력한 계약 내용
  * - 프로젝트/프리랜서 정보
  * 를 종합하여
- * 👉 "계약 주요 정보 초안"을 생성한다.
+ * "계약 주요 정보 초안"을 생성
  *
  * [중요]
  * - 이 인터페이스는 "흐름"만 정의한다.
