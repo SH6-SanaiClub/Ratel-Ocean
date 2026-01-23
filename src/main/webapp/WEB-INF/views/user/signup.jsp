@@ -92,7 +92,7 @@
 
             <div class="space-y-1.5">
                 <label class="text-[13px] font-bold text-gray-700 ml-1">비밀번호 확인</label>
-                <input type="password" id="passwordConfirm" required placeholder="비밀번호를 한 번 더 입력해주세요"
+                <input type="password" id="passwordConfirm" name="passwordConfirm" required placeholder="비밀번호를 한 번 더 입력해주세요"
                        class="w-full px-4 rounded-xl input-field text-[14px]">
                 <div id="pw-msg" class="msg-text ml-1"></div>
             </div>
