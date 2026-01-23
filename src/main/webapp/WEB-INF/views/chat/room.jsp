@@ -389,12 +389,12 @@
         if (!selectedRoomId) return;
         if (!confirm("채팅방을 나가시겠습니까?")) return;
 
-        fetch(`/ratelocean/chat/room/${selectedRoomId}/exit`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        fetch(`/ratelocean/chat/room/\${selectedRoomId}/exit`, {
+            method: "POST"
         })
+            .then(() => {
+                loadRoomList();
+            })
             .then(res => res.text())
             .then(resText => {
                 if (resText === "ok") {
@@ -427,8 +427,13 @@
             .then(list => {
                 const container = document.getElementById("roomList"); // room.jsp의 왼쪽 목록 ID
                 container.innerHTML = "";
-
-                list.forEach(room => {
+                const filteredList = list.filter(room => {
+                    if (loginUserId === room.freelancerId)
+                        return room.freelancerExited === 0;
+                    if (loginUserId === room.clientId) return room.clientExited === 0;
+                    return true;
+                });
+                filteredList.forEach(room => {
                     // ✅ 시간 문자열 처리
                     let timeText = "";
                     if (room.lastMessageAt) {
@@ -450,8 +455,9 @@
                     const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
                      console.log("room.roomId :" , room.roomId )
                     container.innerHTML +=
-                        '<div class="chat-room' + isSelected + '" onclick="selectRoom(' + room.roomId + ')" style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">' +
-
+                        '<div class="chat-room' + isSelected + '" ' +
+                        'data-room-id="' + room.roomId + '" ' +
+                        'onclick="selectRoom(' + room.roomId + ')">'+
                         '<div class="avatar-box">' +
                         '<img src="' + (room.profileImageUrl || '/ratelocean/assets/img/default-profile.png') + '" class="avatar">' +
                         '<div class="room-name">' + room.name + '</div>' +
@@ -523,7 +529,7 @@
         document.querySelectorAll(".chat-room").forEach(div => {
             div.classList.toggle(
                 "selected",
-                div.dataset.roomId == selectedRoom_Id
+                div.dataset.roomId == selectedRoomId
             );
         });
     }

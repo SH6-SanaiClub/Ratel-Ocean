@@ -37,11 +37,16 @@
             ) AS unread_count
 
         FROM chat_rooms rooms
-
-            JOIN projects p
+            LEFT JOIN projects p
         ON p.project_id = rooms.project_id
-
-            LEFT JOIN messages m
+            LEFT JOIN users u
+            ON u.user_id =
+            CASE
+            WHEN rooms.freelancer_id = #{loginUserId}
+            THEN p.client_id
+            ELSE rooms.freelancer_id
+        END
+        LEFT JOIN messages m
             ON m.message_id = (
             SELECT m2.message_id
             FROM messages m2
@@ -49,21 +54,20 @@
             ORDER BY m2.created_at DESC
             LIMIT 1
             )
-
--- ⭐ 상대방 user join
-            JOIN users u
-            ON u.user_id =
-            CASE
-            WHEN rooms.freelancer_id = #{loginUserId}
-            THEN p.client_id
-            ELSE rooms.freelancer_id
-        END
-
         WHERE
+(
     rooms.freelancer_id = #{loginUserId}
- OR p.client_id = #{loginUserId}
+        AND rooms.freelancer_exited = 0
+        )
+        OR
+        (
+        rooms.freelancer_id != #{loginUserId}
+        AND rooms.client_exited = 0
+        AND p.client_id = #{loginUserId}
+        )
 
-ORDER BY
+
+        ORDER BY
     m.created_at DESC
     </select>
     <resultMap id="chatMessageMap" type="com.sanaiclub.chat.model.dto.ChatMessageDTO">

@@ -126,6 +126,6 @@ public class ChatService {
     // 로그인 유저 ID 가져오기 (테스트용)
     // =========================================
     private Integer getLoginUserId() {
-        return 1; // 테스트용 하드코딩 유지
+        return 5; // 테스트용 하드코딩 유지
     }
 }

@@ -39,7 +39,7 @@ public class ChattingController {
             @PathVariable Integer roomId,
             HttpSession session
     ) {
-        Integer loginUserId = 3; // 실제 세션 로그인 유저 id로 교체
+        Integer loginUserId = 5; // 실제 세션 로그인 유저 id로 교체
 
         // 서비스에서 ChatRoomDTO 반환하도록
         return chatService.findRoomInfo(roomId, loginUserId);
@@ -68,8 +68,7 @@ public class ChattingController {
     @PostMapping("/room/{roomId}/exit")
     @ResponseBody
     public String exitRoom(@PathVariable Integer roomId, HttpSession session) {
-        Integer loginUserId = (Integer) session.getAttribute("login_user_id");
-
+        Integer loginUserId = 5;
         chatService.exitRoom(roomId, loginUserId);
 
         return "ok";
@@ -137,7 +136,7 @@ public class ChattingController {
         // login_user_id -> loginUserId
         Integer loginUserId = (Integer) httpSession.getAttribute("loginUserId");
         model.addAttribute("roomId", roomId); // room_id -> roomId
-        httpSession.setAttribute("loginUserId", 1);
+        httpSession.setAttribute("loginUserId", 5);
         return "chat/room";
     }
 
