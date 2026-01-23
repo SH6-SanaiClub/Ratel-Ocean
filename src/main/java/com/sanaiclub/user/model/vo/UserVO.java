@@ -2,7 +2,7 @@ package com.sanaiclub.user.model.vo;
 
 import lombok.*;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -37,7 +37,7 @@ public class UserVO {
     private UserStatus status;
     private String name;
     private String phone;
-    private Date birthDate;
+    private LocalDate birthDate;
     private String profileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
