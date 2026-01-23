@@ -332,6 +332,31 @@
                     color: #888;
                     font-style: italic;
                 }
+                .system-label {
+                    display: flex;
+                    align-items: center;
+                    color: #888;
+                    font-size: 12px;
+                    margin: 20px 0;
+                    text-align: center;
+                }
+
+                .system-label::before,
+                .system-label::after {
+                    content: "";
+                    flex: 1;
+                    height: 1px;
+                    background: #ddd;
+                }
+
+                .system-label::before {
+                    margin-right: 15px;
+                }
+
+                .system-label::after {
+                    margin-left: 15px;
+                }
+
 
     </style>
 </head>
@@ -392,16 +417,13 @@
         fetch(`/ratelocean/chat/room/\${selectedRoomId}/exit`, {
             method: "POST"
         })
-            .then(() => {
-                loadRoomList();
-            })
             .then(res => res.text())
             .then(resText => {
                 if (resText === "ok") {
                     alert("채팅방을 나갔습니다.");
 
                     // 채팅방 목록에서 방 제거 또는 새로고침
-                    loadChatRooms();
+
 
                     // 선택된 방 초기화
                     selectedRoomId = null;
@@ -409,6 +431,7 @@
                     document.getElementById("headerName").innerText = "";
                     document.getElementById("headerProject").innerText = "";
                     document.getElementById("roomInfo").innerHTML = "";
+                    loadChatRooms();
                 } else {
                     alert("채팅방 나가기에 실패했습니다.");
                 }
@@ -626,8 +649,6 @@
                     if (msg.isDeleted == 1) {
                         div.innerHTML =
                             '<div class="bubble deleted">삭제된 메시지입니다.</div>';
-                        body.appendChild(div);
-                        return;
                     }else {
                         let deleteBtn = "";
                         if (mine) {
@@ -649,7 +670,6 @@
                     body.appendChild(div);
 
                 });
-
 
 
                 body.scrollTop = body.scrollHeight;

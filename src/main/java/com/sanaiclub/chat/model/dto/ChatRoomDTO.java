@@ -20,6 +20,8 @@ public class ChatRoomDTO {
     private Date lastMessageAt;
     private String lastMessageContent;
     private Integer lastMessageSenderId;
+    private Boolean freelancer_exited;
+    private Boolean client_exited;
     private Integer unreadCount;
     private String name;
     private boolean hasNewMessage;

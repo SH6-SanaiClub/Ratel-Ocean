@@ -116,16 +116,12 @@ public class ChatService {
         // 1. 채팅방 상태 업데이트
         chatRoomMapper.exitRoom(param);
 
-        // 2. 상대방에게 보여줄 메시지
-        String exitMessage = "사용자가 채팅방을 나갔습니다";
-        param.put("exitMessage", exitMessage);
-        chatRoomMapper.insertExitMessage(param);
     }
 
     // =========================================
     // 로그인 유저 ID 가져오기 (테스트용)
     // =========================================
-    private Integer getLoginUserId() {
-        return 5; // 테스트용 하드코딩 유지
+    public Integer getLoginUserId() {
+        return 3; // 테스트용 하드코딩 유지
     }
 }

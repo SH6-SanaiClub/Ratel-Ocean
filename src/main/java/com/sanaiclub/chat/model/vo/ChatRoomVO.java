@@ -15,5 +15,7 @@ public class ChatRoomVO {
     private Integer freelancerId;
     private Boolean isActive;           // 방 활성화 여부
     private Date lastMessageAt;       // 마지막 메시지 내용
-    private Date createdAt;         // 방 생성 시간
+    private Date createdAt;
+    private Boolean freelancer_exited;
+    private Boolean client_exited;
 }

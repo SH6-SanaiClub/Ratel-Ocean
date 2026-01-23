@@ -68,7 +68,7 @@ public class ChattingController {
     @PostMapping("/room/{roomId}/exit")
     @ResponseBody
     public String exitRoom(@PathVariable Integer roomId, HttpSession session) {
-        Integer loginUserId = 5;
+        Integer loginUserId = chatService.getLoginUserId();
         chatService.exitRoom(roomId, loginUserId);
 
         return "ok";
@@ -117,7 +117,7 @@ public class ChattingController {
             file.transferTo(savedFile);
             fileUrl = "/upload/chat/" + fileName;
         }
-        Integer senderId = 1;
+        Integer senderId = chatService.getLoginUserId();
         ChatMessageDTO message =
                 chatService.sendAndReturnMessage(
                         roomId,
@@ -136,7 +136,7 @@ public class ChattingController {
         // login_user_id -> loginUserId
         Integer loginUserId = (Integer) httpSession.getAttribute("loginUserId");
         model.addAttribute("roomId", roomId); // room_id -> roomId
-        httpSession.setAttribute("loginUserId", 5);
+        httpSession.setAttribute("loginUserId", chatService.getLoginUserId());
         return "chat/room";
     }
 
