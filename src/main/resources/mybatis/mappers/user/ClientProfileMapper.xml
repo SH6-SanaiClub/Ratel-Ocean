@@ -14,8 +14,7 @@ ClientProfileMapper.xml - 클라이언트 프로필 SQL
     <resultMap id="ClientProfileResultMap" type="com.sanaiclub.user.model.vo.ClientProfileVO">
         <id property="clientId" column="client_id"/>
         <result property="companyId" column="company_id"/>
-        <result property="clientType" column="client_type"
-                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="clientType" column="client_type"/>
     </resultMap>
 
     <!--

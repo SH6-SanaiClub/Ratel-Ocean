@@ -10,10 +10,8 @@
         <result property="email" column="email"/>
         <result property="password" column="password"/>
         <result property="refreshToken" column="refresh_token"/>
-        <result property="userType" column="user_type"
-                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
-        <result property="status" column="status"
-                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="userType" column="user_type"/>
+        <result property="status" column="status"/>
         <result property="name" column="name"/>
         <result property="phone" column="phone"/>
         <result property="birthDate" column="birth_date"/>
