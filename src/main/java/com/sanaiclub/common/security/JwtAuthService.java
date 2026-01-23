@@ -1,6 +1,7 @@
 package com.sanaiclub.common.security;
 
 import com.sanaiclub.common.util.CookieUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 // JwtAuthService - JWT 인증 비즈니스 로직
 @Service
+@RequiredArgsConstructor
 public class JwtAuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthService.class);
@@ -18,13 +20,6 @@ public class JwtAuthService {
     private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
     // 의존성 주입
     private final JwtTokenProvider jwtTokenProvider;
-
-    /**
-     * 생성자 주입
-     */
-    public JwtAuthService(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
 
     // 요청에서 사용자 정보 추출
     public Integer extractUserIdFromRequest(HttpServletRequest request) {

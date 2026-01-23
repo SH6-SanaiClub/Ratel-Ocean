@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ProjectDashboardMapper">
+
+    <!-- 대시보드 필터 -->
+    <sql id="dashboardFilters">
+        <choose>
+            <when test="summary == 'today'">
+                AND p.created_at >= CURDATE() AND p.created_at <![CDATA[ < ]]> DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+            </when>
+            <when test="summary == 'deadline7'">
+                AND p.deadline_date >= CURDATE() AND p.deadline_date <![CDATA[ < ]]> DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+            </when>
+        </choose>
+
+        <choose>
+            <when test="onlyActive">
+                AND p.deadline_date <![CDATA[ < ]]> CURDATE()
+                OR p.project_status = 'CLOSED'
+            </when>
+            <otherwise>
+                AND p.deadline_date >= CURDATE()
+            </otherwise>
+        </choose>
+
+        <if test="keyword != null and keyword != ''">
+            AND p.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        <if test="minBudget != null">AND p.budget >= #{minBudget}</if>
+        <if test="maxBudget != null">AND p.budget <![CDATA[ <= ]]> #{maxBudget}</if>
+
+        <if test="(positionIds != null and positionIds.size > 0) or (stackIds != null and stackIds.size > 0)">
+            AND (
+            <trim prefixOverrides="OR">
+                <if test="positionIds != null and positionIds.size > 0">
+                    EXISTS (
+                    SELECT 1 FROM project_stacks ps
+                    WHERE ps.project_id = p.project_id
+                    AND ps.stack_id IN
+                    <foreach collection="positionIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    )
+                </if>
+                <if test="stackIds != null and stackIds.size > 0">
+                    OR EXISTS (
+                    SELECT 1 FROM project_stacks ps
+                    WHERE ps.project_id = p.project_id
+                    AND ps.stack_id IN
+                    <foreach collection="stackIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    )
+                </if>
+            </trim>
+            )
+        </if>
+    </sql>
+
+    <!-- 삭제된 client인 경우 프로젝트를 가져오지 않도록 where 조건 추가 필요 -->
+    <!--  시작일(start_date) 관련 로직 제거, 마감일 기준으로 계산, 모집중인 것만 select -->
+    <select id="selectDashboardProjects" resultType="com.sanaiclub.project.model.dto.ProjectDashboardCardDTO">
+        SELECT
+        p.project_id AS projectId,
+        p.title AS title,
+        p.est_duration AS estDuration,
+        p.applicant_count AS applicantCount,
+        p.budget AS budget,
+        c.company_name AS companyName,
+        u.name AS clientName,
+        DATEDIFF(p.deadline_date, CURDATE()) AS dday,
+        CASE
+        WHEN #{userId} IS NULL THEN 0
+        ELSE EXISTS (
+        SELECT 1 FROM project_bookmarks pb
+        WHERE pb.project_id = p.project_id AND pb.user_id = #{userId}
+        )
+        END AS bookmarked
+        FROM projects p
+        JOIN users u ON u.user_id = p.client_id
+        JOIN client_profiles cp ON cp.client_id = p.client_id
+        LEFT JOIN companies c ON c.company_id = cp.company_id
+        WHERE p.is_public = TRUE
+          AND p.project_status = 'READY'
+
+        <include refid="dashboardFilters"/>
+
+        ORDER BY
+        <choose>
+            <when test="sort == 'budget_desc'">p.budget DESC, p.created_at DESC</when>
+            <when test="sort == 'deadline_asc'">p.deadline_date ASC, p.project_id DESC</when>
+            <otherwise>p.created_at DESC, p.project_id DESC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 시작일 조건 제외, 프로젝트 상태가 READY인 것들만 count -->
+    <!-- 개수 -->
+    <select id="countDashboardProjects" resultType="int">
+        SELECT COUNT(DISTINCT p.project_id)
+        FROM projects p
+        JOIN users u ON u.user_id = p.client_id
+        JOIN client_profiles cp ON cp.client_id = p.client_id
+        WHERE p.is_public = TRUE AND p.project_status = 'READY'
+
+        <include refid="dashboardFilters"/>
+    </select>
+
+
+    <select id="selectStacksByProjectId" resultType="com.sanaiclub.project.model.dto.RequiredStackDTO">
+        SELECT
+        ps.project_stack_id AS projectStackId,
+        ps.project_id AS projectId,
+        ps.stack_id AS stackId,
+        s.stack_name AS stackName,
+        s.category AS category,
+        ps.stack_level AS stackLevel,
+        ps.stack_year AS stackYear
+        FROM project_stacks ps
+        JOIN stacks s ON s.stack_id = ps.stack_id
+        WHERE ps.project_id IN
+        <foreach collection="projectIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY ps.project_id, s.category, s.stack_name
+    </select>
+
+
+    <select id="todayNewProject" resultType="int">
+        <![CDATA[
+        SELECT COUNT(*)
+        FROM projects
+        WHERE created_at >= CURDATE()
+          AND created_at < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        ]]>
+    </select>
+
+    <select id="deadlineWithin7Days" resultType="int">
+        <![CDATA[
+        SELECT COUNT(*)
+        FROM projects
+        WHERE project_status = 'READY' /* 모집 중인 건만 집계 (모집 종료된 건은 집계 제외) */
+          AND deadline_date >= CURDATE()
+          AND deadline_date < DATE_ADD(CURDATE(), INTERVAL 8 DAY)
+        ]]>
+    </select>
+
+</mapper>

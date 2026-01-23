@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: kimyoungbeen
-  Date: 2026. 1. 19.
-  Time: 09:32
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -418,7 +411,7 @@
 
     <nav class="nav-menu">
       <a href="${pageContext.request.contextPath}/freelancer/dashboard" class="nav-link active">대시보드</a>
-      <a href="${pageContext.request.contextPath}/freelancer/projects/explore" class="nav-link">프로젝트 찾기</a>
+      <a href="${pageContext.request.contextPath}/project/dashboard" class="nav-link">프로젝트 찾기</a>
       <a href="${pageContext.request.contextPath}/freelancer/applications" class="nav-link">내 지원 현황</a>
       <a href="${pageContext.request.contextPath}/freelancer/finance" class="nav-link">내 금융 관리</a>
       <a href="${pageContext.request.contextPath}/freelancer/career" class="nav-link">내 경력 관리</a>

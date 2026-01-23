@@ -1,8 +1,10 @@
 package com.sanaiclub.project.service;
 
+import com.sanaiclub.project.dao.ProjectBookmarkMapper;
 import com.sanaiclub.project.dao.ProjectDashboardMapper;
 import com.sanaiclub.project.model.dto.DashboardPageDTO;
 import com.sanaiclub.project.model.dto.ProjectDashboardCardDTO;
+import com.sanaiclub.project.model.dto.ProjectDetailDTO;
 import com.sanaiclub.project.model.dto.RequiredStackDTO;
 import com.sanaiclub.project.model.vo.ProjectsVO;
 import lombok.RequiredArgsConstructor;
@@ -21,23 +23,28 @@ public class ProjectDashboardService {
     @Autowired
     private ProjectDashboardMapper projectDashboardMapper;
 
-    public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam, String summary) {
+
+    public DashboardPageDTO getDashboardProjects(String keyword, boolean onlyActive, Integer pageParam, Integer sizeParam, String summary,
+                                                 String sort, List<Integer> positionIds, List<Integer> stackIds,
+                                                 Integer minBudget, Integer maxBudget, Integer userId) {
 
         int size = (sizeParam == null || sizeParam < 1) ? 10 : Math.min(sizeParam, 50);
         int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
 
-        int totalCount = projectDashboardMapper.countDashboardProjects(keyword, onlyActive, summary);
+        int totalCount = projectDashboardMapper.countDashboardProjects(
+                keyword, onlyActive, summary, positionIds, stackIds, minBudget, maxBudget
+        );
         int totalPages = (int) Math.ceil(totalCount / (double) size);
         if (totalPages == 0) totalPages = 1;
         if (page > totalPages) page = totalPages;
 
         int offset = (page - 1) * size;
 
-        int userId = 1; // 임시
-
         // 프로젝트만 페이징 조회
-        List<ProjectDashboardCardDTO> projects =
-                projectDashboardMapper.selectDashboardProjects(keyword, onlyActive, size, offset, userId, summary);
+        List<ProjectDashboardCardDTO> projects = projectDashboardMapper.selectDashboardProjects(
+                keyword, onlyActive, size, offset, userId, summary,
+                sort, positionIds, stackIds, minBudget, maxBudget
+        );
 
         if (projects == null) projects = Collections.emptyList();
 
@@ -91,9 +98,5 @@ public class ProjectDashboardService {
 
     public int countDeadlineWithinDays() {
         return projectDashboardMapper.deadlineWithin7Days();
-    }
-
-    public ProjectsVO getProjectDetail(Integer projectId) {
-        return projectDashboardMapper.selectProjectDetail(projectId);
     }
 }

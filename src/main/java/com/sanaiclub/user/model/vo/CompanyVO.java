@@ -2,6 +2,7 @@ package com.sanaiclub.user.model.vo;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -13,17 +14,11 @@ import java.time.LocalDateTime;
  * - 법인/사업자 클라이언트의 회사 정보를 담는 객체
  * - client_profiles와 N:1 관계 (여러 담당자가 같은 회사 소속 가능)
  *
- * [테이블 관계]
- * client_profiles (N) ──────── (1) companies
- *          companyId(FK) ──→ companyId(PK)
- *
  * [사업자 인증]
  * - business_number로 사업자 진위 확인
  * - business_verified = true면 인증 완료
  * - 인증된 회사만 특정 기능 사용 가능 (예: 대규모 프로젝트 발주)
  *
- * @author sanaiclub
- * @version 1.0
  */
 @Getter
 @Setter
@@ -37,6 +32,7 @@ public class CompanyVO {
     private String ceoName;
     private String ceoEmail;
     private String businessNumber;
+    private LocalDate openingDate;
     private Boolean businessVerified;
     private String industry;
     private String address;
@@ -44,10 +40,6 @@ public class CompanyVO {
     private String websiteUrl;
     private LocalDateTime createdAt;
 
-
-    // ═══════════════════════════════════════════════════════════════
-    // 편의 메서드
-    // ═══════════════════════════════════════════════════════════════
 
     /**
      * 사업자 인증 완료 여부 (null-safe)

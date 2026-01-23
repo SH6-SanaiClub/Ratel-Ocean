@@ -1,0 +1,606 @@
+@charset "UTF-8";
+
+/* 변수 및 공통 스타일 */
+:root {
+    --primary-blue: #186EEB;
+    --primary-hover: #135BBF;
+    --text-black: #111111;
+    --text-gray: #767676;
+    --text-light: #999999;
+    --border-color: #EEEEEE;
+    --bg-base: #F8F9FA;
+    --box-radius: 12px;
+}
+
+body {
+    background-color: #fff;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-black);
+    line-height: 1.6;
+}
+
+/* 레이아웃 */
+.detail-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.detail-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.detail-sidebar {
+    width: 340px;
+    position: sticky;
+    top: 100px;
+}
+
+/* 메인 헤더 영역 */
+.breadcrumb {
+    font-size: 13px;
+    color: var(--text-gray);
+    margin-bottom: 16px;
+}
+
+.badge-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.badge-blue {
+    background: #EAF4FF;
+    color: var(--primary-blue);
+}
+
+.badge-red {
+    background: #FFF0F0;
+    color: #E74C3C;
+}
+
+.badge-gray {
+    background: #F2F4F7;
+    color: #555;
+}
+
+.project-title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text-black);
+    margin-bottom: 16px;
+}
+
+.project-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-bottom: 30px;
+}
+
+.meta-divider {
+    width: 1px;
+    height: 12px;
+    background: #ddd;
+}
+
+/* 메인 정보 카드 (예산/기간) */
+.info-card-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.info-card {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    border-radius: var(--box-radius);
+    padding: 24px;
+    background: #fff;
+}
+
+.info-label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.info-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 4px;
+}
+
+.info-sub {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+/* 메인 탭 네비게이션 */
+.anchor-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
+}
+
+.anchor-item {
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-gray);
+    cursor: pointer;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+}
+
+.anchor-item.active {
+    color: var(--text-black);
+    border-bottom-color: var(--text-black);
+}
+
+/* 메인 콘텐츠 섹션 */
+.content-section {
+    margin-bottom: 50px;
+}
+
+.section-head {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-black);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+    white-space: pre-wrap;
+}
+
+/* 상세 업무 범위 리스트 스타일 */
+.task-list {
+    background: #F8F9FA;
+    padding: 24px;
+    border-radius: 8px;
+}
+
+.task-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.task-item:last-child {
+    margin-bottom: 0;
+}
+
+.task-icon {
+    color: var(--primary-blue);
+    margin-top: 4px;
+}
+
+.task-title {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.task-desc {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 기술 스택 칩 */
+.tech-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tech-chip {
+    padding: 8px 16px;
+    background: #F2F4F7;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+}
+
+/* 파일 첨부 카드 */
+.file-card {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+    color: var(--text-black);
+    background: #fff;
+}
+
+.file-card:hover {
+    border-color: var(--primary-blue);
+}
+
+.file-icon {
+    font-size: 20px;
+    color: var(--primary-blue);
+    margin-right: 12px;
+}
+
+.file-name {
+    font-weight: 600;
+    font-size: 14px;
+    flex: 1;
+}
+
+/* 사이드바 카드 */
+.sidebar-box {
+    border: 1px solid var(--border-color);
+    border-radius: var(--box-radius);
+    padding: 24px;
+    background: #fff;
+    margin-bottom: 16px;
+}
+
+/* 지원 현황 */
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+.status-title {
+    font-size: 13px;
+    color: var(--text-gray);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.status-count {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-black);
+}
+
+.status-views {
+    font-size: 13px;
+    color: var(--text-black);
+    font-weight: 600;
+    text-align: right;
+}
+
+.status-views small {
+    display: block;
+    font-weight: 400;
+    color: var(--text-gray);
+    margin-bottom: 4px;
+}
+
+/* 버튼 그룹 */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-blue);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-outline {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: var(--text-black);
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+.btn-outline:hover {
+    background: #f9f9f9;
+}
+
+/* 안전결제 배너 */
+.safe-banner {
+    background: #F0F6FF;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.safe-icon {
+    color: var(--primary-blue);
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.safe-text strong {
+    display: block;
+    font-size: 13px;
+    color: var(--primary-blue);
+    margin-bottom: 4px;
+}
+
+.safe-text p {
+    font-size: 12px;
+    color: #555;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* 클라이언트 정보 */
+.client-label {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    display: block;
+}
+
+.client-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cp-img {
+    width: 48px;
+    height: 48px;
+    background: #FFD966;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    font-size: 20px;
+}
+
+.cp-info div {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-black);
+    margin-bottom: 2px;
+}
+
+.cp-info span {
+    font-size: 12px;
+    color: var(--text-gray);
+}
+
+.cp-stats {
+    display: flex;
+    background: #FAFAFA;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.cp-stat-item {
+    flex: 1;
+}
+
+.cp-stat-label {
+    font-size: 11px;
+    color: var(--text-gray);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.cp-stat-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-black);
+}
+
+.cp-stat-val.rating {
+    color: #F39C12;
+}
+
+/* 찜하기 */
+.wish-btn-wrap {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-wish-text {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: var(--text-gray);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-wish-text i {
+    color: #ccc;
+}
+
+.btn-wish-text.active i {
+    color: #E74C3C;
+}
+
+#btnChat:disabled {
+    border-color: #ddd;
+    background-color: #f9f9f9;
+    color: #bbb;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* 숙련도 박스 (하늘색 배경) */
+.proficiency-box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: #E3FDFD;
+    border: 1px solid #B4EAEA;
+    border-radius: 8px;
+    padding: 20px 24px;
+    color: #008080;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.proficiency-box i {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.proficiency-divider {
+    width: 1px;
+    height: 16px;
+    background-color: #A0D2D2;
+}
+
+/* 계약 및 작업 조건 리스트 */
+.condition-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.condition-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.condition-item::before {
+    content: "•";
+    color: #333;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.cond-label {
+    font-weight: 700;
+    color: #333;
+    width: 100px; /* 라벨 너비 고정 */
+}
+
+.cond-val {
+    color: #555;
+}
+
+/* 수정 정책 박스 (회색 배경) */
+.policy-box {
+    background-color: #F9F9F9;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.policy-label {
+    font-weight: 700;
+    color: #333;
+    margin-right: 6px;
+}
+
+/* --- 상단 미니 카드 (계약 조건) --- */
+.condition-mini-row {
+    display: flex;
+    gap: 15px;             /* 카드 사이 간격 */
+    margin-top: 15px;      /* 위쪽 큰 카드와의 간격 */
+    margin-bottom: 30px;   /* 아래쪽 탭 메뉴와의 간격 */
+}
+
+.cond-mini-card {
+    flex: 1;               /* 가로 공간 균등 분할 */
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;    /* 둥근 모서리 */
+    padding: 12px 20px;    /* 내부 여백 */
+    display: flex;
+    align-items: center;
+    gap: 15px;             /* 아이콘과 글자 사이 간격 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03); /* 은은한 그림자 */
+    transition: transform 0.2s;
+}
+
+.cond-mini-card:hover {
+    transform: translateY(-2px); /* 호버 시 살짝 뜸 */
+    border-color: #d1d1d1;
+}
+
+.cond-icon-box {
+    width: 40px;
+    height: 40px;
+    background-color: #F0F7FF; /* 연한 파란색 배경 */
+    color: #186EEB;            /* 진한 파란색 아이콘 */
+    border-radius: 50%;        /* 원형 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.cond-info-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.cond-title {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 3px;
+    font-weight: 500;
+}
+
+.cond-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+}

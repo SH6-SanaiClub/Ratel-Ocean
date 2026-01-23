@@ -9,6 +9,7 @@ import com.sanaiclub.user.model.dto.UserInfoDTO;
 import com.sanaiclub.user.model.vo.UserStatus;
 import com.sanaiclub.user.model.vo.UserVO;
 import com.sanaiclub.user.service.LoginService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LoginServiceImpl implements LoginService {
 
@@ -25,12 +27,6 @@ public class LoginServiceImpl implements LoginService {
     private final UserMapper userMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-
-    public LoginServiceImpl(UserMapper userMapper, JwtTokenProvider jwtTokenProvider) {
-        this.userMapper = userMapper;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.passwordEncoder = new BCryptPasswordEncoder();
-    }
 
     // 로그인
     @Override

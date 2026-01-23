@@ -75,8 +75,8 @@
         <property name="contentType" value="text/html;charset=UTF-8"/>
     </bean>
 
-    <!-- Controller Component Scan -->
-    <context:component-scan base-package="com.sanaiclub"/>
+    <!-- Controller 패키지만 스캔 -->
+    <context:component-scan base-package="com.sanaiclub.**.controller"/>
 
     <!-- 파일 업로드 설정 -->
     <bean id="multipartResolver"
