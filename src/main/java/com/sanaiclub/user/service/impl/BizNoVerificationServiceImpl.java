@@ -3,6 +3,7 @@ package com.sanaiclub.user.service.impl;
 import com.sanaiclub.user.model.dto.BizNoVerificationRequestDTO;
 import com.sanaiclub.user.model.dto.BizNoVerificationResponseDTO;
 import com.sanaiclub.user.service.BizNoVerificationService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
  * 사업자번호 진위확인 서비스 구현
  */
 @Service
+@RequiredArgsConstructor
 public class BizNoVerificationServiceImpl implements BizNoVerificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(BizNoVerificationServiceImpl.class);
@@ -25,10 +27,6 @@ public class BizNoVerificationServiceImpl implements BizNoVerificationService {
     private String apiKey;
 
     private final RestTemplate restTemplate;
-
-    public BizNoVerificationServiceImpl() {
-        this.restTemplate = new RestTemplate();
-    }
 
     @Override
     public BizNoVerificationResponseDTO.BusinessData verifyBusinessNumber(

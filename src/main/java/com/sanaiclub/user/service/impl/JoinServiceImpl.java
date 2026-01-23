@@ -5,6 +5,7 @@ import com.sanaiclub.user.dao.*;
 import com.sanaiclub.user.model.dto.*;
 import com.sanaiclub.user.model.vo.*;
 import com.sanaiclub.user.service.JoinService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class JoinServiceImpl implements JoinService {
 
     private static final Logger logger = LoggerFactory.getLogger(JoinServiceImpl.class);
@@ -23,23 +25,6 @@ public class JoinServiceImpl implements JoinService {
     private final AccountMapper accountMapper;
     private final PasswordEncoder passwordEncoder;
     private final EncryptionUtil encryptionUtil;
-
-    public JoinServiceImpl(
-            UserMapper userMapper,
-            FreelancerProfileMapper freelancerProfileMapper,
-            ClientProfileMapper clientProfileMapper,
-            CompanyMapper companyMapper,
-            AccountMapper accountMapper,
-            PasswordEncoder passwordEncoder,
-            EncryptionUtil encryptionUtil) {
-        this.userMapper = userMapper;
-        this.freelancerProfileMapper = freelancerProfileMapper;
-        this.clientProfileMapper = clientProfileMapper;
-        this.companyMapper = companyMapper;
-        this.accountMapper = accountMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.encryptionUtil = encryptionUtil;
-    }
 
     // ═══════════════════════════════════════════════════════════════
     // 중복 확인
