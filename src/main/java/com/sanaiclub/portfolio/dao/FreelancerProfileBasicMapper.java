@@ -6,6 +6,8 @@ import com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper
 public interface FreelancerProfileBasicMapper {
 
@@ -13,9 +15,6 @@ public interface FreelancerProfileBasicMapper {
 
     int updateBasicProfile(FreelancerProfileBasicSaveRequestDTO dto);
     int insertBasicProfile(FreelancerProfileBasicSaveRequestDTO dto);
-
-    // education only
-    int clearEducation(@Param("userId") Integer userId);
 
     // users.profile_image_url
     String selectProfileImageUrl(@Param("userId") Integer userId);
@@ -29,4 +28,8 @@ public interface FreelancerProfileBasicMapper {
     int insertPortfolio(FreelancerPortfolioVO vo);
     int updatePortfolio(FreelancerPortfolioVO vo);
     int deletePortfolio(@Param("portfolioId") Integer portfolioId, @Param("userId") Integer userId);
+
+
+    // 인터페이스 안에 추가
+    List<FreelancerPortfolioVO> selectPublicPortfolios(@Param("userId") Integer userId);
 }

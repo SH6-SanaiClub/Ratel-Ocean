@@ -125,4 +125,13 @@
           AND freelancer_id = #{userId}
     </delete>
 
+    <select id="selectPublicPortfolios" parameterType="Integer"
+            resultType="com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO">
+        SELECT *
+        FROM freelancer_portfolios
+        WHERE freelancer_id = #{userId}
+          AND is_public = 1
+        ORDER BY created_at DESC
+    </select>
+
 </mapper>

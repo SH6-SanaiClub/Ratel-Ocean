@@ -420,7 +420,7 @@
       <a href="${pageContext.request.contextPath}/project/dashboard" class="nav-link">프로젝트 찾기</a>
       <a href="${pageContext.request.contextPath}/freelancer/finance" class="nav-link">내 금융 관리</a>
       <a href="${pageContext.request.contextPath}/freelancer/career" class="nav-link">내 프로젝트 관리</a>
-      <a href="${pageContext.request.contextPath}/freelancer/career" class="nav-link">내 프로필</a>
+      <a href="${pageContext.request.contextPath}/freelancer/profile/${userId}" class="nav-link">내 프로필</a>
     </nav>
 
     <div class="nav-icons">

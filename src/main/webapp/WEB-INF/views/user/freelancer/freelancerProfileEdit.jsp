@@ -1092,7 +1092,7 @@
 
             <!-- 추가 폼 (토글) -->
             <form method="post"
-                  action="${pageContext.request.contextPath}/freelancer/profile/experience/add"
+                  action="${pageContext.request.contextPath}/freelancer/profile/edit/experience/add"
                   id="expAddForm"
                   style="display:none;">
 

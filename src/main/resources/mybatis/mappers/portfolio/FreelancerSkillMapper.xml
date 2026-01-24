@@ -16,9 +16,18 @@
                  JOIN stacks s ON s.stack_id = fs.stack_id
         WHERE fs.freelancer_id = #{freelancerId}
           AND s.category = #{category}
-        ORDER BY s.stack_name ASC
-    </select>
+        ORDER BY
+            /* 스킬: 레벨 DESC -> 연차 DESC */
+            CASE WHEN #{category} = 'SKILL' THEN fs.stack_level END DESC,
+            CASE WHEN #{category} = 'SKILL' THEN fs.stack_year  END DESC,
 
+            /* 포지션: 연차 DESC -> 레벨 DESC */
+            CASE WHEN #{category} = 'POSITION' THEN fs.stack_year  END DESC,
+            CASE WHEN #{category} = 'POSITION' THEN fs.stack_level END DESC,
+
+            /* 마지막: 이름 ASC (동률 정리) */
+            s.stack_name ASC
+    </select>
     <!-- 카테고리별 기존값 삭제 -->
     <delete id="deleteMyStacks">
         DELETE fs
