@@ -21,6 +21,7 @@ public class CookieUtil {
     private static final boolean HTTP_ONLY = true; // HttpOnly 설정 (XSS 공격 방어)
     private static final boolean SECURE = false;  // TODO: 운영 배포 시 true로 변경
     private static final String PATH = "/"; // "/" : 모든경로에서 쿠키 전송
+    private static final String SAME_SITE = "Strict"; // SameSite 설정 (CSRF 방어)
 
     // Private Constructor (유틸리티 클래스는 인스턴스화 방지)
     private CookieUtil() {
@@ -38,7 +39,37 @@ public class CookieUtil {
         cookie.setPath(PATH);
         cookie.setMaxAge(maxAge);
 
-        response.addCookie(cookie);
+        String headerValue = createCookieHeader(name, value, maxAge);
+        response.addHeader("Set-Cookie", headerValue);
+    }
+
+    /**
+     * Set-Cookie 헤더 문자열 생성 (SameSite 포함)
+     *
+     * @param name   쿠키 이름
+     * @param value  쿠키 값
+     * @param maxAge 만료 시간 (초)
+     * @return Set-Cookie 헤더 문자열
+     */
+    private static String createCookieHeader(String name, String value, int maxAge) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append("=").append(value).append("; ");
+        sb.append("Max-Age=").append(maxAge).append("; ");
+        sb.append("Path=").append(PATH).append("; ");
+
+        if (HTTP_ONLY) {
+            sb.append("HttpOnly; ");
+        }
+
+        if (SECURE) {
+            sb.append("Secure; ");
+        }
+
+        if (SAME_SITE != null && !SAME_SITE.isEmpty()) {
+            sb.append("SameSite=").append(SAME_SITE);
+        }
+
+        return sb.toString();
     }
 
     // 쿠키 삭제

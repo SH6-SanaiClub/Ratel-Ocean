@@ -5,7 +5,6 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ProjectDetailMapper">
 
-    <!-- 상세보기 -->
     <select id="selectProjectDetail"
             parameterType="Integer"
             resultType="com.sanaiclub.project.model.dto.ProjectDetailDTO">
@@ -27,16 +26,28 @@
                p.budget_negotiable   AS budgetNegotiable,
                p.duration_negotiable AS durationNegotiable,
                p.plan_url            AS planUrl,
+
+               (SELECT stack_level
+                FROM project_stacks
+                WHERE project_id = p.project_id
+                                        LIMIT 1)            AS minLevel,
+
+               (SELECT stack_year
+                  FROM project_stacks
+                 WHERE project_id = p.project_id
+                 LIMIT 1)            AS minYear,
+               p.max_revision_count  AS maxRevisionCount,
+               p.change_policy       AS changePolicy,
+
                u.name                AS clientName,
                c.company_name        AS companyName,
                cp.client_type        AS clientType,
                c.industry            AS companyIndustry
 
-
         FROM projects p
-                 JOIN users u ON u.user_id = p.client_id
-                 LEFT JOIN client_profiles cp ON cp.client_id = p.client_id
-                 LEFT JOIN companies c ON c.company_id = cp.company_id
+            JOIN users u ON u.user_id = p.client_id
+            LEFT JOIN client_profiles cp ON cp.client_id = p.client_id
+            LEFT JOIN companies c ON c.company_id = cp.company_id
         WHERE p.project_id = #{projectId}
     </select>
 
@@ -47,7 +58,6 @@
           AND freelancer_id = #{userId}
     </select>
 
-    <!-- 지원자 저장 -->
     <insert id="insertApplication">
         INSERT INTO project_applications (project_id, freelancer_id, is_contracted, applied_at)
         VALUES (#{projectId}, #{userId}, false, NOW())

@@ -1,193 +1,147 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<!--
-    ═══════════════════════════════════════════════════════════════════════
-    registerAccount.jsp - 계좌 등록 페이지
-    ═══════════════════════════════════════════════════════════════════════
-    
-    [설명]
-    프리랜서가 수익금을 받기 위해 계좌 정보를 등록하는 페이지입니다.
-    프로젝트 완료 후 용역비를 정산받기 위해서는 반드시 계좌 정보가 필요합니다.
-    
-    [연결되는 컨트롤러]
-    AccountController.java > registerAccount() 메서드
-    @GetMapping({"/accounts/register", "/accounts/register.do"})
-    @RequestMapping("/settings")
-    
-    [페이지 위치]
-    설정 → 결제 관리 → 계좌 등록
-    경로: /settings/accounts/register.do
-    
-    [입력 필드]
-    1. 계좌 소유자명
-       - 은행에 등록된 실명
-       - 예: "홍길동"
-    
-    2. 은행 선택
-       - 국내 주요 은행 (국민, 우리, 신한, 농협 등)
-       - 드롭다운 메뉴
-    
-    3. 계좌 번호
-       - 하이픈 없이 숫자만 입력
-       - 예: "12345678901234"
-    
-    4. 계좌 확인
-       - 입력한 계좌 정보 재확인
-       - 오타 방지
-    
-    [보안 고려사항]
-    - HTTPS 통신 필수 (실제 배포 시)
-    - 계좌 정보는 서버에 암호화되어 저장
-    - 민감한 정보는 마스킹 처리
-    - 계좌 변경 시 재인증 요구
-    
-    [정산 프로세스]
-    1. 프로젝트 완료 요청
-    2. 클라이언트 승인 대기
-    3. 용역비 계산 (수수료 제외)
-    4. 등록된 계좌로 송금
-    5. 사용자에게 메일/SMS 알림
-    
-    [향후 개선 사항]
-    1. 여러 계좌 등록 지원
-    2. 해외 계좌 지원 (국제 송금)
-    3. 가상계좌/전자지갑 지원
-    4. 자동 정산 설정 (주/월 단위)
-    5. 정산 기록 조회
-    
-    @version 1.0 (2026-01-13)
--->
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>계좌이체 등록 - FreelanceHub</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/account.css">
+    <title>RatelOcean | 계좌 등록</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root { --brand-deep: #4C1D95; --brand-vivid: #7C3AED; --bg-light: #F9FAFB; --text-main: #111827; --text-sub: #6B7280; --border-color: #E5E7EB; }
+        .progress-container { width: 100%; background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-vivid) 100%); padding: 20px 0; position: fixed; top: 0; left: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .progress-wrapper { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        .progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .progress-step { color: white; font-size: 14px; font-weight: 600; }
+        .progress-label { color: rgba(255,255,255,0.9); font-size: 13px; }
+        .progress-bar-bg { height: 8px; background: rgba(255,255,255,0.3); border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: white; border-radius: 10px; transition: width 0.4s ease; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        body { background-color: var(--bg-light); font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding-top: 100px; }
+        .signup-container { width: 100%; max-width: 540px; padding: 20px; }
+        .form-card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 16px; padding: 48px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .eyebrow { color: var(--brand-vivid); font-weight: 700; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        .form-card h2 { margin: 0 0 12px 0; font-size: 1.75rem; font-weight: 800; color: var(--text-main); }
+        .subtitle { color: var(--text-sub); font-size: 0.95rem; line-height: 1.5; margin-bottom: 40px; }
+        .input-group { margin-bottom: 24px; }
+        .label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+        .input { width: 100%; padding: 14px 16px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 1rem; box-sizing: border-box; transition: all 0.2s; background-color: #fff; }
+        .input:focus { outline: none; border-color: var(--brand-vivid); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1); }
+        .security-note { display: flex; align-items: center; gap: 10px; padding: 16px; background-color: #F3F4F6; border-radius: 8px; margin: 32px 0; }
+        .security-note svg { color: var(--brand-deep); flex-shrink: 0; }
+        .security-note .text { font-size: 0.85rem; color: var(--text-sub); line-height: 1.4; }
+        .btn.primary { background-color: var(--brand-deep); color: #FFFFFF; width: 100%; padding: 18px; border-radius: 10px; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: background-color 0.2s; }
+        .btn.primary:hover { background-color: var(--brand-vivid); }
+        .btn.primary:disabled { background-color: #ccc; cursor: not-allowed; }
+        .back-link { display: block; text-align: center; margin-top: 24px; font-size: 0.9rem; color: var(--text-sub); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-<!-- 상단 헤더 -->
-<header class="site-header">
-    <div class="container header-inner">
-        <a class="logo" href="${pageContext.request.contextPath}/">
-            <img src="${pageContext.request.contextPath}/resources/images/freelancehub-logo.svg" alt="FreelanceHub 로고">
-        </a>
-        <nav class="top-nav">
-            <a href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
-            <a href="${pageContext.request.contextPath}/projects">Projects</a>
-            <a href="${pageContext.request.contextPath}/contracts">Contracts</a>
-            <a href="${pageContext.request.contextPath}/settlements">Settlements</a>
-            <button class="btn primary small">Post Project</button>
-            <a href="#" class="profile">프로필</a>
-        </nav>
-    </div>
-</header>
 
-<!-- 메인 콘텐츠 -->
-<main class="account-page">
-    <div class="container">
-        <!-- 현재 페이지 경로 (breadcrumb) -->
-        <div class="breadcrumb">설정 &gt; 결제 관리 &gt; 계좌 등록</div>
-        <h1 class="page-title">계좌이체 등록</h1>
-        <p class="page-sub">안전한 에스크로 거래를 위해 출금 계좌를 등록해주세요.</p>
-
-        <div class="info-box">
-            <div class="bar"></div>
-            <div class="info-inner">
-                <svg class="info-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-2h2v2zm0-4h-2V6h2v7z" fill="currentColor"></path></svg>
-                <div class="info-text">
-                    아직 결제되지 않았습니다.
-                    지금 입력하시는 정보는 계약 체결 시 진행될 에스크로 결제를 위한 사전 등록 절차입니다.
-                    실제 출금은 프로젝트 계약이 확정된 후 승인을 거쳐 진행됩니다.
-                </div>
-            </div>
+<!-- 프로그레스 바 (프리랜서/클라이언트 개인: 4/4, 클라이언트 법인: 5/5) -->
+<div class="progress-container">
+    <div class="progress-wrapper">
+        <div class="progress-info">
+            <span class="progress-step">Step 4/4</span>
+            <span class="progress-label">계좌 정보 입력</span>
         </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: 100%"></div>
+        </div>
+    </div>
+</div>
 
-        <section class="card account-card">
-            <form id="account-form" class="account-form" method="post" action="#" novalidate>
-                <div class="form-row">
-                    <label class="label">이 계좌는 누구 명의인가요?</label>
-                    <div class="radio-row">
-                        <label><input type="radio" name="ownerType" value="personal" checked> 개인</label>
-                        <label><input type="radio" name="ownerType" value="business"> 사업자</label>
-                    </div>
-                </div>
+<main class="signup-container">
+    <div class="form-card">
+        <p class="eyebrow">Step 2. Payment Information</p>
+        <h2>정산 계좌 등록</h2>
+        <p class="subtitle">수익금 정산을 위해 본인 명의의 계좌 정보를 입력해 주세요. 입력된 정보는 암호화되어 보호됩니다.</p>
 
-                <div id="business-type" class="form-row hidden">
-                    <label class="label">사업자 유형을 선택해주세요</label>
-                    <div class="radio-row">
-                        <label><input type="radio" name="bizType" value="sole"> 개인사업자</label>
-                        <label><input type="radio" name="bizType" value="corporate"> 법인사업자</label>
-                    </div>
-                </div>
+        <form id="accountForm">
+            <div class="input-group">
+                <label class="label">은행명</label>
+                <select name="bankName" class="input" required>
+                    <option value="">은행을 선택하세요</option>
+                    <option value="신한">신한은행</option>
+                    <option value="국민">KB국민은행</option>
+                    <option value="우리">우리은행</option>
+                    <option value="하나">하나은행</option>
+                    <option value="기업">IBK기업은행</option>
+                    <option value="농협">NH농협은행</option>
+                    <option value="카카오">카카오뱅크</option>
+                    <option value="토스">토스뱅크</option>
+                </select>
+            </div>
 
-                <div class="form-row">
-                    <label class="label" for="bank_name">은행명</label>
-                    <input id="bank_name" name="bank_name" class="input" placeholder="은행명을 입력해주세요 (예: 국민은행)">
-                </div>
+            <div class="input-group">
+                <label class="label">계좌번호</label>
+                <input type="text" name="accountNumber" class="input" placeholder="'-' 없이 숫자만 입력" pattern="[0-9]*" inputmode="numeric" required>
+            </div>
 
-                <div class="form-row">
-                    <label class="label" for="account_number">계좌번호</label>
-                    <input id="account_number" name="account_number" class="input" placeholder="- 없이 숫자만 입력해주세요" inputmode="numeric">
-                </div>
+            <div class="input-group">
+                <label class="label">예금주</label>
+                <input type="text" name="accountHolder" class="input" placeholder="실명을 입력하세요" required>
+            </div>
 
-                <div class="form-row">
-                    <label class="label" for="account_holder">예금주명</label>
-                    <input id="account_holder" name="account_holder" class="input" placeholder="통장에 표시된 예금주명을 입력하세요">
-                </div>
+            <div class="security-note">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <div class="text">입력하신 계좌 정보는 안전한 정산 서비스를 위해 SSL 암호화 기술로 보호됩니다.</div>
+            </div>
 
-                <div id="verification" class="verification-block">
-                    <div class="verify-title">인증 정보</div>
-                    <div id="personal-verify" class="verify-group">
-                        <div class="row-inline">
-                            <label class="label small">이름</label>
-                            <input name="ver_name" class="input small" placeholder="예: 홍길동">
-                            <label class="label small">생년월일 (6자리)</label>
-                            <input name="ver_bday" class="input small" placeholder="YYMMDD" maxlength="6" inputmode="numeric">
-                        </div>
-                    </div>
+            <button type="button" id="submitBtn" class="btn primary">회원가입 완료하기</button>
 
-                    <div id="sole-verify" class="verify-group hidden">
-                        <div class="row-inline">
-                            <label class="label small">사업자명</label>
-                            <input name="ver_bus_name" class="input small" placeholder="사업자명을 입력하세요">
-                            <label class="label small">사업자등록번호</label>
-                            <input name="ver_bus_no" class="input small" placeholder="숫자만 입력" inputmode="numeric">
-                        </div>
-                    </div>
-
-                    <div id="corp-verify" class="verify-group hidden">
-                        <div class="row-inline">
-                            <label class="label small">법인명</label>
-                            <input name="ver_corp_name" class="input small" placeholder="법인명을 입력하세요">
-                            <label class="label small">사업자등록번호</label>
-                            <input name="ver_corp_no" class="input small" placeholder="숫자만 입력" inputmode="numeric">
-                        </div>
-                        <div class="note">법인 명의 계좌만 등록 가능합니다.</div>
-                    </div>
-                </div>
-
-                <div class="security-note">
-                    <div class="shield">
-                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2l7 3v5c0 5-3.58 9.74-7 12-3.42-2.26-7-7-7-12V5l7-3z" fill="currentColor"/></svg>
-                    </div>
-                    <div class="text">입력하신 정보는 SSL 암호화되어 안전하게 전송됩니다.</div>
-                </div>
-
-                <div class="actions-row">
-                    <button type="button" class="btn secondary">계좌 인증</button>
-                    <button type="button" class="btn primary">등록 완료 →</button>
-                </div>
-
-            </form>
-        </section>
-
+            <a href="javascript:history.back()" class="back-link">이전 단계로 돌아가기</a>
+        </form>
     </div>
 </main>
 
-<footer class="site-footer">
-    <div class="container">© 2024 Freelance Platform. All rights reserved.</div>
-</footer>
+<script>
+    const contextPath = '${pageContext.request.contextPath}';
 
-<script src="${pageContext.request.contextPath}/resources/js/account.js"></script>
+    $(document).ready(function() {
+        $('#accountForm').on('submit', function(e) {
+            e.preventDefault();
+        });
+
+        $('#submitBtn').click(function() {
+            const bankName = $('select[name="bankName"]').val();
+            const accountNumber = $('input[name="accountNumber"]').val();
+            const accountHolder = $('input[name="accountHolder"]').val();
+
+            if (!bankName || !accountNumber || !accountHolder) {
+                alert('모든 항목을 입력해주세요.');
+                return;
+            }
+
+            if (!/^[0-9]+$/.test(accountNumber)) {
+                alert('계좌번호는 숫자만 입력해주세요.');
+                return;
+            }
+
+            $(this).prop('disabled', true).text('처리 중...');
+
+            $.ajax({
+                url: contextPath + '/join/complete',
+                method: 'POST',
+                data: $('#accountForm').serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message || '회원가입이 완료되었습니다!');
+                        window.location.href = contextPath + response.redirectUrl;
+                    } else {
+                        alert(response.message || '오류가 발생했습니다.');
+                        $('#submitBtn').prop('disabled', false).text('회원가입 완료하기');
+                    }
+                },
+                error: function() {
+                    alert('서버 연결에 실패했습니다.');
+                    $('#submitBtn').prop('disabled', false).text('회원가입 완료하기');
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

@@ -48,6 +48,7 @@ buildNumber.properties
 # ===== 민감정보 =====
 **/db.properties
 **/database.properties
+**/security.properties
 **/application-local.properties
 **/application-dev.properties
 **/*-local.yml
@@ -56,6 +57,7 @@ buildNumber.properties
 .env.local
 .env.*.local
 **/jwt.properties
+**/bizno-api.properties
 
 # ===== 로그 파일 =====
 logs/

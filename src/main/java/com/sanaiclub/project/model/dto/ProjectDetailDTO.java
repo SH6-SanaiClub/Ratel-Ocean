@@ -27,6 +27,13 @@ public class ProjectDetailDTO extends ProjectsVO {
     private String clientType;  // 유형
     private String companyIndustry; // 업종
 
+    private Integer minLevel;           // 요구 숙련도
+    private Integer minYear;            // 필요 경력
+    private String communicateMethod;   // 미팅 방식 (ONLINE, OFFLINE)
+    private String paymentMethod;       // 대금 지급 (LUMP_SUM, INSTALLMENT)
+    private Integer maxRevisionCount;   // 수정 횟수
+    private String changePolicy;        // 수정 정책
+
     // DTO 생성 편의 메서드
     public static ProjectDetailDTO of(Boolean budgetNegotiable,
                                       Boolean durationNegotiable,

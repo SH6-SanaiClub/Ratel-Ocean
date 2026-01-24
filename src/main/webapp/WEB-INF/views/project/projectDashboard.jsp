@@ -820,7 +820,6 @@
                                           <span class="chip">
                                             ${s.stackName}
                                             <c:if test="${s.stackLevel != null}">
-                                                Lv.${s.stackLevel}
                                             </c:if>
                                           </span>
                                 </c:if>
