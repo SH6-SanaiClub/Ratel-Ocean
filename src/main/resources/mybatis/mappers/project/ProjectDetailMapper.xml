@@ -30,7 +30,7 @@
                (SELECT stack_level
                 FROM project_stacks
                 WHERE project_id = p.project_id
-                                        LIMIT 1)            AS minLevel,
+                                        LIMIT 1)             AS minLevel,
 
                (SELECT stack_year
                   FROM project_stacks
@@ -51,25 +51,40 @@
         WHERE p.project_id = #{projectId}
     </select>
 
-    <select id="hasUserApplied" resultType="boolean">
-        SELECT COUNT(*) > 0
+    <select id="selectApplicationStatus" resultType="string">
+        SELECT application_status
         FROM project_applications
         WHERE project_id = #{projectId}
           AND freelancer_id = #{userId}
     </select>
 
     <insert id="insertApplication">
-        INSERT INTO project_applications (project_id, freelancer_id, is_contracted, applied_at)
-        VALUES (#{projectId}, #{userId}, false, NOW())
+        INSERT INTO project_applications (
+            project_id,
+            freelancer_id,
+            application_status,
+            applied_at
+        )
+        VALUES (
+                   #{projectId},
+                   #{userId},
+                   'PENDING',
+                   NOW()
+               )
     </insert>
 
-    <delete id="deleteApplication">
-        DELETE FROM project_applications
-        WHERE project_id = #{projectId} AND freelancer_id = #{userId}
-    </delete>
+    <update id="updateApplicationStatus">
+        UPDATE project_applications
+        SET application_status = #{status},
+            applied_at = NOW()
+        WHERE project_id = #{projectId}
+          AND freelancer_id = #{userId}
+    </update>
 
     <select id="selectUserType" resultType="string">
-        SELECT user_type FROM users WHERE user_id = #{userId}
+        SELECT user_type
+        FROM users
+        WHERE user_id = #{userId}
     </select>
 
 </mapper>
