@@ -190,7 +190,7 @@
     }
 
     loadChatRooms();
-    setInterval(loadChatRooms, 3000);
+    //setInterval(loadChatRooms, 3000);
 </script>
 
 
