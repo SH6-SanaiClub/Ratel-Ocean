@@ -15,7 +15,7 @@
 <div class="container section">
 
     <div class="page-header">
-        <h2 class="page-title">내 프로젝트 관리</h2>
+        <h2 class="page-title">내 프로젝트 및 지원자 관리</h2>
     </div>
 
     <div class="manage-grid-layout">
@@ -61,10 +61,30 @@
         </div>
 
         <div class="card">
-            <div class="panel-header-text">
-                지원자 목록
-                <span id="applicantCountBadge" class="badge badge-secondary" style="display:none;">0</span>
+            <div class="panel-header-column">
+
+                <div id="projectControlBar" style="display:none;">
+                    <span id="selectedProjectTitle" class="selected-project-title"></span>
+                    <div class="btn-group">
+                        <button class="btn-mini" onclick="goToProjectDetail()">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> 바로가기
+                        </button>
+
+                        <button class="btn-mini" onclick="goEditProject()">
+                            <i class="fa-solid fa-pen"></i> 수정
+                        </button>
+                        <button class="btn-mini btn-danger" onclick="deleteProject()">
+                            <i class="fa-regular fa-trash-can"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+
+                <div class="applicant-list-label">
+                    <span>지원자 목록</span>
+                    <span id="applicantCountBadge" class="badge badge-secondary" style="display:none;">0</span>
+                </div>
             </div>
+
             <div id="applicantListArea" class="scroll-container">
                 <div class="empty-state">
                     <i class="fa-regular fa-folder-open"></i>
@@ -90,6 +110,13 @@
 
 <script>
     const contextPath = "${pageContext.request.contextPath}";
+
+    $(document).ready(function() {
+        const msg = "${msg}";
+        if (msg && msg.trim() !== "") {
+            alert(msg);
+        }
+    });
 </script>
 
 <script src="${pageContext.request.contextPath}/resources/js/project/manage.js"></script>

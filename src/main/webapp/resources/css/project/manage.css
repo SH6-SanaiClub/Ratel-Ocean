@@ -32,18 +32,9 @@ body {
     box-sizing: border-box;
 }
 
-.page-header {
-    padding: 40px 0 20px 0;
-}
+.page-header { padding: 40px 0 20px 0; }
+.page-title { font-size: 32px; font-weight: 900; color: var(--dark-color); margin: 0; }
 
-.page-title {
-    font-size: 32px;
-    font-weight: 900;
-    color: var(--dark-color);
-    margin: 0;
-}
-
-/* 3단 그리드 너비 조정 */
 .manage-grid-layout {
     display: grid;
     grid-template-columns: 360px 480px 1fr;
@@ -53,7 +44,6 @@ body {
     padding-bottom: 40px;
 }
 
-/* 카드 스타일 */
 .card {
     background: var(--white-color);
     border-radius: 16px;
@@ -65,6 +55,7 @@ body {
     height: 100%;
 }
 
+/* [기존] 단순 헤더 */
 .panel-header-text {
     font-size: 20px;
     font-weight: 700;
@@ -72,212 +63,51 @@ body {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid var(--dark-color);
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* [추가] 2단 분리형 헤더 (중앙 패널용) */
+.panel-header-column {
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--dark-color);
+    display: flex; flex-direction: column;
+}
+
+/* 프로젝트 제어 바 */
+#projectControlBar {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed #eee; /* 구분선 */
 }
 
-.scroll-container {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 8px;
-}
-
-/* 리스트 아이템 스타일 */
-.list-group-title {
-    font-size: 14px;
+.selected-project-title {
+    font-size: 18px;
     font-weight: 700;
-    color: var(--gray-color);
-    margin: 15px 0 8px;
+    color: var(--primary-color); /* 색상으로 강조 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 280px;
 }
 
-.custom-list-item {
-    padding: 18px;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    background: #fff;
-    border: 1px solid transparent;
-}
+.btn-group { display: flex; gap: 6px; }
 
-.custom-list-item:hover {
-    background-color: var(--primary-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.custom-list-item.active {
-    background-color: #E0F2F5;
-    border: 1px solid var(--primary-color);
-}
-
-/* 텍스트 스타일 */
-.item-header {
+/* 지원자 목록 라벨 */
+.applicant-list-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
-}
-
-.item-main-text {
-    font-size: 16px;
+    font-size: 16px; /* 약간 작게 조정 */
     font-weight: 700;
     color: var(--dark-color);
+    padding-bottom: 15px;
 }
 
-.item-sub-text {
-    font-size: 13px;
-    color: var(--gray-color);
-    display: block;
-    margin-top: 4px;
-}
 
-/* 지원자 리스트 내 기술/평점 스타일 */
-.applicant-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-    color: var(--gray-color);
-    margin-top: 8px;
-}
-
-.skill-tag {
-    color: var(--primary-color);
-    font-weight: 600;
-    background: #fff;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #eee;
-}
-
-.rating-star {
-    color: var(--warning-color);
-    font-weight: 700;
-}
-
-/* 상태 표시 */
-.status-indicator {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 8px;
-}
-
-.status-recruiting {
-    background: var(--secondary-color);
-}
-
-.status-ongoing {
-    background: var(--primary-color);
-}
-
-.status-completed {
-    background: #ddd;
-}
-
-/* 배지 */
-.badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-primary {
-    background: var(--primary-color);
-    color: #fff;
-}
-
-.badge-secondary {
-    background: var(--primary-bg);
-    color: var(--primary-color);
-}
-
-.badge-gray {
-    background: #eee;
-    color: #777;
-}
-
-/* 상세 프로필 */
-.detail-profile-header {
-    text-align: center;
-    padding: 30px 0;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
-}
-
-.detail-img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 4px solid var(--secondary-color);
-    margin-bottom: 15px;
-}
-
-.detail-name {
-    font-size: 22px;
-    font-weight: 900;
-}
-
-.detail-rating {
-    color: var(--warning-color);
-    font-weight: 700;
-    margin-top: 5px;
-    font-size: 16px;
-}
-
-.detail-section {
-    margin-bottom: 25px;
-}
-
-.detail-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 8px;
-}
-
-.detail-content {
-    font-size: 15px;
-    color: var(--gray-color);
-    line-height: 1.6;
-    background: var(--accent-color);
-    padding: 15px;
-    border-radius: 8px;
-}
-
-/* 버튼 */
-.btn-primary, .btn-outline {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-}
-
-.btn-primary {
-    background: var(--primary-color);
-    color: #fff;
-}
-
-.btn-outline {
-    background: #fff;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-}
-.scroll-container {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 8px;
-    display: flex; /* 내부 요소가 높이를 꽉 채우게 하기 위해 */
-    flex-direction: column;
-}
+.scroll-container { flex: 1; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; }
 
 .empty-state {
     display: flex;
@@ -293,18 +123,77 @@ body {
     margin: 10px 0;
     border: 2px dashed #eee;
 }
+.empty-state i { font-size: 3.5rem; color: #e0e0e0; margin-bottom: 20px; }
+.empty-state p { font-size: 1.1rem; font-weight: 500; color: #999; margin: 0; }
 
-/* 아이콘 스타일 */
-.empty-state i {
-    font-size: 3.5rem;
-    color: #e0e0e0;
-    margin-bottom: 20px;
+.list-group-title {
+    font-size: 14px; font-weight: 700; color: var(--gray-color); margin: 15px 0 8px;
 }
 
-/* 텍스트 스타일 */
-.empty-state p {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #999;
-    margin: 0;
+.custom-list-item {
+    padding: 18px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: #fff;
+    border: 1px solid transparent;
 }
+.custom-list-item:hover {
+    background-color: var(--primary-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.custom-list-item.active {
+    background-color: #E0F2F5;
+    border: 1px solid var(--primary-color);
+}
+
+.item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.item-main-text { font-size: 16px; font-weight: 700; color: var(--dark-color); }
+.item-sub-text { font-size: 13px; color: var(--gray-color); display: block; margin-top: 4px; }
+
+.applicant-info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--gray-color); margin-top: 8px;
+}
+.skill-tag { color: var(--primary-color); font-weight: 600; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #eee; }
+.rating-star { color: var(--warning-color); font-weight: 700; }
+
+.status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+.status-recruiting { background: var(--secondary-color); }
+.status-ongoing { background: var(--primary-color); }
+.status-completed { background: #ddd; }
+
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-primary { background: var(--primary-color); color: #fff; }
+.badge-secondary { background: var(--primary-bg); color: var(--primary-color); }
+.badge-gray { background: #eee; color: #777; }
+
+.detail-profile-header { text-align: center; padding: 30px 0; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+.detail-img { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--secondary-color); margin-bottom: 15px; }
+.detail-name { font-size: 22px; font-weight: 900; }
+.detail-rating { color: var(--warning-color); font-weight: 700; margin-top: 5px; font-size: 16px; }
+
+.detail-section { margin-bottom: 25px; }
+.detail-label { display: block; font-size: 14px; font-weight: 700; color: var(--primary-color); margin-bottom: 8px; }
+.detail-content { font-size: 15px; color: var(--gray-color); line-height: 1.6; background: var(--accent-color); padding: 15px; border-radius: 8px; }
+
+.btn-primary, .btn-outline { width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; }
+.btn-primary { background: var(--primary-color); color: #fff; }
+.btn-outline { background: #fff; border: 1px solid var(--primary-color); color: var(--primary-color); }
+
+.btn-mini {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--gray-color);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-mini:hover { background: var(--primary-bg); color: var(--primary-color); border-color: var(--primary-color); }
+.btn-mini.btn-danger:hover { background: #FFF5F5; color: #E02424; border-color: #E02424; }

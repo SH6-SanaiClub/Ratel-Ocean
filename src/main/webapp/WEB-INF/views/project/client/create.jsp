@@ -1,11 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>프로젝트 등록 | Ratel Ocean</title>
+    <title>프로젝트 ${not empty project ? '수정' : '등록'} | Ratel Ocean</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/project/create.css">
@@ -17,10 +19,17 @@
         <div class="step active" data-step="1">1. 기본 정보</div>
         <div class="step" data-step="2">2. 전문가 요건</div>
         <div class="step" data-step="3">3. 일정 및 계약</div>
-        <div class="step" data-step="4">4. 등록 미리보기</div>
+        <div class="step" data-step="4">4. ${not empty project ? '수정' : '등록'} 미리보기</div>
     </div>
 
-    <form id="projectForm" action="${pageContext.request.contextPath}/project/create" method="post" enctype="multipart/form-data">
+    <form id="projectForm"
+          action="${pageContext.request.contextPath}/project/${not empty project ? 'update' : 'create'}"
+          method="post" enctype="multipart/form-data">
+
+        <c:if test="${not empty project}">
+            <input type="hidden" name="projectId" value="${project.projectId}">
+            <input type="hidden" name="existingPlanUrl" value="${project.planUrl}">
+        </c:if>
 
         <div class="step-section active" id="step1">
             <div class="section-header">
@@ -31,6 +40,7 @@
             <div class="form-group">
                 <label class="label">프로젝트 제목 <span class="required">*</span></label>
                 <input type="text" name="title" id="title" class="form-control"
+                       value="${project.title}"
                        placeholder="예) 배달 플랫폼 관리자 페이지 기획 및 디자인 (30자 이내)" required>
             </div>
 
@@ -45,22 +55,27 @@
                         <li><strong>4. 참고 자료:</strong> 벤치마킹할 사이트나 앱 URL이 있다면 남겨주세요.</li>
                     </ul>
                 </div>
-                <textarea name="description" id="description" class="form-control" required></textarea>
+                <textarea name="description" id="description" class="form-control" required>${project.description}</textarea>
             </div>
 
             <div class="form-group">
                 <label class="label">첨부 파일 (선택)</label>
                 <div class="file-upload-box" onclick="document.getElementById('planFile').click()">
-                    <div id="file-placeholder">
+
+                    <div id="file-placeholder" style="${not empty project.planUrl ? 'display:none;' : ''}">
                         <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
                         <p class="upload-text">파일을 이곳에 드래그하거나 클릭하여 업로드하세요</p>
                         <p class="upload-sub">기획서, 요구사항 정의서 등 (최대 5GB)</p>
                     </div>
-                    <div id="file-selected" style="display:none;" class="file-info-center">
+
+                    <div id="file-selected" style="${not empty project.planUrl ? '' : 'display:none;'}" class="file-info-center">
                         <i class="fa-solid fa-check-circle file-icon-selected"></i>
-                        <p id="file-name-display" class="file-name-text"></p>
+                        <p id="file-name-display" class="file-name-text">
+                            ${not empty project.planUrl ? '기존 파일이 등록되어 있습니다. (변경 시 클릭)' : ''}
+                        </p>
                         <span class="change-btn">파일 변경하기</span>
                     </div>
+
                     <input type="file" id="planFile" name="planFile" style="display:none;" onchange="handleFileSelect(this)">
                 </div>
             </div>
@@ -168,17 +183,18 @@
                 <div class="col-half">
                     <label class="label">요구 숙련도</label>
                     <select name="minLevel" class="form-control">
-                        <option value="1" selected>Lv.1 초급 (Junior)</option>
-                        <option value="2">Lv.2 중급 (Middle)</option>
-                        <option value="3">Lv.3 고급 (Senior)</option>
-                        <option value="4">Lv.4 특급 (Lead)</option>
-                        <option value="5">Lv.5 마스터 (Master)</option>
+                        <option value="1" ${project.minLevel == 1 ? 'selected' : ''}>Lv.1 초급 (Junior)</option>
+                        <option value="2" ${project.minLevel == 2 ? 'selected' : ''}>Lv.2 중급 (Middle)</option>
+                        <option value="3" ${project.minLevel == 3 ? 'selected' : ''}>Lv.3 고급 (Senior)</option>
+                        <option value="4" ${project.minLevel == 4 ? 'selected' : ''}>Lv.4 특급 (Lead)</option>
+                        <option value="5" ${project.minLevel == 5 ? 'selected' : ''}>Lv.5 마스터 (Master)</option>
                     </select>
                 </div>
                 <div class="col-half">
                     <label class="label">필요 경력</label>
                     <div class="input-unit-wrapper">
-                        <input type="number" id="minYear" name="minYear" class="form-control" placeholder="0">
+                        <input type="number" id="minYear" name="minYear" class="form-control"
+                               value="${project.minYear}" placeholder="0">
                         <span class="unit">년 이상</span>
                     </div>
                     <label class="check-label small-check">
@@ -202,11 +218,12 @@
                 <label class="label">지출 가능 예산 <span class="required">*</span></label>
                 <div class="input-unit-wrapper large-input">
                     <span class="currency-symbol">₩</span>
-                    <input type="text" id="budgetInput" name="budget" class="form-control pl-40" placeholder="0" onkeyup="inputNumberFormat(this)" required>
+                    <input type="text" id="budgetInput" name="budget" class="form-control pl-40"
+                           value="${project.budget}" placeholder="0" onkeyup="inputNumberFormat(this)" required>
                     <span class="unit">원</span>
                 </div>
                 <label class="check-label small-check">
-                    <input type="checkbox" name="budgetNegotiable" value="true"> 예산 조율 가능
+                    <input type="checkbox" name="budgetNegotiable" value="true" ${project.budgetNegotiable ? 'checked' : ''}> 예산 조율 가능
                 </label>
             </div>
 
@@ -214,26 +231,29 @@
                 <div class="col-half">
                     <label class="label">예상 기간 <span class="required">*</span></label>
                     <select name="estDuration" id="estDuration" class="form-control" required>
-                        <option value="" disabled selected>선택해주세요</option>
-                        <option value="1개월 이하">1개월 이하</option>
-                        <option value="1~3개월">1~3개월</option>
-                        <option value="3~6개월">3~6개월</option>
-                        <option value="6개월 이상">6개월 이상</option>
+                        <option value="" disabled ${empty project.estDuration ? 'selected' : ''}>선택해주세요</option>
+                        <option value="1개월 이하" ${project.estDuration eq '1개월 이하' ? 'selected' : ''}>1개월 이하</option>
+                        <option value="1~3개월" ${project.estDuration eq '1~3개월' ? 'selected' : ''}>1~3개월</option>
+                        <option value="3~6개월" ${project.estDuration eq '3~6개월' ? 'selected' : ''}>3~6개월</option>
+                        <option value="6개월 이상" ${project.estDuration eq '6개월 이상' ? 'selected' : ''}>6개월 이상</option>
                     </select>
                     <label class="check-label small-check">
-                        <input type="checkbox" name="durationNegotiable" value="true"> 기간 협의 가능
+                        <input type="checkbox" name="durationNegotiable" value="true" ${project.durationNegotiable ? 'checked' : ''}> 기간 협의 가능
                     </label>
                 </div>
                 <div class="col-half">
                     <label class="label">시작 예정일 <span class="required">*</span></label>
-                    <input type="date" id="startDate" name="startDate" class="form-control">
+                    <input type="date" id="startDate" name="startDate" class="form-control"
+                           value="${project.startDate}">
                     <div class="radio-group-row">
                         <label class="radio-chip">
-                            <input type="radio" name="startType" value="ASAP" checked onclick="toggleStartType(this)">
+                            <input type="radio" name="startType" value="ASAP" onclick="toggleStartType(this)"
+                            ${empty project.startType or project.startType eq 'ASAP' ? 'checked' : ''}>
                             <span>즉시 착수</span>
                         </label>
                         <label class="radio-chip">
-                            <input type="radio" name="startType" value="DATE" onclick="toggleStartType(this)">
+                            <input type="radio" name="startType" value="DATE" onclick="toggleStartType(this)"
+                            ${project.startType eq 'DATE' ? 'checked' : ''}>
                             <span>날짜 지정</span>
                         </label>
                     </div>
@@ -247,11 +267,13 @@
                     <label class="label">미팅 방식 <span class="required">*</span></label>
                     <div class="radio-group-row">
                         <label class="radio-chip">
-                            <input type="radio" name="communicateMethod" value="ONLINE" checked>
+                            <input type="radio" name="communicateMethod" value="ONLINE"
+                            ${empty project.communicateMethod or project.communicateMethod eq 'ONLINE' ? 'checked' : ''}>
                             <span>온라인 (화상/메신저)</span>
                         </label>
                         <label class="radio-chip">
-                            <input type="radio" name="communicateMethod" value="OFFLINE">
+                            <input type="radio" name="communicateMethod" value="OFFLINE"
+                            ${project.communicateMethod eq 'OFFLINE' ? 'checked' : ''}>
                             <span>오프라인 (대면)</span>
                         </label>
                     </div>
@@ -260,11 +282,13 @@
                     <label class="label">대금 지급 방식 <span class="required">*</span></label>
                     <div class="radio-group-row">
                         <label class="radio-chip">
-                            <input type="radio" name="paymentMethod" value="FULL" checked>
+                            <input type="radio" name="paymentMethod" value="FULL"
+                            ${empty project.paymentMethod or project.paymentMethod eq 'FULL' ? 'checked' : ''}>
                             <span>일괄 지급 (종료 후)</span>
                         </label>
                         <label class="radio-chip">
-                            <input type="radio" name="paymentMethod" value="MILESTONE">
+                            <input type="radio" name="paymentMethod" value="MILESTONE"
+                            ${project.paymentMethod eq 'MILESTONE' ? 'checked' : ''}>
                             <span>분할 지급 (단계별)</span>
                         </label>
                     </div>
@@ -274,7 +298,8 @@
             <div class="form-group">
                 <label class="label">무상 수정 가능 횟수 (최대 3회) <span class="required">*</span></label>
                 <div class="input-unit-wrapper" style="max-width: 200px;">
-                    <input type="number" name="maxRevisionCount" id="maxRevisionCount" class="form-control" value="0" required>
+                    <input type="number" name="maxRevisionCount" id="maxRevisionCount" class="form-control"
+                           value="${not empty project.maxRevisionCount ? project.maxRevisionCount : 0}" required>
                     <span class="unit">회</span>
                 </div>
             </div>
@@ -285,7 +310,7 @@
                     <p class="guide-title" style="margin-bottom:5px;"><i class="fa-solid fa-pen-to-square"></i> 정책 작성 가이드</p>
                     <p style="font-size:13px; color:#666; margin:0;">수정 범위 및 추가 비용 발생 기준을 명시하면 분쟁을 예방할 수 있습니다.</p>
                 </div>
-                <textarea name="changePolicy" id="changePolicy" class="form-control" style="height:100px; min-height:100px;"></textarea>
+                <textarea name="changePolicy" id="changePolicy" class="form-control" style="height:100px; min-height:100px;">${project.changePolicy}</textarea>
             </div>
 
             <div class="btn-area">
@@ -297,14 +322,14 @@
         <div class="step-section" id="step4" style="background:transparent; padding:0; border:none; box-shadow:none;">
             <div style="text-align:center; margin-bottom:30px;">
                 <h2 style="font-size:26px; font-weight:800; color:#333;">프로젝트 공지 미리보기</h2>
-                <p style="color:#666;">등록 전 꼼꼼히 확인해주세요.</p>
+                <p style="color:#666;">${not empty project ? '수정' : '등록'} 전 꼼꼼히 확인해주세요.</p>
             </div>
 
             <div class="preview-card">
                 <div class="preview-header-wrap">
                     <div class="preview-badges">
                         <span class="p-badge p-badge-blue" id="prev-positions">웹개발</span>
-                        <span class="p-badge p-badge-green">등록 대기</span>
+                        <span class="p-badge p-badge-green">${not empty project ? '수정 대기' : '등록 대기'}</span>
                     </div>
                     <h1 class="preview-title" id="prev-title"></h1>
 
@@ -344,7 +369,6 @@
                     <div class="preview-row">
                         <h3 class="preview-label"><i class="fa-solid fa-code"></i> 필요 기술 / 숙련도</h3>
                         <div class="tech-chip-list" id="prev-stacks" style="margin-bottom:15px;"></div>
-
                         <div id="prev-req-box" class="req-info-box">
                             <div class="req-item">
                                 <i class="fa-solid fa-user-graduate"></i>
@@ -384,15 +408,18 @@
                 </div>
             </div>
 
-            <input type="hidden" name="isPublic" value="true">
-            <input type="hidden" name="projectStatus" value="READY">
-            <input type="hidden" name="viewCount" value="0">
-            <input type="hidden" name="applicantCount" value="0">
-            <input type="hidden" name="deadlineDate" id="deadlineDate">
+            <input type="hidden" name="isPublic" value="${not empty project.isPublic ? project.isPublic : 'true'}">
+            <input type="hidden" name="projectStatus" value="${not empty project.projectStatus ? project.projectStatus : 'READY'}">
+            <input type="hidden" name="viewCount" value="${not empty project.viewCount ? project.viewCount : 0}">
+            <input type="hidden" name="applicantCount" value="${not empty project.applicantCount ? project.applicantCount : 0}">
+
+            <input type="hidden" name="deadlineDate" id="deadlineDate" value="${project.deadlineDate}">
 
             <div class="btn-area">
                 <button type="button" class="btn btn-prev" onclick="prevStep(3)">수정하기</button>
-                <button type="submit" class="btn btn-submit">프로젝트 등록 완료</button>
+                <button type="submit" class="btn btn-submit">
+                    ${not empty project ? '프로젝트 수정 완료' : '프로젝트 등록 완료'}
+                </button>
             </div>
         </div>
 
@@ -402,5 +429,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/project/create.js"></script>
+
+<script>
+    $(document).ready(function() {
+        <c:if test="${not empty project}">
+        // 1. 써머노트 내용 주입
+        $('#description').summernote('code', `${project.description}`);
+
+        // 2. 스택/포지션 데이터를 JS 배열로 생성
+        const stackList = [
+            <c:forEach var="stack" items="${project.stacks}">
+            { stackId: "${stack.stackId}", category: "${stack.category}", stackName: "${stack.stackName}" },
+            </c:forEach>
+        ];
+
+        // 3. JS 함수 호출 (UI 세팅)
+        initEditMode(stackList);
+        </c:if>
+    });
+</script>
+
 </body>
 </html>
