@@ -260,11 +260,11 @@
                     <label class="label">대금 지급 방식 <span class="required">*</span></label>
                     <div class="radio-group-row">
                         <label class="radio-chip">
-                            <input type="radio" name="paymentMethod" value="LUMP_SUM" checked>
+                            <input type="radio" name="paymentMethod" value="FULL" checked>
                             <span>일괄 지급 (종료 후)</span>
                         </label>
                         <label class="radio-chip">
-                            <input type="radio" name="paymentMethod" value="INSTALLMENT">
+                            <input type="radio" name="paymentMethod" value="MILESTONE">
                             <span>분할 지급 (단계별)</span>
                         </label>
                     </div>
