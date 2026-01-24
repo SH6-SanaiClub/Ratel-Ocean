@@ -59,8 +59,8 @@
     </select>
 
     <insert id="insertApplication">
-        INSERT INTO project_applications (project_id, freelancer_id, is_contracted, applied_at)
-        VALUES (#{projectId}, #{userId}, false, NOW())
+        INSERT INTO project_applications (project_id, freelancer_id, application_status, applied_at)
+        VALUES (#{projectId}, #{userId}, 'PENDING', NOW())
     </insert>
 
     <delete id="deleteApplication">
