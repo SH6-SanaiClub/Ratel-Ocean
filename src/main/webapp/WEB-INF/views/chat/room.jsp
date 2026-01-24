@@ -166,18 +166,18 @@
         if (!selectedRoomId) return;
         if (!isTyping) {
             isTyping = true;
-            fetch(`/chat/room/\${selectedRoomId}/typing`, {
-                method: "POST",
-                body: new URLSearchParams({ typing: true })
-            });
+            stompClient.send("/pub/chat/room/${selectedRoomId}/typing", {}, JSON.stringify({
+                roomId: selectedRoomId,
+                typing: true
+            }));
         }
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
             isTyping = false;
-            fetch(`/chat/room/\${selectedRoomId}/typing`, {
-                method: "POST",
-                body: new URLSearchParams({ typing: false })
-            });
+            stompClient.send("/pub/chat/typing", {}, JSON.stringify({
+                roomId: selectedRoomId,
+                typing: false
+            }));
         }, 1000);
     });
     function openFile() {
@@ -562,6 +562,15 @@
             stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
                 const receivedMsg = JSON.parse(message.body);
                 showReceivedMessage(receivedMsg); // 화면에 메시지 추가
+            });
+            stompClient.subscribe('/sub/chat/room/' + roomId + '/typing', function (message) {
+                const typingUserId = Number(message.body);
+                const el = document.getElementById("typingIndicator");
+                if (typingUserId && typingUserId !== loginUserId) {
+                    el.style.display = "block";
+                } else {
+                    el.style.display = "none";
+                }
             });
         }, function(error) {
             console.error("STOMP connection error:", error);

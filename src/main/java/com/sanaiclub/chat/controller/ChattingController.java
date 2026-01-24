@@ -2,6 +2,7 @@ package com.sanaiclub.chat.controller;
 
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
+import com.sanaiclub.chat.model.dto.ChatTypingDTO;
 import com.sanaiclub.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -102,20 +103,26 @@ public class ChattingController {
     }
 
 
-    @GetMapping("/room/{roomId}/typing")
-    @ResponseBody
-    public Integer getTyping(@PathVariable Integer roomId) {
-        return chatService.getTypingUser(roomId);
+    @MessageMapping("/room/{roomId}/typing")
+    public void typing(ChatTypingDTO typingDTO) {
+        // typingDTO: { roomId, typing }
+        Integer userId = chatService.getLoginUserId();
+        if (typingDTO.isTyping()) {
+            chatService.updateTyping(typingDTO.getRoomId(), true);
+        } else {
+            chatService.updateTyping(typingDTO.getRoomId(), false);
+        }
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", userId);
+        payload.put("typing", typingDTO.isTyping());
+
+        // 해당 방 구독자에게 전송 (상대방에게 표시)
+        messagingTemplate.convertAndSend(
+                "/sub/chat/room/" + typingDTO.getRoomId() + "/typing",
+                userId
+        );
     }
 
-    @PostMapping("/room/{roomId}/typing")
-    @ResponseBody
-    public void typing(
-            @PathVariable Integer roomId,
-            @RequestParam boolean typing
-    ) {
-        chatService.updateTyping(roomId, typing);
-    }
 
     @PostMapping("/room/{roomId}/typing/reset")
     @ResponseBody
