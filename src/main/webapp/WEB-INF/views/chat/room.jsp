@@ -36,7 +36,17 @@
             상대방이 입력 중입니다...
         </div>
         <div class="chat-input">
+            <button class="file-btn" onclick="openFile()">📎</button>
+
+            <input type="file" id="fileInput" style="display:none">
+
+            <div id="filePreview" class="file-preview" style="display:none">
+                📎 <span id="fileNameText"></span>
+                <button type="button" class="remove-file" onclick="removeFile()">✕</button>
+            </div>
+
             <input type="text" id="messageInput" placeholder="메시지를 입력하세요">
+
             <button class="send-btn" onclick="sendMessage()">전송</button>
         </div>
     </main>
@@ -65,7 +75,6 @@
     function exitRoom() {
         if (!selectedRoomId) return;
         if (!confirm("채팅방을 나가시겠습니까?")) return;
-
         fetch(`/ratelocean/chat/room/\${selectedRoomId}/exit`, {
             method: "POST"
         })
@@ -73,9 +82,6 @@
             .then(resText => {
                 if (resText === "ok") {
                     alert("채팅방을 나갔습니다.");
-
-                    // 채팅방 목록에서 방 제거 또는 새로고침
-
 
                     // 선택된 방 초기화
                     selectedRoomId = null;
@@ -93,7 +99,6 @@
                 alert("채팅방 나가기에 실패했습니다.");
             });
     }
-
     // ================== 채팅방 목록 로드 ==================
     // ================== 채팅방 목록 로드 (왼쪽 사이드바) ==================
     function loadChatRooms() {
@@ -109,14 +114,11 @@
                     return true;
                 });
                 filteredList.forEach(room => {
-                    // ✅ 시간 문자열 처리
                     let timeText = "";
                     if (room.lastMessageAt) {
                         timeText = new Date(room.lastMessageAt)
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     }
-
-                    // ✅ 안 읽은 메시지 개수 (보내주신 코드 로직)
                     let unreadHtml = "";
                     if (room.unreadCount > 0) {
                         unreadHtml =
@@ -125,11 +127,9 @@
                             '</span>';
                     }
                     let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
-                    if (room.lastMessageDeleted === 1) { // 서버에서 삭제 여부를 flag로 보내도록
+                    if (room.lastMessageDeleted === 1) {
                         lastMsg = "메시지가 삭제되었습니다.";
                     }
-                    // ✅ HTML 생성 (보내주신 목록 코드 스타일 적용)
-                    // 현재 선택된 방이면 배경색 강조를 위해 클래스 추가
                     const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
                      console.log("room.roomId :" , room.roomId )
                     container.innerHTML +=
@@ -145,7 +145,6 @@
                         '<span class="room-title">' + room.title + '</span>' +
                         '<span class="room-time">' + timeText + '</span>' +
                         '</div>' +
-
                         '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
                         lastMsg +
                         '<div class="find-out" data-roomid="' + room.roomId + '">' +
@@ -156,48 +155,48 @@
                         '</div>' +
                         unreadHtml +
                         '</div>';
-
                 });
             });
-
         selectRoom(${roomId});
     }
     // ================== 방 선택 ==================
-
     let typingTimer = null;
     let isTyping = false;
-
-
     messageInput.addEventListener("keydown", () => {
         if (!selectedRoomId) return;
         if (!isTyping) {
             isTyping = true;
-
             fetch(`/chat/room/\${selectedRoomId}/typing`, {
                 method: "POST",
                 body: new URLSearchParams({ typing: true })
             });
         }
-
         clearTimeout(typingTimer);
-
         typingTimer = setTimeout(() => {
             isTyping = false;
-
             fetch(`/chat/room/\${selectedRoomId}/typing`, {
                 method: "POST",
                 body: new URLSearchParams({ typing: false })
             });
-        }, 1000); // 1초 동안 입력 없으면 typing 종료
+        }, 1000);
     });
+    function openFile() {
+        document.getElementById("fileInput").click();
+    }
+    function removeFile() {
+        const fileInput = document.getElementById("fileInput");
+        fileInput.value = ""; // 파일 선택 초기화
+
+        document.getElementById("filePreview").style.display = "none";
+        document.getElementById("fileNameText").innerText = "";
+    }
+
     function loadTypingStatus() {
         if (!selectedRoomId) return;
-
         fetch(`/ratelocean/chat/room/\${selectedRoomId}/typing`)
             .then(res => res.json())
             .then(userId => {
                 const el = document.getElementById("typingIndicator");
-
                 if (userId && userId !== loginUserId) {
                     el.style.display = "block";
                 } else {
@@ -215,7 +214,6 @@
     }
     function deleteMessage(messageId) {
         if (!confirm("메시지를 삭제할까요?")) return;
-
         fetch("/ratelocean/chat/message/" + messageId + "/delete", {
             method: "POST"
         })
@@ -228,76 +226,37 @@
             })
             .catch(err => console.error(err));
     }
-
     // ================== 메시지 로드 ==================
     function loadMessages(roomId) {
-
-
         fetch(`/ratelocean/chat/room/\${roomId}/messages`)
-
             .then(res => res.json())
-
             .then(list => {
-
                 const body = document.getElementById("chatBody");
-
                 body.innerHTML = "";
-
                 let prevDate = "";
-
                 list.forEach(msg => {
-
+                    if (body.querySelector(`.message[data-message-id='${msg.messageId}']`)) return;
                     const msgDate = new Date(msg.createdAt).toLocaleDateString('ko-KR');
-
-
 
 // 2. 이전 메시지와 날짜가 다를 때만 날짜 표시
 
                     if (msgDate !== prevDate) {
                         const dateDiv = document.createElement("div");
                         dateDiv.className = "date-label";
-
-                        dateDiv.innerText = msgDate; // "2024. 5. 20." 형태로 출력됨
-
+                        dateDiv.innerText = msgDate;
                         body.appendChild(dateDiv);
-
-
-
-                        prevDate = msgDate; // 날짜 갱신
-
+                        prevDate = msgDate;
                     }
-
                     let timeText = "";
-
-
-
                     if (msg.createdAt) {
-
                         timeText = new Date(msg.createdAt)
-
                             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
                     }
-
-
-
                     const mine = msg.senderId == '${loginUserId}';
-
-
-
                     let readMark = "";
-
-
-
-// ✅ 내가 보낸 메시지만 체크
-
                     if (mine) {
-
                         readMark = msg.isRead === 1 ? "읽음" : "";
-
                     }
-
-
                     const div = document.createElement("div");
                     div.className = "message " + (mine ? "mine" : "");
                     div.dataset.messageId = msg.messageId; // 메시지 ID 저장
@@ -311,10 +270,37 @@
                         }
 
 // 메시지 HTML
+                        let bubbleHtml = "";
+
+// ✅ 파일 메시지
+                        if (msg.fileUrl) {
+                            bubbleHtml =
+                                '<div class="bubble file-bubble">' +
+                                '📎 ' +
+                                '<a href="' + msg.fileUrl + '" target="_blank" download>' +
+                                escapeHtml(msg.fileName) +
+                                '</a>' +
+                                (msg.fileSize
+                                        ? '<div class="file-size">' + formatFileSize(msg.fileSize) + '</div>'
+                                        : ''
+                                ) +
+                                '</div>';
+                        }
+// ✅ 일반 텍스트 메시지
+                        else {
+                            bubbleHtml =
+                                '<div class="bubble">' +
+                                escapeHtml(msg.content || '') +
+                                '</div>';
+                        }
+
                         div.innerHTML =
-                            deleteBtn + // 삭제 버튼 먼저
-                            '<div class="bubble">' + escapeHtml(msg.content || '') + '</div>' +
-                            '<div class="meta">' + timeText + (readMark ? ' · ' + readMark : '') + '</div>';
+                            deleteBtn +
+                            bubbleHtml +
+                            '<div class="meta">' +
+                            timeText +
+                            (readMark ? ' · ' + readMark : '') +
+                            '</div>';
 
 
                     }
@@ -349,8 +335,36 @@
     // ================== 메시지 전송 ==================
     function sendMessage() {
         const content = messageInput.value.trim();
-        if (!content || !selectedRoomId) return;
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+        if (!content && !file) return;
+        if (!selectedRoomId) return;
+        const formData = new FormData();
+        formData.append("content", content);
+        if (file) {
+            formData.append("file", file);
+        }
+        fetch("/ratelocean/chat/room/" + selectedRoomId + "/message", {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(message => {
 
+                // 🔥 서버에서 받은 메시지를 STOMP로 뿌림
+                stompClient.send(
+                    "/pub/chat/message",
+                    {},
+                    JSON.stringify(message)
+                );
+
+                messageInput.value = "";
+                fileInput.value = "";
+                document.getElementById("filePreview").style.display = "none";
+                document.getElementById("fileNameText").innerText = "";
+
+            })
+            .catch(err => console.error(err));
         // 보낼 데이터 객체 생성 (ChatMessageDTO와 매핑)
         const chatMessage = {
             roomId: selectedRoomId,
@@ -358,7 +372,8 @@
             content: content,
             type: 'TALK' // 필요시 타입 구분
         };
-
+    }
+/*
         // STOMP로 메시지 전송 (/pub/chat/message)
         stompClient.send("/pub/chat/message", {}, JSON.stringify(chatMessage));
 
@@ -380,35 +395,70 @@
             .catch(err => {
                 console.error(err);
             });
-        */
+
     }
+    */
 
     // [신규] 수신된 메시지를 화면에 그리기
     function showReceivedMessage(msg) {
         const body = document.getElementById("chatBody");
         const mine = (msg.senderId == loginUserId);
 
-        // 시간 포맷팅
-        const timeText = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const timeText = new Date(msg.createdAt)
+            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        // HTML 조립 (기존 loadMessages의 HTML 생성 로직과 동일하게 맞춤)
         const div = document.createElement("div");
         div.className = "message " + (mine ? "mine" : "");
         div.dataset.messageId = msg.messageId;
 
         let deleteBtn = "";
         if (mine) {
-            deleteBtn = '<span class="delete-btn" onclick="deleteMessage(' + msg.messageId + ')">delete</span>';
+            deleteBtn =
+                '<span class="delete-btn" onclick="deleteMessage(' +
+                msg.messageId +
+                ')">delete</span>';
         }
+
+        let bubbleHtml = "";
+        let fileHtml = "";
+        // ===================== 파일 메시지 =====================
+        if (msg.fileUrl) {
+
+            let fileSizeHtml = "";
+
+            if (msg.fileUrl !== null && msg.fileUrl !== "") {
+                fileSizeHtml =
+                    '<span style="font-size: 11px; color: #888; margin-left: 5px;">' +
+                    '(' + formatFileSize(msg.fileSize) + ')' +
+                    '</span>';
+            }
+            fileHtml =
+                '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
+                '📎 <a href="' + msg.fileUrl + '" target="_blank" download>' +
+                escapeHtml(msg.fileName) + '</a>' +
+                fileSizeHtml +
+                '</div>';
+        }
+        let contentHtml = "";
+        if (msg.content) {
+            contentHtml = '<div>' + escapeHtml(msg.content) + '</div>';
+        }
+        bubbleHtml =
+            '<div class="bubble ' + (msg.fileUrl ? "file-bubble" : "") + '">' +
+            fileHtml +
+            contentHtml +
+            '</div>';
 
         div.innerHTML =
             deleteBtn +
-            '<div class="bubble">' + escapeHtml(msg.content) + '</div>' +
-            '<div class="meta">' + timeText + '</div>'; // 실시간 수신 시 읽음 표시는 별도 처리 필요
+            bubbleHtml +
+            '<div class="meta">' + timeText + '</div>';
 
+        // ===================== 텍스트 메시지 =====================
         body.appendChild(div);
-        body.scrollTop = body.scrollHeight; // 스크롤 하단으로
+        body.scrollTop = body.scrollHeight;
     }
+
 
     // ================== 우측 방 정보 로드 ==================
     function loadRoomInfo(roomId) {
@@ -468,12 +518,8 @@
             stompClient.disconnect();
         }
 
-        //let value = $(this).find("span.freelancerExited").attr("data-freelancerExited");
-        //console.log("freelancerExited:", value);
-
         selectedRoomId = roomId;
         loadMessages(roomId);
-        // ✅ 읽음 처리
         fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
         }).then(() => {
@@ -498,16 +544,20 @@
         // WebSocket 연결 시작
         connectStomp(roomId);
     }
+    function formatFileSize(bytes) {
+        if (!bytes) return "";
+        if (bytes < 1024) return bytes + "B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + "KB";
+        return (bytes / 1024 / 1024).toFixed(1) + "MB";
+    }
 
     // [신규] STOMP 연결 및 구독 함수
     function connectStomp(roomId) {
         const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');// WebSocketConfig에서 설정한 엔드포인트
         stompClient = Stomp.over(socket);
         stompClient.debug = null; // 디버그 로그 끄기 (개발 중엔 켜두셔도 됩니다)
-
         stompClient.connect({}, function (frame) {
             console.log('STOMP Connected: ' + frame);
-
             // 해당 채팅방 구독 (/sub/chat/room/{roomId})
             stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
                 const receivedMsg = JSON.parse(message.body);
@@ -517,10 +567,16 @@
             console.error("STOMP connection error:", error);
         });
     }
+    document.getElementById("fileInput").addEventListener("change", function () {
+        const file = this.files[0];
 
-    // ================== 자동 갱신 ==================
+        if (file) {
+            document.getElementById("filePreview").style.display = "flex";
+            document.getElementById("fileNameText").innerText = file.name;
+        }
+    });
+
     loadChatRooms();
-
 </script>
 </body>
 </html>

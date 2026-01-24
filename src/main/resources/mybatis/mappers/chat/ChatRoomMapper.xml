@@ -31,8 +31,10 @@
             rooms.client_exited,
 
             CASE
-                WHEN is_deleted=1 THEN '삭제되었습니다.' else  m.content  end
-                AS last_message_content,            m.sender_id   AS last_message_sender_id,
+                WHEN m.is_deleted = 1 THEN '삭제된 메시지입니다.'
+                WHEN m.file_name IS NOT NULL THEN CONCAT('📎 ', m.file_name)
+                ELSE m.content
+                END AS last_message_content,            m.sender_id   AS last_message_sender_id,
             m.created_at  AS last_message_at,
             p.title,
             u.name,

@@ -105,11 +105,25 @@ body {
     position: relative;
 }
 .bubble {
-    padding: 10px 14px;
-    border-radius: 16px;
-    background: #9ad9db;
-    max-width: 60%;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #e0e0e0;
+    max-width: 70%;  /* 말풍선 최대 너비 */
+    word-wrap: break-word; /* 길게 이어진 단어도 줄바꿈 */
+    white-space: normal;   /* 텍스트 줄바꿈 허용 */
 }
+
+.message.mine .bubble {
+    background: #90caf9;
+    color: #000;
+    max-width: 80%;  /* 오른쪽 말풍선 최대 너비 */
+}
+
+.message .bubble.file-bubble {
+    max-width: 80%;  /* 파일 메시지는 조금 더 넓게 */
+}
+
 
 .message.mine .bubble {
     background: #9ad9db;
@@ -219,10 +233,51 @@ body {
     color: #555;
     cursor: pointer;
 }
-
+.file-btn {
+    background: none;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 5px;
+}
 .file-item:hover {
     text-decoration: underline;
 }
+.file-bubble {
+    background: #f1f3f5;
+    border: 1px solid #ddd;
+}
+
+.file-bubble a {
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+}
+.file-preview {
+    display: inline-flex; /* 내용만큼만 크기 차지 */
+    align-items: center;
+    background: #f1f3f5;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    height: auto; /* 높이 고정 해제 */
+}
+
+
+.remove-file {
+    border: none;
+    background: none;
+    cursor: pointer;
+    margin-left: 8px;
+    color: #888;
+    padding: 2px 5px;
+    line-height: 1;
+    height: auto; /* 길쭉해짐 방지 */
+}
+
+
+
 .chat-header {
     height: 64px;
     padding: 10px 16px;

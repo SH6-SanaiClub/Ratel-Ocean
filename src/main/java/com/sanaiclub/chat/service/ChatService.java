@@ -76,8 +76,6 @@ public class ChatService {
     public void sendMessage(Integer roomId, String content, String fileName, String fileUrl, Long fileSize) {
         Integer senderId = getLoginUserId();
         chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
-
-        // 마지막 메시지 업데이트 (update_last_message -> updateLastMessage)
         chatRoomMapper.updateLastMessage(roomId);
     }
 
@@ -86,7 +84,6 @@ public class ChatService {
     // =========================================
     public List<ChatMessageDTO> findSharedFiles(Integer roomId) {
         List<ChatMessageDTO> messages = chatMessageMapper.findMessages(roomId);
-        // getFile_url -> getFileUrl (DTO가 카멜로 바뀌었을 때 기준)
         messages.removeIf(m -> m.getFileUrl() == null || m.getFileUrl().isEmpty());
         return messages;
     }
