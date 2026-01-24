@@ -166,10 +166,9 @@
         WHERE r.room_id = #{roomId}
     </select>
 
-    <update id="update_last_message" parameterType="map">
+    <update id="updateLastMessage" parameterType="int">
         UPDATE chat_rooms
-        SET last_message_at = CURRENT_TIMESTAMP,
-        last_message_content = #{content}
+        SET last_message_at = CURRENT_TIMESTAMP
         WHERE room_id = #{roomId}
     </update>
 

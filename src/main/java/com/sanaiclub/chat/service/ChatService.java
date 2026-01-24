@@ -7,7 +7,10 @@ import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +38,7 @@ public class ChatService {
         chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
         List<ChatMessageDTO> messages = chatMessageMapper.findMessages(roomId);
         ChatMessageDTO newMessage = messages.get(messages.size() - 1);
-        chatRoomMapper.updateLastMessage(roomId, content != null ? content : "파일을 보냈습니다.");
+        chatRoomMapper.updateLastMessage(roomId);
         return newMessage;
     }
     // =========================================
@@ -75,7 +78,7 @@ public class ChatService {
         chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
 
         // 마지막 메시지 업데이트 (update_last_message -> updateLastMessage)
-        chatRoomMapper.updateLastMessage(roomId, content);
+        chatRoomMapper.updateLastMessage(roomId);
     }
 
     // =========================================
@@ -122,6 +125,8 @@ public class ChatService {
     // 로그인 유저 ID 가져오기 (테스트용)
     // =========================================
     public Integer getLoginUserId() {
-        return 3; // 테스트용 하드코딩 유지
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpSession session = attrs.getRequest().getSession();
+        return (Integer) session.getAttribute("loginUserId");
     }
 }

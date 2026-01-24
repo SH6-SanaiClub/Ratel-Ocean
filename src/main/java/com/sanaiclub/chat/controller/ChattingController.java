@@ -6,6 +6,8 @@ import com.sanaiclub.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,29 @@ import java.util.Map;
 public class ChattingController {
 
     private final ChatService chatService;
+    private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
+
+    /**
+     * [STOMP] 실시간 메시지 전송 처리
+     * 클라이언트가 '/pub/chat/message'로 메시지를 보내면 이 메서드가 실행됨
+     */
+    @MessageMapping("/chat/message")
+    public void message(ChatMessageDTO message) {
+        // 1. DB 저장 및 저장된 메시지 정보 반환 (ID, 생성시간 등 포함)
+        // DTO에 senderId, roomId, content가 채워져 있어야 함
+        ChatMessageDTO savedMessage = chatService.sendAndReturnMessage(
+                message.getRoomId(),
+                message.getSenderId(),
+                message.getContent(),
+                message.getFileName(),
+                message.getFileUrl(),
+                message.getFileSize()
+        );
+
+        // 2. 해당 방을 구독 중인 클라이언트들에게 메시지 전송
+        // 구독 경로: /sub/chat/room/{roomId}
+        messagingTemplate.convertAndSend("/sub/chat/room/" + savedMessage.getRoomId(), savedMessage);
+    }
 
     // 채팅 아이콘 → 목록 화면
     @GetMapping

@@ -27,6 +27,5 @@ public interface ChatRoomMapper {
     ChatRoomDTO findRoomInfo(@Param("roomId") Integer roomId, @Param("loginUserId") Integer loginUserId);
 
     // 마지막 메시지 업데이트 (update_last_message -> updateLastMessage)
-    void updateLastMessage(@Param("roomId") Integer roomId,
-                           @Param("content") String content);
+    void updateLastMessage(@Param("roomId") Integer roomId);
 }

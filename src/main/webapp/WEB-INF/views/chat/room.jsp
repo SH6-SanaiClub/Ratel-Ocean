@@ -8,6 +8,8 @@
     <title>채팅</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/room.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -56,6 +58,7 @@
             .replace(/>/g, "&gt;");
     }
 
+    let stompClient = null;
     let selectedRoomId = null;
     const loginUserId =  Number('${loginUserId}');
     let opponentExited = false;
@@ -134,7 +137,7 @@
                         'data-room-id="' + room.roomId + '" ' +
                         'onclick="selectRoom(' + room.roomId + ')">'+
                         '<div class="avatar-box">' +
-                        '<img src="' + (room.profileImageUrl || '/ratelocean/assets/img/default-profile.png') + '" class="avatar">' +
+                        '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
                         '<div class="room-name">' + room.name + '</div>' +
                         '</div>' +
                         '<div class="room-info" style="flex: 1;">' +
@@ -348,6 +351,20 @@
         const content = messageInput.value.trim();
         if (!content || !selectedRoomId) return;
 
+        // 보낼 데이터 객체 생성 (ChatMessageDTO와 매핑)
+        const chatMessage = {
+            roomId: selectedRoomId,
+            senderId: loginUserId, // JSP 변수 사용
+            content: content,
+            type: 'TALK' // 필요시 타입 구분
+        };
+
+        // STOMP로 메시지 전송 (/pub/chat/message)
+        stompClient.send("/pub/chat/message", {}, JSON.stringify(chatMessage));
+
+        messageInput.value = ""; // 입력창 초기화
+        // loadMessages() 호출 불필요 -> 구독 콜백에서 화면에 그리기 때문
+        /*
         const formData = new FormData();
         formData.append("content", content);
 
@@ -363,9 +380,35 @@
             .catch(err => {
                 console.error(err);
             });
-
+        */
     }
 
+    // [신규] 수신된 메시지를 화면에 그리기
+    function showReceivedMessage(msg) {
+        const body = document.getElementById("chatBody");
+        const mine = (msg.senderId == loginUserId);
+
+        // 시간 포맷팅
+        const timeText = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // HTML 조립 (기존 loadMessages의 HTML 생성 로직과 동일하게 맞춤)
+        const div = document.createElement("div");
+        div.className = "message " + (mine ? "mine" : "");
+        div.dataset.messageId = msg.messageId;
+
+        let deleteBtn = "";
+        if (mine) {
+            deleteBtn = '<span class="delete-btn" onclick="deleteMessage(' + msg.messageId + ')">delete</span>';
+        }
+
+        div.innerHTML =
+            deleteBtn +
+            '<div class="bubble">' + escapeHtml(msg.content) + '</div>' +
+            '<div class="meta">' + timeText + '</div>'; // 실시간 수신 시 읽음 표시는 별도 처리 필요
+
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight; // 스크롤 하단으로
+    }
 
     // ================== 우측 방 정보 로드 ==================
     function loadRoomInfo(roomId) {
@@ -420,6 +463,11 @@
     function selectRoom( roomId) {
         console.log("selectRoom메서드 roomId:" , roomId)
 
+        // 기존 방 구독 해제 (다른 방으로 이동 시)
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+
         //let value = $(this).find("span.freelancerExited").attr("data-freelancerExited");
         //console.log("freelancerExited:", value);
 
@@ -447,6 +495,27 @@
                 loadMessages(roomId);
 
         highlightSelectedRoom();
+        // WebSocket 연결 시작
+        connectStomp(roomId);
+    }
+
+    // [신규] STOMP 연결 및 구독 함수
+    function connectStomp(roomId) {
+        const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');// WebSocketConfig에서 설정한 엔드포인트
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; // 디버그 로그 끄기 (개발 중엔 켜두셔도 됩니다)
+
+        stompClient.connect({}, function (frame) {
+            console.log('STOMP Connected: ' + frame);
+
+            // 해당 채팅방 구독 (/sub/chat/room/{roomId})
+            stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
+                const receivedMsg = JSON.parse(message.body);
+                showReceivedMessage(receivedMsg); // 화면에 메시지 추가
+            });
+        }, function(error) {
+            console.error("STOMP connection error:", error);
+        });
     }
 
     // ================== 자동 갱신 ==================
