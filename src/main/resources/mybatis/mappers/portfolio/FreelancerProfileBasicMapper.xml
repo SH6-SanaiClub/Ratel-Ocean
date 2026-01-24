@@ -28,7 +28,7 @@
             p.is_public          AS portfolioPublic
         FROM users u
                  LEFT JOIN freelancer_profiles fp
-                           ON fp.user_id = u.user_id
+                           ON fp.freelancer_id = u.user_id
                  LEFT JOIN (
             SELECT pp.*
             FROM freelancer_portfolios pp
@@ -41,7 +41,7 @@
 
     <insert id="insertBasicProfile" parameterType="com.sanaiclub.portfolio.model.dto.FreelancerProfileBasicSaveRequestDTO">
         INSERT INTO freelancer_profiles
-        (user_id, nickname, introduction, github_url, website_url,
+        (freelancer_id, nickname, introduction, github_url, website_url,
          school_name, major, degree, grad_status)
         VALUES
             (#{userId}, #{nickname}, #{introduction}, #{githubUrl}, #{websiteUrl},
@@ -61,7 +61,7 @@
             major        = #{major},
             degree       = #{degree},
             grad_status  = #{gradStatus}
-        WHERE user_id = #{userId}
+        WHERE freelancer_id = #{userId}
     </update>
 
     <select id="selectProfileImageUrl" parameterType="Integer" resultType="string">
