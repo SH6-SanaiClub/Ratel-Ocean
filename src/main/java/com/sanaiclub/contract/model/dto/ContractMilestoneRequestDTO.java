@@ -3,6 +3,8 @@ package com.sanaiclub.contract.model.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 /**
  * ============================================================================
  * ContractMilestoneRequestDTO - 마일스톤 요청 DTO
@@ -39,4 +41,5 @@ public class ContractMilestoneRequestDTO {
     private String title;
     private String description;
     private Long amount;
+    private LocalDate dueDate;
 }

@@ -1,5 +1,6 @@
 package com.sanaiclub.contract.model.dto;
 
+import com.sanaiclub.contract.model.vo.ContractStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -63,7 +64,7 @@ public class ContractUpdateRequestDTO {
     private String contractEndDate;
     private Long totalBudget;
     private String paymentMethod;
-    private String contractStatus;
+    private ContractStatus contractStatus;
     private String originContractUrl;
     private String contractPurpose;
     private String workScope;
