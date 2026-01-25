@@ -1,0 +1,217 @@
+package com.sanaiclub.payment.service.impl;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.sanaiclub.contract.dao.ContractMapper;
+import com.sanaiclub.contract.dao.ContractMilestoneMapper;
+import com.sanaiclub.contract.model.vo.ContractStatus;
+import com.sanaiclub.contract.model.vo.MilestoneStatus;
+import com.sanaiclub.contract.model.vo.ContractMilestoneVO;
+import com.sanaiclub.contract.model.vo.ContractVO;
+import com.sanaiclub.payment.dao.EscrowMapper;
+import com.sanaiclub.payment.dao.PaymentMapper;
+import com.sanaiclub.payment.dao.RefundMapper;
+import com.sanaiclub.payment.model.dto.RefundRequestDTO;
+import com.sanaiclub.payment.model.dto.RefundResponseDTO;
+import com.sanaiclub.contract.model.vo.PaymentStatus;
+import com.sanaiclub.payment.model.vo.RefundStatus;
+import com.sanaiclub.payment.model.vo.EscrowVO;
+import com.sanaiclub.payment.model.vo.PaymentVO;
+import com.sanaiclub.payment.model.vo.RefundVO;
+import com.sanaiclub.payment.service.RefundService;
+import com.sanaiclub.payment.service.EscrowService;
+import com.sanaiclub.payment.util.PortoneApiClient;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+
+/**
+ * ============================================================================
+ * RefundServiceImpl - 환불 서비스 구현체
+ * ============================================================================
+ */
+@Service
+@RequiredArgsConstructor
+public class RefundServiceImpl implements RefundService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RefundServiceImpl.class);
+
+    private final RefundMapper refundMapper;
+    private final PaymentMapper paymentMapper;
+    private final EscrowMapper escrowMapper;
+    private final ContractMapper contractMapper;
+    private final ContractMilestoneMapper milestoneMapper;
+    private final EscrowService escrowService;
+    private final PortoneApiClient portoneApiClient;
+
+    /**
+     * 환불 요청
+     */
+    @Override
+    @Transactional
+    public RefundResponseDTO requestRefund(RefundRequestDTO request) {
+        logger.info("환불 요청 시작: contractId={}, reason={}",
+                request.getContractId(), request.getReason());
+
+        try {
+            // 1. 계약 정보 조회
+            ContractVO contract = contractMapper.selectContractById(request.getContractId());
+            if (contract == null) {
+                throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + request.getContractId());
+            }
+
+            // 2. 결제 정보 조회
+            List<PaymentVO> payments = paymentMapper.selectPaymentsByContractId(request.getContractId());
+            if (payments.isEmpty()) {
+                throw new IllegalStateException("결제 정보를 찾을 수 없습니다.");
+            }
+
+            PaymentVO payment = payments.get(0); // 최신 결제
+
+            // 3. 에스크로 조회
+            EscrowVO escrow = escrowMapper.selectEscrowByContractId(request.getContractId());
+            if (escrow == null) {
+                throw new IllegalStateException("에스크로를 찾을 수 없습니다.");
+            }
+
+            // 4. 환불 가능 금액 계산 (아직 지급 안 된 금액)
+            Long refundableAmount = escrow.getHeldAmount();
+
+            if (refundableAmount <= 0) {
+                throw new IllegalStateException("환불 가능한 금액이 없습니다.");
+            }
+
+            // 5. 요청된 환불 금액 검증
+            Long actualRefundAmount = request.getRefundAmount() != null
+                    ? request.getRefundAmount()
+                    : refundableAmount;
+
+            if (actualRefundAmount > refundableAmount) {
+                throw new IllegalArgumentException("환불 가능 금액을 초과했습니다: " + refundableAmount);
+            }
+
+            // 6. 포트원 API로 환불 요청
+            JsonNode refundInfo = portoneApiClient.cancelPayment(
+                    payment.getImpUid(),
+                    actualRefundAmount,
+                    refundableAmount, // checksum
+                    request.getReason()
+            );
+
+            // 7. 환불 정보 저장
+            RefundVO refund = RefundVO.builder()
+                    .paymentId(payment.getPaymentId())
+                    .escrowId(escrow.getEscrowId())
+                    .contractId(request.getContractId())
+                    .refundAmount(actualRefundAmount)
+                    .reason(request.getReason())
+                    .requestedBy(request.getRequestedBy())
+                    .refundStatus(RefundStatus.COMPLETED)
+                    .impRefundUid(refundInfo.get("imp_uid").asText())
+                    .refundedAt(LocalDateTime.now())
+                    .build();
+
+            refundMapper.insertRefund(refund);
+
+            // 8. 에스크로 환불 처리
+            escrowService.refundFunds(escrow.getEscrowId(), actualRefundAmount);
+
+            // 9. 계약 상태 업데이트 (PAID/SIGNED → TERMINATED)
+            contractMapper.updateContractStatus(
+                    request.getContractId(),
+                    ContractStatus.TERMINATED.name(),
+                    request.getReason()
+            );
+
+            // 10. 계약 결제 상태 업데이트
+            boolean isFullRefund = actualRefundAmount.equals(escrow.getTotalAmount());
+            PaymentStatus newPaymentStatus = isFullRefund
+                    ? PaymentStatus.REFUNDED
+                    : PaymentStatus.PARTIAL_REFUNDED;
+
+            contractMapper.updatePaymentStatus(request.getContractId(), newPaymentStatus.name());
+
+            // 11. 미지급 마일스톤 취소 처리
+            if ("MILESTONE".equals(contract.getPaymentMethod())) {
+                List<ContractMilestoneVO> milestones = milestoneMapper.selectMilestonesByContractId(request.getContractId());
+                for (ContractMilestoneVO milestone : milestones) {
+                    if (MilestoneStatus.DEPOSITED.name().equals(milestone.getStatus()) ||
+                            MilestoneStatus.REQUESTED.name().equals(milestone.getStatus()) ||
+                            MilestoneStatus.WAITING.name().equals(milestone.getStatus())) {
+                        milestoneMapper.updateMilestoneStatus(milestone.getMilestoneId(), MilestoneStatus.CANCELED);
+                    }
+                }
+            }
+
+            logger.info("환불 완료: refundId={}, amount={}", refund.getRefundId(), actualRefundAmount);
+
+            // 12. 응답 DTO 생성
+            return RefundResponseDTO.builder()
+                    .refundId(refund.getRefundId())
+                    .contractId(request.getContractId())
+                    .refundAmount(actualRefundAmount)
+                    .refundStatus(RefundStatus.COMPLETED)
+                    .impRefundUid(refund.getImpRefundUid())
+                    .refundedAt(refund.getRefundedAt())
+                    .success(true)
+                    .message("환불이 완료되었습니다.")
+                    .build();
+
+        } catch (Exception e) {
+            logger.error("환불 처리 실패: contractId={}", request.getContractId(), e);
+
+            // 실패 정보 저장
+            RefundVO failedRefund = RefundVO.builder()
+                    .contractId(request.getContractId())
+                    .refundAmount(request.getRefundAmount())
+                    .reason(request.getReason())
+                    .requestedBy(request.getRequestedBy())
+                    .refundStatus(RefundStatus.FAILED)
+                    .failedReason(e.getMessage())
+                    .build();
+
+            refundMapper.insertRefund(failedRefund);
+
+            throw new RuntimeException("환불 처리 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 환불 가능 금액 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Long getRefundableAmount(Integer contractId) {
+        return escrowService.getRefundableAmount(contractId);
+    }
+
+    /**
+     * 환불 상태 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public RefundResponseDTO getRefundStatus(Integer refundId) {
+        RefundVO refund = refundMapper.selectRefundById(refundId);
+
+        if (refund == null) {
+            throw new IllegalArgumentException("환불 정보를 찾을 수 없습니다: " + refundId);
+        }
+
+        return RefundResponseDTO.builder()
+                .refundId(refund.getRefundId())
+                .contractId(refund.getContractId())
+                .refundAmount(refund.getRefundAmount())
+                .refundStatus(refund.getRefundStatus())
+                .impRefundUid(refund.getImpRefundUid())
+                .refundedAt(refund.getRefundedAt())
+                .success(RefundStatus.COMPLETED.equals(refund.getRefundStatus()))
+                .message(refund.getFailedReason())
+                .build();
+    }
+}
