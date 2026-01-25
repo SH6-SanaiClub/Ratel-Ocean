@@ -121,7 +121,7 @@ import lombok.NoArgsConstructor;
  * - Controller: DTO를 Model에 추가하여 View에 전달
  * - View: DTO의 중첩된 VO에 접근하여 데이터 표시
  * 
- * [장점]
+ *
  * 
  * 1. 코드 재사용성: 다른 영역의 VO를 재사용하여 중복 코드 방지
  * 2. 일관성: 각 도메인의 VO를 그대로 사용하여 데이터 구조 일관성 유지

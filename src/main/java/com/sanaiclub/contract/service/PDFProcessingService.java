@@ -4,8 +4,16 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * PDF 처리 전용 서비스
- *
+ * PDF 처리 전용 서비스 인터페이스
+ * 
+ * [파일 역할]
+ * 이 파일은 인터페이스(Interface)로, PDF 처리 서비스가 제공해야 하는 메서드들의 
+ * 계약(Contract)을 정의합니다. 실제 구현 로직은 포함하지 않으며, 메서드 시그니처만 선언합니다.
+ * 
+ * [인터페이스 vs 구현체]
+ * - 이 파일 (PDFProcessingService): "무엇을" 해야 하는지 정의 (What)
+ * - PDFProcessingServiceImpl: "어떻게" 구현할지 정의 (How)
+ * 
  * [역할]
  * - PDF 파일에서 텍스트 추출
  * - PDF 파일 임시 저장
@@ -17,6 +25,12 @@ import java.io.IOException;
  * - 이 서비스는 DB를 모른다
  *
  * 즉, PDFBox 기반의 순수 PDF 처리 로직만 담당한다.
+ * 
+ * [사용 예시]
+ * PDFProcessingService service = new PDFProcessingServiceImpl();
+ * String text = service.extractText(pdfFile);
+ * 
+ * @see PDFProcessingServiceImpl 이 인터페이스의 구현체
  */
 public interface PDFProcessingService {
 
