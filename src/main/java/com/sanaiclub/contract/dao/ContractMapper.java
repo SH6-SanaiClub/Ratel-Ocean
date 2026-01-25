@@ -111,6 +111,28 @@ public interface ContractMapper {
             @Param("contractStatus") String contractStatus,
             @Param("rejectReason") String rejectReason
     );
+    
+    /**
+     * 계약 취소 사유 업데이트
+     * 
+     * [기능]
+     * - 계약의 cancel_reason만 업데이트
+     * - 상태 변경 없이 취소 사유만 변경할 때 사용
+     * 
+     * [파라미터]
+     * @param contractId 업데이트할 계약의 ID
+     * @param cancelReason 취소 사유 (null 가능, null이면 cancel_reason을 NULL로 설정)
+     * 
+     * [반환값]
+     * @return UPDATE된 행의 개수 (보통 1)
+     * 
+     * [호출 위치]
+     * - ContractService.rejectPayment(): 일시지급 거부 시 cancel_reason을 null로 설정
+     */
+    int updateCancelReason(
+            @Param("contractId") Integer contractId,
+            @Param("cancelReason") String cancelReason
+    );
 
     /**
      * 원본 계약서 파일 경로 업데이트
@@ -254,6 +276,45 @@ public interface ContractMapper {
      * - 관리자 페이지: 전체 계약 조회
      */
     List<ContractVO> selectAllContracts();
+    
+    /**
+     * 계약 목록 조회 (프로젝트 및 상대방 정보 포함)
+     * 
+     * [기능]
+     * - 모든 계약 목록을 조회하되, 프로젝트 이름과 상대방 이름을 함께 조회
+     * - LEFT JOIN을 사용하여 프로젝트, 프리랜서, 클라이언트 정보 포함
+     * - 사이드바 표시용으로 최적화
+     * 
+     * [반환값]
+     * @return 계약 목록 (List<Map<String, Object>>)
+     *         - contract: ContractVO
+     *         - projectTitle: 프로젝트 이름
+     *         - freelancerName: 프리랜서 이름
+     *         - clientName: 클라이언트 이름
+     * 
+     * [호출 위치]
+     * - ContractService: 계약 목록 조회 시
+     */
+    List<java.util.Map<String, Object>> selectAllContractsWithDetails();
+    
+    /**
+     * 계약 단건 조회 (프로젝트 및 상대방 정보 포함)
+     * 
+     * [기능]
+     * - 계약 ID로 단건 조회하되, 프로젝트 이름과 상대방 이름을 함께 조회
+     * - LEFT JOIN을 사용하여 프로젝트, 프리랜서, 클라이언트 정보 포함
+     * 
+     * [반환값]
+     * @return 계약 정보 (Map<String, Object>)
+     *         - contractId, contractStartDate 등 Contract 정보
+     *         - projectTitle: 프로젝트 이름
+     *         - freelancerName: 프리랜서 이름
+     *         - clientName: 클라이언트 이름
+     * 
+     * [호출 위치]
+     * - ContractService: 계약 단건 조회 시
+     */
+    java.util.Map<String, Object> selectContractWithDetailsById(Integer contractId);
     
     /**
      * 계약 상세 정보 조회 (다중 테이블 조인)

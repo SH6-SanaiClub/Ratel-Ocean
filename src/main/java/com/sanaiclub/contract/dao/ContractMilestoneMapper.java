@@ -137,4 +137,33 @@ public interface ContractMilestoneMapper {
     int deleteMilestonesByContractId(
             @Param("contractId") Integer contractId
     );
+
+    /**
+     * 마일스톤 상태 업데이트
+     * 
+     * [기능]
+     * - 특정 마일스톤의 상태를 변경 (WAITING → REQUESTED → DEPOSITED → PAID)
+     * - 프리랜서가 지급 요청하거나, 클라이언트가 지급 수락할 때 사용
+     * 
+     * [파라미터]
+     * @param contractId 마일스톤이 속한 계약의 ID
+     * @param step 업데이트할 마일스톤의 단계 순서 (null이면 계약의 모든 WAITING 마일스톤)
+     * @param status 변경할 상태 (REQUESTED, DEPOSITED, PAID 등)
+     * 
+     * [반환값]
+     * @return UPDATE된 행의 개수
+     * 
+     * [주의사항]
+     * - step이 null이면 해당 계약의 모든 WAITING 마일스톤 상태를 변경 (일시지급 시)
+     * - 상태 전이는 비즈니스 로직에서 검증해야 함
+     * 
+     * [호출 위치]
+     * - ContractService.requestPayment(): 프리랜서 지급 요청
+     * - ContractService.approvePayment(): 클라이언트 지급 수락
+     */
+    int updateMilestoneStatus(
+            @Param("contractId") Integer contractId,
+            @Param("step") Integer step,
+            @Param("status") String status
+    );
 }

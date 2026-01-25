@@ -21,58 +21,115 @@ import java.util.stream.Collectors;
  * ============================================================================
  * 
  * [역할]
- * - 계약 도메인의 모든 비즈니스 로직을 처리하는 서비스 계층
- * - 계약 CRUD 작업 및 상태 관리
- * - 여러 Mapper를 조합하여 복잡한 비즈니스 로직 구현
- * - 트랜잭션 관리 및 데이터 일관성 보장
- * - VO(Value Object) ↔ DTO(Data Transfer Object) 변환
+ * 계약 도메인의 모든 비즈니스 로직을 처리하는 서비스 계층입니다.
+ * 계약 CRUD 작업, 상태 관리, 지급 요청/수락/거부 등을 담당하며,
+ * DB 스키마 변경 없이 cancel_reason 컬럼을 재활용하여 일시지급 지급 요청 상태를 관리합니다.
+ * 
+ * [연관 파일]
+ * 
+ * Controller 계층:
+ * - ClientContractManagementController: 클라이언트 계약 관리 (결제, 지급 수락/거부)
+ * - FreelancerContractController: 프리랜서 계약 관리 (수락, 거절, 지급 요청)
+ * - ContractFormController: 계약 생성/수정 폼 처리
+ * - ContractApiController: REST API 엔드포인트
+ * 
+ * DAO 계층:
+ * - ContractMapper: 계약 데이터 접근 (contracts 테이블)
+ * - ContractMilestoneMapper: 마일스톤 데이터 접근 (contract_milestones 테이블)
+ * 
+ * Model 계층:
+ * - ContractVO: 계약 엔티티 (DB 매핑)
+ * - ContractMilestoneVO: 마일스톤 엔티티 (DB 매핑)
+ * - ContractResponseDTO: 계약 응답 DTO (마일스톤 집계 포함)
+ * - ContractDetailDTO: 계약 상세 정보 DTO (JOIN 결과)
+ * - ContractStatus: 계약 상태 Enum
+ * 
+ * View 계층:
+ * - contractManagement.jsp: 클라이언트 계약 관리 페이지
+ * - freelancerContractList.jsp: 프리랜서 계약 목록 페이지
+ * - includes/statusTitlePaid.jsp: PAID 상태 집계 (클라이언트용)
+ * - includes/statusTitlePaidFreelancer.jsp: PAID 상태 집계 (프리랜서용)
+ * - includes/statusTitleSettlementPending.jsp: SETTLEMENT_PENDING 상태 집계
  * 
  * [계약 상태 관리]
- * - WAITING: 계약 대기 중 (생성 직후 기본 상태)
- * - SIGNED: 계약 서명 완료 (프리랜서 수락)
- * - TERMINATED: 계약 취소/거절
- * - COMPLETED: 계약 완료 (결제 완료 후)
+ * ContractStatus Enum을 사용하여 계약의 생명주기를 관리합니다.
+ * 
+ * - WAITING: 전송됨(검토 대기) - 프리랜서 수락/거절 전
+ * - SIGNED: 수락됨(계약 성립) - 결제 전
+ * - PAID: 결제 완료(에스크로 확보) - 마일스톤/정산 활성화
+ * - COMPLETED: 정산 완료(모든 마일스톤 종료)
+ * - TERMINATED: 종료(거절/취소/중도 종료 포함)
  * 
  * [상태 전이 흐름]
- * WAITING → SIGNED → COMPLETED
- *    ↓         ↓
- * TERMINATED TERMINATED
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ 정상 흐름:                                                  │
+ * │ WAITING → SIGNED → PAID → COMPLETED                        │
+ * │                                                             │
+ * │ 비정상 종료 (각 단계에서 가능):                             │
+ * │ WAITING → TERMINATED (프리랜서 거절)                       │
+ * │ SIGNED → TERMINATED (클라이언트 취소)                      │
+ * │ PAID → TERMINATED (중도 종료)                              │
+ * └─────────────────────────────────────────────────────────────┘
  * 
  * [주요 기능]
+ * 
  * 1. 계약 생성/수정
  *    - createContract: 새 계약 생성 (INSERT) + 마일스톤 저장
  *    - updateContract: 기존 계약 수정 (UPDATE) + 마일스톤 삭제/추가
  * 
  * 2. 계약 조회
- *    - getContractById: 계약 ID로 단건 조회
+ *    - getContractById: 계약 ID로 단건 조회 (마일스톤 포함)
  *    - getContractByPathPattern: 경로 패턴으로 기존 계약 조회 (UPDATE vs INSERT 판단)
  *    - getContractsByClientPathPattern: 클라이언트의 계약 목록 조회
- *    - getAllContracts: 모든 계약 목록 조회 (프리랜서용)
+ *    - getAllContracts: 모든 계약 목록 조회 (마일스톤 집계 포함)
  * 
  * 3. 계약 상태 변경
  *    - acceptContract: 프리랜서 계약 수락 (WAITING → SIGNED)
- *    - rejectContract: 프리랜서 계약 거절 (WAITING → TERMINATED)
- *    - finalizeContract: 계약 최종 완료 (SIGNED → COMPLETED)
- *    - cancelContract: 계약 취소 (WAITING/SIGNED → TERMINATED)
+ *    - rejectContract: 프리랜서 계약 거절 (WAITING → TERMINATED, cancel_reason에 "[거절] {사유}" 저장)
+ *    - finalizeContract: 계약 결제 완료 (SIGNED → PAID, 에스크로 확보)
+ *    - completeContract: 계약 정산 완료 (PAID → COMPLETED)
+ *    - cancelContract: 계약 취소 (WAITING/SIGNED/PAID → TERMINATED, cancel_reason에 "[취소] {사유}" 저장)
  * 
- * 4. 마일스톤 관리
+ * 4. 지급 요청/수락/거부 (에스크로 시스템)
+ *    - requestPayment: 프리랜서 지급 요청
+ *      * 마일스톤: 마일스톤 상태 WAITING → REQUESTED
+ *      * 일시지급: cancel_reason에 "[지급요청]" 저장 (DB 스키마 변경 없이 기존 컬럼 활용)
+ *    - approvePayment: 클라이언트 지급 수락
+ *      * 마일스톤: 마일스톤 상태 REQUESTED → DEPOSITED
+ *      * 일시지급: 계약 상태 PAID → COMPLETED, cancel_reason을 null로 초기화
+ *    - rejectPayment: 클라이언트 지급 거부
+ *      * 마일스톤: 마일스톤 상태 REQUESTED → WAITING (재요청 가능)
+ *      * 일시지급: cancel_reason을 null로 초기화 (재요청 가능)
+ * 
+ * 5. 마일스톤 관리
  *    - getMilestonesByContractId: 계약의 마일스톤 목록 조회
  * 
- * 5. 파일 경로 관리
+ * 6. 파일 경로 관리
  *    - updateOriginContractUrl: 원본 계약서 파일 경로 업데이트
  *    - getOriginContractUrlsByPathPattern: 경로 패턴으로 파일 경로 목록 조회
+ * 
+ * [특수 구현: cancel_reason 활용]
+ * DB 스키마 변경 없이 일시지급 지급 요청 상태를 관리하기 위해 cancel_reason 컬럼을 재활용합니다.
+ * 
+ * - cancel_reason = null: 일시지급 계약에서 아직 지급 요청하지 않은 상태
+ * - cancel_reason = "[지급요청]": 일시지급 계약에서 프리랜서가 지급 요청한 상태
+ * - cancel_reason = "[거절] {사유}": 프리랜서가 계약을 거절한 상태
+ * - cancel_reason = "[취소] {사유}": 클라이언트가 계약을 취소한 상태
+ * 
+ * 이는 requestPayment(), approvePayment(), rejectPayment() 메서드에서 활용됩니다.
  * 
  * [데이터 흐름]
  * Controller → Service → Mapper → DB
  * 
  * [계층별 책임]
- * - Controller: HTTP 요청/응답 처리, 파라미터 검증
+ * - Controller: HTTP 요청/응답 처리, 파라미터 검증, 뷰 선택
  * - Service: 비즈니스 로직, 트랜잭션 관리, VO ↔ DTO 변환
  * - Mapper: SQL 쿼리 실행, DB 접근
  * 
  * [트랜잭션 처리]
  * - @Transactional 어노테이션으로 트랜잭션 관리
  * - createContract, updateContract: 여러 테이블 작업이 모두 성공해야 커밋
+ * - requestPayment, approvePayment, rejectPayment: 상태 변경이 모두 성공해야 커밋
  * - 예외 발생 시 자동 롤백
  * 
  * [책임 분리 원칙]
@@ -85,8 +142,8 @@ import java.util.stream.Collectors;
  * ❌ HTTP 관련 처리 금지: Controller 계층 책임
  * 
  * [의존성]
- * - ContractMapper: 계약 데이터 접근
- * - ContractMilestoneMapper: 마일스톤 데이터 접근
+ * - ContractMapper: 계약 데이터 접근 (contracts 테이블)
+ * - ContractMilestoneMapper: 마일스톤 데이터 접근 (contract_milestones 테이블)
  * 
  * ============================================================================
  */
@@ -274,15 +331,49 @@ public class ContractService {
      */
     public ContractResponseDTO getContractById(Integer contractId) {
         // ====================================================================
-        // 1단계: 계약 정보 조회
+        // 1단계: 계약 정보 조회 (프로젝트 및 상대방 정보 포함)
         // ====================================================================
         
-        ContractVO contract = contractMapper.selectContractById(contractId);
-        if (contract == null) {
+        java.util.Map<String, Object> contractWithDetails = contractMapper.selectContractWithDetailsById(contractId);
+        if (contractWithDetails == null || contractWithDetails.get("contractId") == null) {
             // 계약이 존재하지 않으면 null 반환
             // Controller에서 404 에러 처리 또는 적절한 응답 반환
             return null;
         }
+        
+        // 날짜를 String으로 변환하는 헬퍼 메서드
+        java.util.function.Function<Object, String> dateToString = (obj) -> {
+            if (obj == null) return null;
+            if (obj instanceof String) return (String) obj;
+            if (obj instanceof java.sql.Date) return obj.toString();
+            if (obj instanceof java.sql.Timestamp) return obj.toString();
+            if (obj instanceof java.util.Date) {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                return sdf.format((java.util.Date) obj);
+            }
+            return obj.toString();
+        };
+        
+        // ContractVO Builder로 생성
+        ContractVO contract = ContractVO.builder()
+            .contractId(contractWithDetails.get("contractId") != null ? ((Number) contractWithDetails.get("contractId")).intValue() : null)
+            .contractStartDate(dateToString.apply(contractWithDetails.get("contractStartDate")))
+            .contractEndDate(dateToString.apply(contractWithDetails.get("contractEndDate")))
+            .totalBudget(contractWithDetails.get("totalBudget") != null ? ((Number) contractWithDetails.get("totalBudget")).longValue() : null)
+            .paymentMethod((String) contractWithDetails.get("paymentMethod"))
+            .contractStatus((String) contractWithDetails.get("contractStatus"))
+            .originContractUrl((String) contractWithDetails.get("originContractUrl"))
+            .platformContractUrl((String) contractWithDetails.get("platformContractUrl"))
+            .aiReportUrl((String) contractWithDetails.get("aiReportUrl"))
+            .contractedAt(dateToString.apply(contractWithDetails.get("contractedAt")))
+            .completedAt(dateToString.apply(contractWithDetails.get("completedAt")))
+            .cancelReason((String) contractWithDetails.get("cancelReason"))
+            .clientRating(contractWithDetails.get("clientRating") != null ? ((Number) contractWithDetails.get("clientRating")).intValue() : null)
+            .clientExperience((String) contractWithDetails.get("clientExperience"))
+            .clientIsRenewalIntended((Boolean) contractWithDetails.get("clientIsRenewalIntended"))
+            .freelancerRating(contractWithDetails.get("freelancerRating") != null ? ((Number) contractWithDetails.get("freelancerRating")).intValue() : null)
+            .freelancerExperience((String) contractWithDetails.get("freelancerExperience"))
+            .build();
         
         // ====================================================================
         // 2단계: VO → DTO 변환
@@ -291,6 +382,11 @@ public class ContractService {
         // ContractVO를 ContractResponseDTO로 변환
         // originContractUrl에서 projectId와 freelancerId 추출 포함
         ContractResponseDTO dto = toResponseDTO(contract);
+        
+        // 프로젝트 및 상대방 정보 설정
+        dto.setProjectTitle((String) contractWithDetails.get("projectTitle"));
+        dto.setFreelancerName((String) contractWithDetails.get("freelancerName"));
+        dto.setClientName((String) contractWithDetails.get("clientName"));
         
         // ====================================================================
         // 3단계: 마일스톤 정보 조회 및 변환
@@ -322,33 +418,47 @@ public class ContractService {
     }
 
     /**
+     * ============================================================================
      * 계약 수락
+     * ============================================================================
      * 
      * [기능]
-     * - 프리랜서가 계약을 수락하여 상태를 SIGNED로 변경
-     * - 계약이 활성화되어 작업을 시작할 수 있는 상태가 됨
+     * 프리랜서가 계약을 수락하여 상태를 SIGNED로 변경하는 메서드입니다.
+     * 계약이 활성화되어 작업을 시작할 수 있는 상태가 됩니다.
      * 
-     * [상태 변경]
+     * [연관 파일]
+     * - FreelancerContractController.acceptContract(): 프리랜서가 수락 버튼 클릭 시 호출
+     * - ContractMapper.updateContractStatus(): 계약 상태를 SIGNED로 변경
+     * - freelancerContractList.jsp: 프리랜서가 수락 버튼을 클릭하는 UI
+     * - contractManagement.jsp: 클라이언트가 "✅ 프리랜서 승인 완료" 메시지를 보는 UI
+     * 
+     * [처리 흐름]
+     * 1. 계약 상태를 SIGNED로 변경
+     * 2. cancel_reason은 null 유지 (수락이므로 취소 사유 없음)
+     * 3. 클라이언트가 결제할 수 있는 상태로 전환
+     * 
+     * [상태 전이]
      * - WAITING → SIGNED
-     * - WAITING: 계약 대기 중 (프리랜서 검토 중)
-     * - SIGNED: 계약 서명 완료 (프리랜서 수락, 작업 시작 가능)
+     * - WAITING: 프리랜서가 계약서를 검토 중인 상태
+     * - SIGNED: 프리랜서가 계약을 수락한 상태 (클라이언트 결제 대기)
      * 
      * [비즈니스 규칙]
-     * - 프리랜서만 계약을 수락할 수 있음 (권한 검증 필요)
      * - WAITING 상태의 계약만 수락 가능
-     * - SIGNED 상태로 변경되면 작업을 시작할 수 있음
+     * - SIGNED 상태로 변경되면 클라이언트가 결제할 수 있음
+     * - 클라이언트가 결제하면 finalizeContract()로 PAID로 변경
      * 
      * [주의사항]
-     * - freelancerId 파라미터는 현재 미사용
-     * - 향후 권한 검증 로직 추가 예정 (해당 프리랜서가 계약을 수락할 권한이 있는지 확인)
+     * - freelancerId 파라미터는 현재 미사용 (향후 권한 검증에 사용 예정)
      * - contractId가 존재하지 않으면 업데이트되지 않음 (에러 없음)
      * 
      * [호출 위치]
-     * - FreelancerContractController: 프리랜서가 계약 수락 버튼 클릭 시
-     * - ContractApiController: API를 통한 계약 수락
+     * - FreelancerContractController.acceptContract(): 프리랜서 계약 목록 페이지
+     * - ContractApiController: REST API를 통한 계약 수락
      * 
      * @param contractId 수락할 계약의 ID
      * @param freelancerId 프리랜서 ID (현재는 미사용, 향후 권한 검증에 사용 예정)
+     * 
+     * ============================================================================
      */
     public void acceptContract(Integer contractId, Integer freelancerId) {
         // 계약 상태를 SIGNED로 변경
@@ -357,70 +467,142 @@ public class ContractService {
     }
 
     /**
+     * ============================================================================
      * 계약 거절
+     * ============================================================================
      * 
      * [기능]
-     * - 프리랜서가 계약을 거절하여 상태를 TERMINATED로 변경
-     * - 거절 사유를 cancel_reason에 저장
+     * 프리랜서가 계약을 거절하여 상태를 TERMINATED로 변경하는 메서드입니다.
+     * 거절 사유를 cancel_reason에 "[거절] " prefix와 함께 저장하여
+     * 클라이언트 취소와 구분합니다.
      * 
-     * [상태 변경]
+     * [연관 파일]
+     * - FreelancerContractController.rejectContract(): 프리랜서가 거절 버튼 클릭 시 호출
+     * - ContractMapper.updateContractStatus(): 계약 상태를 TERMINATED로 변경
+     * - freelancerContractList.jsp: 프리랜서가 거절 버튼을 클릭하는 UI
+     * - contractManagement.jsp: 클라이언트가 "🚫 프리랜서가 거절함" 메시지를 보는 UI
+     * 
+     * [처리 흐름]
+     * 1. 거절 사유에 "[거절] " prefix 추가 (클라이언트 취소와 구분)
+     * 2. 계약 상태를 TERMINATED로 변경
+     * 3. cancel_reason에 거절 사유 저장
+     * 
+     * [상태 전이]
      * - WAITING → TERMINATED
-     * - WAITING: 계약 대기 중
-     * - TERMINATED: 계약 취소/거절 (더 이상 진행 불가)
+     * - 더 이상 진행할 수 없는 상태 (복구 불가)
+     * 
+     * [cancel_reason 활용]
+     * cancel_reason에 "[거절] {사유}" 형식으로 저장하여:
+     * - 클라이언트 취소("[취소] {사유}")와 구분
+     * - UI에서 "🚫 프리랜서가 거절함" 메시지 표시
+     * - 통계 및 분석에 활용 가능
      * 
      * [비즈니스 규칙]
-     * - 프리랜서만 계약을 거절할 수 있음 (권한 검증 필요)
      * - WAITING 상태의 계약만 거절 가능
      * - 거절 사유는 필수 (사용자에게 거절 이유를 입력받아야 함)
-     * 
-     * [주의사항]
-     * - freelancerId 파라미터는 현재 미사용
-     * - 향후 권한 검증 로직 추가 예정
-     * - reason이 null이어도 저장 가능 (하지만 비즈니스 로직상 필수 권장)
      * - TERMINATED 상태로 변경되면 더 이상 수정 불가
      * 
+     * [주의사항]
+     * - freelancerId 파라미터는 현재 미사용 (향후 권한 검증에 사용 예정)
+     * - reason이 null이어도 저장 가능 (하지만 비즈니스 로직상 필수 권장)
+     * - 거절된 계약은 복구 불가 (새 계약 생성 필요)
+     * 
      * [호출 위치]
-     * - FreelancerContractController: 프리랜서가 계약 거절 버튼 클릭 시
-     * - ContractApiController: API를 통한 계약 거절
+     * - FreelancerContractController.rejectContract(): 프리랜서 계약 목록 페이지
+     * - ContractApiController: REST API를 통한 계약 거절
      * 
      * @param contractId 거절할 계약의 ID
      * @param freelancerId 프리랜서 ID (현재는 미사용, 향후 권한 검증에 사용 예정)
      * @param reason 거절 사유 (사용자가 입력한 거절 이유)
+     * 
+     * ============================================================================
      */
     public void rejectContract(Integer contractId, Integer freelancerId, String reason) {
         // 계약 상태를 TERMINATED로 변경하고 거절 사유 저장
-        contractMapper.updateContractStatus(contractId, ContractStatus.TERMINATED.name(), reason);
+        // "[거절] " prefix 추가하여 클라이언트 취소와 구분
+        String prefixedReason = (reason != null && !reason.trim().isEmpty()) 
+            ? (reason.startsWith("[거절] ") ? reason : "[거절] " + reason)
+            : "[거절] 사유 없음";
+        contractMapper.updateContractStatus(contractId, ContractStatus.TERMINATED.name(), prefixedReason);
     }
     
     /**
+     * ============================================================================
      * 계약의 마일스톤 목록 조회
+     * ============================================================================
      * 
      * [기능]
-     * - 특정 계약의 모든 마일스톤을 조회
-     * - 단계 순서대로 정렬된 마일스톤 목록 반환
+     * 특정 계약의 모든 마일스톤을 조회하여 DTO 리스트로 반환하는 메서드입니다.
+     * 마일스톤 방식 결제에서 단계별 작업 계획과 지급 진행 상황을 확인하는 데 사용됩니다.
      * 
-     * [사용 시나리오]
-     * - 계약 상세 페이지에서 마일스톤 목록 표시
-     * - 결제 진행 상황 확인
-     * - 계약 수정 시 기존 마일스톤 정보 조회
+     * [연관 파일]
+     * - ContractMilestoneMapper.selectMilestonesByContractId(): 마일스톤 목록 조회
+     * - ContractService.toMilestoneResponseDTO(): VO → DTO 변환
+     * - ContractService.getContractById(): 계약 조회 시 마일스톤 포함
+     * 
+     * [처리 흐름]
+     * 1. ContractMilestoneMapper.selectMilestonesByContractId()로 마일스톤 VO 리스트 조회
+     * 2. step 오름차순 정렬 (1단계, 2단계, 3단계...)
+     * 3. Stream API를 사용하여 VO 리스트를 DTO 리스트로 변환
+     * 4. ContractMilestoneResponseDTO 리스트 반환
      * 
      * [반환 데이터]
-     * - 마일스톤 목록 (step, title, description, amount)
-     * - step_order 오름차순 정렬 (1단계, 2단계, 3단계...)
+     * 
+     * 각 마일스톤 정보:
+     * - step: 마일스톤 단계 순서 (1, 2, 3, ...)
+     * - title: 마일스톤 제목 (예: "1단계: 기획 및 설계")
+     * - description: 작업 범위/설명
+     * - amount: 해당 마일스톤의 지급 금액 (원 단위)
+     * - status: 마일스톤 상태
+     *   * "WAITING": 대기 중
+     *   * "REQUESTED": 지급 요청됨
+     *   * "DEPOSITED": 입금 완료
+     *   * "PAID": 지급 완료
+     * 
+     * [정렬]
+     * - step 오름차순 정렬 (1단계, 2단계, 3단계...)
+     * - DB 쿼리에서 ORDER BY step ASC로 정렬
+     * 
+     * [사용 시나리오]
+     * 
+     * 1. 계약 상세 페이지에서 마일스톤 목록 표시
+     *    - 계약서 작성/수정 화면에서 단계별 작업 계획 확인
+     *    - 각 마일스톤의 상태와 금액 표시
+     * 
+     * 2. 결제 진행 상황 확인
+     *    - 클라이언트/프리랜서가 각 마일스톤의 지급 진행 상황 확인
+     *    - WAITING, REQUESTED, DEPOSITED, PAID 상태 표시
+     * 
+     * 3. 계약 수정 시 기존 마일스톤 정보 조회
+     *    - 기존 마일스톤 정보를 폼에 표시
+     *    - 사용자가 수정 후 전체 교체
      * 
      * [주의사항]
-     * - contractId가 존재하지 않거나 마일스톤이 없으면 빈 리스트 반환
-     * - 결제 방식이 FIXED인 계약은 마일스톤이 없을 수 있음
-     * - 결제 방식이 MILESTONE인 계약은 반드시 마일스톤 존재
+     * 
+     * - contractId가 존재하지 않거나 마일스톤이 없으면 빈 리스트 반환 (예외 없음)
+     * - 결제 방식이 FIXED/FULL인 계약은 마일스톤이 없을 수 있음 (빈 리스트 반환)
+     * - 결제 방식이 MILESTONE인 계약은 반드시 마일스톤 존재 (1개 이상)
+     * - 마일스톤의 amount 합계가 계약의 totalBudget과 일치해야 함 (비즈니스 로직 검증 필요)
+     * 
+     * [데이터 변환]
+     * 
+     * ContractMilestoneVO → ContractMilestoneResponseDTO:
+     * - step, title, description, amount, status 필드 그대로 복사
+     * - VO는 불변 객체이므로 DTO로 변환하여 전달
      * 
      * [호출 위치]
      * - ContractService.getContractById(): 계약 조회 시 마일스톤 포함
      * - ContractFormController: 계약 상세 페이지
      * - ContractApiController: API로 마일스톤 목록 요청
+     * - ClientContractManagementController: 계약 관리 페이지에서 마일스톤 표시
+     * - FreelancerContractController: 프리랜서 계약 목록 페이지에서 마일스톤 표시
      * 
-     * @param contractId 조회할 계약의 ID
+     * @param contractId 조회할 계약의 ID (PK)
      * @return 마일스톤 목록 (List<ContractMilestoneResponseDTO>)
-     *         - 마일스톤이 없으면 빈 리스트 반환
+     *         - 마일스톤이 없으면 빈 리스트 반환 (null 아님)
+     *         - step 오름차순 정렬
+     * 
+     * ============================================================================
      */
     public List<ContractMilestoneResponseDTO> getMilestonesByContractId(Integer contractId) {
         // 마일스톤 VO 리스트 조회 (단계 순서대로 정렬됨)
@@ -508,24 +690,99 @@ public class ContractService {
     }
     
     /**
+     * ============================================================================
      * 같은 프로젝트/프리랜서 조합의 기존 계약 조회
+     * ============================================================================
      * 
      * [기능]
-     * - UPDATE vs INSERT 판단을 위한 기존 계약 조회
-     * - 경로 패턴: contracts/{clientId}/{projectId}/{freelancerId}/%
+     * 특정 클라이언트/프로젝트/프리랜서 조합의 기존 계약을 조회하는 메서드입니다.
+     * 계약 생성 시 UPDATE vs INSERT를 판단하기 위해 사용되며, 같은 조합의 계약이
+     * 이미 존재하면 UPDATE, 없으면 INSERT를 수행합니다.
+     * 
+     * [연관 파일]
+     * - ContractMapper.selectContractByPathPattern(): 경로 패턴으로 기존 계약 조회
+     * - ContractService.createContract(): 계약 생성 (INSERT)
+     * - ContractService.updateContract(): 계약 수정 (UPDATE)
+     * - ContractFormController.confirmContract(): 계약 확정 시 호출
+     * 
+     * [처리 흐름]
+     * 1. ContractMapper.selectContractByPathPattern() 호출
+     * 2. origin_contract_url 패턴으로 기존 계약 조회
+     * 3. 기존 계약이 있으면 ContractVO 반환, 없으면 null 반환
+     * 4. VO → DTO 변환하여 반환
+     * 
+     * [경로 패턴]
+     * 
+     * origin_contract_url 형식: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
+     * 
+     * 조회 패턴: contracts/{clientId}/{projectId}/{freelancerId}/%
+     * - clientId, projectId, freelancerId가 모두 일치하는 계약 조회
+     * - 파일명은 무시 (와일드카드 % 사용)
      * 
      * [조회 조건]
+     * 
      * - 같은 clientId + projectId + freelancerId 조합
      * - contract_status != 'TERMINATED' (TERMINATED는 새 계약 생성 가능)
+     *   * TERMINATED 상태의 계약은 무시하여 새 계약 생성 가능
+     *   * 거절/취소된 계약은 새로 생성 가능
+     * - 가장 최근 계약 1개만 반환 (ORDER BY contract_id DESC LIMIT 1)
      * 
      * [사용 시나리오]
-     * - ContractController.confirmContract()에서 호출
-     * - 기존 계약이 있으면 UPDATE, 없으면 INSERT
      * 
-     * @param clientId 클라이언트 ID
-     * @param projectId 프로젝트 ID
-     * @param freelancerId 프리랜서 ID
-     * @return 기존 계약 정보 (없으면 null)
+     * 1. 계약 생성 시 중복 확인
+     *    - ContractFormController.confirmContract()에서 호출
+     *    - 기존 계약이 있으면 UPDATE, 없으면 INSERT
+     *    - 같은 프로젝트에 같은 프리랜서와 계약을 여러 번 수정할 수 있음
+     * 
+     * 2. 계약 수정 시 기존 계약 확인
+     *    - 기존 계약 정보를 조회하여 수정 폼에 표시
+     *    - 사용자가 수정 후 UPDATE 수행
+     * 
+     * [UPDATE vs INSERT 판단 로직]
+     * 
+     * ContractFormController.confirmContract()에서:
+     * 
+     * ```java
+     * ContractResponseDTO existingContract = contractService.getContractByPathPattern(
+     *     clientId, projectId, freelancerId
+     * );
+     * 
+     * if (existingContract != null) {
+     *     // 기존 계약이 있으면 UPDATE
+     *     contractService.updateContract(dto);
+     * } else {
+     *     // 기존 계약이 없으면 INSERT
+     *     contractService.createContract(dto);
+     * }
+     * ```
+     * 
+     * [주의사항]
+     * 
+     * - TERMINATED 상태의 계약은 조회되지 않음 (새 계약 생성 가능)
+     * - 같은 조합의 계약이 여러 개 있어도 가장 최근 것만 반환
+     * - origin_contract_url이 null이거나 형식이 맞지 않으면 조회되지 않음
+     * - 기존 계약이 없으면 null 반환 (예외 없음)
+     * 
+     * [데이터 변환]
+     * 
+     * ContractVO → ContractResponseDTO:
+     * - toResponseDTO() 메서드를 사용하여 변환
+     * - originContractUrl에서 projectId와 freelancerId 추출 포함
+     * 
+     * [호출 위치]
+     * - ContractFormController.confirmContract(): 계약 확정 시 UPDATE vs INSERT 판단
+     * - ContractService.createContract(): 계약 생성 전 중복 확인 (선택적)
+     * - ContractService.updateContract(): 계약 수정 전 기존 계약 조회 (선택적)
+     * 
+     * @param clientId 클라이언트 ID (필수)
+     * @param projectId 프로젝트 ID (필수)
+     * @param freelancerId 프리랜서 ID (필수)
+     * @return 기존 계약 정보 (ContractResponseDTO)
+     *         - 기존 계약이 있으면 ContractResponseDTO 반환
+     *         - 기존 계약이 없으면 null 반환
+     *         - TERMINATED 상태의 계약은 조회되지 않음
+     * 
+     * ============================================================================
      */
     public ContractResponseDTO getContractByPathPattern(Integer clientId, Integer projectId, Integer freelancerId) {
         ContractVO contract = contractMapper.selectContractByPathPattern(clientId, projectId, freelancerId);
@@ -717,22 +974,80 @@ public class ContractService {
     }
     
     /**
-     * 계약 최종 완료 (결제 완료)
+     * ============================================================================
+     * 계약 결제 완료 (에스크로 확보)
+     * ============================================================================
      * 
      * [기능]
-     * - 클라이언트가 계약을 최종 수락하여 상태를 COMPLETED로 변경
-     * - 결제 완료 후 호출되는 메서드
-     * - 계약이 성공적으로 완료되었음을 의미
+     * 클라이언트가 계약 결제를 완료하여 상태를 PAID로 변경하는 메서드입니다.
+     * 일시지급과 마일스톤 방식 모두 전체 예산을 에스크로에 확보합니다.
      * 
-     * [상태 변경]
-     * - SIGNED → COMPLETED
-     * - SIGNED: 계약 서명 완료 (작업 진행 중)
-     * - COMPLETED: 계약 완료 (결제 완료, 모든 작업 완료)
+     * [연관 파일]
+     * - ClientContractManagementController.finalizeContract(): 클라이언트가 결제 완료 버튼 클릭 시 호출
+     * - ContractMapper.updateContractStatus(): 계약 상태를 PAID로 변경
+     * - contractManagement.jsp: 클라이언트가 결제 완료 버튼을 클릭하는 UI
+     * 
+     * [에스크로 시스템]
+     * 이 메서드는 에스크로 기반 결제 시스템의 핵심입니다:
+     * 
+     * 1. 클라이언트가 전체 예산을 에스크로에 입금
+     *    - 일시지급: 전체 금액을 한 번에 입금
+     *    - 마일스톤: 전체 금액을 한 번에 입금 (단계별 지급은 나중에)
+     * 
+     * 2. 계약 상태를 PAID로 변경
+     *    - SIGNED → PAID
+     *    - 프리랜서가 지급 요청할 수 있는 상태로 활성화
+     * 
+     * 3. 이후 지급 흐름:
+     *    - 일시지급: 프리랜서 요청 → 클라이언트 수락 → COMPLETED
+     *    - 마일스톤: 프리랜서 단계별 요청 → 클라이언트 수락 → 단계별 지급
+     * 
+     * [상태 전이]
+     * - SIGNED → PAID
+     * - 계약 상태만 변경 (마일스톤 상태는 변경하지 않음)
      * 
      * [비즈니스 규칙]
-     * - 클라이언트만 계약을 완료 처리할 수 있음 (권한 검증 필요)
-     * - SIGNED 상태의 계약만 완료 처리 가능
-     * - 결제가 완료된 후에만 호출되어야 함
+     * - SIGNED 상태의 계약만 결제 완료 처리 가능
+     * - 일시지급과 마일스톤 방식 모두 동일하게 처리 (전체 금액 에스크로 확보)
+     * - PAID 상태로 변경되면 마일스톤/정산이 활성화됨
+     * 
+     * [주의사항]
+     * - 실제 결제 시스템 연동은 별도로 필요 (이 메서드는 상태 변경만 담당)
+     * - contractId가 존재하지 않으면 업데이트되지 않음 (에러 없음)
+     * - 결제 완료 후에만 호출되어야 함
+     * 
+     * [호출 위치]
+     * - ClientContractManagementController.finalizeContract(): 클라이언트 계약 관리 페이지
+     * - ContractApiController: REST API를 통한 계약 결제 완료 처리
+     * 
+     * @param contractId 결제 완료 처리할 계약의 ID
+     * 
+     * ============================================================================
+     */
+    @Transactional
+    public void finalizeContract(Integer contractId) {
+        // 모든 결제 방식이 PAID로 통일 (에스크로에 전체 금액 확보)
+        // 일시지급도 프리랜서가 지급 요청을 할 수 있어야 하므로 PAID 상태로 변경
+        contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), null);
+    }
+    
+    /**
+     * 계약 정산 완료 (모든 마일스톤 종료)
+     * 
+     * [기능]
+     * - 모든 마일스톤이 완료되어 계약 상태를 COMPLETED로 변경
+     * - 정산 완료 후 호출되는 메서드
+     * - 계약이 성공적으로 종료되었음을 의미
+     * 
+     * [상태 변경]
+     * - PAID → COMPLETED
+     * - PAID: 결제 완료(에스크로 확보) - 마일스톤/정산 활성화
+     * - COMPLETED: 정산 완료(모든 마일스톤 종료)
+     * 
+     * [비즈니스 규칙]
+     * - 클라이언트 또는 시스템이 정산 완료 처리할 수 있음 (권한 검증 필요)
+     * - PAID 상태의 계약만 정산 완료 처리 가능
+     * - 모든 마일스톤이 완료된 후에만 호출되어야 함
      * - COMPLETED 상태로 변경되면 더 이상 수정 불가
      * 
      * [후속 작업]
@@ -741,17 +1056,18 @@ public class ContractService {
      * 
      * [주의사항]
      * - contractId가 존재하지 않으면 업데이트되지 않음 (에러 없음)
-     * - 결제 완료 전에 호출되면 안 됨 (비즈니스 로직 검증 필요)
+     * - 모든 마일스톤이 완료되지 않았으면 호출되면 안 됨 (비즈니스 로직 검증 필요)
      * 
      * [호출 위치]
-     * - ClientContractManagementController: 클라이언트가 결제 완료 후 완료 처리
-     * - ContractApiController: API를 통한 계약 완료 처리
+     * - ClientContractManagementController: 클라이언트가 정산 완료 후 처리
+     * - ContractApiController: API를 통한 계약 정산 완료 처리
+     * - 시스템 자동 처리: 모든 마일스톤 완료 시 자동 호출
      * 
-     * @param contractId 완료 처리할 계약의 ID
+     * @param contractId 정산 완료 처리할 계약의 ID
      */
-    public void finalizeContract(Integer contractId) {
+    public void completeContract(Integer contractId) {
         // 계약 상태를 COMPLETED로 변경
-        // 완료 처리이므로 취소 사유 없음 (null)
+        // 정산 완료 처리이므로 취소 사유 없음 (null)
         contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
     }
 
@@ -765,10 +1081,11 @@ public class ContractService {
      * [상태 변경]
      * - WAITING → TERMINATED (계약 대기 중 취소)
      * - SIGNED → TERMINATED (작업 진행 중 취소)
+     * - PAID → TERMINATED (결제 완료 후 중도 종료)
      * 
      * [비즈니스 규칙]
      * - 클라이언트만 계약을 취소할 수 있음 (권한 검증 필요)
-     * - WAITING 또는 SIGNED 상태의 계약만 취소 가능
+     * - WAITING, SIGNED, 또는 PAID 상태의 계약만 취소 가능
      * - 취소 사유는 필수 (사용자에게 취소 이유를 입력받아야 함)
      * - TERMINATED 상태로 변경되면 더 이상 수정 불가
      * 
@@ -786,7 +1103,11 @@ public class ContractService {
      */
     public void cancelContract(Integer contractId, String reason) {
         // 계약 상태를 TERMINATED로 변경하고 취소 사유 저장
-        contractMapper.updateContractStatus(contractId, ContractStatus.TERMINATED.name(), reason);
+        // "[취소] " prefix 추가하여 프리랜서 거절과 구분
+        String prefixedReason = (reason != null && !reason.trim().isEmpty()) 
+            ? (reason.startsWith("[취소] ") ? reason : "[취소] " + reason)
+            : "[취소] 사유 없음";
+        contractMapper.updateContractStatus(contractId, ContractStatus.TERMINATED.name(), prefixedReason);
     }
     
     /**
@@ -817,13 +1138,78 @@ public class ContractService {
      * @return 모든 계약 목록 (List<ContractResponseDTO>), 최신순 정렬
      */
     public List<ContractResponseDTO> getAllContracts() {
-        // 모든 계약 조회
-        List<ContractVO> contracts = contractMapper.selectAllContracts();
+        // 모든 계약 조회 (프로젝트 및 상대방 정보 포함)
+        List<java.util.Map<String, Object>> contractsWithDetails = contractMapper.selectAllContractsWithDetails();
         
-        // VO 리스트를 DTO 리스트로 변환
-        return contracts.stream()
-            .map(this::toResponseDTO)  // 각 VO를 DTO로 변환
-            .collect(Collectors.toList());  // 리스트로 수집
+        // Map 리스트를 DTO 리스트로 변환
+        return contractsWithDetails.stream()
+            .map(map -> {
+                // 날짜를 String으로 변환하는 헬퍼 메서드
+                java.util.function.Function<Object, String> dateToString = (obj) -> {
+                    if (obj == null) return null;
+                    if (obj instanceof String) return (String) obj;
+                    if (obj instanceof java.sql.Date) return obj.toString();
+                    if (obj instanceof java.sql.Timestamp) return obj.toString();
+                    if (obj instanceof java.util.Date) {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                        return sdf.format((java.util.Date) obj);
+                    }
+                    return obj.toString();
+                };
+                
+                // Number를 Integer로 변환하는 헬퍼 메서드
+                java.util.function.Function<Object, Integer> getIntegerValue = (obj) -> {
+                    if (obj == null) return null;
+                    if (obj instanceof Number) return ((Number) obj).intValue();
+                    if (obj instanceof String) {
+                        try {
+                            return Integer.valueOf((String) obj);
+                        } catch (NumberFormatException e) {
+                            return null;
+                        }
+                    }
+                    return null;
+                };
+                
+                // ContractVO Builder로 생성
+                ContractVO vo = ContractVO.builder()
+                    .contractId(map.get("contractId") != null ? ((Number) map.get("contractId")).intValue() : null)
+                    .contractStartDate(dateToString.apply(map.get("contractStartDate")))
+                    .contractEndDate(dateToString.apply(map.get("contractEndDate")))
+                    .totalBudget(map.get("totalBudget") != null ? ((Number) map.get("totalBudget")).longValue() : null)
+                    .paymentMethod((String) map.get("paymentMethod"))
+                    .contractStatus((String) map.get("contractStatus"))
+                    .originContractUrl((String) map.get("originContractUrl"))
+                    .platformContractUrl((String) map.get("platformContractUrl"))
+                    .aiReportUrl((String) map.get("aiReportUrl"))
+                    .contractedAt(dateToString.apply(map.get("contractedAt")))
+                    .completedAt(dateToString.apply(map.get("completedAt")))
+                    .cancelReason((String) map.get("cancelReason"))
+                    .clientRating(map.get("clientRating") != null ? ((Number) map.get("clientRating")).intValue() : null)
+                    .clientExperience((String) map.get("clientExperience"))
+                    .clientIsRenewalIntended((Boolean) map.get("clientIsRenewalIntended"))
+                    .freelancerRating(map.get("freelancerRating") != null ? ((Number) map.get("freelancerRating")).intValue() : null)
+                    .freelancerExperience((String) map.get("freelancerExperience"))
+                    .build();
+                
+                // DTO로 변환
+                ContractResponseDTO dto = toResponseDTO(vo);
+                
+                // 프로젝트 및 상대방 정보 설정
+                dto.setProjectTitle((String) map.get("projectTitle"));
+                dto.setFreelancerName((String) map.get("freelancerName"));
+                dto.setClientName((String) map.get("clientName"));
+                
+                // 마일스톤 상태 집계 정보 설정 (새로 추가)
+                dto.setTotalMilestones(getIntegerValue.apply(map.get("totalMilestones")));
+                dto.setPaidMilestones(getIntegerValue.apply(map.get("paidMilestones")));
+                dto.setRequestedMilestones(getIntegerValue.apply(map.get("requestedMilestones")));
+                dto.setDepositedMilestones(getIntegerValue.apply(map.get("depositedMilestones")));
+                dto.setWaitingMilestones(getIntegerValue.apply(map.get("waitingMilestones")));
+                
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
     
     // =========================================================
@@ -831,19 +1217,76 @@ public class ContractService {
     // =========================================================
     
     /**
-     * ContractVO → ContractResponseDTO 변환
+     * ============================================================================
+     * ContractVO → ContractResponseDTO 변환 (헬퍼 메서드)
+     * ============================================================================
      * 
-     * [기능]
-     * - DB 엔티티(VO)를 응답 DTO로 변환
-     * - originContractUrl에서 projectId와 freelancerId 추출
+     * [역할]
+     * DB 엔티티(ContractVO)를 응답 DTO(ContractResponseDTO)로 변환하는 private 헬퍼 메서드입니다.
+     * Service 계층에서 VO를 DTO로 변환하여 Controller에 전달할 때 사용됩니다.
+     * 
+     * [사용 위치]
+     * - ContractService.getContractById(): 계약 단건 조회 시
+     * - ContractService.getContractByPathPattern(): 기존 계약 조회 시
+     * - ContractService.getContractsByClientPathPattern(): 클라이언트 계약 목록 조회 시
+     * - ContractService.getAllContracts(): 모든 계약 목록 조회 시
+     * 
+     * [처리 흐름]
+     * 1. ContractResponseDTO 객체 생성
+     * 2. ContractVO의 모든 필드를 DTO에 복사
+     * 3. originContractUrl에서 projectId와 freelancerId 추출
+     * 4. DTO 반환
      * 
      * [경로 파싱]
-     * - 형식: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
-     * - pathParts[2] = projectId
-     * - pathParts[3] = freelancerId
      * 
-     * @param vo 계약 VO (DB 엔티티)
-     * @return 계약 응답 DTO
+     * originContractUrl 형식: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
+     * 
+     * 경로 분리:
+     * - pathParts[0] = "contracts"
+     * - pathParts[1] = clientId (사용하지 않음)
+     * - pathParts[2] = projectId (추출하여 DTO에 설정)
+     * - pathParts[3] = freelancerId (추출하여 DTO에 설정)
+     * - pathParts[4+] = fileName (사용하지 않음)
+     * 
+     * [변환 필드]
+     * 
+     * 기본 계약 정보:
+     * - contractId: 계약 ID
+     * - contractStartDate: 계약 시작일
+     * - contractEndDate: 계약 종료일
+     * - totalBudget: 총 예산
+     * - paymentMethod: 결제 방식
+     * - contractStatus: 계약 상태
+     * - originContractUrl: 원본 계약서 파일 경로
+     * - platformContractUrl: 플랫폼 생성 계약서 경로
+     * - aiReportUrl: AI 분석 리포트 경로
+     * - contractedAt: 계약 체결 시각
+     * - completedAt: 계약 완료 시각
+     * - cancelReason: 취소/거절 사유
+     * 
+     * 추출된 정보:
+     * - projectId: originContractUrl에서 추출 (pathParts[2])
+     * - freelancerId: originContractUrl에서 추출 (pathParts[3])
+     * 
+     * [주의사항]
+     * 
+     * - originContractUrl이 null이거나 형식이 맞지 않으면 projectId와 freelancerId는 null
+     * - 경로 파싱 실패 시 NumberFormatException을 무시하고 계속 진행
+     * - pathParts.length가 3보다 작으면 projectId만 추출, 4보다 작으면 freelancerId는 null
+     * - VO는 불변 객체이므로 DTO로 변환하여 전달
+     * 
+     * [에러 처리]
+     * 
+     * - originContractUrl이 null: projectId와 freelancerId는 null로 설정
+     * - originContractUrl이 "contracts/"로 시작하지 않음: projectId와 freelancerId는 null로 설정
+     * - 경로 파싱 실패 (NumberFormatException): 해당 필드만 null로 설정하고 계속 진행
+     * 
+     * @param vo 계약 VO (DB 엔티티, 불변 객체)
+     * @return 계약 응답 DTO (ContractResponseDTO)
+     *         - 모든 필드가 설정됨
+     *         - projectId와 freelancerId는 originContractUrl에서 추출 (실패 시 null)
+     * 
+     * ============================================================================
      */
     private ContractResponseDTO toResponseDTO(ContractVO vo) {
         ContractResponseDTO dto = new ContractResponseDTO();
@@ -884,24 +1327,67 @@ public class ContractService {
     }
     
     /**
-     * ContractMilestoneVO → ContractMilestoneResponseDTO 변환
+     * ============================================================================
+     * ContractMilestoneVO → ContractMilestoneResponseDTO 변환 (헬퍼 메서드)
+     * ============================================================================
      * 
-     * [기능]
-     * - DB 엔티티(VO)를 응답 DTO로 변환
-     * - 마일스톤 정보를 클라이언트에 전달하기 위한 변환
-     * 
-     * [변환 필드]
-     * - step: 단계 순서 (1, 2, 3, ...)
-     * - title: 마일스톤 제목
-     * - description: 작업 범위/설명
-     * - amount: 해당 마일스톤의 결제 금액
+     * [역할]
+     * DB 엔티티(ContractMilestoneVO)를 응답 DTO(ContractMilestoneResponseDTO)로 변환하는
+     * private 헬퍼 메서드입니다. Service 계층에서 VO를 DTO로 변환하여 Controller에 전달할 때 사용됩니다.
      * 
      * [사용 위치]
-     * - getContractById(): 계약 조회 시 마일스톤 포함
-     * - getMilestonesByContractId(): 마일스톤 목록 조회
+     * - ContractService.getContractById(): 계약 조회 시 마일스톤 포함
+     * - ContractService.getMilestonesByContractId(): 마일스톤 목록 조회
      * 
-     * @param vo 마일스톤 VO (DB 엔티티)
-     * @return 마일스톤 응답 DTO
+     * [처리 흐름]
+     * 1. ContractMilestoneResponseDTO 객체 생성
+     * 2. ContractMilestoneVO의 모든 필드를 DTO에 복사
+     * 3. DTO 반환
+     * 
+     * [변환 필드]
+     * 
+     * - step: 마일스톤 단계 순서 (1, 2, 3, ...)
+     *   * 계약 내에서 고유
+     *   * 오름차순 정렬 기준
+     * 
+     * - title: 마일스톤 제목
+     *   * 예: "1단계: 기획 및 설계"
+     *   * null 가능
+     * 
+     * - description: 작업 범위/설명
+     *   * 해당 마일스톤에서 수행할 작업의 상세 설명
+     *   * null 가능
+     * 
+     * - amount: 해당 마일스톤의 결제 금액 (원 단위)
+     *   * Long 타입 (큰 금액 처리)
+     *   * 모든 마일스톤의 amount 합계 = 계약의 totalBudget
+     * 
+     * - status: 마일스톤 상태
+     *   * "WAITING": 대기 중 (아직 지급 요청하지 않음)
+     *   * "REQUESTED": 지급 요청됨 (프리랜서가 요청, 클라이언트 수락 대기)
+     *   * "DEPOSITED": 입금 완료 (클라이언트가 수락, 에스크로에서 출금 대기)
+     *   * "PAID": 지급 완료 (프리랜서에게 실제 지급 완료)
+     * 
+     * [주의사항]
+     * 
+     * - VO는 불변 객체이므로 DTO로 변환하여 전달
+     * - 모든 필드를 그대로 복사 (추가 변환 없음)
+     * - null 필드는 그대로 null로 설정
+     * 
+     * [데이터 타입]
+     * 
+     * - step: Integer (1부터 시작)
+     * - title: String (null 가능)
+     * - description: String (null 가능)
+     * - amount: Long (원 단위)
+     * - status: String (마일스톤 상태)
+     * 
+     * @param vo 마일스톤 VO (DB 엔티티, 불변 객체)
+     * @return 마일스톤 응답 DTO (ContractMilestoneResponseDTO)
+     *         - 모든 필드가 설정됨
+     *         - null 필드는 그대로 null로 설정
+     * 
+     * ============================================================================
      */
     private ContractMilestoneResponseDTO toMilestoneResponseDTO(ContractMilestoneVO vo) {
         ContractMilestoneResponseDTO dto = new ContractMilestoneResponseDTO();
@@ -909,6 +1395,471 @@ public class ContractService {
         dto.setTitle(vo.getTitle());                  // 마일스톤 제목
         dto.setDescription(vo.getDescription());       // 작업 범위/설명
         dto.setAmount(vo.getAmount());                // 결제 금액
+        dto.setStatus(vo.getStatus());                // 마일스톤 상태
         return dto;
+    }
+    
+    /**
+     * ============================================================================
+     * 프리랜서 지급 요청
+     * ============================================================================
+     * 
+     * [기능]
+     * 프리랜서가 작업 완료 후 클라이언트에게 지급을 요청하는 메서드입니다.
+     * 마일스톤 방식과 일시지급 방식을 모두 지원하며, 일시지급의 경우 DB 스키마 변경 없이
+     * cancel_reason 컬럼을 재활용하여 지급 요청 상태를 관리합니다.
+     * 
+     * [연관 파일]
+     * - FreelancerContractController.requestPayment(): 프리랜서가 지급 요청 버튼 클릭 시 호출
+     * - ContractMapper.updateContractStatus(): 일시지급 요청 시 cancel_reason 업데이트
+     * - ContractMilestoneMapper.updateMilestoneStatus(): 마일스톤 요청 시 상태 업데이트
+     * - contractManagement.jsp: 클라이언트가 지급 요청을 확인하고 수락/거부할 수 있는 UI
+     * - freelancerContractList.jsp: 프리랜서가 지급 요청 버튼을 클릭하는 UI
+     * 
+     * [처리 흐름]
+     * 1. 계약 상태 검증 (PAID 또는 COMPLETED여야 함)
+     * 2. 결제 방식 확인:
+     *    a) 일시지급 (FIXED/FULL/null) + 마일스톤 없음
+     *       → cancel_reason에 "[지급요청]" 저장 (DB 스키마 변경 없이 기존 컬럼 활용)
+     *       → 클라이언트가 수락하면 approvePayment()에서 COMPLETED로 변경
+     *    b) 마일스톤 방식
+     *       → 마일스톤 상태를 WAITING → REQUESTED로 변경
+     *       → 클라이언트가 수락하면 approvePayment()에서 DEPOSITED로 변경
+     * 
+     * [일시지급 지급 요청 구현 방식]
+     * DB 스키마 변경 없이 일시지급 지급 요청 상태를 관리하기 위해 cancel_reason 컬럼을 재활용합니다.
+     * 
+     * - cancel_reason = null: 아직 지급 요청하지 않은 상태
+     * - cancel_reason = "[지급요청]": 프리랜서가 지급 요청한 상태
+     * 
+     * 이 방식의 장점:
+     * 1. DB 스키마 변경 불필요 (기존 컬럼 재활용)
+     * 2. 일시지급과 마일스톤 방식을 동일한 로직으로 처리 가능
+     * 3. 클라이언트가 수락/거부할 수 있는 상호작용 구현 가능
+     * 
+     * [상태 전이]
+     * 마일스톤 방식:
+     *   - 마일스톤 상태: WAITING → REQUESTED
+     *   - 계약 상태: PAID (변경 없음)
+     * 
+     * 일시지급 방식:
+     *   - cancel_reason: null → "[지급요청]"
+     *   - 계약 상태: PAID (변경 없음)
+     * 
+     * [비즈니스 규칙]
+     * - 계약 상태가 PAID 또는 COMPLETED여야 함
+     * - 마일스톤 방식: step이 지정되면 해당 마일스톤만, null이면 모든 WAITING 마일스톤
+     * - 일시지급 방식: 마일스톤이 없어야 함 (totalMilestones == 0)
+     * - 이미 REQUESTED, DEPOSITED, PAID인 마일스톤은 변경하지 않음
+     * 
+     * [트랜잭션]
+     * - @Transactional: 상태 변경이 모두 성공해야 커밋
+     * - 예외 발생 시 자동 롤백
+     * 
+     * [호출 위치]
+     * - FreelancerContractController.requestPayment(): 프리랜서 계약 목록 페이지
+     * - ContractApiController: REST API를 통한 지급 요청
+     * 
+     * @param contractId 계약 ID
+     * @param step 마일스톤 단계 (null이면 모든 WAITING 마일스톤, 일시지급은 항상 null)
+     * @return 업데이트된 마일스톤 개수 (일시지급은 항상 1)
+     * 
+     * ============================================================================
+     */
+    @Transactional
+    public int requestPayment(Integer contractId, Integer step) {
+        // 계약 상태 확인 (PAID 또는 COMPLETED여야 함)
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+        if (!ContractStatus.PAID.name().equals(contract.getContractStatus()) 
+                && !ContractStatus.COMPLETED.name().equals(contract.getContractStatus())) {
+            throw new IllegalStateException("결제 완료 또는 정산 완료된 계약만 지급 요청할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+        }
+        
+        // 일시지급인 경우: cancel_reason에 "[지급요청]" 저장 (DB 변경 없이 기존 컬럼 활용)
+        if ("FIXED".equals(contract.getPaymentMethod()) || "FULL".equals(contract.getPaymentMethod()) || contract.getPaymentMethod() == null) {
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            if (milestones == null || milestones.isEmpty()) {
+                // 일시지급: cancel_reason에 "[지급요청]" 저장
+                contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), "[지급요청]");
+                logger.info("일시지급 요청: contractId={}", contractId);
+                return 1;
+            }
+        }
+        
+        // 마일스톤 방식: 마일스톤 상태 업데이트: WAITING → REQUESTED
+        return contractMilestoneMapper.updateMilestoneStatus(contractId, step, "REQUESTED");
+    }
+    
+    /**
+     * ============================================================================
+     * 클라이언트 지급 수락
+     * ============================================================================
+     * 
+     * [기능]
+     * 클라이언트가 프리랜서의 지급 요청을 수락하는 메서드입니다.
+     * 마일스톤 방식과 일시지급 방식을 모두 지원하며, 일시지급의 경우 cancel_reason을
+     * 확인하여 지급 요청 상태를 관리합니다.
+     * 
+     * [연관 파일]
+     * - ClientContractManagementController.approvePayment(): 클라이언트가 지급 수락 버튼 클릭 시 호출
+     * - ContractMapper.updateContractStatus(): 일시지급 수락 시 COMPLETED로 변경
+     * - ContractMapper.updateCancelReason(): cancel_reason을 null로 초기화
+     * - ContractMilestoneMapper.updateMilestoneStatus(): 마일스톤 수락 시 DEPOSITED로 변경
+     * - contractManagement.jsp: 클라이언트가 지급 수락 버튼을 클릭하는 UI
+     * 
+     * [처리 흐름]
+     * 1. 계약 상태 검증 (PAID 또는 COMPLETED여야 함)
+     * 2. 결제 방식 확인:
+     *    a) 일시지급 (FIXED/FULL/null) + cancel_reason = "[지급요청]"
+     *       → 계약 상태를 COMPLETED로 변경
+     *       → cancel_reason을 null로 초기화 (명시적으로)
+     *       → 프리랜서와 클라이언트 모두 "완료 내역"으로 이동
+     *    b) 마일스톤 방식
+     *       → 마일스톤 상태를 REQUESTED → DEPOSITED로 변경
+     *       → 모든 마일스톤이 DEPOSITED 또는 PAID면 계약 상태를 COMPLETED로 변경
+     * 
+     * [일시지급 지급 수락 구현 방식]
+     * cancel_reason = "[지급요청]"인 일시지급 계약을 수락하면:
+     * 1. 계약 상태를 COMPLETED로 변경 (최종 완료)
+     * 2. cancel_reason을 null로 초기화 (명시적으로 updateCancelReason() 호출)
+     * 3. 프리랜서가 재요청할 수 없도록 상태를 완전히 종료
+     * 
+     * [상태 전이]
+     * 마일스톤 방식:
+     *   - 마일스톤 상태: REQUESTED → DEPOSITED
+     *   - 계약 상태: 모든 마일스톤이 DEPOSITED 또는 PAID면 PAID → COMPLETED
+     * 
+     * 일시지급 방식:
+     *   - cancel_reason: "[지급요청]" → null
+     *   - 계약 상태: PAID → COMPLETED
+     * 
+     * [비즈니스 규칙]
+     * - 계약 상태가 PAID 또는 COMPLETED여야 함
+     * - 마일스톤 방식: step이 지정되면 해당 마일스톤만, null이면 모든 REQUESTED 마일스톤
+     * - 일시지급 방식: cancel_reason이 "[지급요청]"이어야 함
+     * - 모든 마일스톤이 DEPOSITED 또는 PAID면 자동으로 COMPLETED로 변경
+     * 
+     * [트랜잭션]
+     * - @Transactional: 상태 변경이 모두 성공해야 커밋
+     * - 예외 발생 시 자동 롤백
+     * 
+     * [호출 위치]
+     * - ClientContractManagementController.approvePayment(): 클라이언트 계약 관리 페이지
+     * - ContractApiController: REST API를 통한 지급 수락
+     * 
+     * @param contractId 계약 ID
+     * @param step 마일스톤 단계 (null이면 모든 REQUESTED 마일스톤, 일시지급은 항상 null)
+     * @return 업데이트된 마일스톤 개수 (일시지급은 항상 1)
+     * 
+     * ============================================================================
+     */
+    @Transactional
+    public int approvePayment(Integer contractId, Integer step) {
+        // 계약 상태 확인 (PAID 또는 COMPLETED여야 함)
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+        if (!ContractStatus.PAID.name().equals(contract.getContractStatus()) 
+                && !ContractStatus.COMPLETED.name().equals(contract.getContractStatus())) {
+            throw new IllegalStateException("결제 완료 또는 정산 완료된 계약만 지급 수락할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+        }
+        
+        // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
+        if (("FIXED".equals(contract.getPaymentMethod()) || "FULL".equals(contract.getPaymentMethod()) || contract.getPaymentMethod() == null)
+                && "[지급요청]".equals(contract.getCancelReason())) {
+            // 일시지급 수락: COMPLETED로 변경하고 cancel_reason 초기화
+            contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            // cancel_reason을 명시적으로 null로 설정
+            contractMapper.updateCancelReason(contractId, null);
+            logger.info("일시지급 수락: contractId={}", contractId);
+            return 1;
+        }
+        
+        // 마일스톤 상태 업데이트: REQUESTED → DEPOSITED (입금 완료)
+        // step이 null이면 모든 REQUESTED 마일스톤을 DEPOSITED로 변경 (전체 수락)
+        if (step == null) {
+            // 모든 REQUESTED 마일스톤을 DEPOSITED로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            int count = 0;
+            
+            // 마일스톤이 있는 경우
+            for (ContractMilestoneVO milestone : milestones) {
+                if ("REQUESTED".equals(milestone.getStatus())) {
+                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), "DEPOSITED");
+                    count++;
+                }
+            }
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID인지 확인
+            boolean allDepositedOrPaid = true;
+            for (ContractMilestoneVO milestone : milestones) {
+                String status = milestone.getStatus();
+                if (!"DEPOSITED".equals(status) && !"PAID".equals(status)) {
+                    allDepositedOrPaid = false;
+                    break;
+                }
+            }
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID면 COMPLETED로 변경
+            if (allDepositedOrPaid && !milestones.isEmpty()) {
+                contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            }
+            
+            return count;
+        } else {
+            // 특정 마일스톤만 DEPOSITED로 변경
+            int updated = contractMilestoneMapper.updateMilestoneStatus(contractId, step, "DEPOSITED");
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID인지 확인
+            List<ContractMilestoneVO> allMilestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            boolean allDepositedOrPaid = true;
+            for (ContractMilestoneVO milestone : allMilestones) {
+                String status = milestone.getStatus();
+                if (!"DEPOSITED".equals(status) && !"PAID".equals(status)) {
+                    allDepositedOrPaid = false;
+                    break;
+                }
+            }
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID면 COMPLETED로 변경
+            if (allDepositedOrPaid && !allMilestones.isEmpty()) {
+                contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            }
+            
+            return updated;
+        }
+    }
+    
+    /**
+     * ============================================================================
+     * 클라이언트 지급 거부
+     * ============================================================================
+     * 
+     * [기능]
+     * 클라이언트가 프리랜서의 지급 요청을 거부하는 메서드입니다.
+     * 프리랜서가 재요청할 수 있도록 상태를 되돌립니다.
+     * 마일스톤 방식과 일시지급 방식을 모두 지원하며, 일시지급의 경우 cancel_reason을
+     * null로 초기화하여 재요청 가능 상태로 만듭니다.
+     * 
+     * [연관 파일]
+     * - ClientContractManagementController.rejectPayment(): 클라이언트가 지급 거부 버튼 클릭 시 호출
+     * - ContractMapper.updateCancelReason(): 일시지급 거부 시 cancel_reason을 null로 초기화
+     * - ContractMilestoneMapper.updateMilestoneStatus(): 마일스톤 거부 시 WAITING으로 되돌림
+     * - contractManagement.jsp: 클라이언트가 지급 거부 버튼을 클릭하는 UI
+     * 
+     * [처리 흐름]
+     * 1. 계약 상태 검증 (PAID 또는 COMPLETED여야 함)
+     * 2. 결제 방식 확인:
+     *    a) 일시지급 (FIXED/FULL/null) + cancel_reason = "[지급요청]"
+     *       → cancel_reason을 null로 초기화 (재요청 가능 상태로 복구)
+     *       → 계약 상태는 PAID 유지 (정산 대기 상태 유지)
+     *       → 프리랜서가 다시 requestPayment()를 호출할 수 있음
+     *    b) 마일스톤 방식
+     *       → 마일스톤 상태를 REQUESTED → WAITING으로 되돌림
+     *       → 프리랜서가 다시 requestPayment()를 호출할 수 있음
+     * 
+     * [일시지급 지급 거부 구현 방식]
+     * cancel_reason = "[지급요청]"인 일시지급 계약을 거부하면:
+     * 1. cancel_reason을 null로 초기화 (명시적으로 updateCancelReason() 호출)
+     * 2. 계약 상태는 PAID 유지 (정산 대기 상태 유지)
+     * 3. 프리랜서가 다시 requestPayment()를 호출하여 재요청 가능
+     * 
+     * [상태 전이]
+     * 마일스톤 방식:
+     *   - 마일스톤 상태: REQUESTED → WAITING
+     *   - 계약 상태: PAID (변경 없음)
+     * 
+     * 일시지급 방식:
+     *   - cancel_reason: "[지급요청]" → null
+     *   - 계약 상태: PAID (변경 없음)
+     * 
+     * [비즈니스 규칙]
+     * - 계약 상태가 PAID 또는 COMPLETED여야 함
+     * - 마일스톤 방식: step이 지정되면 해당 마일스톤만, null이면 모든 REQUESTED 마일스톤
+     * - 일시지급 방식: cancel_reason이 "[지급요청]"이어야 함
+     * - 거부 후에도 프리랜서가 재요청할 수 있어야 함 (상호작용 가능)
+     * 
+     * [트랜잭션]
+     * - @Transactional: 상태 변경이 모두 성공해야 커밋
+     * - 예외 발생 시 자동 롤백
+     * 
+     * [호출 위치]
+     * - ClientContractManagementController.rejectPayment(): 클라이언트 계약 관리 페이지
+     * - ContractApiController: REST API를 통한 지급 거부
+     * 
+     * @param contractId 계약 ID
+     * @param step 마일스톤 단계 (null이면 모든 REQUESTED 마일스톤, 일시지급은 항상 null)
+     * @return 업데이트된 마일스톤 개수 (일시지급은 항상 1)
+     * 
+     * ============================================================================
+     */
+    @Transactional
+    public int rejectPayment(Integer contractId, Integer step) {
+        // 계약 상태 확인 (PAID 또는 COMPLETED여야 함)
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+        if (!ContractStatus.PAID.name().equals(contract.getContractStatus()) 
+                && !ContractStatus.COMPLETED.name().equals(contract.getContractStatus())) {
+            throw new IllegalStateException("결제 완료 또는 정산 완료된 계약만 지급 거부할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+        }
+        
+        // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
+        if (("FIXED".equals(contract.getPaymentMethod()) || "FULL".equals(contract.getPaymentMethod()) || contract.getPaymentMethod() == null)
+                && "[지급요청]".equals(contract.getCancelReason())) {
+            // 일시지급 거부: cancel_reason을 null로 변경 (다시 요청 가능)
+            contractMapper.updateCancelReason(contractId, null);
+            logger.info("일시지급 거부: contractId={}, cancel_reason을 null로 설정", contractId);
+            return 1;
+        }
+        
+        // 마일스톤 상태 업데이트: REQUESTED → WAITING
+        // step이 null이면 모든 REQUESTED 마일스톤을 WAITING으로 변경
+        if (step == null) {
+            // 모든 REQUESTED 마일스톤을 WAITING으로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            int count = 0;
+            
+            for (ContractMilestoneVO milestone : milestones) {
+                if ("REQUESTED".equals(milestone.getStatus())) {
+                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), "WAITING");
+                    count++;
+                }
+            }
+            
+            return count;
+        } else {
+            // 특정 마일스톤만 WAITING으로 변경
+            return contractMilestoneMapper.updateMilestoneStatus(contractId, step, "WAITING");
+        }
+    }
+    
+    /**
+     * ============================================================================
+     * 마일스톤 지급 완료 처리 (플랫폼에서 실제 지급 완료 시)
+     * ============================================================================
+     * 
+     * [기능]
+     * 플랫폼에서 실제 지급이 완료되면 마일스톤 상태를 PAID로 변경하고,
+     * 모든 마일스톤이 PAID가 되면 계약 상태를 COMPLETED로 변경하는 메서드입니다.
+     * 이는 에스크로 시스템에서 실제 지급이 완료된 후 호출되는 최종 단계입니다.
+     * 
+     * [연관 파일]
+     * - ContractMilestoneMapper.updateMilestoneStatus(): 마일스톤 상태 업데이트
+     * - ContractMapper.updateContractStatus(): 계약 상태 업데이트
+     * - contractManagement.jsp: 클라이언트가 지급 완료 처리하는 UI
+     * - freelancerContractList.jsp: 프리랜서가 지급 완료 확인하는 UI
+     * 
+     * [처리 흐름]
+     * 1. 마일스톤 상태 업데이트: DEPOSITED → PAID
+     *    - step이 null이면 모든 DEPOSITED 마일스톤을 PAID로 변경
+     *    - step이 지정되면 해당 마일스톤만 PAID로 변경
+     * 2. 모든 마일스톤 상태 확인
+     *    - 계약의 모든 마일스톤을 조회하여 상태 확인
+     *    - 모든 마일스톤이 PAID인지 검증
+     * 3. 계약 상태 업데이트 (조건부)
+     *    - 모든 마일스톤이 PAID이고 마일스톤이 존재하면
+     *    - 계약 상태를 COMPLETED로 변경
+     * 
+     * [상태 전이]
+     * 
+     * 마일스톤 상태:
+     * - DEPOSITED → PAID
+     *   * 에스크로에서 출금하여 프리랜서에게 실제 지급 완료
+     *   * 최종 완료 상태 (더 이상 변경 불가)
+     * 
+     * 계약 상태 (조건부):
+     * - 모든 마일스톤이 PAID면: PAID → COMPLETED
+     *   * 모든 지급이 완료되어 계약이 성공적으로 종료
+     *   * 계약 완료 후 평가 입력 가능
+     * 
+     * [비즈니스 규칙]
+     * - 마일스톤 상태가 DEPOSITED여야만 PAID로 변경 가능
+     * - step이 null이면 모든 DEPOSITED 마일스톤을 일괄 처리
+     * - step이 지정되면 해당 마일스톤만 처리
+     * - 모든 마일스톤이 PAID가 되면 자동으로 계약 상태를 COMPLETED로 변경
+     * - 마일스톤이 없는 계약(일시지급)은 이 메서드를 사용하지 않음
+     * 
+     * [에스크로 시스템 흐름]
+     * 
+     * 1. 클라이언트가 전체 예산을 에스크로에 입금 (finalizeContract)
+     *    - 계약 상태: SIGNED → PAID
+     * 
+     * 2. 프리랜서가 작업 완료 후 지급 요청 (requestPayment)
+     *    - 마일스톤 상태: WAITING → REQUESTED
+     * 
+     * 3. 클라이언트가 지급 수락 (approvePayment)
+     *    - 마일스톤 상태: REQUESTED → DEPOSITED
+     *    - 에스크로에서 출금 준비 완료
+     * 
+     * 4. 플랫폼에서 실제 지급 완료 (completeMilestonePayment) ← 이 메서드
+     *    - 마일스톤 상태: DEPOSITED → PAID
+     *    - 프리랜서에게 실제 지급 완료
+     *    - 모든 마일스톤이 PAID면 계약 상태: PAID → COMPLETED
+     * 
+     * [트랜잭션]
+     * - @Transactional: 마일스톤 상태 변경과 계약 상태 변경이 모두 성공해야 커밋
+     * - 예외 발생 시 자동 롤백
+     * 
+     * [주의사항]
+     * - 마일스톤이 없는 계약(일시지급)은 이 메서드를 사용하지 않음
+     * - 일시지급은 approvePayment()에서 바로 COMPLETED로 변경
+     * - step이 null이면 모든 DEPOSITED 마일스톤을 처리 (일괄 처리)
+     * - 모든 마일스톤이 PAID가 되면 자동으로 COMPLETED로 변경 (수동 호출 불필요)
+     * 
+     * [호출 위치]
+     * - 외부 결제 시스템 연동: 실제 지급 완료 후 호출
+     * - 관리자 페이지: 수동으로 지급 완료 처리
+     * - ContractApiController: REST API를 통한 지급 완료 처리
+     * 
+     * @param contractId 계약 ID (필수)
+     * @param step 마일스톤 단계 (선택, null이면 모든 DEPOSITED 마일스톤 처리)
+     *             - null: 모든 DEPOSITED 마일스톤을 PAID로 변경
+     *             - 지정: 해당 마일스톤만 PAID로 변경
+     * @return 업데이트된 마일스톤 개수
+     *         - step이 null이면 업데이트된 마일스톤 개수
+     *         - step이 지정되면 0 또는 1
+     * 
+     * ============================================================================
+     */
+    @Transactional
+    public int completeMilestonePayment(Integer contractId, Integer step) {
+        // 마일스톤 상태 업데이트: DEPOSITED → PAID
+        int updatedCount;
+        if (step == null) {
+            // 모든 DEPOSITED 마일스톤을 PAID로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            updatedCount = 0;
+            for (ContractMilestoneVO milestone : milestones) {
+                if ("DEPOSITED".equals(milestone.getStatus())) {
+                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), "PAID");
+                    updatedCount++;
+                }
+            }
+        } else {
+            updatedCount = contractMilestoneMapper.updateMilestoneStatus(contractId, step, "PAID");
+        }
+        
+        // 모든 마일스톤이 PAID인지 확인
+        List<ContractMilestoneVO> allMilestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+        boolean allPaid = true;
+        for (ContractMilestoneVO milestone : allMilestones) {
+            if (!"PAID".equals(milestone.getStatus())) {
+                allPaid = false;
+                break;
+            }
+        }
+        
+        // 모든 마일스톤이 PAID면 계약 상태를 COMPLETED로 변경
+        if (allPaid && !allMilestones.isEmpty()) {
+            contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+        }
+        
+        return updatedCount;
     }
 }
