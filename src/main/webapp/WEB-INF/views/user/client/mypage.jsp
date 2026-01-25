@@ -15,8 +15,22 @@
 <div class="mp-container">
 
     <div class="header-card">
-        <img src="${pageContext.request.contextPath}${not empty profile.profileImageUrl ? profile.profileImageUrl : '/resources/img/default_profile.png'}"
-             class="header-img" id="headerProfileImg">
+        <c:choose>
+            <%-- DB에 프로필 경로가 있으면 해당 경로 사용, 없으면 기본 아이콘 --%>
+            <c:when test="${not empty profile.profileImageUrl}">
+                <img src="${pageContext.request.contextPath}${profile.profileImageUrl}"
+                     class="header-img" id="headerProfileImg"
+                     onerror="this.style.display='none'; document.getElementById('headerDefaultIcon').style.display='flex';">
+                <div id="headerDefaultIcon" class="header-img default-profile-icon" style="display:none; font-size:40px;">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="header-img default-profile-icon" style="font-size:40px;">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </c:otherwise>
+        </c:choose>
 
         <div class="header-content">
             <div class="header-top-row">
@@ -67,6 +81,7 @@
                 <div class="sidebar-label">계정 설정</div>
                 <ul class="sidebar-menu">
                     <li onclick="switchTab('edit', this)" id="menu-edit">내 정보 수정</li>
+                    <li onclick="checkCompanyAccess(this)" id="menu-company">회사 정보 수정</li>
                 </ul>
             </div>
         </div>
@@ -126,23 +141,30 @@
             <div id="view-edit" class="view-section">
                 <div class="dash-card">
                     <h3 class="form-section-title">내 정보 수정</h3>
-
-                    <form action="${pageContext.request.contextPath}/client/mypage/update" method="post"
-                          enctype="multipart/form-data">
+                    <form action="${pageContext.request.contextPath}/client/mypage/update" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="clientType" value="${profile.clientType}">
                         <input type="hidden" name="companyId" value="${profile.companyId}">
 
                         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px;">
-                            <img src="${pageContext.request.contextPath}${not empty profile.profileImageUrl ? profile.profileImageUrl : '/resources/img/default_profile.png'}"
-                                 id="previewImg"
-                                 style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #ddd;">
+                            <div id="previewContainer" style="position:relative; width:80px; height:80px;">
+                                <c:choose>
+                                    <c:when test="${not empty profile.profileImageUrl}">
+                                        <img src="${pageContext.request.contextPath}${profile.profileImageUrl}"
+                                             id="previewImg" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #ddd;">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div id="previewDefaultIcon" class="default-profile-icon" style="width:80px; height:80px; font-size:35px;">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                        <img id="previewImg" style="display:none; width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #ddd;">
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                             <div>
-                                <label for="profileFile"
-                                       style="cursor:pointer; background:#fff; border:1px solid #ccc; padding:6px 12px; border-radius:4px; font-size:13px; font-weight:600;">
+                                <label for="profileFile" style="cursor:pointer; background:#fff; border:1px solid #ccc; padding:6px 12px; border-radius:4px; font-size:13px; font-weight:600;">
                                     이미지 변경
                                 </label>
-                                <input type="file" id="profileFile" name="profileFile" style="display:none;"
-                                       accept="image/*" onchange="readURL(this)">
+                                <input type="file" id="profileFile" name="profileFile" style="display:none;" accept="image/*" onchange="readURL(this)">
                                 <div style="font-size:12px; color:#888; margin-top:5px;">5MB 이하의 이미지 파일</div>
                             </div>
                         </div>
@@ -159,32 +181,6 @@
                             <label>연락처</label>
                             <input type="text" name="phone" class="form-input" value="${profile.phone}">
                         </div>
-
-                        <c:if test="${profile.clientType eq 'CORPORATION'}">
-                            <div class="corp-area">
-                                <h4 style="margin-top:0; margin-bottom:15px; font-size:14px; color:#1F7A8C;">🏢 법인 정보</h4>
-                                <div class="form-row">
-                                    <label>회사명</label>
-                                    <input type="text" name="companyName" class="form-input" value="${profile.companyName}">
-                                </div>
-                                <div class="form-row">
-                                    <label>대표자명</label>
-                                    <input type="text" name="ceoName" class="form-input" value="${profile.ceoName}">
-                                </div>
-                                <div class="form-row">
-                                    <label>사업자 등록번호</label>
-                                    <input type="text" name="businessNumber" class="form-input" value="${profile.businessNumber}">
-                                </div>
-                                <div class="form-row">
-                                    <label>주소</label>
-                                    <input type="text" name="address" class="form-input" value="${profile.address}">
-                                </div>
-                                <div class="form-row">
-                                    <label>웹사이트 URL</label>
-                                    <input type="text" name="websiteUrl" class="form-input" value="${profile.websiteUrl}">
-                                </div>
-                            </div>
-                        </c:if>
 
                         <button type="submit" class="btn-submit">정보 수정 저장</button>
                     </form>
@@ -205,6 +201,71 @@
                 </div>
             </div>
 
+            <div id="view-company" class="view-section">
+                <div class="dash-card">
+                    <h3 class="form-section-title">🏢 회사(사업자) 정보 관리</h3>
+
+                    <form action="${pageContext.request.contextPath}/client/mypage/company-update" method="post">
+                        <input type="hidden" name="companyId" value="${profile.companyId}">
+
+                        <div class="form-row">
+                            <label>회사명 (상호)</label>
+                            <input type="text" name="companyName" class="form-input" value="${profile.companyName}" required>
+                        </div>
+
+                        <div style="display:flex; gap:20px;">
+                            <div class="form-row" style="flex:1;">
+                                <label>대표자명</label>
+                                <input type="text" name="ceoName" class="form-input" value="${profile.ceoName}">
+                            </div>
+                            <div class="form-row" style="flex:1;">
+                                <label>대표자 이메일</label>
+                                <input type="email" name="ceoEmail" class="form-input" value="${profile.ceoEmail}">
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:20px;">
+                            <div class="form-row" style="flex:1;">
+                                <label>사업자 등록번호</label>
+                                <input type="text" name="businessNumber" class="form-input" value="${profile.businessNumber}">
+                            </div>
+                            <div class="form-row" style="flex:1;">
+                                <label>개업일자</label>
+                                <input type="date" name="openingDate" class="form-input" value="${profile.openingDate}">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>업종</label>
+                            <input type="text" name="industry" class="form-input" value="${profile.industry}">
+                        </div>
+
+                        <div class="form-row">
+                            <label>회사 규모</label>
+                            <select name="companySize" class="form-input">
+                                <option value="STARTUP" ${profile.companySize eq 'STARTUP' ? 'selected' : ''}>스타트업</option>
+                                <option value="SMALL" ${profile.companySize eq 'SMALL' ? 'selected' : ''}>중소기업</option>
+                                <option value="MEDIUM" ${profile.companySize eq 'MEDIUM' ? 'selected' : ''}>중견기업</option>
+                                <option value="LARGE" ${profile.companySize eq 'LARGE' ? 'selected' : ''}>대기업</option>
+                                <option value="ENTERPRISE" ${profile.companySize eq 'ENTERPRISE' ? 'selected' : ''}>글로벌 기업</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label>소재지 (사업장 주소)</label>
+                            <input type="text" name="address" class="form-input" value="${profile.address}">
+                        </div>
+
+                        <div class="form-row">
+                            <label>웹사이트 URL</label>
+                            <input type="url" name="websiteUrl" class="form-input" value="${profile.websiteUrl}">
+                        </div>
+
+                        <button type="submit" class="btn-submit" style="background:#1F7A8C;">회사 정보 저장</button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -213,6 +274,7 @@
 <script>
     const contextPath = "${pageContext.request.contextPath}";
     const msg = "${msg}";
+    const clientType = "${profile.clientType}";
 </script>
 <script src="${pageContext.request.contextPath}/resources/js/clientMypage.js"></script>
 

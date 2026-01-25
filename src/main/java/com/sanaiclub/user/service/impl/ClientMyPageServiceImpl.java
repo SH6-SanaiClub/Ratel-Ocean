@@ -2,6 +2,7 @@ package com.sanaiclub.user.service.impl;
 
 import com.sanaiclub.user.dao.ClientMyPageMapper; // (패키지명 맞는지 확인)
 import com.sanaiclub.user.model.dto.ClientMyPageDTO;
+import com.sanaiclub.user.model.vo.CompanySize;
 import com.sanaiclub.user.service.ClientMyPageService;
 import com.sanaiclub.user.model.vo.CompanyVO;
 import com.sanaiclub.user.model.vo.UserVO;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -97,5 +99,22 @@ public class ClientMyPageServiceImpl implements ClientMyPageService {
         String savedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         file.transferTo(new File(dir, savedName));
         return "/resources/upload/profile/" + savedName;
+    }
+
+    @Override
+    @Transactional
+    public void updateCompanyProfile(ClientMyPageDTO dto) {
+        if (dto.getCompanyId() != null) {
+            CompanyVO vo = CompanyVO.builder()
+                    .companyId(dto.getCompanyId())
+                    .companyName(dto.getCompanyName())
+                    .ceoName(dto.getCeoName())
+                    .businessNumber(dto.getBusinessNumber())
+                    .industry(dto.getIndustry())
+                    .address(dto.getAddress())
+                    .websiteUrl(dto.getWebsiteUrl())
+                    .build();
+            mapper.updateCompanyInfo(vo);
+        }
     }
 }

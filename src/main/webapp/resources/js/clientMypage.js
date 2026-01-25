@@ -32,12 +32,30 @@ function readURL(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
         reader.onload = function (e) {
-            // 수정 폼의 미리보기 이미지 변경
-            $('#previewImg').attr('src', e.target.result);
-            // 상단 헤더의 프로필 이미지도 같이 변경 (즉시 반영 효과)
-            $('#headerProfileImg').attr('src', e.target.result);
+            // 1. 수정 폼 미리보기 처리
+            if($('#previewImg').length) {
+                $('#previewImg').attr('src', e.target.result).show();
+                $('#previewDefaultIcon').hide(); // 기본 아이콘 숨김
+            }
+            // 2. 상단 헤더 이미지 처리
+            if($('#headerProfileImg').length) {
+                $('#headerProfileImg').attr('src', e.target.result).show();
+                $('#headerDefaultIcon').hide();
+            } else {
+                // 헤더에 이미지가 없던 상태라면 태그를 생성해서 넣어줌
+                location.reload();
+            }
         }
         reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 회사 정보 수정 접근 권한 체크
+function checkCompanyAccess(el) {
+    if (clientType === 'PERSONAL' || clientType === 'CORPORATION') {
+        switchTab('company', el);
+    } else {
+        alert("해당 메뉴는 사업자만 이용 가능합니다.");
     }
 }
 

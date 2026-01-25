@@ -57,4 +57,16 @@ public class ClientMyPageController {
         boolean result = clientMyPageService.updatePassword(userId, currentPw, newPw);
         return result ? "success" : "fail";
     }
+
+    @PostMapping("/mypage/company-update")
+    public String updateCompany(@ModelAttribute ClientMyPageDTO dto, RedirectAttributes rttr) {
+        try {
+            clientMyPageService.updateCompanyProfile(dto);
+            rttr.addFlashAttribute("msg", "회사 정보가 수정되었습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            rttr.addFlashAttribute("msg", "수정 실패: 오류가 발생했습니다.");
+        }
+        return "redirect:/client/mypage";
+    }
 }

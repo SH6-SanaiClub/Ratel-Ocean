@@ -13,4 +13,6 @@ public interface ClientMyPageService {
 
     // 비밀번호 변경
     boolean updatePassword(Integer userId, String currentPw, String newPw);
+
+    void updateCompanyProfile(ClientMyPageDTO dto);
 }

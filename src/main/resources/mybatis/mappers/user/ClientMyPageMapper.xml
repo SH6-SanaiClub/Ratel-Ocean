@@ -17,7 +17,6 @@
              WHERE p.client_id = u.user_id
                AND con.contract_status = 'COMPLETED') as contract_count,
 
-            -- [통계 2] 평균 평점
             COALESCE(
                     (SELECT AVG(con.client_rating)
                      FROM contracts con
@@ -53,7 +52,6 @@
         <association property="stats" javaType="com.sanaiclub.user.model.dto.ClientStatsDTO">
             <result property="contractCount" column="contract_count"/>
             <result property="avgRating" column="avg_rating"/>
-
             <collection property="reviewList" column="user_id" select="selectClientReviews"/>
         </association>
     </resultMap>
@@ -82,8 +80,13 @@
     </update>
 
     <update id="updateCompanyInfo" parameterType="com.sanaiclub.user.model.vo.CompanyVO">
-        UPDATE companies SET company_name=#{companyName}, ceo_name=#{ceoName},
-                             business_number=#{businessNumber}, industry=#{industry}, address=#{address}, website_url=#{websiteUrl}
+        UPDATE companies
+        SET company_name=#{companyName},
+            ceo_name=#{ceoName},
+            business_number=#{businessNumber},
+            industry=#{industry},
+            address=#{address},
+            website_url=#{websiteUrl}
         WHERE company_id=#{companyId}
     </update>
 

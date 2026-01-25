@@ -20,9 +20,12 @@ public class ClientMyPageDTO {
     private Integer companyId;
     private String companyName;
     private String ceoName;
+    private String ceoEmail;
     private String businessNumber;
+    private String openingDate;
     private String industry;
     private String address;
+    private String companySize;
     private String websiteUrl;
 
     // 4. 통계 및 리뷰 정보
