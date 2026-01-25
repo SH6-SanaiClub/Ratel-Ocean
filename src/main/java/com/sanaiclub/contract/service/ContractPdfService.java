@@ -17,66 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.NumberFormat;
 
-/**
- * ============================================================================
- * ContractPdfService - 계약서 PDF 생성 서비스
- * ============================================================================
- * 
- * [역할]
- * - HTML 템플릿을 생성하고 OpenHTMLToPDF를 사용하여 PDF로 변환
- * - 계약서 양식에 클라이언트/프리랜서 정보 및 계약 내용을 채워서 PDF 생성
- * - 전문적인 계약서 양식 제공 (제1조~제7조)
- * 
- * [기술 스택]
- * - OpenHTMLToPDF: HTML → PDF 변환 라이브러리
- * - 한글 폰트 지원: 맑은 고딕 (Windows 시스템 폰트)
- * - A4 페이지 크기 지원
- * 
- * [처리 흐름]
- * 1. generateContractHtml(): HTML 템플릿 생성
- *    - 클라이언트/프리랜서 정보 입력
- *    - 계약 내용 (목적, 범위, 기간, 금액 등) 입력
- *    - 마일스톤 정보 입력 (MILESTONE 타입일 때)
- * 
- * 2. OpenHTMLToPDF로 HTML → PDF 변환
- *    - 한글 폰트 로드 (맑은 고딕)
- *    - A4 페이지 크기 설정
- *    - PDF 생성
- * 
- * 3. 파일 저장 및 유효성 검증
- *    - PDF 헤더 확인 (%PDF)
- *    - 파일 크기 확인 (0 bytes 체크)
- *    - 디버그용 HTML 파일 저장 (선택적)
- * 
- * [계약서 구조]
- * - 제1조: 당사자 (발주자/수주자)
- * - 제2조: 계약의 목적 및 범위
- * - 제3조: 계약 기간 및 금액
- * - 제4조: 지급 방식
- * - 제5조: 마일스톤 및 단계별 지급 (MILESTONE 타입일 때)
- * - 제6조: 지급 조건 및 일정
- * - 제7조: 기타 특약 사항
- * 
- * [한글 폰트 처리]
- * - Windows 시스템 폰트 경로에서 맑은 고딕 로드
- * - 폰트 로드 실패 시 기본 폰트 사용 (한글 깨짐 가능)
- * - 폰트 패밀리 이름: "Malgun Gothic", "맑은 고딕"
- * 
- * [보안]
- * - HTML 이스케이프: XSS 방지
- * - null/빈 문자열 체크 및 trim 처리
- * 
- * [사용 시나리오]
- * - ContractController.confirmContract(): 직접 작성(FORM) 시 호출
- * - 저장 경로: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
- * 
- * [의존성]
- * - OpenHTMLToPDF: PDF 생성 라이브러리
- * - user 도메인: UserVO, FreelancerProfileVO, ClientProfileVO, CompanyVO
- * - project 도메인: ProjectsVO (간접 참조)
- * 
- * ============================================================================
- */
+
 @Service
 public class ContractPdfService {
 
@@ -84,32 +25,6 @@ public class ContractPdfService {
 
     /**
      * 계약서 PDF 생성
-     * 
-     * [기능]
-     * - 클라이언트/프리랜서 정보와 계약 내용을 HTML 템플릿에 채워서 PDF 생성
-     * - OpenHTMLToPDF를 사용하여 HTML → PDF 변환
-     * 
-     * [처리 흐름]
-     * 1. HTML 템플릿 생성 (generateContractHtml)
-     * 2. 디렉토리 생성 (없으면)
-     * 3. 한글 폰트 로드 (맑은 고딕)
-     * 4. OpenHTMLToPDF로 PDF 생성
-     * 5. PDF 유효성 검증 (헤더 확인)
-     * 
-     * [한글 폰트]
-     * - Windows 시스템 폰트 경로에서 맑은 고딕 로드
-     * - 폰트 로드 실패 시 기본 폰트 사용 (한글 깨짐 가능)
-     * 
-     * @param clientUser 클라이언트 사용자 정보 (user 도메인의 UserVO)
-     * @param clientProfile 클라이언트 프로필 정보 (user 도메인의 ClientProfileVO, null 가능)
-     * @param company 회사 정보 (user 도메인의 CompanyVO, null 가능)
-     * @param freelancerUser 프리랜서 사용자 정보 (user 도메인의 UserVO)
-     * @param freelancerProfile 프리랜서 프로필 정보 (user 도메인의 FreelancerProfileVO, null 가능)
-     * @param form 계약 내용 (계약 목적, 업무 범위, 지급 조건 등)
-     * @param saveDir PDF 저장 디렉토리 (절대 경로)
-     * @param fileName PDF 파일명
-     * @return 생성된 PDF 파일
-     * @throws IOException PDF 생성 실패 시
      */
     public File generateContractPdf(
             UserVO clientUser,
@@ -241,35 +156,6 @@ public class ContractPdfService {
     
     /**
      * 계약서 HTML 템플릿 생성
-     * 
-     * [기능]
-     * - 클라이언트/프리랜서 정보와 계약 내용을 HTML 템플릿에 채워서 반환
-     * - 전문적인 계약서 양식 (제1조~제7조)
-     * 
-     * [HTML 구조]
-     * - DOCTYPE 선언 (&nbsp; 엔티티 포함)
-     * - CSS 스타일 (A4 페이지, 한글 폰트, 테이블 스타일 등)
-     * - 제1조: 당사자 (발주자/수주자)
-     * - 제2조: 계약의 목적 및 범위
-     * - 제3조: 계약 기간 및 금액
-     * - 제4조: 지급 방식
-     * - 제5조: 마일스톤 (MILESTONE 타입일 때)
-     * - 제6조: 지급 조건 및 일정
-     * - 제7조: 기타 특약 사항
-     * 
-     * [데이터 처리]
-     * - null/빈 문자열 체크 및 trim 처리
-     * - HTML 이스케이프 (XSS 방지)
-     * - 숫자 포맷팅 (금액)
-     * 
-     * @param clientUser 클라이언트 사용자 정보 (user 도메인의 UserVO)
-     * @param clientProfile 클라이언트 프로필 정보 (user 도메인의 ClientProfileVO, null 가능)
-     * @param company 회사 정보 (user 도메인의 CompanyVO, null 가능)
-     * @param freelancerUser 프리랜서 사용자 정보 (user 도메인의 UserVO)
-     * @param freelancerProfile 프리랜서 프로필 정보 (user 도메인의 FreelancerProfileVO, null 가능)
-     * @param form 계약 내용
-     * @return HTML 템플릿 문자열
-     * @throws IllegalArgumentException 필수 파라미터가 null일 때
      */
     private String generateContractHtml(
             UserVO clientUser,

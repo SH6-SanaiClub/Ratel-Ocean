@@ -1,5 +1,7 @@
-package com.sanaiclub.contract.service;
+package com.sanaiclub.contract.service.impl;
 
+import com.sanaiclub.contract.service.ContractAIService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,9 +12,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @Service
-public class DeepSeekContractAIServiceImpl implements ContractAIService {
+@RequiredArgsConstructor
+public class ContractAIServiceImpl implements ContractAIService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeepSeekContractAIServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ContractAIServiceImpl.class);
 
     @Value("${deepseek.api.url}")
     private String apiUrl;
@@ -23,10 +26,7 @@ public class DeepSeekContractAIServiceImpl implements ContractAIService {
     @Value("${deepseek.api.timeout:30000}")
     private int timeout;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    public DeepSeekContractAIServiceImpl() {
-    }
+    private final RestTemplate restTemplate;
 
     @Override
     public String requestContractDraft(String prompt) {

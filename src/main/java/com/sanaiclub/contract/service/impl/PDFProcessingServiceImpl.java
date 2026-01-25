@@ -1,4 +1,4 @@
-package com.sanaiclub.contract.service;
+package com.sanaiclub.contract.service.impl;
 
 import com.sanaiclub.contract.service.PDFProcessingService;
 import lombok.extern.slf4j.Slf4j;
