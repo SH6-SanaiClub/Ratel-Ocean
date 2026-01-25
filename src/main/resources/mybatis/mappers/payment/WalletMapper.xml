@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.payment.dao.WalletMapper">
+
+    <resultMap id="WalletResultMap" type="com.sanaiclub.payment.model.vo.FreelancerWalletVO">
+        <id property="walletId" column="wallet_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="balance" column="balance"/>
+        <result property="totalEarned" column="total_earned"/>
+        <result property="version" column="version"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <resultMap id="WalletHistoryResultMap" type="com.sanaiclub.payment.model.vo.WalletHistoryVO">
+        <id property="walletHistoryId" column="wallet_history_id"/>
+        <result property="walletId" column="wallet_id"/>
+        <result property="ioType" column="io_type"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="amount" column="amount"/>
+        <result property="balance" column="balance"/>
+        <result property="summary" column="summary"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 프리랜서 지갑 생성 -->
+    <insert id="insertWallet" parameterType="com.sanaiclub.payment.model.vo.FreelancerWalletVO"
+            useGeneratedKeys="true" keyProperty="walletId">
+        INSERT INTO freelancer_wallets (user_id, balance, total_earned, version)
+        VALUES (#{userId}, 0, 0, 0)
+    </insert>
+
+    <!-- user_id로 지갑 조회 -->
+    <select id="selectWalletByUserId" resultMap="WalletResultMap">
+        SELECT * FROM freelancer_wallets
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- wallet_id로 지갑 조회 -->
+    <select id="selectWalletById" resultMap="WalletResultMap">
+        SELECT * FROM freelancer_wallets
+        WHERE wallet_id = #{walletId}
+    </select>
+
+    <!-- 지갑 거래 내역 저장 (트리거가 자동으로 잔액 업데이트) -->
+    <insert id="insertWalletHistory" parameterType="com.sanaiclub.payment.model.vo.WalletHistoryVO">
+        INSERT INTO wallet_histories (wallet_id, io_type, amount, summary)
+        VALUES (#{walletId}, #{ioType}, #{amount}, #{summary})
+    </insert>
+
+    <!-- 지갑 거래 내역 조회 -->
+    <select id="selectWalletHistoriesByWalletId" resultMap="WalletHistoryResultMap">
+        SELECT * FROM wallet_histories
+        WHERE wallet_id = #{walletId}
+        ORDER BY created_at DESC
+            LIMIT 100
+    </select>
+
+    <!-- 지갑 잔액 조회 (FOR UPDATE - 비관적 락) -->
+    <select id="selectWalletForUpdate" resultMap="WalletResultMap">
+        SELECT * FROM freelancer_wallets
+        WHERE wallet_id = #{walletId}
+            FOR UPDATE
+    </select>
+
+</mapper>

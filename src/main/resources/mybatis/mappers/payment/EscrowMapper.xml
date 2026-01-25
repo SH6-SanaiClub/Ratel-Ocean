@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.payment.dao.EscrowMapper">
+
+    <resultMap id="EscrowResultMap" type="com.sanaiclub.payment.model.vo.EscrowVO">
+        <id property="escrowId" column="escrow_id"/>
+        <result property="paymentId" column="payment_id"/>
+        <result property="contractId" column="contract_id"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="heldAmount" column="held_amount"/>
+        <result property="releasedAmount" column="released_amount"/>
+        <result property="refundedAmount" column="refunded_amount"/>
+        <result property="escrowStatus" column="escrow_status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 에스크로 생성 -->
+    <insert id="insertEscrow" parameterType="com.sanaiclub.payment.model.vo.EscrowVO"
+            useGeneratedKeys="true" keyProperty="escrowId">
+        INSERT INTO escrows (
+            payment_id, contract_id, total_amount, held_amount,
+            released_amount, refunded_amount, escrow_status
+        ) VALUES (
+                     #{paymentId}, #{contractId}, #{totalAmount}, #{heldAmount},
+                     #{releasedAmount}, #{refundedAmount}, #{escrowStatus}
+                 )
+    </insert>
+
+    <!-- 에스크로 ID로 조회 -->
+    <select id="selectEscrowById" resultMap="EscrowResultMap">
+        SELECT * FROM escrows
+        WHERE escrow_id = #{escrowId}
+    </select>
+
+    <!-- 결제 ID로 조회 -->
+    <select id="selectEscrowByPaymentId" resultMap="EscrowResultMap">
+        SELECT * FROM escrows
+        WHERE payment_id = #{paymentId}
+    </select>
+
+    <!-- 계약 ID로 조회 -->
+    <select id="selectEscrowByContractId" resultMap="EscrowResultMap">
+        SELECT * FROM escrows
+        WHERE contract_id = #{contractId}
+        ORDER BY created_at DESC
+            LIMIT 1
+    </select>
+
+    <!-- 마일스톤 지급 처리 -->
+    <update id="updateEscrowRelease">
+        UPDATE escrows
+        SET held_amount = held_amount - #{releaseAmount},
+            released_amount = released_amount + #{releaseAmount},
+            escrow_status = CASE
+                                WHEN (held_amount - #{releaseAmount}) = 0 THEN 'COMPLETED'
+                                ELSE 'PARTIAL_RELEASED'
+                END,
+            updated_at = NOW()
+        WHERE escrow_id = #{escrowId}
+          AND held_amount >= #{releaseAmount}
+    </update>
+
+    <!-- 환불 처리 -->
+    <update id="updateEscrowRefund">
+        UPDATE escrows
+        SET held_amount = held_amount - #{refundAmount},
+            refunded_amount = refunded_amount + #{refundAmount},
+            escrow_status = CASE
+                                WHEN (held_amount - #{refundAmount}) = 0 AND released_amount = 0 THEN 'REFUNDED'
+                                ELSE 'PARTIAL_REFUNDED'
+                END,
+            updated_at = NOW()
+        WHERE escrow_id = #{escrowId}
+          AND held_amount >= #{refundAmount}
+    </update>
+
+    <!-- 에스크로 상태 업데이트 -->
+    <update id="updateEscrowStatus">
+        UPDATE escrows
+        SET escrow_status = #{escrowStatus},
+            updated_at = NOW()
+        WHERE escrow_id = #{escrowId}
+    </update>
+
+    <!-- 에스크로 전체 정보 업데이트 -->
+    <update id="updateEscrow" parameterType="com.sanaiclub.payment.model.vo.EscrowVO">
+        UPDATE escrows
+        SET held_amount = #{heldAmount},
+            released_amount = #{releasedAmount},
+            refunded_amount = #{refundedAmount},
+            escrow_status = #{escrowStatus},
+            updated_at = NOW()
+        WHERE escrow_id = #{escrowId}
+    </update>
+
+</mapper>
