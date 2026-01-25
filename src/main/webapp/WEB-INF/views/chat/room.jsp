@@ -304,10 +304,6 @@
 
 
                     }
-
-
-
-
                     body.appendChild(div);
 
                 });
@@ -325,7 +321,9 @@
                 } else {
                     messageInput.disabled = false;
                     messageInput.placeholder = "메시지를 입력하세요";
+                    document.querySelector(".send-btn").disabled = false;
                 }
+                updateSharedFilesFromMessages(list);
                 body.scrollTop = body.scrollHeight;
 
             });
@@ -351,13 +349,13 @@
             .then(res => res.json())
             .then(message => {
 
-                // 🔥 서버에서 받은 메시지를 STOMP로 뿌림
-                stompClient.send(
-                    "/pub/chat/message",
-                    {},
-                    JSON.stringify(message)
-                );
+                if (stompClient && stompClient.connected) {
+                    stompClient.send("/pub/chat/message", {}, JSON.stringify(message));
+                }
 
+
+                // 파일 공유 목록 업데이트
+                updateSharedFilesFromMessages([message]);
                 messageInput.value = "";
                 fileInput.value = "";
                 document.getElementById("filePreview").style.display = "none";
@@ -431,6 +429,7 @@
                     '<span style="font-size: 11px; color: #888; margin-left: 5px;">' +
                     '(' + formatFileSize(msg.fileSize) + ')' +
                     '</span>';
+                updateSharedFilesFromMessages([msg]);
             }
             fileHtml =
                 '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
@@ -480,17 +479,44 @@
                     '</div>' +
                     '<div class="info-section">' +
                     '<h4>공유 파일</h4>' +
-                    '<div class="file-item">공유된 파일 없음</div>' +
+                    '<div class="file-list"></div>' +
                     '</div>';
-
-            });
+                updateSharedFiles(roomId);
+            })
+            .catch(err => console.error("방 정보 로드 실패:", err));
     }
+    function updateSharedFilesFromMessages(messages) {
+        const fileContainer = document.querySelector("#roomInfo .file-list");
+        if (!fileContainer) return;
+
+        fileContainer.innerHTML = ""; // 기존 내용 초기화
+        let filesExist = false;
+        messages.forEach(msg => {
+            if (msg.fileUrl) {
+                filesExist = true;
+                const div = document.createElement("div");
+                div.className = "file-item";
+                div.innerHTML =
+                    '📎 <a href="' + msg.fileUrl + '" target="_blank" download>' +
+                    escapeHtml(msg.fileName) +
+                    '</a>' +
+                    (msg.fileSize ? ' (' + formatFileSize(msg.fileSize) + ')' : '');
+                fileContainer.appendChild(div);
+            }
+        });
+
+        if (!filesExist) {
+            const div = document.createElement("div");
+            div.className = "file-item";
+            div.innerText = "공유된 파일 없음";
+            fileContainer.appendChild(div);
+        }
+    }
+
     function profileDisplay(roomId){
         fetch(`/ratelocean/chat/room/\${roomId}/info`)
             .then(res => res.json())
             .then(room => {
-                console.log(room);
-                // DTO 필드 그대로 사용
                 document.getElementById("headerName").innerText = room.name || "상대방";
                 document.getElementById("headerProject").innerText = room.title || "프로젝트";
 
@@ -506,19 +532,18 @@
                 </div>
                 <div class="info-section">
                     <h4>공유 파일</h4>
-                    <div class="file-item">공유된 파일 없음</div>
+                    <div class="file-list"></div>
                 </div>`;
         }).catch(err => console.error("방 정보 로드 실패:", err));
     }
     function selectRoom( roomId) {
-        console.log("selectRoom메서드 roomId:" , roomId)
-
         // 기존 방 구독 해제 (다른 방으로 이동 시)
         if (stompClient !== null) {
             stompClient.disconnect();
         }
 
         selectedRoomId = roomId;
+        opponentExited = false;
         loadMessages(roomId);
         fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
@@ -528,17 +553,9 @@
         profileDisplay(roomId);
         opponentExited = false;
                 let roomDiv = $('.find-out[data-roomid="' + roomId + '"]');
-                console.log(roomDiv.html());
-                // 자식 span.clientExited의 data-freelancerexited 값 가져오기
                 let freelancerexitedValue = roomDiv.find('span.freelancerExited').attr('data-free');
                 let clientExitedValue = roomDiv.find('span.clientExited').attr('data-client');
-                console.log("freelancerexitedValue:", freelancerexitedValue);
-                console.log("clientExitedValue:", clientExitedValue);
-
                 opponentExited = freelancerexitedValue == 1 || clientExitedValue == 1;
-                console.log("opponentExited", opponentExited);
-
-                loadMessages(roomId);
 
         highlightSelectedRoom();
         // WebSocket 연결 시작
