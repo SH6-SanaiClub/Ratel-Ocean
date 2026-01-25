@@ -1,6 +1,7 @@
 package com.sanaiclub.contract.controller;
 
 import com.sanaiclub.contract.model.dto.*;
+import com.sanaiclub.contract.model.vo.ContractStatus;
 import com.sanaiclub.contract.service.ContractAutoFillService;
 import com.sanaiclub.contract.service.ContractService;
 import com.sanaiclub.contract.service.ContractPdfService;
@@ -24,61 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
-/**
- * ============================================================================
- * ContractFormController - 계약서 작성 플로우 컨트롤러
- * ============================================================================
- * 
- * [역할]
- * - 계약서 작성 플로우 전체 관리: form → contractCheck → confirm
- * - MVC2 구조: HTTP 요청 처리 및 뷰 선택만 담당, 비즈니스 로직은 Service에 위임
- * - 여러 도메인(contract, project, user) 정보를 조합하여 계약서 작성 지원
- * 
- * [주요 플로우]
- * 1. GET /form: 계약서 작성 화면 표시
- *    - 프로젝트 및 프리랜서 선택 UI 제공
- *    - 클라이언트 정보 조회 및 전달
- * 
- * 2. POST /contractCheck: AI 계약서 초안 생성
- *    - PDF 업로드 또는 직접 작성 내용을 기반으로 AI가 계약서 초안 생성
- *    - ContractAutoFillService를 통해 AI API 호출
- *    - 생성된 초안을 contractCheck 화면에 표시
- * 
- * 3. GET /contractCheck: 계약서 상세 조회
- *    - 기존 계약 정보를 조회하여 상세 화면에 표시
- *    - 계약 수정 시 사용
- * 
- * 4. POST /confirm: 계약서 확정 및 저장
- *    - 계약서 작성/수정 후 최종 확정하여 DB에 저장
- *    - 같은 클라이언트/프로젝트/프리랜서 조합이면 UPDATE, 없으면 INSERT
- *    - PDF 생성 또는 경로 정규화 처리
- * 
- * [계약 입력 타입]
- * - FORM: 사용자가 직접 작성한 계약 내용 (ContractPdfService로 PDF 생성)
- * - PDF: 업로드된 PDF 계약서 (AI로 내용 추출)
- * 
- * [책임 분리 원칙]
- * - Controller: HTTP 요청 처리, 파라미터 검증, 뷰 선택, 여러 도메인 정보 조합
- * - Service: 비즈니스 로직 처리 (계약 생성/수정, PDF 생성, AI 호출 등)
- * - Mapper: 데이터 접근 (다른 도메인 Mapper는 Controller에서만 사용)
- * 
- * [다른 도메인 Mapper 사용]
- * - ProjectDetailMapper: 프로젝트 정보 조회
- * - UserMapper: 사용자 정보 조회
- * - ClientProfileMapper: 클라이언트 프로필 조회
- * - CompanyMapper: 회사 정보 조회
- * 
- * [주의사항]
- * - FreelancerProfile은 다른 도메인 Mapper 이슈로 인해 사용하지 않음
- * - 여러 도메인 정보를 조합하는 역할은 Controller에서만 수행
- * - Service는 contract 도메인만 담당
- * 
- * [경로]
- * - Base URL: /client/contract
- * - 클라이언트 전용 컨트롤러
- * 
- * ============================================================================
- */
+
 @Slf4j
 @Controller
 @RequestMapping("/client/contract")
@@ -97,41 +44,6 @@ public class ContractFormController {
 
     /**
      * 계약서 작성 화면 조회
-     * 
-     * [기능]
-     * - 계약서 작성 폼 화면 표시
-     * - 프로젝트 및 프리랜서 선택 UI 제공
-     * - 클라이언트 정보 및 선택된 프로젝트/프리랜서 정보 전달
-     * 
-     * [처리 흐름]
-     * 1. 현재 로그인한 사용자 인증 확인
-     * 2. 클라이언트 사용자 정보 조회
-     * 3. 선택된 프로젝트/프리랜서 정보 조회 (파라미터가 있는 경우)
-     * 4. 클라이언트 프로필 및 회사 정보 조회
-     * 5. 클라이언트의 프로젝트 목록 조회
-     * 6. Model에 모든 정보 전달
-     * 
-     * [Model Attributes]
-     * - clientUser: 클라이언트 사용자 정보
-     * - clientProfile: 클라이언트 프로필 정보
-     * - company: 회사 정보 (있는 경우)
-     * - selectedProject: 선택된 프로젝트 (있는 경우)
-     * - selectedFreelancerUser: 선택된 프리랜서 사용자 정보 (있는 경우)
-     * - selectedFreelancerProfile: 선택된 프리랜서 프로필 (현재 null)
-     * - projectList: 클라이언트의 프로젝트 목록
-     * - freelancerList: 빈 리스트 (향후 구현 예정)
-     * 
-     * [인증]
-     * - AuthContext.getCurrentUserId()로 현재 사용자 ID 확인
-     * - 사용자 정보가 없으면 "error/unauthorized" 뷰 반환
-     * 
-     * @param projectIdParam 선택된 프로젝트 ID (선택, 쿼리 파라미터)
-     *                       - URL: /client/contract/form?projectId=100
-     * @param freelancerIdParam 선택된 프리랜서 ID (선택, 쿼리 파라미터)
-     *                          - URL: /client/contract/form?freelancerId=50
-     * @param model Spring MVC Model (뷰에 전달할 데이터)
-     * @return 뷰 이름 ("contract/contractForm")
-     *         - 인증 실패 시 "error/unauthorized"
      */
     @GetMapping("/form")
     public String showContractForm(
@@ -196,60 +108,6 @@ public class ContractFormController {
 
     /**
      * 계약서 초안 생성 (AI 자동 작성)
-     * 
-     * [기능]
-     * - PDF 업로드 또는 직접 작성 내용을 기반으로 AI가 계약서 초안 생성
-     * - ContractAutoFillService를 통해 AI API 호출
-     * - 생성된 초안을 contractCheck 화면에 표시
-     * 
-     * [처리 흐름]
-     * 1. 파라미터 추출 및 검증
-     *    - projectId, freelancerId 추출
-     *    - contractInputType 확인 (FORM 또는 PDF)
-     *    - originContractUrl 정규화
-     *    - manualText 생성 (FORM 타입일 때)
-     * 
-     * 2. DB 조회 및 검증
-     *    - 클라이언트 사용자 정보 조회
-     *    - 프로젝트 정보 조회
-     *    - 프리랜서 사용자 정보 조회
-     *    - 클라이언트 프로필 및 회사 정보 조회
-     * 
-     * 3. AI 초안 생성
-     *    - PDF 파일 조회 (PDF 타입일 때)
-     *    - ContractAutoFillService.generateDraft() 호출
-     *    - AI가 계약 정보 추출 및 초안 생성
-     * 
-     * 4. Model에 데이터 전달
-     *    - 클라이언트, 프리랜서, 프로젝트 정보
-     *    - AI 생성 초안 (ContractAutoFillDTO)
-     *    - 계약 입력 타입 및 기타 정보
-     * 
-     * [계약 입력 타입]
-     * - FORM: 사용자가 직접 작성한 계약 내용
-     *   * contractPurpose, workScope, deliverables 등
-     *   * manualText로 변환하여 AI에 전달
-     * - PDF: 업로드된 PDF 계약서
-     *   * PDF 파일에서 텍스트 추출 후 AI에 전달
-     * 
-     * [에러 처리]
-     * - IllegalStateException: 비즈니스 로직 오류 (에러 메시지 표시)
-     * - Exception: 기타 오류 (로그 기록 및 에러 메시지 표시)
-     * 
-     * [주의사항]
-     * - projectId와 freelancerId는 필수
-     * - PDF 파일이 없어도 manualText만으로 초안 생성 가능
-     * - AI API 호출 실패 시 에러 메시지 표시
-     * 
-     * @param params 요청 파라미터 맵
-     *                - projectId: 프로젝트 ID (필수)
-     *                - freelancerId: 프리랜서 ID (필수)
-     *                - contractInputType: 입력 타입 (FORM 또는 PDF)
-     *                - originContractUrl: PDF 경로 (PDF 타입일 때)
-     *                - contractPurpose, workScope 등: 직접 작성 내용 (FORM 타입일 때)
-     * @param model Spring MVC Model (뷰에 전달할 데이터)
-     * @return 뷰 이름 ("contract/contractCheck")
-     *         - 에러 발생 시에도 "contract/contractCheck" 반환 (에러 메시지 포함)
      */
     @PostMapping("/contractCheck")
     public String contractCheck(
@@ -326,29 +184,6 @@ public class ContractFormController {
 
     /**
      * 계약서 상세 조회 (GET)
-     * 
-     * [기능]
-     * - 기존 계약 정보를 조회하여 상세 화면에 표시
-     * - 계약 수정 시 사용
-     * 
-     * [처리 흐름]
-     * 1. contractId로 계약 정보 조회
-     * 2. 계약이 없으면 에러 메시지 표시
-     * 3. 계약 정보와 마일스톤 정보를 Model에 전달
-     * 
-     * [사용 시나리오]
-     * - 계약 수정 화면 진입
-     * - 계약 상세 정보 확인
-     * 
-     * [Model Attributes]
-     * - contract: 계약 정보 (ContractResponseDTO)
-     * - milestones: 마일스톤 목록 (List<ContractMilestoneResponseDTO>)
-     * 
-     * @param contractId 조회할 계약의 ID (필수, 쿼리 파라미터)
-     *                  - URL: /client/contract/contractCheck?contractId=123
-     * @param model Spring MVC Model (뷰에 전달할 데이터)
-     * @return 뷰 이름 ("contract/contractCheck")
-     *         - 계약이 없으면 에러 메시지와 함께 "contract/contractCheck" 반환
      */
     @GetMapping("/contractCheck")
     public String contractCheckGet(@RequestParam("contractId") Integer contractId, Model model) {
@@ -365,78 +200,6 @@ public class ContractFormController {
 
     /**
      * 계약서 최종 확정 및 저장
-     * 
-     * [기능]
-     * - 계약서 작성/수정 후 최종 확정하여 DB에 저장
-     * - 같은 클라이언트/프로젝트/프리랜서 조합이면 UPDATE, 없으면 INSERT
-     * - PDF 생성 또는 경로 정규화 처리
-     * 
-     * [처리 흐름]
-     * 1. 파라미터 검증
-     *    - projectId, freelancerId 필수 확인
-     *    - 현재 사용자 인증 확인
-     * 
-     * 2. PDF 경로 처리
-     *    - FORM 타입: ContractPdfService로 PDF 생성
-     *    - PDF 타입: 경로 정규화 및 파일 이동
-     * 
-     * 3. UPDATE vs INSERT 판단
-     *    - getContractByPathPattern()으로 기존 계약 조회
-     *    - 기존 계약이 있으면 UPDATE
-     *    - 기존 계약이 없으면 INSERT
-     * 
-     * 4. 계약 저장
-     *    - UPDATE: updateExistingContract() 호출
-     *    - INSERT: createNewContract() 호출
-     * 
-     * [UPDATE vs INSERT 로직]
-     * - 같은 clientId + projectId + freelancerId 조합의 계약이 있으면 UPDATE
-     * - 없으면 INSERT
-     * - TERMINATED 상태의 계약은 새 계약으로 취급 (INSERT)
-     * 
-     * [PDF 처리]
-     * - FORM 타입: ContractPdfService.generateContractPdf()로 PDF 생성
-     *   * 저장 경로: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
-     * - PDF 타입: normalizeAndMovePdf()로 경로 정규화 및 파일 이동
-     *   * freelancerId가 경로에 없으면 추가하고 파일 이동
-     * 
-     * [마일스톤 처리]
-     * - paymentMethod가 "MILESTONE"인 경우에만 처리
-     * - milestoneNames, milestoneAmounts, milestoneDescs 배열을 파싱하여 마일스톤 리스트 생성
-     * - UPDATE 시 기존 마일스톤 삭제 후 새로 추가
-     * 
-     * [에러 처리]
-     * - 파라미터 검증 실패: 에러 메시지 표시
-     * - PDF 생성 실패: 에러 메시지 표시 (계약은 저장됨)
-     * - 계약 저장 실패: 에러 메시지 표시
-     * 
-     * [주의사항]
-     * - contractPdf 파라미터는 현재 사용하지 않음 (향후 구현 예정)
-     * - requirements는 INSERT 시에만 사용
-     * - FORM 타입의 계약 내용(contractPurpose 등)은 PDF 생성에만 사용 (DB에 저장되지 않음)
-     * 
-     * @param projectIdStr 프로젝트 ID (필수)
-     * @param freelancerIdStr 프리랜서 ID (필수)
-     * @param contractStartDate 계약 시작일 (필수)
-     * @param contractEndDate 계약 종료일 (필수)
-     * @param totalBudgetStr 총 예산 (필수, 숫자 문자열)
-     * @param paymentMethod 지급 방식 (MILESTONE 또는 FIXED)
-     * @param originContractUrl 업로드된 PDF 경로 (PDF 타입일 때)
-     * @param contractInputType 입력 타입 (FORM 또는 PDF)
-     * @param requirements 요구사항 (INSERT 시에만 사용)
-     * @param milestoneNames 마일스톤 이름 배열 (MILESTONE 타입일 때)
-     * @param milestoneAmounts 마일스톤 금액 배열 (MILESTONE 타입일 때)
-     * @param milestoneDescs 마일스톤 설명 배열 (MILESTONE 타입일 때)
-     * @param contractPurpose 계약 목적 (FORM 타입일 때, PDF 생성에 사용)
-     * @param workScope 업무 범위 (FORM 타입일 때, PDF 생성에 사용)
-     * @param deliverables 결과물 정의 (FORM 타입일 때, PDF 생성에 사용)
-     * @param paymentCondition 지급 조건 (FORM 타입일 때, PDF 생성에 사용)
-     * @param scheduleCondition 일정 조건 (FORM 타입일 때, PDF 생성에 사용)
-     * @param specialTerms 기타 특약 (FORM 타입일 때, PDF 생성에 사용)
-     * @param contractPdf PDF 파일 (현재 미사용, 향후 구현 예정)
-     * @param model Spring MVC Model (뷰에 전달할 데이터)
-     * @return 뷰 이름 ("contract/contractConfirmResult")
-     *         - 성공/실패 메시지를 Model에 담아 전달
      */
     @PostMapping("/confirm")
     public String confirmContract(
@@ -530,17 +293,6 @@ public class ContractFormController {
 
     /**
      * 파라미터에서 프로젝트 ID 추출
-     * 
-     * [기능]
-     * - 요청 파라미터 맵에서 projectId를 추출하여 Integer로 변환
-     * - 파라미터가 없거나 형식이 잘못되면 null 반환
-     * 
-     * [에러 처리]
-     * - NumberFormatException: 에러 메시지를 Model에 추가
-     * 
-     * @param params 요청 파라미터 맵
-     * @param model Spring MVC Model (에러 메시지 전달용)
-     * @return 프로젝트 ID (Integer), 없거나 잘못된 형식이면 null
      */
     private Integer extractProjectId(Map<String, String> params, Model model) {
         try {
@@ -556,17 +308,6 @@ public class ContractFormController {
 
     /**
      * 파라미터에서 프리랜서 ID 추출
-     * 
-     * [기능]
-     * - 요청 파라미터 맵에서 freelancerId를 추출하여 Integer로 변환
-     * - 파라미터가 없거나 형식이 잘못되면 null 반환
-     * 
-     * [에러 처리]
-     * - NumberFormatException: 에러 메시지를 Model에 추가
-     * 
-     * @param params 요청 파라미터 맵
-     * @param model Spring MVC Model (에러 메시지 전달용)
-     * @return 프리랜서 ID (Integer), 없거나 잘못된 형식이면 null
      */
     private Integer extractFreelancerId(Map<String, String> params, Model model) {
         try {
@@ -582,26 +323,6 @@ public class ContractFormController {
 
     /**
      * PDF 경로 정규화
-     * 
-     * [기능]
-     * - PDF 경로를 표준 형식으로 정규화
-     * - 경로 구분자를 "/"로 통일
-     * - contracts/로 시작하지 않으면 기본 경로 추가
-     * 
-     * [경로 형식]
-     * - 입력: 다양한 형식 가능
-     * - 출력: "contracts/{clientId}/{projectId}/{fileName}" 또는 기존 경로
-     * 
-     * [처리]
-     * - PDF 타입이 아니거나 경로가 없으면 그대로 반환
-     * - 이미 contracts/로 시작하면 그대로 반환
-     * - 그 외의 경우 기본 경로 추가
-     * 
-     * @param originContractUrl 원본 PDF 경로
-     * @param contractInputType 계약 입력 타입 (FORM 또는 PDF)
-     * @param projectId 프로젝트 ID
-     * @param freelancerId 프리랜서 ID
-     * @return 정규화된 PDF 경로
      */
     private String normalizePdfPath(String originContractUrl, String contractInputType, Integer projectId, Integer freelancerId) {
         if (!"PDF".equals(contractInputType) || originContractUrl == null || originContractUrl.isBlank()) {
@@ -619,26 +340,6 @@ public class ContractFormController {
 
     /**
      * 직접 작성한 계약 내용을 텍스트로 변환
-     * 
-     * [기능]
-     * - FORM 타입의 계약 내용을 하나의 텍스트로 변환
-     * - AI 초안 생성 시 manualText로 사용
-     * 
-     * [포함 내용]
-     * - 계약 목적 (contractPurpose)
-     * - 업무 범위 (workScope)
-     * - 결과물 정의 (deliverables)
-     * - 지급 조건 (paymentCondition)
-     * - 일정 관련 조건 (scheduleCondition)
-     * - 기타 특약 (specialTerms)
-     * 
-     * [처리]
-     * - FORM 타입이 아니면 null 반환
-     * - 각 필드를 "필드명: 값\n" 형식으로 조합
-     * 
-     * @param params 요청 파라미터 맵
-     * @param contractInputType 계약 입력 타입 (FORM 또는 PDF)
-     * @return 직접 작성한 계약 내용 텍스트, FORM 타입이 아니면 null
      */
     private String buildManualText(Map<String, String> params, String contractInputType) {
         if (!"FORM".equals(contractInputType)) {
@@ -657,24 +358,6 @@ public class ContractFormController {
 
     /**
      * 도메인 객체 검증
-     * 
-     * [기능]
-     * - 계약서 작성에 필요한 도메인 객체들이 모두 존재하는지 검증
-     * - 하나라도 없으면 false 반환하고 에러 메시지 추가
-     * 
-     * [검증 항목]
-     * - clientUser: 클라이언트 사용자 정보
-     * - project: 프로젝트 정보
-     * - freelancerUser: 프리랜서 사용자 정보
-     * 
-     * [에러 처리]
-     * - 각 객체가 null이면 해당하는 에러 메시지를 Model에 추가
-     * 
-     * @param clientUser 클라이언트 사용자 정보
-     * @param project 프로젝트 정보
-     * @param freelancerUser 프리랜서 사용자 정보
-     * @param model Spring MVC Model (에러 메시지 전달용)
-     * @return 검증 성공 여부 (true: 모두 존재, false: 하나라도 없음)
      */
     private boolean validateDomainObjects(UserVO clientUser, ProjectsVO project, UserVO freelancerUser, Model model) {
         if (clientUser == null) {
@@ -940,7 +623,7 @@ public class ContractFormController {
         }
         
         dto.setPaymentMethod(paymentMethod);
-        dto.setContractStatus(com.sanaiclub.contract.model.enums.ContractStatus.WAITING.name());
+        dto.setContractStatus(ContractStatus.WAITING);
         dto.setOriginContractUrl(originContractUrl);
         
         if ("FORM".equals(contractInputType)) {
@@ -983,7 +666,7 @@ public class ContractFormController {
         }
         
         dto.setPaymentMethod(paymentMethod);
-        dto.setContractStatus(com.sanaiclub.contract.model.enums.ContractStatus.WAITING.name());
+        dto.setContractStatus(ContractStatus.WAITING);
         dto.setOriginContractUrl(originContractUrl);
         
         if ("FORM".equals(contractInputType)) {
