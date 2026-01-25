@@ -354,13 +354,13 @@
                 }
 
 
-                // 파일 공유 목록 업데이트
-                updateSharedFilesFromMessages([message]);
+
                 messageInput.value = "";
                 fileInput.value = "";
                 document.getElementById("filePreview").style.display = "none";
                 document.getElementById("fileNameText").innerText = "";
-
+                // 파일 공유 목록 업데이트
+                updateSharedFilesFromMessages([message]);
             })
             .catch(err => console.error(err));
         // 보낼 데이터 객체 생성 (ChatMessageDTO와 매핑)
@@ -486,9 +486,18 @@
             .catch(err => console.error("방 정보 로드 실패:", err));
     }
     function updateSharedFilesFromMessages(messages) {
-        const fileContainer = document.querySelector("#roomInfo .file-list");
-        if (!fileContainer) return;
-
+       let fileContainer = document.querySelector("#roomInfo .file-list");
+        if (!fileContainer) {
+            const infoSection = document.querySelector("#roomInfo .info-section");
+            if (infoSection) {
+                fileContainer = document.createElement("div");
+                fileContainer.className = "file-list";
+                infoSection.appendChild(fileContainer);
+            } else {
+                // infoSection 자체가 없으면 더 이상 진행하지 않음
+                return;
+            }
+        }
         fileContainer.innerHTML = ""; // 기존 내용 초기화
         let filesExist = false;
         messages.forEach(msg => {
