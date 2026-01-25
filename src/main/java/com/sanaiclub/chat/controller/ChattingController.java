@@ -53,9 +53,9 @@ public class ChattingController {
 
     // 채팅 아이콘 → 목록 화면
     @GetMapping
-    public String roomList() {
-
-        return "chat/roomList";
+    public String chatMain(HttpSession session) {
+        session.setAttribute("loginUserId", chatService.getLoginUserId());
+        return "chat/room";
     }
 
 

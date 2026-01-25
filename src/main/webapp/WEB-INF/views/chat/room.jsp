@@ -24,10 +24,10 @@
         <div class="chat-header" id="chatHeader">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <div class="header-name" id="headerName">상대방</div>
-                    <div class="header-project" id="headerProject">프로젝트</div>
+                    <div class="header-name" id="headerName"></div>
+                    <div class="header-project" id="headerProject"></div>
                 </div>
-                <button id="exitRoomBtn" onclick="exitRoom()">나가기</button>
+                <button id="exitRoomBtn" onclick="exitRoom()"style="display:none;">나가기</button>
             </div>
         </div>
 
@@ -157,7 +157,6 @@
                         '</div>';
                 });
             });
-        selectRoom(${roomId});
     }
     // ================== 방 선택 ==================
     let typingTimer = null;
@@ -526,14 +525,14 @@
         fetch(`/ratelocean/chat/room/\${roomId}/info`)
             .then(res => res.json())
             .then(room => {
-                document.getElementById("headerName").innerText = room.name || "상대방";
-                document.getElementById("headerProject").innerText = room.title || "프로젝트";
+                document.getElementById("headerName").innerText = room.name;
+                document.getElementById("headerProject").innerText = room.title;
 
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =
                     `<div class="profile-card">
                     <img src="\${room.profileImageUrl || '/assets/img/default-profile.png'}">
-                    <h3>\${room.name || "상대방"}</h3>
+                    <h3>\${room.name}</h3>
                     <div class="action-buttons">
                         <a href="/user/profile/\${room.userId}">프로필</a>
                         <a href="/project/\${room.projectId}" class="secondary">프로젝트</a>
@@ -545,6 +544,26 @@
                 </div>`;
         }).catch(err => console.error("방 정보 로드 실패:", err));
     }
+    function initEmptyRoom() {
+        // 헤더 비우기
+        document.getElementById("headerName").innerText = "";
+        document.getElementById("headerProject").innerText = "";
+
+        // 채팅 영역 안내
+        document.getElementById("chatBody").innerHTML =
+            '<div class="empty-room">채팅방을 선택해주세요</div>';
+
+        // 우측 정보 제거
+        document.getElementById("roomInfo").innerHTML = "";
+
+        // 입력 비활성화
+        messageInput.disabled = true;
+        document.querySelector(".send-btn").disabled = true;
+
+        // ✅ 나가기 버튼 숨김
+        document.getElementById("exitRoomBtn").style.display = "none";
+    }
+
     function selectRoom( roomId) {
         // 기존 방 구독 해제 (다른 방으로 이동 시)
         if (stompClient !== null) {
@@ -553,6 +572,7 @@
 
         selectedRoomId = roomId;
         opponentExited = false;
+        document.getElementById("exitRoomBtn").style.display = "inline-block";
         loadMessages(roomId);
         fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
@@ -610,7 +630,7 @@
             document.getElementById("fileNameText").innerText = file.name;
         }
     });
-
+    initEmptyRoom();
     loadChatRooms();
 </script>
 </body>
