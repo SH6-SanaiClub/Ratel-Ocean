@@ -1,11 +1,14 @@
 package com.sanaiclub.payment.controller;
 
 import com.sanaiclub.common.util.AuthContext;
+import com.sanaiclub.contract.dao.ContractMapper;
+import com.sanaiclub.contract.model.vo.ContractVO;
 import com.sanaiclub.payment.model.dto.*;
 import com.sanaiclub.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,30 +23,34 @@ public class PaymentController {
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     private final PaymentService paymentService;
+    private final ContractMapper contractMapper;
+
+    // 포트원 식별코드 (properties에서 주입)
+    @Value("${portone.imp.code}")
+    private String impCode;
 
     /**
-     * 결제 페이지
-     *
-     * [기능]
-     * - 계약 정보 확인
-     * - 포트원 결제창 호출을 위한 정보 전달
-     *
-     * @param contractId 계약 ID
-     * @param model 뷰 모델
-     * @return 결제 페이지 JSP
+     * 결제 페이지 요청
      */
     @GetMapping("/request")
     public String paymentPage(@RequestParam("contractId") Integer contractId, Model model) {
         logger.info("결제 페이지 요청: contractId={}", contractId);
 
         try {
-            // 현재 로그인한 사용자 ID 확인
             Integer userId = AuthContext.getCurrentUserId();
             if (userId == null) {
-                throw new IllegalStateException("로그인이 필요합니다.");
+                return "redirect:/user/login"; // 로그인 안되어있으면 로그인 페이지로
             }
 
-            model.addAttribute("contractId", contractId);
+            // 1. 계약 정보 조회 (결제 금액 표시용)
+            ContractVO contract = contractMapper.selectContractById(contractId);
+            if (contract == null) {
+                throw new IllegalArgumentException("존재하지 않는 계약입니다.");
+            }
+
+            // 2. JSP로 데이터 전달
+            model.addAttribute("contract", contract); // 계약 정보 (금액, 기간 등)
+            model.addAttribute("impCode", impCode);   // 포트원 식별코드
             model.addAttribute("userId", userId);
 
             return "payment/paymentRequest";
@@ -56,15 +63,10 @@ public class PaymentController {
     }
 
     /**
-     * 결제 사전 검증 (AJAX)
-     *
-     * [기능]
+     * 결제 사전 검증
      * - merchant_uid 생성
      * - 계약 정보 검증
      * - 결제창 호출에 필요한 정보 반환
-     *
-     * @param request 결제 요청 DTO
-     * @return 결제 준비 정보 (JSON)
      */
     @PostMapping("/prepare")
     @ResponseBody
@@ -81,16 +83,11 @@ public class PaymentController {
     }
 
     /**
-     * 결제 완료 검증 (AJAX)
-     *
-     * [기능]
+     * 결제 완료 검증
      * - 포트원 API로 결제 정보 조회 및 검증
      * - 결제 정보 DB 저장
      * - 에스크로 생성
      * - 계약 상태 업데이트
-     *
-     * @param request 결제 완료 DTO
-     * @return 결제 결과 (JSON)
      */
     @PostMapping("/complete")
     @ResponseBody
@@ -115,7 +112,6 @@ public class PaymentController {
      */
     @GetMapping("/success")
     public String paymentSuccess(@RequestParam("contractId") Integer contractId, Model model) {
-        logger.info("결제 성공 페이지: contractId={}", contractId);
 
         model.addAttribute("contractId", contractId);
 
@@ -132,7 +128,6 @@ public class PaymentController {
     @GetMapping("/fail")
     public String paymentFail(@RequestParam(value = "errorMsg", required = false) String errorMsg,
                               Model model) {
-        logger.warn("결제 실패 페이지: errorMsg={}", errorMsg);
 
         model.addAttribute("errorMsg", errorMsg != null ? errorMsg : "결제 처리 중 오류가 발생했습니다.");
 
