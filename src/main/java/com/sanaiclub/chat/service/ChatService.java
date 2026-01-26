@@ -43,10 +43,6 @@ public class ChatService {
     // =========================================
     // 2. 단일 채팅방 조회
     // =========================================
-    public List<ChatMessageDTO> findRoomById(Integer roomId, Integer loginUserId) {
-        return chatRoomMapper.findRoomById(roomId, loginUserId);
-    }
-
     public ChatRoomDTO findRoomInfo(Integer roomId, Integer loginUserId) {
         return chatRoomMapper.findRoomInfo(roomId, loginUserId);
     }
