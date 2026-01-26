@@ -3,7 +3,6 @@ package com.sanaiclub.chat.controller;
 import com.sanaiclub.chat.dao.ChatMessageMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
-import com.sanaiclub.chat.model.dto.ChatTypingDTO;
 import com.sanaiclub.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
@@ -23,9 +22,7 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/chat")
@@ -109,33 +106,6 @@ public class ChattingController {
         return "ok";
     }
 
-
-    @MessageMapping("/room/{roomId}/typing")
-    public void typing(ChatTypingDTO typingDTO) {
-        // typingDTO: { roomId, typing }
-        Integer userId = chatService.getLoginUserId();
-        if (typingDTO.isTyping()) {
-            chatService.updateTyping(typingDTO.getRoomId(), true);
-        } else {
-            chatService.updateTyping(typingDTO.getRoomId(), false);
-        }
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("userId", userId);
-        payload.put("typing", typingDTO.isTyping());
-
-        // 해당 방 구독자에게 전송 (상대방에게 표시)
-        messagingTemplate.convertAndSend(
-                "/sub/chat/room/" + typingDTO.getRoomId() + "/typing",
-                userId
-        );
-    }
-
-
-    @PostMapping("/room/{roomId}/typing/reset")
-    @ResponseBody
-    public void resetTyping(@PathVariable Integer roomId) {
-        chatService.resetTyping(roomId);
-    }
 
     // 메시지 전송
     @PostMapping("/room/{roomId}/message")

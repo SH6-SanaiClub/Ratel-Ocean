@@ -32,9 +32,6 @@
         </div>
 
         <div class="chat-body" id="chatBody"></div>
-        <div class="typing" id="typingIndicator"  style="display:none">
-            상대방이 입력 중입니다...
-        </div>
         <div class="chat-input">
             <button class="file-btn" onclick="openFile()">📎</button>
 
@@ -159,26 +156,7 @@
             });
     }
     // ================== 방 선택 ==================
-    let typingTimer = null;
-    let isTyping = false;
-    messageInput.addEventListener("keydown", () => {
-        if (!selectedRoomId) return;
-        if (!isTyping) {
-            isTyping = true;
-            stompClient.send("/pub/chat/room/${selectedRoomId}/typing", {}, JSON.stringify({
-                roomId: selectedRoomId,
-                typing: true
-            }));
-        }
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => {
-            isTyping = false;
-            stompClient.send("/pub/chat/typing", {}, JSON.stringify({
-                roomId: selectedRoomId,
-                typing: false
-            }));
-        }, 1000);
-    });
+
     function openFile() {
         document.getElementById("fileInput").click();
     }
@@ -190,19 +168,7 @@
         document.getElementById("fileNameText").innerText = "";
     }
 
-    function loadTypingStatus() {
-        if (!selectedRoomId) return;
-        fetch(`/ratelocean/chat/room/\${selectedRoomId}/typing`)
-            .then(res => res.json())
-            .then(userId => {
-                const el = document.getElementById("typingIndicator");
-                if (userId && userId !== loginUserId) {
-                    el.style.display = "block";
-                } else {
-                    el.style.display = "none";
-                }
-            });
-    }
+
     function highlightSelectedRoom() {
         document.querySelectorAll(".chat-room").forEach(div => {
             div.classList.toggle(
@@ -608,15 +574,6 @@
             stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
                 const receivedMsg = JSON.parse(message.body);
                 showReceivedMessage(receivedMsg); // 화면에 메시지 추가
-            });
-            stompClient.subscribe('/sub/chat/room/' + roomId + '/typing', function (message) {
-                const typingUserId = Number(message.body);
-                const el = document.getElementById("typingIndicator");
-                if (typingUserId && typingUserId !== loginUserId) {
-                    el.style.display = "block";
-                } else {
-                    el.style.display = "none";
-                }
             });
         }, function(error) {
             console.error("STOMP connection error:", error);
