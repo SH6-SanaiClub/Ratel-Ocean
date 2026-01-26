@@ -18,6 +18,18 @@
         <result column="file_url" property="fileUrl"/>
         <result column="file_size" property="fileSize"/>
     </resultMap>
+    <select id="findFileByMessageId"
+            parameterType="int"
+            resultType="com.sanaiclub.chat.model.dto.ChatMessageDTO">
+
+        SELECT
+            message_id      AS messageId,
+            file_name       AS fileName,
+            file_url        AS fileUrl
+        FROM messages
+        WHERE message_id = #{messageId}
+
+    </select>
 
     <select id="findMessages"
             parameterType="int"

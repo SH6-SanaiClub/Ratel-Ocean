@@ -22,7 +22,6 @@ public interface ChatRoomMapper {
 
     // 채팅방 나가기
     void exitRoom(Map<String, Object> param);
-    void insertExitMessage(Map<String, Object> param);
     // 채팅방 정보 조회
     ChatRoomDTO findRoomInfo(@Param("roomId") Integer roomId, @Param("loginUserId") Integer loginUserId);
 

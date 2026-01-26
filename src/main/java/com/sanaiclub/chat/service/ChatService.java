@@ -22,7 +22,6 @@ public class ChatService {
 
     private final ChatRoomMapper chatRoomMapper;
     private final ChatMessageMapper chatMessageMapper;
-    private final Map<Integer, Integer> typingMap = new ConcurrentHashMap<>();
 
     // =========================================
     // 1. 내 채팅방 목록 조회 (AJAX용)
@@ -44,10 +43,6 @@ public class ChatService {
     // =========================================
     // 2. 단일 채팅방 조회
     // =========================================
-    public List<ChatMessageDTO> findRoomById(Integer roomId, Integer loginUserId) {
-        return chatRoomMapper.findRoomById(roomId, loginUserId);
-    }
-
     public ChatRoomDTO findRoomInfo(Integer roomId, Integer loginUserId) {
         return chatRoomMapper.findRoomInfo(roomId, loginUserId);
     }
@@ -61,24 +56,6 @@ public class ChatService {
     // =========================================
     // 4. 메시지 전송
     // =========================================
-    public void updateTyping(Integer roomId, boolean typing) {
-        Integer userId = getLoginUserId();
-        if (typing) {
-            typingMap.put(roomId, userId);
-        } else {
-            typingMap.remove(roomId);
-        }
-    }
-    public Integer getTypingUser(Integer roomId) {
-        return typingMap.get(roomId);
-    }
-    @Transactional
-    public void sendMessage(Integer roomId, String content, String fileName, String fileUrl, Long fileSize) {
-        Integer senderId = getLoginUserId();
-        chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
-        chatRoomMapper.updateLastMessage(roomId);
-    }
-
     // =========================================
     // 5. 공유 파일 조회
     // =========================================
@@ -95,10 +72,6 @@ public class ChatService {
     public void markRoomAsRead(Integer roomId) {
         Integer loginUserId = getLoginUserId();
         chatMessageMapper.markRoomMessagesAsRead(roomId, loginUserId);
-    }
-
-    public void resetTyping(Integer roomId) {
-        typingMap.remove(roomId);
     }
 
     // =========================================

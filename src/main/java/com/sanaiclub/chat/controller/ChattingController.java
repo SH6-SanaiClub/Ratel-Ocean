@@ -1,11 +1,15 @@
 package com.sanaiclub.chat.controller;
 
+import com.sanaiclub.chat.dao.ChatMessageMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
-import com.sanaiclub.chat.model.dto.ChatTypingDTO;
 import com.sanaiclub.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -17,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +33,7 @@ public class ChattingController {
 
     private final ChatService chatService;
     private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
+    private final ChatMessageMapper chatMessageMapper;
 
     /**
      * [STOMP] 실시간 메시지 전송 처리
@@ -120,35 +126,6 @@ public class ChattingController {
 
         return "ok";
     }
-
-
-    @MessageMapping("/room/{roomId}/typing")
-    public void typing(ChatTypingDTO typingDTO) {
-        // typingDTO: { roomId, typing }
-        Integer userId = chatService.getLoginUserId();
-        if (typingDTO.isTyping()) {
-            chatService.updateTyping(typingDTO.getRoomId(), true);
-        } else {
-            chatService.updateTyping(typingDTO.getRoomId(), false);
-        }
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("userId", userId);
-        payload.put("typing", typingDTO.isTyping());
-
-        // 해당 방 구독자에게 전송 (상대방에게 표시)
-        messagingTemplate.convertAndSend(
-                "/sub/chat/room/" + typingDTO.getRoomId() + "/typing",
-                userId
-        );
-    }
-
-
-    @PostMapping("/room/{roomId}/typing/reset")
-    @ResponseBody
-    public void resetTyping(@PathVariable Integer roomId) {
-        chatService.resetTyping(roomId);
-    }
-
     // 메시지 전송
     @PostMapping("/room/{roomId}/message")
     public ResponseEntity<ChatMessageDTO> sendMessage(
@@ -163,7 +140,7 @@ public class ChattingController {
         if (file != null && !file.isEmpty()) {
             fileName = file.getOriginalFilename();
             fileSize = file.getSize();
-            String uploadDir = "C:/upload/chat";
+            String uploadDir = session.getServletContext().getRealPath("/") + "upload/chat";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
             File savedFile = new File(uploadDir, fileName);
@@ -180,7 +157,46 @@ public class ChattingController {
                         fileUrl,
                         fileSize
                 );
+        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);
         return ResponseEntity.ok(message);
+    }
+    @GetMapping("/file/{messageId}")
+    public ResponseEntity<Resource> downloadFile(
+            @PathVariable Integer messageId, HttpSession session
+    ) throws Exception {
+
+        // 1️⃣ DB에서 파일 정보 조회
+        ChatMessageDTO msg = chatMessageMapper.findFileByMessageId(messageId);
+
+        if (msg == null || msg.getFileUrl() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 2️⃣ 실제 파일 경로
+
+        String filePath = session.getServletContext().getRealPath("/upload/chat") + "/" + msg.getFileName();
+        System.out.println(filePath);
+        File file = new File(filePath);
+
+        if (!file.exists()) {
+            System.out.println("파일존재XXXX");
+            return ResponseEntity.notFound().build();
+        }
+        System.out.println("파일존재");
+        // 3️⃣ Resource로 변환
+        Resource resource = new FileSystemResource(file);
+
+        // 4️⃣ 파일명 인코딩 (한글 깨짐 방지)
+        String encodedFileName =
+                URLEncoder.encode(msg.getFileName(), "UTF-8").replaceAll("\\+", "%20");
+
+        // 5️⃣ 다운로드 헤더
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + encodedFileName + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .body(resource);
     }
 
     // 채팅방 진입 (화면)

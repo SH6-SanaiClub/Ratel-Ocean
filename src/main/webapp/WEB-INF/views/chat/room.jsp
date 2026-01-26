@@ -32,9 +32,6 @@
         </div>
 
         <div class="chat-body" id="chatBody"></div>
-        <div class="typing" id="typingIndicator"  style="display:none">
-            상대방이 입력 중입니다...
-        </div>
         <div class="chat-input">
             <button class="file-btn" onclick="openFile()">📎</button>
 
@@ -161,32 +158,14 @@
         connectStomp();
     }
     // ================== 방 선택 ==================
-    let typingTimer = null;
-    let isTyping = false;
+
     messageInput.addEventListener("keydown", (e) => {
         if (!selectedRoomId) return;
-
         if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
             return;
         }
-
-        if (!isTyping) {
-            isTyping = true;
-            stompClient.send("/pub/chat/room/${selectedRoomId}/typing", {}, JSON.stringify({
-                roomId: selectedRoomId,
-                typing: true
-            }));
-        }
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => {
-            isTyping = false;
-            stompClient.send("/pub/chat/typing", {}, JSON.stringify({
-                roomId: selectedRoomId,
-                typing: false
-            }));
-        }, 1000);
     });
     function openFile() {
         document.getElementById("fileInput").click();
@@ -199,19 +178,7 @@
         document.getElementById("fileNameText").innerText = "";
     }
 
-    function loadTypingStatus() {
-        if (!selectedRoomId) return;
-        fetch(`/ratelocean/chat/room/\${selectedRoomId}/typing`)
-            .then(res => res.json())
-            .then(userId => {
-                const el = document.getElementById("typingIndicator");
-                if (userId && userId !== loginUserId) {
-                    el.style.display = "block";
-                } else {
-                    el.style.display = "none";
-                }
-            });
-    }
+
     function highlightSelectedRoom() {
         document.querySelectorAll(".chat-room").forEach(div => {
             div.classList.toggle(
@@ -285,7 +252,7 @@
                             bubbleHtml =
                                 '<div class="bubble file-bubble">' +
                                 '📎 ' +
-                                '<a href="' + msg.fileUrl + '" target="_blank" download>' +
+                                '<a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                                 escapeHtml(msg.fileName) +
                                 '</a>' +
                                 (msg.fileSize
@@ -356,13 +323,6 @@
         })
             .then(res => res.json())
             .then(message => {
-
-                if (stompClient && stompClient.connected) {
-                    stompClient.send("/pub/chat/message", {}, JSON.stringify(message));
-                }
-
-
-
                 messageInput.value = "";
                 fileInput.value = "";
                 document.getElementById("filePreview").style.display = "none";
@@ -490,7 +450,7 @@
             }
             fileHtml =
                 '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
-                '📎 <a href="' + msg.fileUrl + '" target="_blank" download>' +
+                '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                 escapeHtml(msg.fileName) + '</a>' +
                 fileSizeHtml +
                 '</div>';
@@ -563,7 +523,7 @@
                 const div = document.createElement("div");
                 div.className = "file-item";
                 div.innerHTML =
-                    '📎 <a href="' + msg.fileUrl + '" target="_blank" download>' +
+                    '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                     escapeHtml(msg.fileName) +
                     '</a>' +
                     (msg.fileSize ? ' (' + formatFileSize(msg.fileSize) + ')' : '');
@@ -669,21 +629,14 @@
                 const receivedMsg = JSON.parse(message.body);
                 showReceivedMessage(receivedMsg); // 화면에 메시지 추가
             });
-            stompClient.subscribe('/sub/chat/room/' + roomId + '/typing', function (message) {
-                const typingUserId = Number(message.body);
-                const el = document.getElementById("typingIndicator");
-                if (typingUserId && typingUserId !== loginUserId) {
-                    el.style.display = "block";
-                } else {
-                    el.style.display = "none";
-                }
-            });
+
             // 2. [신규] "나의 채팅 목록" 구독 (왼쪽 사이드바용)
             // 내가 속한 어떤 방에서든 메시지가 오면 이쪽으로 알림이 옴
             stompClient.subscribe('/sub/chat/list/' + loginUserId, function (message) {
                 const msg = JSON.parse(message.body);
                 updateChatListUI(msg);
             });
+
         }, function(error) {
             console.error("STOMP connection error:", error);
         });
