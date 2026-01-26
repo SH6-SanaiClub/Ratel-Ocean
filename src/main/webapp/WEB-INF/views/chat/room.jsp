@@ -27,7 +27,10 @@
                     <div class="header-name" id="headerName"></div>
                     <div class="header-project" id="headerProject"></div>
                 </div>
-                <button id="exitRoomBtn" onclick="exitRoom()"style="display:none;">나가기</button>
+                <div>
+                    <button id="pinRoomBtn" onclick="togglePin()" style="display:none; margin-right:5px; background:#ffc107; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">이 지원자 고정하기</button>
+                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none;">나가기</button>
+                </div>
             </div>
         </div>
 
@@ -96,6 +99,41 @@
                 alert("채팅방 나가기에 실패했습니다.");
             });
     }
+
+    // 고정된 방 ID 목록 관리 (localStorage 사용)
+    function getPinnedRooms() {
+        const pinned = localStorage.getItem("pinnedRooms");
+        return pinned ? JSON.parse(pinned) : [];
+    }
+
+    function togglePin() {
+        if (!selectedRoomId) return;
+
+        let pinnedRooms = getPinnedRooms();
+        const index = pinnedRooms.indexOf(selectedRoomId);
+
+        if (index > -1) {
+            pinnedRooms.splice(index, 1); // 고정 해제
+            alert("고정이 해제되었습니다.");
+        } else {
+            pinnedRooms.push(selectedRoomId); // 고정 추가
+            alert("최상단에 고정되었습니다.");
+        }
+
+        localStorage.setItem("pinnedRooms", JSON.stringify(pinnedRooms));
+        updatePinButtonUI();
+        loadChatRooms(); // 목록 새로고침하여 순서 변경
+    }
+
+    function updatePinButtonUI() {
+        const btn = document.getElementById("pinRoomBtn");
+        if (!selectedRoomId) {
+            btn.style.display = "none";
+            return;
+        }
+        const pinnedRooms = getPinnedRooms();
+        btn.innerText = pinnedRooms.includes(selectedRoomId) ? "📍 고정됨" : "📌 고정하기";
+    }
     // ================== 채팅방 목록 로드 ==================
     // ================== 채팅방 목록 로드 (왼쪽 사이드바) ==================
     function loadChatRooms() {
@@ -104,24 +142,39 @@
             .then(list => {
                 const container = document.getElementById("roomList");
                 let finalHtml = ""; // 모든 HTML을 합쳐서 담을 변수
-
+                const pinnedRooms = getPinnedRooms();
                 const filteredList = list.filter(room => {
                     if (loginUserId === room.freelancerId) return room.freelancerExited === 0;
                     if (loginUserId === room.clientId) return room.clientExited === 0;
                     return true;
                 });
-
+                filteredList.sort((a, b) => {
+                    const aPinned = pinnedRooms.includes(a.roomId);
+                    const bPinned = pinnedRooms.includes(b.roomId);
+                    if (aPinned && !bPinned) return -1;
+                    if (!aPinned && bPinned) return 1;
+                    // 둘 다 고정되어 있거나 둘 다 아니면 시간순 정렬
+                    return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+                });
                 if (loginUserType === 'CLIENT') {
                     const projectGroups = {};
+                    const projectOrder = [];
                     filteredList.forEach(room => {
-                        if (!projectGroups[room.title]) projectGroups[room.title] = [];
+                        if (!projectGroups[room.title]) {
+                            projectGroups[room.title] = [];
+                            projectOrder.push(room.title); // 처음 발견된 순서(정렬된 순서)대로 프로젝트 저장
+                        }
                         projectGroups[room.title].push(room);
                     });
-
-                    for (const title in projectGroups) {
+                    projectOrder.forEach(title => {
                         const rooms = projectGroups[title];
                         const safeId = btoa(encodeURIComponent(title)).replace(/=/g, "");
                         const totalUnread = rooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
+
+                        // 고정된 방이 포함된 프로젝트인지 확인 (아이콘 표시용)
+                        const hasPinned = rooms.some(r => pinnedRooms.includes(r.roomId));
+                        const pinIcon = hasPinned ? "📌 " : "";
+
                         let unreadBadge = "";
                         if (totalUnread > 0) {
                             unreadBadge = '<span class="total-unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-left: 8px; vertical-align: middle;">' + totalUnread + '</span>';
@@ -149,7 +202,7 @@
 
                         // 4. 영역 닫기
                         finalHtml += '</div>';
-                    }
+                    });
                 } else {
                     // 프리랜서: 기존 방식
                     filteredList.forEach(room => {
@@ -165,6 +218,11 @@
     }
     // ================== 방 선택 ==================
     function renderSingleRoom(room) {
+        const pinnedRooms = getPinnedRooms();
+
+        // 2. 현재 방이 고정되어 있는지 확인하여 아이콘 설정
+        const isPinned = pinnedRooms.includes(room.roomId);
+        const pinMark = isPinned ? '<span style="color: #ffc107; margin-right: 4px;">📌</span>' : "";
         let timeText = "";
         if (room.lastMessageAt) {
             timeText = new Date(room.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -183,7 +241,7 @@
             '</div>' +
             '<div class="room-info" style="flex: 1;">' +
             '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
-            '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>' +
+            '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + pinMark + room.name + '</span>' +
             '<span class="room-time">' + timeText + '</span>' +
             '</div>' +
             '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
@@ -633,6 +691,7 @@
 
         // ✅ 나가기 버튼 숨김
         document.getElementById("exitRoomBtn").style.display = "none";
+        document.getElementById("pinRoomBtn").style.display = "none";
     }
 
     function selectRoom( roomId) {
@@ -644,6 +703,8 @@
         selectedRoomId = roomId;
         opponentExited = false;
         document.getElementById("exitRoomBtn").style.display = "inline-block";
+        document.getElementById("pinRoomBtn").style.display = "inline-block";
+        updatePinButtonUI();
         loadMessages(roomId);
         const $roomItem = $('#room-item-' + roomId);
         $roomItem.find('.unread-badge').remove();
