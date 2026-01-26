@@ -1,4 +1,5 @@
 let currentProjectId = null;
+let currentSelectedFreelancerId = null;
 
 $(document).ready(function () {
     console.log("Ratel-Ocean Manager Ready");
@@ -46,7 +47,9 @@ function switchProjectTab(status, btn) {
         $('#defaultCenterPanel, #defaultRightPanel').show();
         $('#selectedProjectTitle').text('');
 
-        // [버그 수정] 다른 탭 갔다가 돌아왔을 때, 이전 프로젝트의 지원자 수(Badge)가 남아있는 문제 해결
+        // 탭 전환 시 상세 보기 버튼 숨김
+        $('#btnGoFreelancerProfile').hide();
+
         $('#applicantCountBadge').text('0명');
 
         $('#projectControlBar').hide();
@@ -74,6 +77,9 @@ function loadApplicants(projectId, element) {
     const title = $(element).find('.item-main-text').text();
     $('#selectedProjectTitle').text(title);
     $('#projectControlBar').css('display', 'flex');
+
+    // 프로젝트 변경 시 상세 보기 버튼 숨김 (초기화)
+    $('#btnGoFreelancerProfile').hide();
 
     $.ajax({
         url: contextPath + '/client/api/applicants',
@@ -123,10 +129,18 @@ function renderList(list) {
             badgeStyle = "background:#FFF3E0; color:#EF6C00;";
         }
 
+        // 평점 처리 (null이면 0.0)
+        const ratingVal = app.rating ? app.rating.toFixed(1) : "0.0";
+
         html += `
             <div class="custom-list-item" id="item-${app.applicationId}" onclick="loadDetail(${app.applicationId}, this)">
                 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <span style="font-weight:700; color:#333;">${app.freelancerName}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-weight:700; color:#333;">${app.freelancerName}</span>
+                        <span style="font-size:12px; color:#f39c12; font-weight:600;">
+                            <i class="fa-solid fa-star"></i> ${ratingVal}
+                        </span>
+                    </div>
                     <span class="status-badge" style="font-size:11px; padding:2px 6px; border-radius:4px; font-weight:700; ${badgeStyle}">
                         ${statusText}
                     </span>
@@ -167,15 +181,37 @@ function renderDetail(data) {
     currentSelectedFreelancerId = data.freelancerId;
     $('#btnGoFreelancerProfile').css('display', 'flex');
 
+    // 1. 프로필 이미지 처리
     let imageHtml = '';
     if (data.profileImageUrl) {
         imageHtml = `<img src="${data.profileImageUrl}" class="detail-img" 
+                      style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #eee;"
                       onerror="this.src='${contextPath}/resources/img/default_profile.png';">`;
     } else {
-        imageHtml = `<div class="detail-img-icon"><i class="fa-solid fa-user"></i></div>`;
+        imageHtml = `<div class="detail-img-icon" style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
     }
 
-    // 버튼 상태 및 스타일 설정
+    // 2. 평점 처리
+    const ratingVal = data.rating ? data.rating.toFixed(1) : "0.0";
+
+    // 3. 학력 정보 처리 (-/-/- 형식)
+    const school = data.schoolName || "-";
+    const major = data.major || "-";
+    const gradStatus = data.graduationStatus || "-";
+    const eduInfo = `${school} / ${major} / ${gradStatus}`;
+
+    // 4. 링크 버튼 생성
+    let linksHtml = '';
+    if (data.githubUrl) {
+        linksHtml += `<a href="${data.githubUrl}" target="_blank" style="margin-right:10px; color:#333; text-decoration:none; font-size:20px;"><i class="fa-brands fa-github"></i></a>`;
+    }
+    if (data.websiteUrl) {
+        linksHtml += `<a href="${data.websiteUrl}" target="_blank" style="color:#333; text-decoration:none; font-size:18px;"><i class="fa-solid fa-globe"></i></a>`;
+    }
+    if (linksHtml === '') linksHtml = '<span style="color:#ccc; font-size:13px;">등록된 링크 없음</span>';
+
+
+    // 버튼 스타일 (기존 유지)
     let chatDisabled = "", offerDisabled = "", rejectDisabled = "";
     let chatStyle = "btn-outline", offerStyle = "btn-primary", rejectStyle = "btn-secondary";
 
@@ -185,22 +221,35 @@ function renderDetail(data) {
     }
 
     const html = `
-        <div class="detail-profile-header" style="text-align:center;">
-            ${imageHtml} 
-            <div class="detail-name" style="margin-top:10px;">${data.freelancerName}</div>
+        <div class="detail-profile-header" style="text-align:center; padding-bottom:20px; border-bottom:1px solid #eee;">
+            ${imageHtml}
+            
+            <div style="margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span class="detail-name" style="font-size:18px; font-weight:700;">${data.freelancerName}</span>
+                <span style="color:#f39c12; font-weight:600; font-size:14px;">
+                    <i class="fa-solid fa-star"></i> ${ratingVal}
+                </span>
+            </div>
+
+            <div style="margin-top:5px; font-size:13px; color:#666;">
+                ${eduInfo}
+            </div>
         </div>
         
-        <div class="detail-section">
+        <div class="detail-section" style="margin-top:20px;">
             <span class="detail-label">자기소개</span>
-            <div class="detail-content">${data.introduction || "내용 없음"}</div>
+            <div class="detail-content" style="white-space:pre-wrap;">${data.introduction || "내용 없음"}</div>
         </div>
 
         <div class="detail-section">
             <span class="detail-label">기술 스택</span>
             <div class="detail-content">${skills}</div>
+            <div style="margin-top:8px; display:flex; align-items:center;">
+                ${linksHtml}
+            </div>
         </div>
 
-        <div class="action-btn-group" style="margin-top:auto;">
+        <div class="action-btn-group" style="margin-top:auto; padding-top:20px;">
             <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="updateStatus(${data.applicationId}, 'CHATTING')">
                 1:1 채팅하기
             </button>

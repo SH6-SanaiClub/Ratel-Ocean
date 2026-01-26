@@ -26,11 +26,12 @@ public class ClientApplicantDTO {
     private String websiteUrl;
     private String schoolName;
     private String major;
+    private String graduationStatus; // 졸업 여부 (예: 졸업, 재학, 휴학)
 
     // 포트폴리오 URL
     private String portfolioUrl;
 
-    // 평점
+    // 평점 (계약 테이블에서 계산된 평균 값)
     private Double rating;
 
     // === 1:N 관계 데이터 ===
