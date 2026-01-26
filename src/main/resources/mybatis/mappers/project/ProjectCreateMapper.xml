@@ -4,28 +4,63 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ProjectCreateMapper">
 
-    <insert id="insertProject" parameterType="com.sanaiclub.project.model.vo.ProjectsVO"
+    <insert id="insertProject" parameterType="com.sanaiclub.project.model.dto.ProjectCreateRequestDTO"
             useGeneratedKeys="true" keyProperty="projectId">
-        INSERT INTO projects (
-            client_id, title, description,
-            start_date, deadline_date,
-            est_duration, duration_negotiable,
-            budget, budget_negotiable,
-            communicate_method, payment_method,
-            max_revision_count, change_policy, project_status, is_public,
-            plan_url, file_size  ) VALUES (
-                                              #{clientId}, #{title}, #{description},
-                                              #{startDate}, #{deadlineDate},
-                                              #{estDuration}, #{durationNegotiable},
-                                              #{budget}, #{budgetNegotiable},
-                                              #{communicateMethod}, #{paymentMethod},
-                                              #{maxRevisionCount}, #{changePolicy}, #{projectStatus}, #{isPublic},
-                                              #{planUrl}, #{fileSize} )
+        INSERT INTO projects (client_id, title, description,
+                              start_date, deadline_date, est_duration, duration_negotiable,
+                              budget, budget_negotiable, communicate_method, payment_method,
+                              max_revision_count, change_policy, project_status, is_public,
+                              plan_url, file_size)
+        VALUES (#{clientId}, #{title}, #{description},
+                #{startDate}, #{deadlineDate}, #{estDuration}, #{durationNegotiable},
+                #{budget}, #{budgetNegotiable}, #{communicateMethod}, #{paymentMethod},
+                #{maxRevisionCount}, #{changePolicy}, #{projectStatus}, #{isPublic},
+                #{planUrl}, #{fileSize})
     </insert>
 
     <insert id="insertProjectStack" parameterType="com.sanaiclub.project.model.vo.ProjectStackVO">
         INSERT INTO project_stacks (project_id, stack_id, stack_level, stack_year)
         VALUES (#{projectId}, #{stackId}, #{stackLevel}, #{stackYear})
     </insert>
+
+    <select id="selectProjectById" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
+        SELECT *
+        FROM projects
+        WHERE project_id = #{projectId}
+    </select>
+
+    <select id="selectStackListByProjectId" resultType="com.sanaiclub.project.model.dto.StackDTO">
+        SELECT s.stack_id, s.stack_name, s.category
+        FROM project_stacks ps
+                 JOIN stacks s ON ps.stack_id = s.stack_id
+        WHERE ps.project_id = #{projectId}
+    </select>
+
+    <select id="selectProjectStackConfig" resultType="com.sanaiclub.project.model.vo.ProjectStackVO">
+        SELECT *
+        FROM project_stacks
+        WHERE project_id = #{projectId}
+          AND stack_level > 0 LIMIT 1
+    </select>
+
+    <update id="updateProject" parameterType="com.sanaiclub.project.model.dto.ProjectCreateRequestDTO">
+        UPDATE projects
+        SET title = #{title}, description = #{description},
+        budget = #{budget}, budget_negotiable = #{budgetNegotiable},
+        est_duration = #{estDuration}, duration_negotiable = #{durationNegotiable},
+        start_date = #{startDate}, deadline_date = #{deadlineDate},
+        communicate_method = #{communicateMethod}, payment_method = #{paymentMethod},
+        max_revision_count = #{maxRevisionCount}, change_policy = #{changePolicy},
+        updated_at = NOW()
+        <if test="planUrl != null">, plan_url = #{planUrl}, file_size = #{fileSize}</if>
+        WHERE project_id = #{projectId}
+    </update>
+
+    <delete id="deleteProjectStacks">DELETE
+                                     FROM project_stacks
+                                     WHERE project_id = #{projectId}</delete>
+    <delete id="deleteProject">DELETE
+                               FROM projects
+                               WHERE project_id = #{projectId}</delete>
 
 </mapper>

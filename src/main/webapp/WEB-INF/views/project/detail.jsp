@@ -285,7 +285,7 @@
                 <c:when test="${loginUserType eq 'CLIENT'}">
                     <c:choose>
                         <c:when test="${loginUserId eq project.clientId}">
-                            <button type="button" class="btn-primary" style="background:#333;" onclick="location.href='/project/edit/${project.projectId}'">
+                            <button type="button" class="btn-primary" style="background:#333;" onclick="location.href='${pageContext.request.contextPath}/client/manage'">
                                 <i class="fa-solid fa-gear"></i> 프로젝트 관리
                             </button>
                         </c:when>

@@ -1,0 +1,107 @@
+/* 마일스톤 카드 */
+.milestone-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    position: relative;
+    transition: 0.2s;
+}
+
+.milestone-card:hover {
+    border-color: #1F7A8C;
+}
+
+.ms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.ms-step {
+    font-size: 11px;
+    color: #1F7A8C;
+    font-weight: 800;
+    background: #E0F7FA;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.ms-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    margin-left: 5px;
+}
+
+/* 상태 뱃지 */
+.ms-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.st-WAITING {
+    background: #f5f5f5;
+    color: #999;
+}
+
+.st-REQUESTED {
+    background: #FFEBEE;
+    color: #D32F2F;
+    animation: pulse 1.5s infinite;
+}
+
+.st-PAID {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.ms-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.ms-amount {
+    font-weight: 700;
+    color: #333;
+}
+
+/* 지급 승인 버튼 */
+.btn-pay-approve {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #1F7A8C;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-pay-approve:hover {
+    background: #166678;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}

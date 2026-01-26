@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ClientProgressMapper">
+
+    <select id="selectMilestonesByProjectId" resultType="com.sanaiclub.project.model.dto.ClientMilestoneDTO">
+        SELECT
+            cm.milestone_id      AS milestoneId,
+            cm.contract_id       AS contractId,
+            cm.step_order        AS stepOrder,
+            cm.milestone_name    AS milestoneName,
+            cm.amount            AS amount,
+            cm.due_date          AS dueDate,
+            cm.status            AS status,
+            u.name               AS freelancerName
+        FROM projects p
+                 INNER JOIN project_applications pa ON p.project_id = pa.project_id
+                 INNER JOIN contracts c ON pa.application_id = c.contract_id
+                 INNER JOIN contract_milestones cm ON c.contract_id = cm.contract_id
+                 INNER JOIN users u ON pa.freelancer_id = u.user_id
+        WHERE p.project_id = #{projectId}
+        ORDER BY cm.step_order ASC
+    </select>
+
+    <update id="updateMilestoneStatus">
+        UPDATE contract_milestones
+        SET status = #{status}
+        WHERE milestone_id = #{milestoneId}
+    </update>
+
+</mapper>

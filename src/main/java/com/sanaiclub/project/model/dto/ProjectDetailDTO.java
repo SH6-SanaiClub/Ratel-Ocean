@@ -19,7 +19,9 @@ public class ProjectDetailDTO extends ProjectsVO {
 
     private List<RequiredStackDTO> stacks; // 기술 스택
 
-    private boolean isApplied;    // 지원 여부
+
+    private boolean isApplied;      // 화면 표시용 (CANCELED가 아니면 true)
+    private String applicationStatus; // 상세 상태 (PENDING, CANCELED 등)
     private boolean isWishlisted; // 찜 여부
 
     private String clientName;  // 개인 이름
