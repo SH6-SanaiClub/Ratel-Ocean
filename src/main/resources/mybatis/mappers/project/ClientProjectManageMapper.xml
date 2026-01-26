@@ -14,7 +14,11 @@
         p.applicant_count     AS applicantCount,
         p.created_at          AS createdAt,
 
-        -- 지급 요청 여부
+        (SELECT COUNT(*)
+        FROM project_applications pa
+        WHERE pa.project_id = p.project_id
+        AND pa.application_status = 'PENDING') AS newApplicantCount,
+
         (SELECT COUNT(*)
         FROM contract_milestones cm
         JOIN contracts c ON cm.contract_id = c.contract_id

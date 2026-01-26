@@ -42,8 +42,13 @@ function switchProjectTab(status, btn) {
         $('#recontractEmptyState').show();
         $('#recontractFormSection').hide();
     } else {
+        // [모집 중 탭]
         $('#defaultCenterPanel, #defaultRightPanel').show();
         $('#selectedProjectTitle').text('');
+
+        // [버그 수정] 다른 탭 갔다가 돌아왔을 때, 이전 프로젝트의 지원자 수(Badge)가 남아있는 문제 해결
+        $('#applicantCountBadge').text('0명');
+
         $('#projectControlBar').hide();
         $('#applicantListArea').html(`
             <div style="text-align:center; padding-top:100px; color:#ccc;">
@@ -159,6 +164,9 @@ function renderDetail(data) {
     const skills = (data.skills && data.skills.length > 0) ? data.skills.join(', ') : '미등록';
     const status = data.applicationStatus;
 
+    currentSelectedFreelancerId = data.freelancerId;
+    $('#btnGoFreelancerProfile').css('display', 'flex');
+
     let imageHtml = '';
     if (data.profileImageUrl) {
         imageHtml = `<img src="${data.profileImageUrl}" class="detail-img" 
@@ -169,24 +177,17 @@ function renderDetail(data) {
 
     // 버튼 상태 및 스타일 설정
     let chatDisabled = "", offerDisabled = "", rejectDisabled = "";
-
-    let chatStyle = "btn-outline";
-    let offerStyle = "btn-primary";
-    let rejectStyle = "btn-secondary";
+    let chatStyle = "btn-outline", offerStyle = "btn-primary", rejectStyle = "btn-secondary";
 
     if (status === 'REJECTED' || status === 'CONTRACTED' || status === 'CANCELED') {
-        chatDisabled = "disabled";
-        offerDisabled = "disabled";
-        rejectDisabled = "disabled";
-        chatStyle = "btn-disabled";
-        offerStyle = "btn-disabled";
-        rejectStyle = "btn-disabled";
+        chatDisabled = "disabled"; offerDisabled = "disabled"; rejectDisabled = "disabled";
+        chatStyle = "btn-disabled"; offerStyle = "btn-disabled"; rejectStyle = "btn-disabled";
     }
 
     const html = `
-        <div class="detail-profile-header">
-            ${imageHtml} <div class="detail-name">${data.freelancerName}</div>
-            <div style="color:#1F7A8C; font-weight:700; margin-top:5px;">${status}</div>
+        <div class="detail-profile-header" style="text-align:center;">
+            ${imageHtml} 
+            <div class="detail-name" style="margin-top:10px;">${data.freelancerName}</div>
         </div>
         
         <div class="detail-section">
@@ -214,6 +215,13 @@ function renderDetail(data) {
         </div>
     `;
     $('#applicantDetailArea').html(html);
+}
+
+function goFreelancerProfileDetail() {
+    if (currentSelectedFreelancerId) {
+        // 프리랜서 상세 프로필 페이지로 이동 (새 창)
+        window.open(contextPath + '/profile/' + currentSelectedFreelancerId, '_blank');
+    }
 }
 
 /* [3] 상태 변경 */

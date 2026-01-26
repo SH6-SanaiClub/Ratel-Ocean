@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/freelancer/profile")
+@RequestMapping("/profile")
 @RequiredArgsConstructor
 public class FreelancerProfileViewController {
 

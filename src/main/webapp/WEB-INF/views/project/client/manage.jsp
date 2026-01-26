@@ -23,22 +23,49 @@
         </button>
     </div>
 
-    <c:set var="totalApplicants" value="0" />
+    <%-- [계산 로직] --%>
+    <%-- 1. 새로운 지원자 수 합계 (DTO에 추가한 newApplicantCount 사용) --%>
+    <c:set var="totalNewApplicants" value="0" />
     <c:forEach var="p" items="${recruitingProjects}">
-        <c:set var="totalApplicants" value="${totalApplicants + p.applicantCount}" />
+        <c:set var="totalNewApplicants" value="${totalNewApplicants + (p.newApplicantCount != null ? p.newApplicantCount : 0)}" />
+    </c:forEach>
+
+    <%-- 2. 지급 요청 건수 합계 --%>
+    <c:set var="totalPaymentRequests" value="0" />
+    <c:forEach var="p" items="${ongoingProjects}">
+        <c:if test="${p.hasPaymentRequest}">
+            <c:set var="totalPaymentRequests" value="${totalPaymentRequests + 1}" />
+        </c:if>
+    </c:forEach>
+
+    <%-- 3. 작성해야 할 리뷰 건수 합계 --%>
+    <c:set var="totalPendingReviews" value="0" />
+    <c:forEach var="p" items="${completedProjects}">
+        <c:if test="${empty p.clientRating}">
+            <c:set var="totalPendingReviews" value="${totalPendingReviews + 1}" />
+        </c:if>
     </c:forEach>
 
     <div class="manage-grid-layout">
 
         <div class="card">
-            <div class="panel-header-text">프로젝트 목록</div>
+            <div class="panel-header-text" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>프로젝트 목록</span>
+                <button type="button" class="btn-icon"
+                        onclick="location.href='${pageContext.request.contextPath}/project/bookmark'"
+                        title="북마크 바로가기"
+                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; color:#FFBD2E; border-color:#FFBD2E; gap:5px; display:flex; align-items:center; background:#fff; cursor:pointer;">
+                    <i class="fa-solid fa-bookmark"></i> 북마크
+                </button>
+            </div>
+
 
             <div class="project-summary-bar">
-                <span class="summary-item">모집 중 <strong>${recruitingProjects.size()}</strong>건</span>
+                <span class="summary-item">새로운 지원자 <strong>${totalNewApplicants}</strong>명</span>
                 <span class="divider">|</span>
-                <span class="summary-item">총 지원자 <strong>${totalApplicants}</strong>명</span>
+                <span class="summary-item">지급 요청 <strong>${totalPaymentRequests}</strong>건</span>
                 <span class="divider">|</span>
-                <span class="summary-item">진행 중 <strong>${ongoingProjects.size()}</strong>건</span>
+                <span class="summary-item">리뷰 작성 <strong>${totalPendingReviews}</strong>건</span>
             </div>
 
             <div class="project-tabs">
@@ -59,7 +86,18 @@
                         <div class="custom-list-item" onclick="loadApplicants(${p.projectId}, this)">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <span class="status-tag tag-recruiting">D-${p.dDay}</span>
-                                <span class="app-count-badge">지원자 ${p.applicantCount}</span>
+
+                                    <%-- New 배지 로직 --%>
+                                <c:choose>
+                                    <c:when test="${p.newApplicantCount > 0}">
+                                        <span class="app-count-badge" style="background:#E3F2FD; color:#1F7A8C; font-weight:700;">
+                                            New ${p.newApplicantCount}
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="app-count-badge">지원자 ${p.applicantCount}</span>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                             <span class="item-main-text" style="margin-top:5px;">${p.title}</span>
                         </div>
@@ -74,17 +112,15 @@
                         <div class="custom-list-item" onclick="loadProjectProgress(${p.projectId}, this)">
                             <div style="display:flex; align-items:center;">
                                 <span class="status-tag tag-ongoing">진행중</span>
-
                                 <c:if test="${p.hasPaymentRequest}">
                                     <span class="payment-req-badge" style="background:#FFEBEE; color:#D32F2F; font-size:11px; padding:2px 6px; border-radius:10px; font-weight:700; margin-left:5px;">
                                         💰 지급 요청
                                     </span>
                                 </c:if>
-
                             </div>
                             <span class="item-main-text" style="margin-top:5px;">${p.title}</span>
                             <span style="font-size:12px; color:#999; display:block; margin-top:5px;">
-                                계약일: <fmt:formatDate value="${p.createdAt}" pattern="yyyy.MM.dd"/>
+                                계약일: ${p.createdAt.year + 1900}.${p.createdAt.month + 1 < 10 ? '0' : ''}${p.createdAt.month + 1}.${p.createdAt.date < 10 ? '0' : ''}${p.createdAt.date}
                             </span>
                         </div>
                     </c:forEach>
@@ -95,7 +131,6 @@
 
                 <div id="list-COMPLETED" class="project-list-group" style="display:none;">
                     <c:forEach var="p" items="${completedProjects}">
-
                         <c:choose>
                             <c:when test="${empty p.clientRating}">
                                 <div class="custom-list-item" onclick="loadCompletedProject(${p.projectId}, this)">
@@ -106,16 +141,13 @@
                                     </div>
                                 </div>
                             </c:when>
-
                             <c:otherwise>
-                                <%-- 리뷰 작성된 경우: 클릭 방지 및 안내 문구 표시 --%>
                                 <div class="custom-list-item" style="background:#f8f9fa; border-color:#eee; cursor:default;">
                                     <div style="display:flex; justify-content:space-between;">
                                         <span class="status-tag tag-completed">종료됨</span>
                                         <span style="font-size:11px; font-weight:700; color:#4CAF50;">✔ 작성완료</span>
                                     </div>
                                     <span class="item-main-text" style="margin-top:5px; color:#aaa;">${p.title}</span>
-
                                     <div style="margin-top:8px; padding:8px; background:#fff; border:1px solid #eee; border-radius:6px; text-align:center;">
                                         <div style="font-size:11px; color:#666; margin-bottom:5px;">
                                             리뷰 작성 완료!<br>리뷰관리 창에서 확인해보세요.
@@ -129,7 +161,6 @@
                                 </div>
                             </c:otherwise>
                         </c:choose>
-
                     </c:forEach>
                     <c:if test="${empty completedProjects}">
                         <div class="empty-list-msg">완료된 프로젝트가 없습니다.</div>
@@ -145,12 +176,21 @@
                     <span id="applicantCountBadge" style="font-size:14px; color:#1F7A8C; font-weight:700;">0명</span>
                 </div>
             </div>
-            <div id="projectControlBar" style="display:none; background:#f9f9f9; padding:12px; border-radius:8px; margin-bottom:15px; justify-content:space-between; align-items:center;">
-                <span id="selectedProjectTitle" style="font-size:14px; font-weight:700; color:#333; max-width:200px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"></span>
-                <div class="btn-icon-group">
-                    <button class="btn-icon" onclick="goToProjectDetail()" title="상세보기"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
-                    <button class="btn-icon" onclick="goEditProject()" title="수정"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon delete" onclick="deleteProject()" title="삭제"><i class="fa-regular fa-trash-can"></i></button>
+            <div id="projectControlBar" style="display:none; background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:15px; flex-direction:column; gap:12px; border:1px solid #eee;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="selectedProjectTitle" style="font-size:15px; font-weight:700; color:#333; max-width:260px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"></span>
+                </div>
+
+                <div class="btn-icon-group" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; width:100%;">
+                    <button class="btn-icon" onclick="goToProjectDetail()" style="width:100%; height:36px; font-size:12px; font-weight:700; gap:5px;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> 바로가기
+                    </button>
+                    <button class="btn-icon" onclick="goEditProject()" style="width:100%; height:36px; font-size:12px; font-weight:700; gap:5px;">
+                        <i class="fa-solid fa-pen"></i> 수정
+                    </button>
+                    <button class="btn-icon delete" onclick="deleteProject()" style="width:100%; height:36px; font-size:12px; font-weight:700; gap:5px;">
+                        <i class="fa-regular fa-trash-can"></i> 삭제
+                    </button>
                 </div>
             </div>
             <div id="applicantListArea" class="scroll-container">
@@ -162,7 +202,14 @@
         </div>
 
         <div class="card" id="defaultRightPanel">
-            <div class="panel-header-text">상세 프로필</div>
+            <div class="panel-header-text" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>지원자 프로필</span>
+                <button type="button" class="btn-icon" id="btnGoFreelancerProfile" onclick="goFreelancerProfileDetail()"
+                        title="전체 프로필 보기"
+                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; color:#1F7A8C; border-color:#1F7A8C; gap:5px; display:none; align-items:center; background:#fff; cursor:pointer;">
+                    <i class="fa-solid fa-user-tag"></i> 프로필 상세보기
+                </button>
+            </div>
             <div id="applicantDetailArea" class="scroll-container">
                 <div style="text-align:center; padding-top:100px; color:#ccc;">
                     <i class="fa-regular fa-user" style="font-size:48px; margin-bottom:15px;"></i>

@@ -49,7 +49,7 @@ body {
 
 .manage-grid-layout {
     display: grid;
-    grid-template-columns: 300px 1.2fr 1fr;
+    grid-template-columns: 350px 1.2fr 1fr; /* 첫 번째 열 크기 수정 [cite: 21] */
     gap: 15px;
     flex: 1;
     min-height: 0;
@@ -100,7 +100,7 @@ body {
 .project-summary-bar {
     flex-shrink: 0;
     background: #f8f9fa;
-    padding: 10px 12px;
+    padding: 10px 8px;
     border-radius: 6px;
     margin: 15px;
     margin-bottom: 0;
@@ -233,8 +233,8 @@ body {
 }
 
 .btn-icon {
-    width: 28px;
-    height: 28px;
+    width: auto;
+    height: 32px;
     border: 1px solid #eee;
     background: #fff;
     border-radius: 6px;
@@ -244,16 +244,31 @@ body {
     cursor: pointer;
     color: #666;
     transition: 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 0 10px;
+}
+
+.btn-icon i {
+    font-size: 13px;
 }
 
 .btn-icon:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
+    background-color: var(--primary-bg);
 }
 
 .btn-icon.delete:hover {
     border-color: #e74c3c;
     color: #e74c3c;
+    background-color: #FFF5F5;
+}
+
+/* 제어 바 내의 버튼 그룹 정렬 */
+#projectControlBar {
+    display: none; /* 기본값 */
+    transition: all 0.3s ease;
 }
 
 .detail-img-icon {

@@ -9,10 +9,12 @@ public class ClientProjectManageDTO {
     private String title;
     private String projectStatus;
     private Date deadlineDate;
-    private Integer applicantCount;
+    private Integer applicantCount;     // 총 지원자 수
+    private Integer newApplicantCount;  // 새로운(미열람) 지원자 수
     private Date createdAt;
-    private boolean hasPaymentRequest;
-    private Integer clientRating;
+
+    private boolean hasPaymentRequest; // 지급 요청 여부
+    private Integer clientRating;      // 별점
 
     public Integer getdDay() {
         if (deadlineDate == null) return 0;
