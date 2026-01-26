@@ -17,6 +17,7 @@
         <result property="lastMessageAt" column="last_message_at"/>
         <result property="unreadCount" column="unread_count"/>
         <result property="name" column="name"/>
+        <result property="opponentId" column="opponent_id"/>
     </resultMap>
 
     <select id="findMyRooms" parameterType="int" resultMap="chatRoomMap">
@@ -158,8 +159,7 @@
             r.room_id,
             r.project_id,
             p.title,
-            u.user_id,
-            u.name,
+            u.user_id AS opponent_id,  u.name,
             u.profile_image_url
         FROM chat_rooms r
                  JOIN projects p ON r.project_id = p.project_id

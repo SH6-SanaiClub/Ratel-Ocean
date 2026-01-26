@@ -15,6 +15,7 @@ public class ChatRoomDTO {
     private Integer projectId;
     private String title;
     private Integer senderId;
+    private Integer opponentId;
     private Boolean isActive;
     private String profileImageUrl;
     private Date createdAt;
@@ -26,6 +27,7 @@ public class ChatRoomDTO {
     private Integer unreadCount;
     private String name;
     private boolean hasNewMessage;
+
 
 
 }

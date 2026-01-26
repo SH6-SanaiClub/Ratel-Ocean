@@ -133,9 +133,9 @@
                     const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
                      console.log("room.roomId :" , room.roomId )
                     container.innerHTML +=
-                        '<div class="chat-room' + isSelected + '" ' +
+                        '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" ' +
                         'data-room-id="' + room.roomId + '" ' +
-                        'onclick="selectRoom(' + room.roomId + ')">'+
+                        'onclick="selectRoom(' + room.roomId + ')">' +
                         '<div class="avatar-box">' +
                         '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
                         '<div class="room-name">' + room.name + '</div>' +
@@ -146,7 +146,7 @@
                         '<span class="room-time">' + timeText + '</span>' +
                         '</div>' +
                         '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
-                        lastMsg +
+                        '<span class="last-msg-text">' + lastMsg + '</span>' +
                         '<div class="find-out" data-roomid="' + room.roomId + '">' +
                         '<span class="freelancerExited" data-free="' + (room.freelancerExited?1:0 )+ '"/>'+
                         '<span class="clientExited" data-client="' + (room.clientExited?1:0 )+ '"/>'+
@@ -396,6 +396,55 @@
     }
     */
 
+    function updateChatListUI(msg) {
+        const roomId = msg.roomId;
+        const $roomItem = $('#room-item-' + roomId);
+
+        // 1. 목록에 해당 방이 이미 존재하는 경우
+        if ($roomItem.length > 0) {
+
+            // (1) 마지막 메시지 내용 업데이트
+            let content = msg.content;
+            if (msg.fileUrl) {
+                content = '📎 ' + (msg.fileName || '파일');
+            }
+            // escapeHtml 처리는 필요시 추가
+            $roomItem.find('.last-msg-text').text(content);
+
+            // (2) 시간 업데이트 (현재 시간 기준 포맷팅)
+            const date = new Date(msg.createdAt);
+            const timeText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            $roomItem.find('.room-time').text(timeText);
+
+            // (3) 안읽음 뱃지 업데이트
+            // 조건: 내가 보낸 메시지가 아니고(상대방이 보냄) && 현재 내가 보고 있는 방이 아닐 때
+            if (msg.senderId !== loginUserId && roomId !== selectedRoomId) {
+                const $badgeSpan = $roomItem.find('.unread-badge'); // 기존에 뱃지가 있는지 확인
+
+                if ($badgeSpan.length > 0) {
+                    // 기존 뱃지 숫자 증가
+                    let count = parseInt($badgeSpan.text()) || 0;
+                    $badgeSpan.text(count + 1);
+                } else {
+                    // 뱃지가 없으면 새로 생성 (room.jsp의 CSS 클래스 참고)
+                    const newBadge = '<span class="unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; margin-left: 8px;">1</span>';
+                    // 방 제목 옆이나 적절한 위치에 append (구조에 따라 조정 필요, 여기서는 .room-top에 추가 예시)
+                    $roomItem.find('.room-top').append(newBadge);
+                }
+            }
+
+            // (4) 목록 최상단으로 이동 (애니메이션 효과 포함 가능)
+            const $parent = $roomItem.parent(); // #roomList
+            $roomItem.detach().prependTo($parent); // 떼어내서 맨 위로 붙임
+
+        } else {
+            // 2. 목록에 없는 새 방인 경우 (예: 신규 채팅 시작)
+            // DTO 하나만으로 UI를 다 그리기엔 프로필 이미지 등 정보가 부족할 수 있으므로
+            // 목록 전체를 다시 로드하거나, 서버에서 RoomDTO를 받아오는 것이 정확합니다.
+            loadChatRooms();
+        }
+    }
+
     // [신규] 수신된 메시지를 화면에 그리기
     function showReceivedMessage(msg) {
         const body = document.getElementById("chatBody");
@@ -574,6 +623,8 @@
         opponentExited = false;
         document.getElementById("exitRoomBtn").style.display = "inline-block";
         loadMessages(roomId);
+        const $roomItem = $('#room-item-' + roomId);
+        $roomItem.find('.unread-badge').remove();
         fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
         }).then(() => {
@@ -617,6 +668,12 @@
                 } else {
                     el.style.display = "none";
                 }
+            });
+            // 2. [신규] "나의 채팅 목록" 구독 (왼쪽 사이드바용)
+            // 내가 속한 어떤 방에서든 메시지가 오면 이쪽으로 알림이 옴
+            stompClient.subscribe('/sub/chat/list/' + loginUserId, function (message) {
+                const msg = JSON.parse(message.body);
+                updateChatListUI(msg);
             });
         }, function(error) {
             console.error("STOMP connection error:", error);

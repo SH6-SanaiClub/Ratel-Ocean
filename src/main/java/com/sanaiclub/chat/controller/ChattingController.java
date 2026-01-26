@@ -35,8 +35,7 @@ public class ChattingController {
      */
     @MessageMapping("/chat/message")
     public void message(ChatMessageDTO message) {
-        // 1. DB 저장 및 저장된 메시지 정보 반환 (ID, 생성시간 등 포함)
-        // DTO에 senderId, roomId, content가 채워져 있어야 함
+        // 1. DB 저장 및 메시지 정보 반환 (ID, 생성시간 등 포함)
         ChatMessageDTO savedMessage = chatService.sendAndReturnMessage(
                 message.getRoomId(),
                 message.getSenderId(),
@@ -46,9 +45,29 @@ public class ChattingController {
                 message.getFileSize()
         );
 
-        // 2. 해당 방을 구독 중인 클라이언트들에게 메시지 전송
-        // 구독 경로: /sub/chat/room/{roomId}
+        // 2. 해당 방(Room) 구독자들에게 메시지 전송 (채팅방 안의 대화 내용 갱신)
         messagingTemplate.convertAndSend("/sub/chat/room/" + savedMessage.getRoomId(), savedMessage);
+
+        // ==========================================
+        // 3. 채팅방 목록(List) 업데이트 알림 전송
+        // ==========================================
+
+        // 3-1. 보낸 사람(나)의 채팅 목록 갱신
+        messagingTemplate.convertAndSend("/sub/chat/list/" + message.getSenderId(), savedMessage);
+
+        // 3-2. 받는 사람(상대방) 찾기 및 채팅 목록 갱신
+        // 보낸 사람(Sender) 기준에서 방 정보를 조회하면, 결과 DTO의 opponentId는 상대방이 됩니다.
+        //
+        ChatRoomDTO roomInfo = chatService.findRoomInfo(message.getRoomId(), message.getSenderId());
+
+        if (roomInfo != null) {
+            Integer opponentId = roomInfo.getOpponentId();
+
+            // 상대방에게도 리스트 갱신 메시지 전송
+            if (opponentId != null) {
+                messagingTemplate.convertAndSend("/sub/chat/list/" + opponentId, savedMessage);
+            }
+        }
     }
 
     // 채팅 아이콘 → 목록 화면
