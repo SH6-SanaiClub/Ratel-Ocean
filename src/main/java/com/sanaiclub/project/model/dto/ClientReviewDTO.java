@@ -1,5 +1,6 @@
 package com.sanaiclub.project.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,8 +11,8 @@ public class ClientReviewDTO {
     private Integer projectId;
     private Integer contractId;
     private String projectTitle;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private Date startDate;
+    private Date endDate;
 
     private Integer freelancerId;
     private String freelancerName;

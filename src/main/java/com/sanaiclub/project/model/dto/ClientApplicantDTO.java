@@ -1,8 +1,6 @@
 package com.sanaiclub.project.model.dto;
 
 import lombok.Data;
-
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +12,7 @@ public class ClientApplicantDTO {
     private Integer projectId;
     private String freelancerName;
     private String applicationStatus;
-    private LocalDateTime appliedAt;
+    private Date appliedAt;
 
     // === 리스트용 요약 ===
     private String mainSkill;
@@ -44,8 +42,8 @@ public class ClientApplicantDTO {
     public static class CareerDTO {
         private String companyName;
         private String role;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
+        private Date startDate;
+        private Date endDate;
         private String description;
     }
 
@@ -53,8 +51,8 @@ public class ClientApplicantDTO {
     public static class ProjectExpDTO {
         private String title;
         private String clientName;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
+        private Date startDate;
+        private Date endDate;
         private String description;
     }
 }

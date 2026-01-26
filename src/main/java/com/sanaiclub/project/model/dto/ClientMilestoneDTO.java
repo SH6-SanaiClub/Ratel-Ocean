@@ -1,5 +1,6 @@
 package com.sanaiclub.project.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ public class ClientMilestoneDTO {
     private Integer stepOrder;
     private String milestoneName;
     private Integer amount;
-    private LocalDateTime dueDate;
+    private Date dueDate;
     private String status;
     private String freelancerName;
 }
