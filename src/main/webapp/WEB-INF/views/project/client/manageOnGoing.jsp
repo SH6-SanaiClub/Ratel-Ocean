@@ -2,11 +2,17 @@
 
 <div id="ongoingCenterPanel" class="card" style="display:none;">
     <div class="panel-header-column">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
             <span>프로젝트 진행 현황</span>
             <span id="projectPeriodDisplay" style="font-size:13px; color:#1F7A8C; font-weight:700;"></span>
         </div>
-        <div style="font-size:15px; color:#333; margin-top:8px; font-weight:700;" id="ongoingProjectTitle"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div id="ongoingProjectTitle" style="font-size:15px; color:#333; font-weight:700;"></div>
+            <div id="ongoingFreelancerDisplay" style="font-size:13px; color:#333; font-weight:700;"></div>
+        </div>
+
     </div>
 
     <div class="scroll-container">
@@ -14,7 +20,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:13px;">
                 <div><span style="color:#888;">총 예산:</span> <strong id="sumBudget" style="color:#1F7A8C;"></strong></div>
                 <div><span style="color:#888;">소통 방식:</span> <strong id="sumComm"></strong></div>
-                <div><span style="color:#888;">입금 방식:</span> <strong id="sumPayment"></strong></div>
+                <div><span style="color:#888;">지급 방식:</span> <strong id="sumPayment"></strong></div>
                 <div><span style="color:#888;">수정 횟수:</span> <strong id="sumRevision"></strong>회</div>
             </div>
         </div>

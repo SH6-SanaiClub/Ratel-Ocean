@@ -1,5 +1,4 @@
 function loadProjectProgress(projectId, element) {
-
     $('.custom-list-item').removeClass('active');
     $(element).addClass('active');
 
@@ -17,6 +16,9 @@ function loadProjectProgress(projectId, element) {
     $('#projectDetailSummary').hide();
     $('#milestoneListArea').html('<div style="padding:20px; text-align:center;">불러오는 중...</div>');
 
+    // 초기화 시 텍스트 비우기
+    $('#ongoingFreelancerDisplay').text('');
+
     $.ajax({
         url: contextPath + '/client/api/progress/milestones',
         type: 'GET',
@@ -25,7 +27,6 @@ function loadProjectProgress(projectId, element) {
             renderMilestones(data);
         },
         error: function () {
-            // 에러 시에도 메시지 표시
             $('#milestoneListArea').html('<div style="text-align:center; padding:40px; color:#ccc;">정보를 불러오지 못했습니다.</div>');
         }
     });
@@ -40,9 +41,14 @@ function renderMilestones(data) {
         return;
     }
 
-    // 데이터가 있으면 무조건 표시
     $('#ongoingControlButtons').show();
     $('#projectDetailSummary').show();
+
+    if (data.freelancerName) {
+        $('#ongoingFreelancerDisplay').html(`<i class="fa-solid fa-user" style="color:#1F7A8C; margin-right:5px;"></i> ${data.freelancerName}`);
+        // 오른쪽 채팅창 헤더 이름도 업데이트
+        $('#chatFreelancerName').text(data.freelancerName);
+    }
 
     const startStr = data.startDate ? new Date(data.startDate).toISOString().split('T')[0].replace(/-/g, '/') : '-';
     const endStr = data.endDate ? new Date(data.endDate).toISOString().split('T')[0].replace(/-/g, '/') : '-';
@@ -58,9 +64,7 @@ function renderMilestones(data) {
         else alert('등록된 계약서가 없습니다.');
     });
 
-    if (data.freelancerName) $('#chatFreelancerName').text(data.freelancerName);
-
-    // 마일스톤 리스트
+    // 마일스톤 리스트 렌더링
     if (!data.milestones || data.milestones.length === 0) {
         target.html('<div style="text-align:center; padding:40px; color:#ccc;">등록된 마일스톤이 없습니다.</div>');
         return;
