@@ -244,8 +244,8 @@
       <p class="sub">캘린더로 계약/마일스톤 일정을 확인하고 프로젝트를 효율적으로 관리하세요.</p>
     </div>
 
-    <a class="btn primary" href="${pageContext.request.contextPath}/project/dashboard" style="text-decoration:none;">
-      + 프로젝트 찾기
+    <a class="btn primary" href="${pageContext.request.contextPath}/project/bookmark" style="text-decoration:none;">
+      북마크 목록
     </a>
   </div>
 
