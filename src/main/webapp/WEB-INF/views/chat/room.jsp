@@ -276,7 +276,7 @@
                             bubbleHtml =
                                 '<div class="bubble file-bubble">' +
                                 '📎 ' +
-                                '<a href="' + msg.fileUrl + '" target="_blank" download>' +
+                                '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                                 escapeHtml(msg.fileName) +
                                 '</a>' +
                                 (msg.fileSize
@@ -432,7 +432,7 @@
             }
             fileHtml =
                 '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
-                '📎 <a href="' + msg.fileUrl + '" target="_blank" download>' +
+                '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                 escapeHtml(msg.fileName) + '</a>' +
                 fileSizeHtml +
                 '</div>';
@@ -505,7 +505,7 @@
                 const div = document.createElement("div");
                 div.className = "file-item";
                 div.innerHTML =
-                    '📎 <a href="' + msg.fileUrl + '" target="_blank" download>' +
+                    '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                     escapeHtml(msg.fileName) +
                     '</a>' +
                     (msg.fileSize ? ' (' + formatFileSize(msg.fileSize) + ')' : '');
