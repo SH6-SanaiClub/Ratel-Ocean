@@ -27,13 +27,32 @@
                     <div class="header-name" id="headerName"></div>
                     <div class="header-project" id="headerProject"></div>
                 </div>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+
+                    <div id="searchArea" style="display: flex; align-items: center; gap: 5px;">
+                        <input type="text" id="searchInput" placeholder="메시지 검색"
+                               style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 130px;">
+                        <button onclick="searchMessages()"
+                                style="padding: 5px 10px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 12px;">🔍</button>
+
+                        <div id="searchNav" style="display: none; align-items: center; gap: 5px; background: #fff; padding: 0 5px; border-radius: 4px;">
+                            <button onclick="navSearch(-1)" style="border:none; background:none; cursor:pointer; padding:0 2px;">▲</button>
+                            <button onclick="navSearch(1)" style="border:none; background:none; cursor:pointer; padding:0 2px;">▼</button>
+                            <span id="searchIndex" style="font-size: 11px; color: #666; min-width: 30px; text-align: center;">0/0</span>
+                            <button onclick="clearSearch()" style="border:none; background:none; cursor:pointer; color: #ff4d4f; font-weight: bold; margin-left:2px;">✕</button>
+                        </div>
                 <div>
                     <button id="pinRoomBtn" onclick="togglePin()" style="display:none; margin-right:5px; background:#ffc107; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">이 지원자 고정하기</button>
                     <button id="exitRoomBtn" onclick="exitRoom()" style="display:none;">나가기</button>
                 </div>
             </div>
         </div>
-
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                    <button id="pinRoomBtn" onclick="togglePin()" style="display:none; background:#ffc107; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size: 13px;">이 지원자 고정하기</button>
+                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none; font-size: 13px;">나가기</button>
+                </div>
+            </div>
+        </div>
         <div class="chat-body" id="chatBody"></div>
         <div class="chat-input">
             <button class="file-btn" onclick="openFile()">📎</button>
@@ -730,7 +749,75 @@
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + "KB";
         return (bytes / 1024 / 1024).toFixed(1) + "MB";
     }
+    let searchResults = []; // 검색된 메시지 엘리먼트 배열
+    let currentSearchIdx = -1;
 
+    function searchMessages() {
+        const keyword = document.getElementById("searchInput").value.trim();
+        if (!keyword) {
+            alert("검색어를 입력하세요.");
+            return;
+        }
+
+        // 초기화
+        clearSearch(false);
+
+        // chatBody 내의 모든 텍스트 메시지(bubble) 추출
+        const bubbles = document.querySelectorAll("#chatBody .bubble:not(.deleted)");
+
+        bubbles.forEach(bubble => {
+            const text = bubble.innerText;
+            if (text.includes(keyword)) {
+                // 키워드 하이라이트 (노란색 배경)
+                const regex = new RegExp(`(${keyword})`, "gi");
+                bubble.innerHTML = text.replace(regex, '<span class="search-highlight" style="background: yellow; font-weight: bold;">$1</span>');
+                searchResults.push(bubble);
+            }
+        });
+
+        if (searchResults.length > 0) {
+            document.getElementById("searchNav").style.display = "flex";
+            navSearch(1); // 첫 번째 결과로 스크롤
+        } else {
+            alert("검색 결과가 없습니다.");
+            document.getElementById("searchNav").style.display = "none";
+        }
+    }
+
+    function navSearch(direction) {
+        if (searchResults.length === 0) return;
+
+        currentSearchIdx += direction;
+        if (currentSearchIdx < 0) currentSearchIdx = searchResults.length - 1;
+        if (currentSearchIdx >= searchResults.length) currentSearchIdx = 0;
+
+        const target = searchResults[currentSearchIdx];
+
+        // 모든 결과에서 포커스 제거 후 현재 타겟에만 오렌지색 테두리
+        searchResults.forEach(el => el.style.outline = "none");
+        target.style.outline = "2px solid orange";
+        target.style.outlineOffset = "2px";
+
+        // 해당 메시지 위치로 부드럽게 이동
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // 인덱스 표시 (예: 1 / 5)
+        document.getElementById("searchIndex").innerText = (currentSearchIdx + 1) + " / " + searchResults.length;
+    }
+
+    function clearSearch(clearInput = true) {
+        searchResults = [];
+        currentSearchIdx = -1;
+        if(clearInput) document.getElementById("searchInput").value = "";
+        document.getElementById("searchNav").style.display = "none";
+
+        // 하이라이트 및 테두리 복구
+        const bubbles = document.querySelectorAll("#chatBody .bubble");
+        bubbles.forEach(bubble => {
+            bubble.innerHTML = bubble.innerText; // 하이라이트 제거
+            bubble.style.outline = "none";
+        });
+    }
     // [신규] STOMP 연결 및 구독 함수
     function connectStomp(roomId) {
         const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');// WebSocketConfig에서 설정한 엔드포인트
