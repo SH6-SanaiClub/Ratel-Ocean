@@ -1,18 +1,20 @@
 package com.sanaiclub.project.model.dto;
 
 import lombok.Data;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
 @Data
 public class ClientApplicantDTO {
     // === 기본 정보 ===
-    private Long applicationId;
-    private Long freelancerId;
-    private Long projectId;
+    private Integer applicationId;
+    private Integer freelancerId;
+    private Integer projectId;
     private String freelancerName;
     private String applicationStatus;
-    private Date appliedAt;
+    private LocalDateTime appliedAt;
 
     // === 리스트용 요약 ===
     private String mainSkill;
@@ -42,8 +44,8 @@ public class ClientApplicantDTO {
     public static class CareerDTO {
         private String companyName;
         private String role;
-        private Date startDate;
-        private Date endDate;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
         private String description;
     }
 
@@ -51,8 +53,8 @@ public class ClientApplicantDTO {
     public static class ProjectExpDTO {
         private String title;
         private String clientName;
-        private Date startDate;
-        private Date endDate;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
         private String description;
     }
 }
