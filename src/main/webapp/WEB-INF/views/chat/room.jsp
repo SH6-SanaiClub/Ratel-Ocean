@@ -56,7 +56,7 @@
 
 <script>
     const messageInput = document.getElementById("messageInput");
-
+    const loginUserType = '${userType}';
     function escapeHtml(text) {
         if (!text) return "";
         return text
@@ -102,63 +102,116 @@
         fetch("/ratelocean/chat/rooms")
             .then(res => res.json())
             .then(list => {
-                const container = document.getElementById("roomList"); // room.jsp의 왼쪽 목록 ID
-                container.innerHTML = "";
+                const container = document.getElementById("roomList");
+                let finalHtml = ""; // 모든 HTML을 합쳐서 담을 변수
+
                 const filteredList = list.filter(room => {
-                    if (loginUserId === room.freelancerId)
-                        return room.freelancerExited === 0;
+                    if (loginUserId === room.freelancerId) return room.freelancerExited === 0;
                     if (loginUserId === room.clientId) return room.clientExited === 0;
                     return true;
                 });
-                filteredList.forEach(room => {
-                    let timeText = "";
-                    if (room.lastMessageAt) {
-                        timeText = new Date(room.lastMessageAt)
-                            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                if (loginUserType === 'CLIENT') {
+                    const projectGroups = {};
+                    filteredList.forEach(room => {
+                        if (!projectGroups[room.title]) projectGroups[room.title] = [];
+                        projectGroups[room.title].push(room);
+                    });
+
+                    for (const title in projectGroups) {
+                        const rooms = projectGroups[title];
+                        const safeId = btoa(encodeURIComponent(title)).replace(/=/g, "");
+                        const totalUnread = rooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
+                        let unreadBadge = "";
+                        if (totalUnread > 0) {
+                            unreadBadge = '<span class="total-unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-left: 8px; vertical-align: middle;">' + totalUnread + '</span>';
+                        }
+                        // 1. 헤더 (프로젝트 바)
+                        finalHtml +=
+                            '<div class="project-header" onclick="toggleApplicants(\'' + safeId + '\')" ' +
+                            'style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #ddd; cursor: pointer; ' +
+                            'display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #333;">' +
+                            '   <div>' +
+                            '       <span style="font-size: 15px;">' + title + '</span>' +
+                            '       <span style="font-size: 12px; color: #666; font-weight: normal; margin-left: 8px;">지원자 ' + rooms.length + '명</span>' +
+                            '       ' + unreadBadge + // 여기에 총 안 읽은 개수 표시
+                            '   </div>' +
+                            '   <span id="icon-' + safeId + '" style="font-size: 12px; color: #999;">▼</span>' +
+                            '</div>';
+
+                        // 2. 지원자 목록 영역 시작 (style="display: none"을 여기서 확실히!)
+                        finalHtml += '<div id="group-' + safeId + '" class="applicant-list-container" style="display: none; background: #fff;">';
+
+                        // 3. 내부 지원자들 추가 (renderSingleRoom 호출)
+                        rooms.forEach(room => {
+                            finalHtml += renderSingleRoom(room);
+                        });
+
+                        // 4. 영역 닫기
+                        finalHtml += '</div>';
                     }
-                    let unreadHtml = "";
-                    if (room.unreadCount > 0) {
-                        unreadHtml =
-                            '<span class="unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; margin-left: 8px;">' +
-                            room.unreadCount +
-                            '</span>';
-                    }
-                    let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
-                    if (room.lastMessageDeleted === 1) {
-                        lastMsg = "메시지가 삭제되었습니다.";
-                    }
-                    const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
-                     console.log("room.roomId :" , room.roomId )
-                    container.innerHTML +=
-                        '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" ' +
-                        'data-room-id="' + room.roomId + '" ' +
-                        'onclick="selectRoom(' + room.roomId + ')">' +
-                        '<div class="avatar-box">' +
-                        '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
-                        '<div class="room-name">' + room.name + '</div>' +
-                        '</div>' +
-                        '<div class="room-info" style="flex: 1;">' +
-                        '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
-                        '<span class="room-title">' + room.title + '</span>' +
-                        '<span class="room-time">' + timeText + '</span>' +
-                        '</div>' +
-                        '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
-                        '<span class="last-msg-text">' + lastMsg + '</span>' +
-                        '<div class="find-out" data-roomid="' + room.roomId + '">' +
-                        '<span class="freelancerExited" data-free="' + (room.freelancerExited?1:0 )+ '"/>'+
-                        '<span class="clientExited" data-client="' + (room.clientExited?1:0 )+ '"/>'+
-                        '</div>' +
-                        '</div>' +
-                        '</div>' +
-                        unreadHtml +
-                        '</div>';
-                });
+                } else {
+                    // 프리랜서: 기존 방식
+                    filteredList.forEach(room => {
+                        finalHtml += renderSingleRoom(room);
+                    });
+                }
+
+                // [중요] 모든 작업이 끝난 후 한꺼번에 화면에 반영
+                container.innerHTML = finalHtml;
             });
 
-        connectStomp();
+        if (typeof connectStomp === "function") connectStomp();
     }
     // ================== 방 선택 ==================
+    function renderSingleRoom(room) {
+        let timeText = "";
+        if (room.lastMessageAt) {
+            timeText = new Date(room.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        let unreadHtml = "";
+        if (room.unreadCount > 0) {
+            unreadHtml = '<span class="unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; margin-left: 8px;">' + room.unreadCount + '</span>';
+        }
+        let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
+        if (room.lastMessageDeleted === 1) lastMsg = "메시지가 삭제되었습니다.";
+        const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
 
+        return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
+            '<div class="avatar-box">' +
+            '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
+            '</div>' +
+            '<div class="room-info" style="flex: 1;">' +
+            '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
+            '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>' +
+            '<span class="room-time">' + timeText + '</span>' +
+            '</div>' +
+            '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
+            '<span class="last-msg-text">' + lastMsg + '</span>' +
+            '<div class="find-out" data-roomid="' + room.roomId + '">' +
+            '<span class="freelancerExited" data-free="' + (room.freelancerExited?1:0 )+ '"/>'+
+            '<span class="clientExited" data-client="' + (room.clientExited?1:0 )+ '"/>'+
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            unreadHtml +
+            '</div>';
+    }
+
+    function toggleApplicants(safeId) {
+        const el = document.getElementById("group-" + safeId);
+        const icon = document.getElementById("icon-" + safeId);
+
+        if (el) {
+            if (el.style.display === "none") {
+                el.style.display = "block"; // 열기
+                if(icon) icon.innerText = "▲";
+            } else {
+                el.style.display = "none";  // 닫기
+                if(icon) icon.innerText = "▼";
+            }
+        }
+    }
     messageInput.addEventListener("keydown", (e) => {
         if (!selectedRoomId) return;
         if (e.keyCode === 13 && !e.shiftKey) {

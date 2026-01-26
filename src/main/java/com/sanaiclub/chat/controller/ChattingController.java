@@ -79,7 +79,11 @@ public class ChattingController {
     // 채팅 아이콘 → 목록 화면
     @GetMapping
     public String chatMain(HttpSession session) {
-        session.setAttribute("loginUserId", chatService.getLoginUserId());
+        Integer loginUserId = chatService.getLoginUserId();
+        String userType = chatService.getUserType(); // DB에서 가져온 타입 (CLIENT 등)
+
+        session.setAttribute("loginUserId", loginUserId);
+        session.setAttribute("userType", userType);
         return "chat/room";
     }
 

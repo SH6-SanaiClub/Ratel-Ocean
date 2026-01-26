@@ -23,7 +23,6 @@ public class ChatLoginController {
 
         // 입력받은 유저 ID를 세션에 저장
         session.setAttribute("loginUserId", userId);
-
         // 채팅 목록 페이지로 이동
         return "redirect:/chat";
     }

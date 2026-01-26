@@ -385,7 +385,14 @@ body {
     margin: 20px 0;
     text-align: center;
 }
+.applicant-list-container {
+    display: none;
+}
 
+/* 클래스가 추가되면 보이게 함 */
+.applicant-list-container.active {
+    display: block;
+}
 .system-label::before,
 .system-label::after {
     content: "";
@@ -393,7 +400,38 @@ body {
     height: 1px;
     background: #ddd;
 }
+/* 프로젝트 통합 안 읽은 배지 (동그라미 버전) */
+.total-unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e53935;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 18px;    /* 최소 너비 고정 */
+    height: 18px;       /* 높이 고정 */
+    border-radius: 50%; /* 완전한 동그라미 */
+    padding: 0 4px;     /* 숫자 양옆 여백 */
+    vertical-align: middle;
+    margin-left: 8px;
+    box-sizing: border-box;
+}
 
+/* 개별 채팅방 안 읽은 배지 (동그라미 버전) */
+.unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e53935;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-left: 8px;
+}
 .system-label::before {
     margin-right: 15px;
 }
