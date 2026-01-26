@@ -308,15 +308,17 @@
     // ================== 메시지 전송 ==================
     function sendMessage() {
         const content = messageInput.value.trim();
-        const fileInput = document.getElementById("fileInput");
-        const file = fileInput.files[0];
+        const file = document.getElementById("fileInput").files[0];
+
         if (!content && !file) return;
         if (!selectedRoomId) return;
+
         const formData = new FormData();
         formData.append("content", content);
         if (file) {
             formData.append("file", file);
         }
+
         fetch("/ratelocean/chat/room/" + selectedRoomId + "/message", {
             method: "POST",
             body: formData
@@ -325,19 +327,12 @@
             .then(message => {
                 messageInput.value = "";
                 fileInput.value = "";
-                document.getElementById("filePreview").style.display = "none";
-                document.getElementById("fileNameText").innerText = "";
-                // 파일 공유 목록 업데이트
-                updateSharedFilesFromMessages([message]);
+
+                if(document.getElementById("filePreview")) {
+                    document.getElementById("filePreview").style.display = "none";
+                }
             })
-            .catch(err => console.error(err));
-        // 보낼 데이터 객체 생성 (ChatMessageDTO와 매핑)
-        const chatMessage = {
-            roomId: selectedRoomId,
-            senderId: loginUserId, // JSP 변수 사용
-            content: content,
-            type: 'TALK' // 필요시 타입 구분
-        };
+            .catch(err => console.error("Message send error:", err));
     }
 /*
         // STOMP로 메시지 전송 (/pub/chat/message)
