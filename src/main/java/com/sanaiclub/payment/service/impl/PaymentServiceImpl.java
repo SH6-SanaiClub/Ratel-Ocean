@@ -58,7 +58,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // 2. 계약 상태 검증 (SIGNED 상태여야 함)
-        if (!ContractStatus.SIGNED.name().equals(contract.getContractStatus())) {
+        if (!ContractStatus.SIGNED.equals(contract.getContractStatus())) {
             throw new IllegalStateException("결제 가능한 상태가 아닙니다. 현재 상태: " + contract.getContractStatus());
         }
 
