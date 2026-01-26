@@ -28,7 +28,6 @@
 
             <div class="review-section">
                 <label class="review-label">만족도를 평가해주세요</label>
-
                 <div class="star-rating">
                     <input type="radio" id="star5" name="rating" value="5"><label for="star5" title="5점"><i class="fa-solid fa-star"></i></label>
                     <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4점"><i class="fa-solid fa-star"></i></label>
@@ -44,7 +43,7 @@
                 <textarea id="reviewComment" class="review-textarea" placeholder="프리랜서와의 협업 경험을 솔직하게 남겨주세요."></textarea>
             </div>
 
-            <button class="btn-new-project" style="width:100%; justify-content:center; margin-top:10px;" onclick="submitReview()">
+            <button class="btn-action btn-primary" style="margin-top:10px;" onclick="submitReview()">
                 리뷰 등록하기
             </button>
         </div>

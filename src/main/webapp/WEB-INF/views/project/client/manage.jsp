@@ -96,7 +96,6 @@
                 <div id="list-COMPLETED" class="project-list-group" style="display:none;">
                     <c:forEach var="p" items="${completedProjects}">
 
-                        <%-- [로직 수정] clientRating 값이 없으면(empty) 리뷰 미작성으로 판단 --%>
                         <c:choose>
                             <c:when test="${empty p.clientRating}">
                                 <div class="custom-list-item" onclick="loadCompletedProject(${p.projectId}, this)">

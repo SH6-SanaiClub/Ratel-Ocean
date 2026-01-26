@@ -1,33 +1,25 @@
 let currentProjectId = null;
 
-$(document).ready(function() {
+$(document).ready(function () {
     console.log("Ratel-Ocean Manager Ready");
 });
 
 /* [탭 전환 기능] */
 function switchProjectTab(status, btn) {
-    // 1. 탭 버튼 스타일
     $('.tab-btn').removeClass('active');
     $(btn).addClass('active');
 
-    // 2. 좌측 리스트 교체
     $('.project-list-group').hide();
     $('#list-' + status).fadeIn(200);
 
-    // 3. 리스트 선택 초기화
     $('.custom-list-item').removeClass('active');
 
-    // 4. 모든 패널 일단 숨김 (초기화)
     $('#defaultCenterPanel, #defaultRightPanel').hide();
     $('#ongoingCenterPanel, #ongoingRightPanel').hide();
     $('#completedCenterPanel, #completedRightPanel').hide();
 
-    // 5. 선택된 탭에 맞는 패널 보이기
     if (status === 'ONGOING') {
-        // [진행 중] 화면 보이기
         $('#ongoingCenterPanel, #ongoingRightPanel').show();
-
-        // 초기화
         $('#ongoingProjectTitle').text('');
         $('#chatFreelancerName').text('프리랜서');
         $('#milestoneListArea').html(`
@@ -36,30 +28,21 @@ function switchProjectTab(status, btn) {
                 <p>좌측 목록에서<br>프로젝트를 선택해주세요.</p>
             </div>
         `);
-
     } else if (status === 'COMPLETED') {
-        // [완료] 화면 보이기
         $('#completedCenterPanel, #completedRightPanel').show();
 
-        // 1) 텍스트/값 초기화
         $('#reviewProjectTitle').text('');
         $('#reviewComment').val('');
         $('#ratingValue').text('0점');
         $('input[name="rating"]').prop('checked', false);
         $('input[name="recontract"]').prop('checked', false);
 
-        // 2) 화면 상태 초기화 (빈 화면 보이기, 폼 숨기기)
-        $('#reviewEmptyState').show();      // "선택해주세요" 안내 보이기
-        $('#reviewFormSection').hide();     // 리뷰 폼 숨기기 (삭제X)
-
-        $('#recontractEmptyState').show();  // 우측 빈 화면 보이기
-        $('#recontractFormSection').hide(); // 우측 폼 숨기기 (삭제X)
-
+        $('#reviewEmptyState').show();
+        $('#reviewFormSection').hide();
+        $('#recontractEmptyState').show();
+        $('#recontractFormSection').hide();
     } else {
-        // [모집 중] 화면 보이기 (기본)
         $('#defaultCenterPanel, #defaultRightPanel').show();
-
-        // 초기화
         $('#selectedProjectTitle').text('');
         $('#projectControlBar').hide();
         $('#applicantListArea').html(`
@@ -90,8 +73,8 @@ function loadApplicants(projectId, element) {
     $.ajax({
         url: contextPath + '/client/api/applicants',
         type: 'GET',
-        data: { projectId: projectId },
-        success: function(list) {
+        data: {projectId: projectId},
+        success: function (list) {
             renderList(list);
             $('#applicantDetailArea').html(`
                 <div style="text-align:center; padding-top:100px; color:#ccc;">
@@ -100,7 +83,9 @@ function loadApplicants(projectId, element) {
                 </div>
             `);
         },
-        error: function() { alert("목록을 불러오지 못했습니다."); }
+        error: function () {
+            alert("목록을 불러오지 못했습니다.");
+        }
     });
 }
 
@@ -109,7 +94,7 @@ function renderList(list) {
     target.empty();
     $('#applicantCountBadge').text(list.length + "명");
 
-    if(!list || list.length === 0) {
+    if (!list || list.length === 0) {
         target.html('<div class="empty-list-msg">지원자가 없습니다.</div>');
         return;
     }
@@ -119,10 +104,19 @@ function renderList(list) {
         let badgeStyle = "background:#eee; color:#666;";
         let statusText = "미열람";
 
-        if(app.applicationStatus === 'VIEWED') { statusText = "열람함"; badgeStyle = "background:#E3F2FD; color:#1F7A8C;"; }
-        else if(app.applicationStatus === 'OFFERED') { statusText = "제안중"; badgeStyle = "background:#E8F5E9; color:#2E7D32;"; }
-        else if(app.applicationStatus === 'REJECTED') { statusText = "불합격"; badgeStyle = "background:#FFEBEE; color:#C62828;"; }
-        else if(app.applicationStatus === 'CONTRACTED') { statusText = "계약완료"; badgeStyle = "background:#FFF3E0; color:#EF6C00;"; }
+        if (app.applicationStatus === 'VIEWED') {
+            statusText = "열람함";
+            badgeStyle = "background:#E3F2FD; color:#1F7A8C;";
+        } else if (app.applicationStatus === 'OFFERED') {
+            statusText = "제안중";
+            badgeStyle = "background:#E8F5E9; color:#2E7D32;";
+        } else if (app.applicationStatus === 'REJECTED') {
+            statusText = "불합격";
+            badgeStyle = "background:#FFEBEE; color:#C62828;";
+        } else if (app.applicationStatus === 'CONTRACTED') {
+            statusText = "계약완료";
+            badgeStyle = "background:#FFF3E0; color:#EF6C00;";
+        }
 
         html += `
             <div class="custom-list-item" id="item-${app.applicationId}" onclick="loadDetail(${app.applicationId}, this)">
@@ -149,13 +143,15 @@ function loadDetail(applicationId, element) {
     $.ajax({
         url: contextPath + '/client/api/applicant/' + applicationId,
         type: 'GET',
-        success: function(data) {
+        success: function (data) {
             renderDetail(data);
-            if(data.applicationStatus === 'VIEWED') {
+            if (data.applicationStatus === 'VIEWED') {
                 updateListItemBadge(applicationId, 'VIEWED');
             }
         },
-        error: function() { alert("상세 정보를 불러오지 못했습니다."); }
+        error: function () {
+            alert("상세 정보를 불러오지 못했습니다.");
+        }
     });
 }
 
@@ -166,17 +162,25 @@ function renderDetail(data) {
     let imageHtml = '';
     if (data.profileImageUrl) {
         imageHtml = `<img src="${data.profileImageUrl}" class="detail-img" 
-                      onerror="this.outerHTML='<div class=\'detail-img-icon\'><i class=\'fa-solid fa-user\'></i></div>'">`;
+                      onerror="this.src='${contextPath}/resources/img/default_profile.png';">`;
     } else {
         imageHtml = `<div class="detail-img-icon"><i class="fa-solid fa-user"></i></div>`;
     }
 
+    // 버튼 상태 및 스타일 설정
     let chatDisabled = "", offerDisabled = "", rejectDisabled = "";
-    let chatStyle = "btn-outline", offerStyle = "btn-primary", rejectStyle = "btn-outline";
+
+    let chatStyle = "btn-outline";
+    let offerStyle = "btn-primary";
+    let rejectStyle = "btn-secondary";
 
     if (status === 'REJECTED' || status === 'CONTRACTED' || status === 'CANCELED') {
-        chatDisabled = "disabled"; offerDisabled = "disabled"; rejectDisabled = "disabled";
-        chatStyle = "btn-disabled"; offerStyle = "btn-disabled"; rejectStyle = "btn-disabled";
+        chatDisabled = "disabled";
+        offerDisabled = "disabled";
+        rejectDisabled = "disabled";
+        chatStyle = "btn-disabled";
+        offerStyle = "btn-disabled";
+        rejectStyle = "btn-disabled";
     }
 
     const html = `
@@ -196,10 +200,16 @@ function renderDetail(data) {
         </div>
 
         <div class="action-btn-group" style="margin-top:auto;">
-            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="updateStatus(${data.applicationId}, 'CHATTING')">1:1 채팅하기</button>
+            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="updateStatus(${data.applicationId}, 'CHATTING')">
+                1:1 채팅하기
+            </button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="updateStatus(${data.applicationId}, 'OFFERED')">계약 제안</button>
-                <button class="btn-action ${rejectStyle}" style="border-color:#ddd; color:#888;" ${rejectDisabled} onclick="updateStatus(${data.applicationId}, 'REJECTED')">불합격</button>
+                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="updateStatus(${data.applicationId}, 'OFFERED')">
+                    계약 제안
+                </button>
+                <button class="btn-action ${rejectStyle}" ${rejectDisabled} onclick="updateStatus(${data.applicationId}, 'REJECTED')">
+                    불합격
+                </button>
             </div>
         </div>
     `;
@@ -208,44 +218,56 @@ function renderDetail(data) {
 
 /* [3] 상태 변경 */
 function updateStatus(appId, status) {
-    if(!confirm("상태를 변경하시겠습니까?")) return;
+    if (!confirm("상태를 변경하시겠습니까?")) return;
 
     $.ajax({
         url: contextPath + '/client/api/applicant/status',
         type: 'POST',
-        data: { applicationId: appId, status: status },
-        success: function() {
+        data: {applicationId: appId, status: status},
+        success: function () {
             alert("처리되었습니다.");
             loadDetail(appId, $(`#item-${appId}`));
             updateListItemBadge(appId, status);
         },
-        error: function() { alert("오류가 발생했습니다."); }
+        error: function () {
+            alert("오류가 발생했습니다.");
+        }
     });
 }
 
 function updateListItemBadge(appId, status) {
     const badge = $(`#item-${appId} .status-badge`);
-    if(status === 'VIEWED') badge.text("열람함").css({background:"#E3F2FD", color:"#1F7A8C"});
-    else if(status === 'OFFERED') badge.text("제안중").css({background:"#E8F5E9", color:"#2E7D32"});
-    else if(status === 'REJECTED') badge.text("불합격").css({background:"#FFEBEE", color:"#C62828"});
-    else if(status === 'CONTRACTED') badge.text("계약완료").css({background:"#FFF3E0", color:"#EF6C00"});
+    if (status === 'VIEWED') badge.text("열람함").css({background: "#E3F2FD", color: "#1F7A8C"});
+    else if (status === 'OFFERED') badge.text("제안중").css({background: "#E8F5E9", color: "#2E7D32"});
+    else if (status === 'REJECTED') badge.text("불합격").css({background: "#FFEBEE", color: "#C62828"});
+    else if (status === 'CONTRACTED') badge.text("계약완료").css({background: "#FFF3E0", color: "#EF6C00"});
 }
 
 /* [4] 유틸리티 */
-function goToProjectDetail() { if(currentProjectId) window.open(contextPath + '/project/detail?projectId='+currentProjectId, '_blank'); }
-function goEditProject() { if(currentProjectId) location.href = contextPath + '/project/edit/' + currentProjectId; }
+function goToProjectDetail() {
+    if (currentProjectId) window.open(contextPath + '/project/detail?projectId=' + currentProjectId, '_blank');
+}
+
+function goEditProject() {
+    if (currentProjectId) location.href = contextPath + '/project/edit/' + currentProjectId;
+}
+
 function deleteProject() {
     if (!currentProjectId) return;
     if (confirm("정말 이 프로젝트를 삭제하시겠습니까?")) {
         $.ajax({
             url: contextPath + '/project/delete',
             type: 'POST',
-            data: { projectId: currentProjectId },
-            success: function(res) {
-                if(res === 'success') { alert("삭제되었습니다."); location.reload(); }
-                else alert("삭제 실패");
+            data: {projectId: currentProjectId},
+            success: function (res) {
+                if (res === 'success') {
+                    alert("삭제되었습니다.");
+                    location.reload();
+                } else alert("삭제 실패");
             },
-            error: function() { alert("오류가 발생했습니다."); }
+            error: function () {
+                alert("오류가 발생했습니다.");
+            }
         });
     }
 }
