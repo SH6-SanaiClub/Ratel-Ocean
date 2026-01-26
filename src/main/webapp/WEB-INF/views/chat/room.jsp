@@ -157,12 +157,21 @@
                         '</div>';
                 });
             });
+
+        connectStomp();
     }
     // ================== 방 선택 ==================
     let typingTimer = null;
     let isTyping = false;
-    messageInput.addEventListener("keydown", () => {
+    messageInput.addEventListener("keydown", (e) => {
         if (!selectedRoomId) return;
+
+        if (e.keyCode === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+            return;
+        }
+
         if (!isTyping) {
             isTyping = true;
             stompClient.send("/pub/chat/room/${selectedRoomId}/typing", {}, JSON.stringify({
