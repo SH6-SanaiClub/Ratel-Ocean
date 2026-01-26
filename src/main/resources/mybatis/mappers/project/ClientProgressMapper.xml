@@ -4,22 +4,59 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ClientProgressMapper">
 
-    <select id="selectMilestonesByProjectId" resultType="com.sanaiclub.project.model.dto.ClientMilestoneDTO">
+    <resultMap id="ProjectProgressMap" type="com.sanaiclub.project.model.dto.ClientProjectProgressDTO">
+        <id property="contractId" column="contractId"/>
+
+        <result property="freelancerName" column="freelancerName"/>
+        <result property="startDate" column="startDate"/>
+        <result property="endDate" column="endDate"/>
+        <result property="budget" column="budget"/>
+        <result property="communicateMethod" column="communicateMethod"/>
+        <result property="paymentMethod" column="paymentMethod"/>
+        <result property="maxRevisionCount" column="maxRevisionCount"/>
+        <result property="originContractUrl" column="originContractUrl"/>
+
+        <collection property="milestones" ofType="com.sanaiclub.project.model.dto.ClientMilestoneDTO">
+            <id property="milestoneId" column="milestoneId"/>
+            <result property="contractId" column="contractId"/>
+            <result property="stepOrder" column="stepOrder"/>
+            <result property="milestoneName" column="milestoneName"/>
+            <result property="amount" column="amount"/>
+            <result property="dueDate" column="dueDate"/>
+            <result property="status" column="status"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectMilestonesByProjectId" resultMap="ProjectProgressMap">
         SELECT
-            cm.milestone_id      AS milestoneId,
-            cm.contract_id       AS contractId,
-            cm.step_order        AS stepOrder,
-            cm.milestone_name    AS milestoneName,
-            cm.amount            AS amount,
-            cm.due_date          AS dueDate,
-            cm.status            AS status,
-            u.name               AS freelancerName
+            IFNULL(c.contract_id, pa.application_id) AS contractId,
+
+            u.name                AS freelancerName,
+            c.contract_start_date AS startDate,
+            c.contract_end_date   AS endDate,
+            c.total_budget        AS budget,
+            p.communicate_method  AS communicateMethod,
+            c.payment_method      AS paymentMethod,
+            p.max_revision_count  AS maxRevisionCount,
+            c.origin_contract_url AS originContractUrl,
+
+            cm.milestone_id       AS milestoneId,
+            cm.contract_id        AS contractId,
+            cm.step_order         AS stepOrder,
+            cm.milestone_name     AS milestoneName,
+            cm.amount             AS amount,
+            cm.due_date           AS dueDate,
+            cm.status             AS status
+
         FROM projects p
                  INNER JOIN project_applications pa ON p.project_id = pa.project_id
-                 INNER JOIN contracts c ON pa.application_id = c.contract_id
-                 INNER JOIN contract_milestones cm ON c.contract_id = cm.contract_id
-                 INNER JOIN users u ON pa.freelancer_id = u.user_id
+                 LEFT JOIN contracts c ON pa.application_id = c.contract_id
+                 LEFT JOIN users u ON pa.freelancer_id = u.user_id
+                 LEFT JOIN contract_milestones cm ON c.contract_id = cm.contract_id
+
         WHERE p.project_id = #{projectId}
+          AND (pa.application_status = 'CONTRACTED' OR c.contract_status = 'SIGNED')
+
         ORDER BY cm.step_order ASC
     </select>
 
