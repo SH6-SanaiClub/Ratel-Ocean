@@ -22,7 +22,9 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/chat")
@@ -105,8 +107,6 @@ public class ChattingController {
 
         return "ok";
     }
-
-
     // 메시지 전송
     @PostMapping("/room/{roomId}/message")
     public ResponseEntity<ChatMessageDTO> sendMessage(
@@ -138,6 +138,7 @@ public class ChattingController {
                         fileUrl,
                         fileSize
                 );
+        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);
         return ResponseEntity.ok(message);
     }
     @GetMapping("/file/{messageId}")

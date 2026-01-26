@@ -313,13 +313,6 @@
         })
             .then(res => res.json())
             .then(message => {
-
-                if (stompClient && stompClient.connected) {
-                    stompClient.send("/pub/chat/message", {}, JSON.stringify(message));
-                }
-
-
-
                 messageInput.value = "";
                 fileInput.value = "";
                 document.getElementById("filePreview").style.display = "none";
