@@ -54,7 +54,7 @@
                 <button type="button" class="btn-icon"
                         onclick="location.href='${pageContext.request.contextPath}/project/bookmark'"
                         title="북마크 바로가기"
-                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; color:#FFBD2E; border-color:#FFBD2E; gap:5px; display:flex; align-items:center; background:#fff; cursor:pointer;">
+                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; color:#1f7a8c; border-color:#1f7a8c; gap:5px; display:flex; align-items:center; background:#fff; cursor:pointer;">
                     <i class="fa-solid fa-bookmark"></i> 북마크
                 </button>
             </div>
