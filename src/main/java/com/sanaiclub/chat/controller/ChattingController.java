@@ -143,7 +143,7 @@ public class ChattingController {
     }
     @GetMapping("/file/{messageId}")
     public ResponseEntity<Resource> downloadFile(
-            @PathVariable Integer messageId
+            @PathVariable Integer messageId, HttpSession session
     ) throws Exception {
 
         // 1️⃣ DB에서 파일 정보 조회
@@ -154,13 +154,16 @@ public class ChattingController {
         }
 
         // 2️⃣ 실제 파일 경로
-        String filePath = "C:/upload/chat/" + msg.getFileName();
+
+        String filePath = session.getServletContext().getRealPath("/upload/chat") + "/" + msg.getFileName();
+        System.out.println(filePath);
         File file = new File(filePath);
 
         if (!file.exists()) {
+            System.out.println("파일존재XXXX");
             return ResponseEntity.notFound().build();
         }
-
+        System.out.println("파일존재");
         // 3️⃣ Resource로 변환
         Resource resource = new FileSystemResource(file);
 

@@ -242,7 +242,7 @@
                             bubbleHtml =
                                 '<div class="bubble file-bubble">' +
                                 '📎 ' +
-                                '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
+                                '<a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                                 escapeHtml(msg.fileName) +
                                 '</a>' +
                                 (msg.fileSize
