@@ -19,7 +19,7 @@ public class ClientApplicantService {
     }
 
     @Transactional
-    public ClientApplicantDTO getApplicantDetail(Long applicationId) {
+    public ClientApplicantDTO getApplicantDetail(Integer applicationId) {
         ClientApplicantDTO detail = clientApplicantMapper.selectApplicantDetail(applicationId);
         if (detail != null) {
             // 미열람 -> 열람함 자동 전환
@@ -27,7 +27,7 @@ public class ClientApplicantService {
                 updateStatus(applicationId, "VIEWED");
                 detail.setApplicationStatus("VIEWED");
             }
-            Long fId = detail.getFreelancerId();
+            Integer fId = detail.getFreelancerId();
             detail.setSkills(clientApplicantMapper.selectFreelancerSkills(fId));
             detail.setCareers(clientApplicantMapper.selectFreelancerCareers(fId));
             detail.setProjects(clientApplicantMapper.selectFreelancerProjectExps(fId));
@@ -36,7 +36,7 @@ public class ClientApplicantService {
     }
 
     // 상태 변경 메서드
-    public void updateStatus(Long applicationId, String status) {
+    public void updateStatus(Integer applicationId, String status) {
         clientApplicantMapper.updateStatus(applicationId, status);
     }
 }

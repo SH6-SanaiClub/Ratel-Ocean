@@ -22,13 +22,13 @@ public class ClientApplicantController {
 
     // 지원자 상세 조회 (자동 열람 처리 포함)
     @GetMapping("/applicant/{applicationId}")
-    public ClientApplicantDTO getApplicantDetail(@PathVariable("applicationId") Long applicationId) {
+    public ClientApplicantDTO getApplicantDetail(@PathVariable("applicationId") Integer applicationId) {
         return clientApplicantService.getApplicantDetail(applicationId);
     }
 
     // 상태 변경 API (채팅, 계약, 합격/불합격 등 버튼용)
     @PostMapping("/applicant/status")
-    public void updateStatus(@RequestParam("applicationId") Long applicationId,
+    public void updateStatus(@RequestParam("applicationId") Integer applicationId,
                              @RequestParam("status") String status) {
         clientApplicantService.updateStatus(applicationId, status);
     }
