@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -83,14 +84,43 @@
     }
     .panel h3{ margin:0 0 12px; font-size:14px; font-weight:950; }
 
-    /* Tabs */
+    /*!* Tabs *!*/
+    /*.tabs{*/
+    /*  display:flex; gap:10px; align-items:center;*/
+    /*  border-bottom:1px solid rgba(229,231,235,.9);*/
+    /*  padding-bottom:10px;*/
+    /*  margin-bottom:12px;*/
+    /*  overflow:auto;*/
+    /*}*/
+
+    /* Tabs: 왼쪽(탭) + 오른쪽(상세관리 버튼) */
     .tabs{
-      display:flex; gap:10px; align-items:center;
+      display:flex;
+      align-items:center;
+      justify-content:space-between; /* 핵심 */
+      gap:10px;
       border-bottom:1px solid rgba(229,231,235,.9);
       padding-bottom:10px;
       margin-bottom:12px;
+    }
+
+    /* 탭 3개를 한 덩어리로 */
+    .tabGroup{
+      display:flex;
+      gap:10px;
+      align-items:center;
       overflow:auto;
     }
+
+    /* 오른쪽 버튼 영역 */
+    .tabsRight{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-shrink:0;
+    }
+
     .tab{
       padding:10px 12px;
       border-radius:999px;
@@ -226,6 +256,7 @@
       display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
     }
 
+
     @media (max-width: 980px){
       .gridTop{ grid-template-columns:1fr; }
       .main{ grid-template-columns:1fr; }
@@ -260,13 +291,11 @@
     <div class="stat">
       <div class="label"><span class="dot warn"></span> 지원한 프로젝트</div>
       <div class="value"><c:out value="${summary.appliedCount}"/></div>
-      <div class="small">최근 지원 내역 확인</div>
     </div>
 
     <div class="stat">
       <div class="label"><span class="dot ok"></span> 완료된 프로젝트</div>
       <div class="value"><c:out value="${summary.completedCount}"/></div>
-      <div class="small">누적 완료 현황</div>
     </div>
   </div>
 
@@ -299,19 +328,30 @@
     <div class="panel">
 
       <div class="tabs">
-        <a class="tab ${tab eq 'inProgress' ? 'active' : ''}"
-           href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=inProgress&ym=${ym}">
-          진행 중 (<c:out value="${summary.inProgressCount}"/>)
-        </a>
-        <a class="tab ${tab eq 'applied' ? 'active' : ''}"
-           href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=applied&ym=${ym}">
-          지원한 (<c:out value="${summary.appliedCount}"/>)
-        </a>
-        <a class="tab ${tab eq 'completed' ? 'active' : ''}"
-           href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=completed&ym=${ym}">
-          완료 (<c:out value="${summary.completedCount}"/>)
-        </a>
+        <div class="tabGroup">
+          <a class="tab ${tab eq 'inProgress' ? 'active' : ''}"
+             href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=inProgress&ym=${ym}">
+            진행 중 (<c:out value="${summary.inProgressCount}"/>)
+          </a>
+          <a class="tab ${tab eq 'applied' ? 'active' : ''}"
+             href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=applied&ym=${ym}">
+            지원한 (<c:out value="${summary.appliedCount}"/>)
+          </a>
+          <a class="tab ${tab eq 'completed' ? 'active' : ''}"
+             href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=completed&ym=${ym}">
+            완료 (<c:out value="${summary.completedCount}"/>)
+          </a>
+        </div>
+
+        <div class="tabsRight">
+          <a class="btn primary"
+             href="${pageContext.request.contextPath}/freelancer/projects/board"
+             style="text-decoration:none;">
+            상세 관리
+          </a>
+        </div>
       </div>
+
 
       <div class="cards">
         <!-- 진행중 -->
@@ -329,7 +369,7 @@
                 </div>
 
                 <div class="badge info">
-                  계약 진행중
+                  계약 종료까지
                   <c:if test="${p.dday ne null}">
                     · D-<c:out value="${p.dday}"/>
                   </c:if>
@@ -369,13 +409,15 @@
 
                 <div>
                   <div class="k">계약 금액</div>
-                  <div class="v">₩ <c:out value="${p.totalBudget}"/></div>
+                  <div class="v">
+                    ₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/>
+                  </div>
+
                 </div>
               </div>
 
               <div class="actions">
                 <a class="btn ghost" href="${pageContext.request.contextPath}/chat/list" style="text-decoration:none;">메시지</a>
-                <a class="btn primary" href="${pageContext.request.contextPath}/contract/detail?contractId=${p.contractId}" style="text-decoration:none;">상세 관리</a>
               </div>
             </div>
           </c:forEach>
@@ -396,7 +438,7 @@
                 </div>
 
                 <div class="badge warn">
-                  지원중 · <c:out value="${p.applicationStatus}"/>
+                  공고 마감
                   <c:if test="${p.dday ne null}">
                     · D-<c:out value="${p.dday}"/>
                   </c:if>
@@ -415,8 +457,8 @@
                 </div>
 
                 <div>
-                  <div class="k">진척도</div>
-                  <div class="v">-</div>
+                  <div class="k"> </div>
+                  <div class="v"> </div>
                 </div>
 
                 <div>
@@ -473,7 +515,7 @@
 
               <div class="actions">
                 <a class="btn ghost" href="${pageContext.request.contextPath}/contract/detail?contractId=${p.contractId}" style="text-decoration:none;">상세 보기</a>
-                <a class="btn primary" href="#" style="text-decoration:none;">리뷰 보기</a>
+                <a class="btn primary" href="${pageContext.request.contextPath}/freelancer/projects/board?tab=reviews&contractId=${p.contractId}" style="text-decoration:none;">리뷰 보기</a>
               </div>
             </div>
           </c:forEach>

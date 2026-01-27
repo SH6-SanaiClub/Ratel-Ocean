@@ -1,6 +1,8 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <%
     String tab = request.getParameter("tab");
     if (tab == null || tab.isBlank()) tab = "inProgress";
@@ -333,7 +335,7 @@
                                             <div class="mname" style="margin-top:8px;">${fn:escapeXml(m.milestoneName)}</div>
                                             <div class="mmeta">
                                                 <span>지급 예정일: <b><c:out value="${empty m.dueDate ? '-' : m.dueDate}"/></b></span>
-                                                <span>금액: <span class="amount">₩ <c:out value="${m.amount}"/></span></span>
+                                                <span>금액: <span class="amount">₩ <fmt:formatNumber value="${m.amount}" groupingUsed="true"/></span></span>
                                             </div>
                                             <c:if test="${not empty m.workScope}">
                                                 <div class="help">업무범위: ${fn:escapeXml(m.workScope)}</div>
