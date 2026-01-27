@@ -10,7 +10,7 @@
             cp.client_type, cp.company_id,
             c.company_name, c.ceo_name, c.business_number, c.industry, c.address, c.website_url,
 
-            -- [계약 수]
+            -- 완료된 계약 수
             (SELECT COUNT(*)
              FROM contracts con
                       INNER JOIN project_applications app ON con.contract_id = app.application_id
@@ -18,7 +18,7 @@
              WHERE p.client_id = u.user_id
                AND con.contract_status = 'COMPLETED') as contract_count,
 
-            -- [외주 평균 평점] "클라이언트 본인이 프리랜서들에게 남긴 평점(client_rating)"의 평균
+            -- 내가 준 점수 평균
             COALESCE(
                     (SELECT AVG(con.client_rating)
                      FROM contracts con
@@ -26,7 +26,17 @@
                               INNER JOIN projects p ON app.project_id = p.project_id
                      WHERE p.client_id = u.user_id
                        AND con.client_rating IS NOT NULL), 0
-            ) as avg_rating
+            ) as given_avg_rating,
+
+            -- 내가 받은 점수 평균
+            COALESCE(
+                    (SELECT AVG(CAST(con.freelancer_rating AS DECIMAL(2,1)))
+                     FROM contracts con
+                              INNER JOIN project_applications app ON con.contract_id = app.application_id
+                              INNER JOIN projects p ON app.project_id = p.project_id
+                     WHERE p.client_id = u.user_id
+                       AND con.freelancer_rating IS NOT NULL), 0
+            ) as received_avg_rating
 
         FROM users u
                  INNER JOIN client_profiles cp ON u.user_id = cp.client_id
@@ -53,7 +63,10 @@
 
         <association property="stats" javaType="com.sanaiclub.user.model.dto.ClientStatsDTO">
             <result property="contractCount" column="contract_count"/>
-            <result property="avgRating" column="avg_rating"/>
+
+            <result property="givenAvgRating" column="given_avg_rating"/>
+            <result property="receivedAvgRating" column="received_avg_rating"/>
+
             <collection property="reviewList" column="user_id" select="selectClientReviews"/>
             <collection property="receivedReviewList" column="user_id" select="selectReceivedReviews"/>
         </association>
@@ -67,14 +80,9 @@
             con.total_budget as budget,
             DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
             DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
-
-            -- [내가 준 점수] client_rating (INT)
             con.client_rating as rating,
             con.client_experience as content,
-
-            -- [재계약 의사] (DB 에러 로그 기반 'renewal'로 수정됨)
             con.client_is_renewal_intended as recontractIntended,
-
             DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
         FROM contracts con
                  INNER JOIN project_applications app ON con.contract_id = app.application_id
@@ -94,14 +102,9 @@
             con.total_budget as budget,
             DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
             DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
-
-            -- [받은 점수] freelancer_rating (VARCHAR -> 숫자 변환)
             CAST(con.freelancer_rating AS UNSIGNED) as rating,
             con.freelancer_experience as content,
-
-            -- [NULL] 프리랜서는 재계약 의사 컬럼 없음
             NULL as recontractIntended,
-
             DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
         FROM contracts con
                  INNER JOIN project_applications app ON con.contract_id = app.application_id

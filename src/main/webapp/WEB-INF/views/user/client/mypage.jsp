@@ -85,13 +85,13 @@
             <%-- 1. 내 평가 (작성한 리뷰) 화면 --%>
             <div id="view-dashboard" class="view-section active">
                 <div class="dash-card">
-                    <div class="dash-title">외주 평균 평점</div>
+                    <div class="dash-title">외주 평균 평점 (내가 준 점수)</div>
                     <div class="stats-row">
                         <div class="stat-box">
                             <h4>평균 평점</h4>
                             <div class="stat-value">
                                 <i class="fa-solid fa-star" style="color:#fdd835;"></i>
-                                <fmt:formatNumber value="${profile.stats.avgRating}" pattern="0.0"/>
+                                <fmt:formatNumber value="${profile.stats.givenAvgRating}" pattern="0.0"/>
                             </div>
                         </div>
                         <div class="stat-box">
@@ -168,17 +168,16 @@
                 </div>
             </div>
 
-            <%-- 2. 프리랜서의 평가 (받은 리뷰) 화면 --%>
                 <div id="view-received" class="view-section">
 
                     <div class="dash-card">
-                        <div class="dash-title">받은 평균 평점</div>
+                        <div class="dash-title">받은 평균 평점 (프리랜서가 준 점수)</div>
                         <div class="stats-row">
                             <div class="stat-box">
                                 <h4>평균 평점</h4>
                                 <div class="stat-value">
                                     <i class="fa-solid fa-star" style="color:#fdd835;"></i>
-                                    <fmt:formatNumber value="${profile.stats.avgRating}" pattern="0.0"/>
+                                    <fmt:formatNumber value="${profile.stats.receivedAvgRating}" pattern="0.0"/>
                                 </div>
                             </div>
                             <div class="stat-box">
@@ -256,7 +255,6 @@
 
                         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px;">
 
-                            <%-- [수정] 미리보기 영역 --%>
                             <div class="profile-frame preview-size">
                                 <img id="previewImg"
                                      src="${not empty profile.profileImageUrl ? pageContext.request.contextPath.concat(profile.profileImageUrl) : ''}"
@@ -269,7 +267,6 @@
                                 <label for="profileFile" style="cursor:pointer; background:#fff; border:1px solid #ccc; padding:6px 12px; border-radius:4px; font-size:13px; font-weight:600;">
                                     이미지 변경
                                 </label>
-                                <%-- 파일 입력 (기존 유지) --%>
                                 <input type="file" id="profileFile" name="profileFile" style="display:none;" accept="image/*" onchange="readURL(this)">
                                 <div style="font-size:12px; color:#888; margin-top:5px;">5MB 이하의 이미지 파일</div>
                             </div>
