@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.contract.dao.ContractMapper">
+
+    <!-- ============================================================
+         ResultMap 정의
+         ============================================================ -->
+
+    <!-- 기본 Contract ResultMap -->
+    <resultMap id="contractResultMap" type="com.sanaiclub.contract.model.vo.ContractVO">
+        <id property="contractId" column="contract_id"/>
+        <result property="contractStartDate" column="contract_start_date"/>
+        <result property="contractEndDate" column="contract_end_date"/>
+        <result property="totalBudget" column="total_budget"/>
+        <result property="paymentMethod" column="payment_method"/>
+        <result property="contractStatus" column="contract_status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="paymentStatus" column="payment_status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="originContractUrl" column="origin_contract_url"/>
+        <result property="platformContractUrl" column="platform_contract_url"/>
+        <result property="aiReportUrl" column="ai_report_url"/>
+        <result property="contractedAt" column="contracted_at"/>
+        <result property="completedAt" column="completed_at"/>
+        <result property="cancelReason" column="cancel_reason"/>
+        <result property="clientRating" column="client_rating"/>
+        <result property="clientExperience" column="client_experience"/>
+        <result property="clientIsRenewalIntended" column="client_is_renewal_intended"/>
+        <result property="freelancerRating" column="freelancer_rating"/>
+        <result property="freelancerExperience" column="freelancer_experience"/>
+    </resultMap>
+
+    <!-- Contract Detail ResultMap (다중 테이블 조인용) -->
+    <resultMap id="contractDetailResultMap" type="com.sanaiclub.contract.model.dto.ContractDetailDTO">
+        <association property="contract" javaType="com.sanaiclub.contract.model.vo.ContractVO">
+            <id property="contractId" column="contract_id"/>
+            <result property="contractStartDate" column="contract_start_date"/>
+            <result property="contractEndDate" column="contract_end_date"/>
+            <result property="totalBudget" column="total_budget"/>
+            <result property="paymentMethod" column="payment_method"/>
+            <result property="contractStatus" column="contract_status"/>
+            <result property="paymentStatus" column="payment_status"/>
+            <result property="originContractUrl" column="origin_contract_url"/>
+            <result property="platformContractUrl" column="platform_contract_url"/>
+            <result property="aiReportUrl" column="ai_report_url"/>
+            <result property="contractedAt" column="contracted_at"/>
+            <result property="completedAt" column="completed_at"/>
+            <result property="cancelReason" column="cancel_reason"/>
+            <result property="clientRating" column="client_rating"/>
+            <result property="clientExperience" column="client_experience"/>
+            <result property="clientIsRenewalIntended" column="client_is_renewal_intended"/>
+            <result property="freelancerRating" column="freelancer_rating"/>
+            <result property="freelancerExperience" column="freelancer_experience"/>
+        </association>
+
+        <association property="project" javaType="com.sanaiclub.project.model.vo.ProjectsVO">
+            <id property="projectId" column="project_id"/>
+            <result property="clientId" column="project_client_id"/>
+            <result property="title" column="title"/>
+            <result property="description" column="description"/>
+            <result property="startDate" column="start_date"/>
+            <result property="deadlineDate" column="deadline_date"/>
+            <result property="estDuration" column="est_duration"/>
+            <result property="budget" column="budget"/>
+            <result property="communicateMethod" column="communicate_method"/>
+            <result property="paymentMethod" column="project_payment_method"/>
+            <result property="changePolicy" column="change_policy"/>
+            <result property="maxRevisionCount" column="max_revision_count"/>
+            <result property="projectStatus" column="project_status"/>
+            <result property="isPublic" column="is_public"/>
+            <result property="createdAt" column="project_created_at"/>
+            <result property="updatedAt" column="project_updated_at"/>
+            <result property="viewCount" column="view_count"/>
+            <result property="applicantCount" column="applicant_count"/>
+            <result property="planUrl" column="plan_url"/>
+            <result property="fileSize" column="file_size"/>
+            <result property="budgetNegotiable" column="budget_negotiable"/>
+            <result property="durationNegotiable" column="duration_negotiable"/>
+        </association>
+
+        <association property="freelancerUser" javaType="com.sanaiclub.user.model.vo.UserVO">
+            <id property="userId" column="freelancer_user_id"/>
+            <result property="loginId" column="freelancer_login_id"/>
+            <result property="email" column="freelancer_email"/>
+            <result property="password" column="freelancer_password"/>
+            <result property="refreshToken" column="freelancer_refresh_token"/>
+            <result property="userType" column="freelancer_user_type"/>
+            <result property="status" column="freelancer_status"/>
+            <result property="name" column="freelancer_name"/>
+            <result property="phone" column="freelancer_phone"/>
+            <result property="birthDate" column="freelancer_birth_date"/>
+            <result property="profileImageUrl" column="freelancer_profile_image_url"/>
+            <result property="createdAt" column="freelancer_created_at"/>
+            <result property="updatedAt" column="freelancer_updated_at"/>
+        </association>
+
+        <association property="freelancerProfile" javaType="com.sanaiclub.user.model.vo.FreelancerProfileVO">
+            <id property="freelancerId" column="freelancer_id"/>
+            <result property="nickname" column="nickname"/>
+            <result property="introduction" column="introduction"/>
+            <result property="githubUrl" column="github_url"/>
+            <result property="websiteUrl" column="website_url"/>
+            <result property="schoolName" column="school_name"/>
+            <result property="major" column="major"/>
+            <result property="degree" column="degree"/>
+            <result property="gradStatus" column="grad_status"/>
+            <result property="isProfileComplete" column="is_profile_complete"/>
+        </association>
+
+        <association property="clientUser" javaType="com.sanaiclub.user.model.vo.UserVO">
+            <id property="userId" column="client_user_id"/>
+            <result property="loginId" column="client_login_id"/>
+            <result property="email" column="client_email"/>
+            <result property="password" column="client_password"/>
+            <result property="refreshToken" column="client_refresh_token"/>
+            <result property="userType" column="client_user_type"/>
+            <result property="status" column="client_status"/>
+            <result property="name" column="client_name"/>
+            <result property="phone" column="client_phone"/>
+            <result property="birthDate" column="client_birth_date"/>
+            <result property="profileImageUrl" column="client_profile_image_url"/>
+            <result property="createdAt" column="client_created_at"/>
+            <result property="updatedAt" column="client_updated_at"/>
+        </association>
+
+        <association property="clientProfile" javaType="com.sanaiclub.user.model.vo.ClientProfileVO">
+            <id property="clientId" column="client_profile_client_id"/>
+            <result property="companyId" column="company_id"/>
+            <result property="clientType" column="client_type"/>
+        </association>
+
+        <association property="company" javaType="com.sanaiclub.user.model.vo.CompanyVO">
+            <id property="companyId" column="company_company_id"/>
+            <result property="companyName" column="company_name"/>
+            <result property="ceoName" column="ceo_name"/>
+            <result property="ceoEmail" column="ceo_email"/>
+            <result property="businessNumber" column="business_number"/>
+            <result property="businessVerified" column="business_verified"/>
+            <result property="industry" column="industry"/>
+            <result property="address" column="address"/>
+            <result property="companySize" column="company_size"/>
+            <result property="websiteUrl" column="company_website_url"/>
+            <result property="createdAt" column="company_created_at"/>
+        </association>
+    </resultMap>
+
+    <!-- ============================================================
+         공통 SQL 조각
+         ============================================================ -->
+
+    <sql id="contractColumns">
+        contract_id, contract_start_date, contract_end_date, total_budget,
+        payment_method, contract_status, payment_status, origin_contract_url,
+        platform_contract_url, ai_report_url, contracted_at, completed_at,
+        cancel_reason, client_rating, client_experience, client_is_renewal_intended,
+        freelancer_rating, freelancer_experience
+    </sql>
+
+    <!-- ============================================================
+         INSERT / UPDATE
+         ============================================================ -->
+
+    <!-- 계약 생성 -->
+    <insert id="insertContract" parameterType="map">
+        INSERT INTO contracts (
+        contract_start_date, contract_end_date, total_budget, payment_method,
+        contract_status, payment_status, origin_contract_url, platform_contract_url,
+        ai_report_url, contracted_at, completed_at, cancel_reason,
+        client_rating, client_experience, client_is_renewal_intended,
+        freelancer_rating, freelancer_experience
+        ) VALUES (
+        #{contract.contractStartDate}, #{contract.contractEndDate},
+        #{contract.totalBudget}, #{contract.paymentMethod},
+        #{contract.contractStatus}, #{contract.paymentStatus},
+        #{contract.originContractUrl}, #{contract.platformContractUrl},
+        #{contract.aiReportUrl}, #{contract.contractedAt},
+        #{contract.completedAt}, #{contract.cancelReason},
+        #{contract.clientRating}, #{contract.clientExperience},
+        #{contract.clientIsRenewalIntended}, #{contract.freelancerRating},
+        #{contract.freelancerExperience}
+        )
+        <selectKey keyProperty="contractId" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <!-- 계약 전체 업데이트 -->
+    <update id="updateContract" parameterType="map">
+        UPDATE contracts SET
+                             contract_start_date = #{contract.contractStartDate},
+                             contract_end_date = #{contract.contractEndDate},
+                             total_budget = #{contract.totalBudget},
+                             payment_method = #{contract.paymentMethod},
+                             contract_status = #{contract.contractStatus},
+                             payment_status = #{contract.paymentStatus},
+                             origin_contract_url = #{contract.originContractUrl},
+                             platform_contract_url = #{contract.platformContractUrl},
+                             ai_report_url = #{contract.aiReportUrl},
+                             completed_at = #{contract.completedAt},
+                             cancel_reason = #{contract.cancelReason},
+                             client_rating = #{contract.clientRating},
+                             client_experience = #{contract.clientExperience},
+                             client_is_renewal_intended = #{contract.clientIsRenewalIntended},
+                             freelancer_rating = #{contract.freelancerRating},
+                             freelancer_experience = #{contract.freelancerExperience}
+        WHERE contract_id = #{contract.contractId}
+    </update>
+
+    <!-- 계약 상태 변경 -->
+    <update id="updateContractStatus" parameterType="map">
+        UPDATE contracts
+        SET contract_status = #{contractStatus}
+        <if test="rejectReason != null">, cancel_reason = #{rejectReason}</if>
+        WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- 결제 상태 변경 -->
+    <update id="updatePaymentStatus" parameterType="map">
+        UPDATE contracts
+        SET payment_status = #{paymentStatus}
+        WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- 원본 계약서 경로 업데이트 -->
+    <update id="updateOriginContractUrl" parameterType="map">
+        UPDATE contracts
+        SET origin_contract_url = #{originContractUrl}
+        WHERE contract_id = #{contractId}
+    </update>
+
+    <!-- ============================================================
+         SELECT
+         ============================================================ -->
+
+    <!-- 계약 ID로 조회 -->
+    <select id="selectContractById" parameterType="int" resultMap="contractResultMap">
+        SELECT <include refid="contractColumns"/>
+        FROM contracts
+        WHERE contract_id = #{contractId}
+    </select>
+
+    <!-- 모든 계약 조회 -->
+    <select id="selectAllContracts" resultMap="contractResultMap">
+        SELECT <include refid="contractColumns"/>
+        FROM contracts
+        ORDER BY contract_id DESC
+    </select>
+
+    <!-- 클라이언트 경로 패턴으로 계약 조회 -->
+    <select id="selectContractsByClientPathPattern" parameterType="string" resultMap="contractResultMap">
+        SELECT <include refid="contractColumns"/>
+        FROM contracts
+        WHERE origin_contract_url LIKE #{pathPattern}
+        ORDER BY contract_id DESC
+    </select>
+
+    <!-- 경로 패턴으로 파일 경로 목록 조회 -->
+    <select id="selectOriginContractUrlsByPathPattern" parameterType="string" resultType="string">
+        SELECT origin_contract_url
+        FROM contracts
+        WHERE origin_contract_url LIKE #{pathPattern}
+          AND contract_status != 'TERMINATED'
+          AND origin_contract_url IS NOT NULL
+          AND origin_contract_url != ''
+    </select>
+
+    <!-- 경로 패턴으로 기존 계약 조회 (프로젝트 조인) -->
+    <select id="selectContractByPathPattern" parameterType="map" resultMap="contractResultMap">
+        SELECT c.*
+        FROM contracts c
+                 INNER JOIN projects p ON
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+        WHERE p.client_id = #{clientId}
+          AND p.project_id = #{projectId}
+          AND c.contract_status != 'TERMINATED'
+          AND c.origin_contract_url LIKE CONCAT('contracts/', #{clientId}, '/', #{projectId}, '/', #{freelancerId}, '/%')
+          AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = #{freelancerId}
+        ORDER BY c.contract_id DESC
+            LIMIT 1
+    </select>
+
+    <!-- 계약 상세 정보 조회 (다중 테이블 조인) -->
+    <select id="selectContractDetailWithJoin" parameterType="int" resultMap="contractDetailResultMap">
+        SELECT
+            c.contract_id, c.contract_start_date, c.contract_end_date, c.total_budget,
+            c.payment_method, c.contract_status, c.payment_status, c.origin_contract_url,
+            c.platform_contract_url, c.ai_report_url, c.contracted_at, c.completed_at,
+            c.cancel_reason, c.client_rating, c.client_experience,
+            c.client_is_renewal_intended, c.freelancer_rating, c.freelancer_experience,
+
+            p.project_id, p.client_id as project_client_id, p.title, p.description,
+            p.start_date, p.deadline_date, p.est_duration, p.budget,
+            p.communicate_method, p.payment_method as project_payment_method,
+            p.change_policy, p.max_revision_count, p.project_status, p.is_public,
+            p.created_at as project_created_at, p.updated_at as project_updated_at,
+            p.view_count, p.applicant_count, p.plan_url, p.file_size,
+            p.budget_negotiable, p.duration_negotiable,
+
+            fu.user_id as freelancer_user_id, fu.login_id as freelancer_login_id,
+            fu.email as freelancer_email, fu.password as freelancer_password,
+            fu.refresh_token as freelancer_refresh_token, fu.user_type as freelancer_user_type,
+            fu.status as freelancer_status, fu.name as freelancer_name,
+            fu.phone as freelancer_phone, fu.birth_date as freelancer_birth_date,
+            fu.profile_image_url as freelancer_profile_image_url,
+            fu.created_at as freelancer_created_at, fu.updated_at as freelancer_updated_at,
+
+            fp.freelancer_id, fp.nickname, fp.introduction, fp.github_url,
+            fp.website_url, fp.school_name, fp.major, fp.degree,
+            fp.grad_status, fp.is_profile_complete,
+
+            cu.user_id as client_user_id, cu.login_id as client_login_id,
+            cu.email as client_email, cu.password as client_password,
+            cu.refresh_token as client_refresh_token, cu.user_type as client_user_type,
+            cu.status as client_status, cu.name as client_name,
+            cu.phone as client_phone, cu.birth_date as client_birth_date,
+            cu.profile_image_url as client_profile_image_url,
+            cu.created_at as client_created_at, cu.updated_at as client_updated_at,
+
+            cp.client_id as client_profile_client_id, cp.company_id, cp.client_type,
+
+            co.company_id as company_company_id, co.company_name, co.ceo_name,
+            co.ceo_email, co.business_number, co.business_verified, co.industry,
+            co.address, co.company_size, co.website_url as company_website_url,
+            co.created_at as company_created_at
+        FROM contracts c
+                 LEFT JOIN projects p ON
+            c.origin_contract_url IS NOT NULL
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+                 LEFT JOIN users fu ON
+            c.origin_contract_url IS NOT NULL
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+                AND fu.user_type = 'FREELANCER'
+                 LEFT JOIN freelancer_profiles fp ON fu.user_id = fp.freelancer_id
+                 LEFT JOIN users cu ON p.client_id = cu.user_id AND cu.user_type = 'CLIENT'
+                 LEFT JOIN client_profiles cp ON cu.user_id = cp.client_id
+                 LEFT JOIN companies co ON cp.company_id = co.company_id
+        WHERE c.contract_id = #{contractId}
+    </select>
+
+    <!-- ============================================================
+         Contract 도메인 내 프로젝트 조회 (다른 도메인 Mapper 참조 방지)
+         ============================================================ -->
+
+    <!-- 프로젝트 ID로 조회 -->
+    <select id="selectProjectById" parameterType="Integer" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
+        SELECT
+            project_id as projectId, client_id as clientId, title, description,
+            start_date as startDate, deadline_date as deadlineDate,
+            est_duration as estDuration, budget, communicate_method as communicateMethod,
+            payment_method as paymentMethod, change_policy as changePolicy,
+            max_revision_count as maxRevisionCount, project_status as projectStatus,
+            is_public as isPublic, created_at as createdAt, updated_at as updatedAt,
+            view_count as viewCount, applicant_count as applicantCount,
+            plan_url as planUrl, file_size as fileSize,
+            budget_negotiable as budgetNegotiable, duration_negotiable as durationNegotiable
+        FROM projects
+        WHERE project_id = #{projectId}
+    </select>
+
+    <!-- 클라이언트의 READY 상태 프로젝트 목록 조회 -->
+    <select id="selectProjectsByClientId" parameterType="Integer" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
+        SELECT
+            project_id as projectId, client_id as clientId, title, description,
+            start_date as startDate, deadline_date as deadlineDate,
+            est_duration as estDuration, budget, communicate_method as communicateMethod,
+            payment_method as paymentMethod, change_policy as changePolicy,
+            max_revision_count as maxRevisionCount, project_status as projectStatus,
+            is_public as isPublic, created_at as createdAt, updated_at as updatedAt,
+            view_count as viewCount, applicant_count as applicantCount,
+            plan_url as planUrl, file_size as fileSize,
+            budget_negotiable as budgetNegotiable, duration_negotiable as durationNegotiable
+        FROM projects
+        WHERE client_id = #{clientId}
+          AND project_status = 'READY'
+    </select>
+
+    <!-- 프로젝트에 지원한 프리랜서 목록 조회 -->
+    <select id="selectFreelancersByProjectId" parameterType="Integer" resultType="java.util.HashMap">
+        SELECT
+            u.user_id as id,
+            u.name,
+            u.email
+        FROM project_applications pa
+                 INNER JOIN users u ON u.user_id = pa.freelancer_id
+        WHERE pa.project_id = #{projectId}
+        ORDER BY pa.applied_at DESC
+    </select>
+
+    <!-- 특정 클라이언트와 관련된 모든 계약 조회 -->
+    <select id="selectContractsByClientId" parameterType="int" resultType="com.sanaiclub.contract.model.dto.ContractResponseDTO">
+        SELECT
+            c.contract_id,
+            c.contract_status,
+            c.payment_status,
+            c.total_budget,
+            c.created_at,
+            p.title AS project_title,
+            u.name AS freelancer_name
+        FROM contracts c
+                 JOIN project_applications pa ON c.contract_id = pa.application_id
+                 JOIN projects p ON pa.project_id = p.project_id
+                 JOIN users u ON pa.freelancer_id = u.user_id
+        WHERE p.client_id = #{clientId}  ORDER BY c.created_at DESC
+    </select>
+
+</mapper>
