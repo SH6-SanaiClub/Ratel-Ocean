@@ -3,15 +3,13 @@ package com.sanaiclub.payment.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sanaiclub.contract.dao.ContractMapper;
-import com.sanaiclub.contract.model.vo.ContractStatus;
-import com.sanaiclub.contract.model.vo.ContractVO;
+import com.sanaiclub.contract.dao.ContractMilestoneMapper;
+import com.sanaiclub.contract.model.vo.*;
 import com.sanaiclub.payment.dao.PaymentMapper;
 import com.sanaiclub.payment.model.dto.*;
-import com.sanaiclub.contract.model.vo.PaymentStatus;
 import com.sanaiclub.payment.model.vo.PaymentTransactionStatus;
 import com.sanaiclub.payment.model.vo.PaymentVO;
 import com.sanaiclub.payment.service.PaymentService;
-import com.sanaiclub.payment.service.EscrowService;
 import com.sanaiclub.payment.util.*;
 import com.sanaiclub.user.dao.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
-/**
- * ============================================================================
- * PaymentServiceImpl - 결제 서비스 구현체
- * ============================================================================
- */
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -38,8 +32,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentMapper paymentMapper;
     private final ContractMapper contractMapper;
+    private final ContractMilestoneMapper contractMilestoneMapper;
     private final UserMapper userMapper;
-    private final EscrowService escrowService;
     private final PortoneApiClient portoneApiClient;
 
     @Value("${portone.imp.code}")
@@ -130,8 +124,16 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentVO payment = buildPaymentVO(paymentInfo, contractId);
             paymentMapper.insertPayment(payment);
 
-            // 6. 에스크로 생성
-            escrowService.createEscrow(payment.getPaymentId(), contractId, actualAmount);
+            // 6. 모든 마일스톤 상태를 DEPOSITED로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper
+                    .selectMilestonesByContractId(contractId);
+
+            for (ContractMilestoneVO milestone : milestones) {
+                contractMilestoneMapper.updateMilestoneStatus(
+                        milestone.getMilestoneId(),
+                        MilestoneStatus.DEPOSITED
+                );
+            }
 
             // 7. 계약 상태 업데이트 (SIGNED → PAID)
             contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), null);

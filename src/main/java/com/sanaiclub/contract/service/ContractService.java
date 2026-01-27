@@ -30,25 +30,18 @@ public class ContractService {
      */
     @Transactional
     public Integer createContract(ContractCreateRequestDTO dto) {
-        // ====================================================================
-        // 1단계: DTO → VO 변환
-        // ====================================================================
-        
-        // 계약 상태 설정: DTO에 상태가 없으면 기본값 WAITING 사용
-        // WAITING은 계약 생성 직후의 기본 상태 (프리랜서 수락 대기)
+
         ContractStatus contractStatus = dto.getContractStatus() != null
             ? dto.getContractStatus() 
             : ContractStatus.WAITING;
         
-        // 계약 체결 시각 설정: 현재 시간을 문자열로 변환
-        // 형식: "YYYY-MM-DD HH:mm:ss" (예: "2024-01-01 12:00:00")
-        // LocalDateTime을 문자열로 변환 후 'T'를 공백으로 치환
+        // 계약 체결 시각 설정
         String contractedAt = java.time.LocalDateTime.now()
             .toString()
             .substring(0, 19)
             .replace('T', ' ');
         
-        // ContractVO 객체 생성 (Builder 패턴 사용)
+        // ContractVO 객체 생성
         ContractVO contract = ContractVO.builder()
             .contractStartDate(dto.getContractStartDate())      // 계약 시작일
             .contractEndDate(dto.getContractEndDate())          // 계약 종료일
@@ -58,31 +51,15 @@ public class ContractService {
             .originContractUrl(dto.getOriginContractUrl())      // 원본 계약서 경로 (선택)
             .contractedAt(contractedAt)                          // 계약 체결 시각
             .build();
-        
-        // ====================================================================
+
         // 2단계: 계약 정보 저장
-        // ====================================================================
-        
-        // MyBatis의 selectKey를 통해 자동 생성된 contractId를 받기 위한 Map
-        // insertContract 메서드가 실행되면 resultMap의 "contractId" 키에 생성된 ID가 저장됨
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
         contractMapper.insertContract(contract, resultMap);
         
         // 생성된 계약 ID 추출
-        // resultMap에서 "contractId" 키로 저장된 값을 가져옴
         Integer contractId = (Integer) resultMap.get("contractId");
-        
-        // ====================================================================
-        // 3단계: 마일스톤 저장 (조건부)
-        // ====================================================================
-        
-        // 마일스톤 저장 조건:
-        // 1. milestones가 null이 아니고
-        // 2. milestones가 비어있지 않고
-        // 3. contractId가 정상적으로 생성되었을 때
-        // 
-        // 결제 방식이 MILESTONE인 경우에만 마일스톤이 존재함
-        // 결제 방식이 FIXED인 경우 마일스톤 없음
+
+        // 마일스톤 저장
         if (dto.getMilestones() != null && !dto.getMilestones().isEmpty() && contractId != null) {
             // 각 마일스톤을 순회하며 저장
             for (ContractMilestoneRequestDTO milestoneDto : dto.getMilestones()) {
@@ -94,10 +71,18 @@ public class ContractService {
                     milestoneDto.getAmount()                   // 해당 마일스톤의 결제 금액
                 );
             }
+        } else if ("FULL".equals(dto.getPaymentMethod()) && contractId != null) {
+            // FULL 방식: 전액 지급용 마일스톤 1개 자동 생성
+            contractMilestoneMapper.insertMilestone(
+                    contractId,
+                    1,                              // step: 1
+                    "프로젝트 완료 시 전액 지급",              // title
+                    "프로젝트 완료 후 전체 금액 일괄 지급",      // description
+                    dto.getTotalBudget()                // amount: 전체 예산
+            );
         }
         
         // 생성된 계약 ID 반환
-        // Controller에서 이 ID를 사용하여 계약 상세 페이지로 리다이렉트하거나 응답
         return contractId;
     }
 
