@@ -428,8 +428,7 @@
                 fileInput.value = "";
                 document.getElementById("filePreview").style.display = "none";
                 document.getElementById("fileNameText").innerText = "";
-                // 파일 공유 목록 업데이트
-                updateSharedFilesFromMessages([message]);
+
             })
             .catch(err => console.error(err));
         // 보낼 데이터 객체 생성 (ChatMessageDTO와 매핑)
@@ -547,7 +546,7 @@
                     '<span style="font-size: 11px; color: #888; margin-left: 5px;">' +
                     '(' + formatFileSize(msg.fileSize) + ')' +
                     '</span>';
-                updateSharedFilesFromMessages([msg]);
+                appendFileToInfo(msg);
             }
             fileHtml =
                 '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
@@ -730,7 +729,24 @@
     }
     let searchResults = []; // 검색된 메시지 엘리먼트 배열
     let currentSearchIdx = -1;
+    // [신규 추가] 공유 파일 목록에 항목 하나만 추가하는 함수
+    function appendFileToInfo(msg) {
+        let fileContainer = document.querySelector("#roomInfo .file-list");
+        if (!fileContainer || !msg.fileUrl) return;
 
+        // 만약 '공유된 파일 없음' 문구가 있다면 제거
+        if (fileContainer.innerText.includes("공유된 파일 없음")) {
+            fileContainer.innerHTML = "";
+        }
+
+        const div = document.createElement("div");
+        div.className = "file-item";
+        div.innerHTML = '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' + escapeHtml(msg.fileName) + '</a>' +
+            (msg.fileSize ? ' (' + formatFileSize(msg.fileSize) + ')' : '');
+
+        // 맨 아래에 추가
+        fileContainer.appendChild(div);
+    }
     function searchMessages() {
         const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
         if (!keyword) {
