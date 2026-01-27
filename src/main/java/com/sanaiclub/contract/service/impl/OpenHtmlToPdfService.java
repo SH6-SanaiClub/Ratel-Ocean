@@ -41,11 +41,23 @@ public class OpenHtmlToPdfService implements ContractPdfService {
         // HTML 생성
         String html = generateContractHtml(clientUser, clientProfile, company, freelancerUser, freelancerProfile, form);
         
+        // HTML 유효성 검증
+        if (html == null || html.trim().isEmpty()) {
+            throw new IllegalArgumentException("생성된 HTML이 비어있습니다.");
+        }
+        if (!html.contains("<html>") || !html.contains("</html>")) {
+            logger.warn("생성된 HTML이 유효하지 않을 수 있습니다. <html> 태그가 없습니다.");
+        }
+        logger.debug("HTML 생성 완료: {} bytes", html.length());
+        
         // 디렉토리 생성
         File dir = new File(saveDir);
         if (!dir.exists()) {
             boolean created = dir.mkdirs();
-            logger.info("디렉토리 생성: {} (성공: {})", saveDir, created);
+            if (!created) {
+                throw new IOException("디렉토리 생성 실패: " + saveDir);
+            }
+            logger.info("디렉토리 생성: {}", saveDir);
         }
         
         // PDF 파일 생성
@@ -64,6 +76,9 @@ public class OpenHtmlToPdfService implements ContractPdfService {
         
         try (OutputStream os = new FileOutputStream(pdfFile)) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
+            
+            // A4 페이지 크기 설정 (먼저 설정)
+            builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM);
             
             // 한글 폰트 로드 (Windows 시스템 폰트 경로)
             try {
@@ -98,20 +113,32 @@ public class OpenHtmlToPdfService implements ContractPdfService {
             }
             
             // HTML 콘텐츠 설정 (baseUri를 현재 디렉토리로 설정)
-            builder.withHtmlContent(html, dir.getAbsolutePath());
-            builder.toStream(os);
+            // baseUri는 파일 시스템 경로가 아닌 URI 형식이어야 할 수 있음
+            String baseUri = dir.toURI().toString();
+            logger.debug("HTML baseUri: {}", baseUri);
+            logger.debug("HTML 길이: {} bytes", html.length());
             
-            // A4 페이지 크기 설정
-            builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM);
+            builder.withHtmlContent(html, baseUri);
+            builder.toStream(os);
             
             // PDF 생성 실행
             try {
+                logger.info("PDF 렌더링 시작...");
                 builder.run();
+                logger.info("PDF 렌더링 완료");
+                
                 // OutputStream이 제대로 닫히도록 명시적으로 flush
                 os.flush();
+                logger.debug("OutputStream flush 완료");
             } catch (Exception e) {
                 logger.error("PDF 렌더링 중 오류: {}", e.getMessage(), e);
-                throw e;
+                logger.error("오류 스택 트레이스:", e);
+                // HTML 내용의 일부를 로그로 출력 (디버깅용)
+                if (html.length() > 0) {
+                    int previewLength = Math.min(500, html.length());
+                    logger.error("HTML 미리보기 (처음 {} bytes): {}", previewLength, html.substring(0, previewLength));
+                }
+                throw new IOException("PDF 렌더링 실패: " + e.getMessage(), e);
             }
             
             // 파일이 제대로 생성되었는지 확인
@@ -162,7 +189,7 @@ public class OpenHtmlToPdfService implements ContractPdfService {
      * - 전문적인 계약서 양식 (제1조~제7조)
      * 
      * [HTML 구조]
-     * - DOCTYPE 선언 (&nbsp; 엔티티 포함)
+     * - DOCTYPE 선언 (간단한 형식)
      * - CSS 스타일 (A4 페이지, 한글 폰트, 테이블 스타일 등)
      * - 제1조: 당사자 (발주자/수주자)
      * - 제2조: 계약의 목적 및 범위
@@ -215,9 +242,8 @@ public class OpenHtmlToPdfService implements ContractPdfService {
         NumberFormat nf = NumberFormat.getInstance();
         
         StringBuilder html = new StringBuilder();
-        html.append("<!DOCTYPE html [\n");
-        html.append("  <!ENTITY nbsp \"&#160;\">\n");
-        html.append("]>\n");
+        // OpenHTMLToPDF는 DOCTYPE 엔티티 선언을 제대로 처리하지 못할 수 있으므로 제거
+        html.append("<!DOCTYPE html>\n");
         html.append("<html>\n");
         html.append("<head>\n");
         html.append("<meta charset=\"UTF-8\" />\n");
@@ -545,7 +571,7 @@ public class OpenHtmlToPdfService implements ContractPdfService {
         html.append("<div class=\"footer\">\n");
         html.append("    <p>본 계약서는 양 당사자가 서명함으로써 효력을 발생합니다.</p>\n");
         html.append("    <p style=\"margin-top: 20px;\">\n");
-        html.append("        <strong>발주자 (갑)</strong> ").append(escapeHtml(clientUser.getName() != null ? clientUser.getName() : "")).append(" (서명) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+        html.append("        <strong>발주자 (갑)</strong> ").append(escapeHtml(clientUser.getName() != null ? clientUser.getName() : "")).append(" (서명) &#160;&#160;&#160;&#160;&#160;&#160;\n");
         html.append("        <strong>수주자 (을)</strong> ").append(escapeHtml(freelancerUser.getName() != null ? freelancerUser.getName() : "")).append(" (서명)\n");
         html.append("    </p>\n");
         html.append("</div>\n");
@@ -558,18 +584,20 @@ public class OpenHtmlToPdfService implements ContractPdfService {
     
     /**
      * HTML 이스케이프
+     * OpenHTMLToPDF는 XML 파서를 사용하므로 모든 태그가 닫혀야 함 (<br/> 형식)
      */
     private String escapeHtml(String text) {
         if (text == null || text.trim().isEmpty()) {
             return "";
         }
-        // 개행 문자를 <br>로 변환하고 HTML 특수문자 이스케이프
+        // 개행 문자를 <br/>로 변환하고 HTML 특수문자 이스케이프
+        // OpenHTMLToPDF는 XML 파서를 사용하므로 자체 닫힘 태그 형식(<br/>) 필요
         return text.replace("&", "&amp;")
                    .replace("<", "&lt;")
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;")
                    .replace("'", "&#39;")
-                   .replace("\n", "<br>")
+                   .replace("\n", "<br/>")
                    .replace("\r", "");
     }
 }

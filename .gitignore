@@ -59,6 +59,12 @@ buildNumber.properties
 **/jwt.properties
 **/bizno-api.properties
 **/deepseek-api.properties
+**/portone-api.properties
+**/application.properties
+**/application.yml
+**/application-*.properties
+**/application-*.yml
+**/application-*.yaml
 
 # ===== 로그 파일 =====
 logs/
