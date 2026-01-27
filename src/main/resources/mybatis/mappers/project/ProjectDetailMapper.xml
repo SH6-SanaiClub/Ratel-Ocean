@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
@@ -102,86 +102,4 @@
         WHERE user_id = #{userId}
     </select>
 
-    <!-- 프로젝트 ID로 ProjectsVO 조회 (contract 도메인에서 사용) -->
-    <select id="selectProjectById" parameterType="Integer" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
-        SELECT 
-            project_id as projectId,
-            client_id as clientId,
-            title,
-            description,
-            start_date as startDate,
-            deadline_date as deadlineDate,
-            est_duration as estDuration,
-            budget,
-            communicate_method as communicateMethod,
-            payment_method as paymentMethod,
-            change_policy as changePolicy,
-            max_revision_count as maxRevisionCount,
-            project_status as projectStatus,
-            is_public as isPublic,
-            created_at as createdAt,
-            updated_at as updatedAt,
-            view_count as viewCount,
-            applicant_count as applicantCount,
-            plan_url as planUrl,
-            file_size as fileSize,
-            budget_negotiable as budgetNegotiable,
-            duration_negotiable as durationNegotiable
-        FROM projects
-        WHERE project_id = #{projectId}
-    </select>
-
-    <!-- 클라이언트 ID로 프로젝트 목록 조회 (contract 도메인에서 사용) -->
-    <select id="selectProjectsByClientId" parameterType="Integer" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
-        SELECT 
-            project_id as projectId,
-            client_id as clientId,
-            title,
-            description,
-            start_date as startDate,
-            deadline_date as deadlineDate,
-            est_duration as estDuration,
-            budget,
-            communicate_method as communicateMethod,
-            payment_method as paymentMethod,
-            change_policy as changePolicy,
-            max_revision_count as maxRevisionCount,
-            project_status as projectStatus,
-            is_public as isPublic,
-            created_at as createdAt,
-            updated_at as updatedAt,
-            view_count as viewCount,
-            applicant_count as applicantCount,
-            plan_url as planUrl,
-            file_size as fileSize,
-            budget_negotiable as budgetNegotiable,
-            duration_negotiable as durationNegotiable
-        FROM projects
-        WHERE client_id = #{clientId}
-        AND project_status = 'READY'
-    </select>
-
-    <!-- 프로젝트에 지원한 프리랜서 목록 조회 (contract 도메인에서 사용) -->
-    <select id="selectFreelancersByProjectId" parameterType="Integer" resultType="java.util.HashMap">
-        SELECT 
-            u.user_id as id,
-            u.name,
-            u.email
-        FROM project_applications pa
-        INNER JOIN users u ON u.user_id = pa.freelancer_id
-        WHERE pa.project_id = #{projectId}
-        ORDER BY pa.applied_at DESC
-    </select>
-
-
-    <!-- ?꾨줈?앺듃 ?곹깭 ?낅뜲?댄듃 (payment ?꾨찓?몄뿉???ъ슜) -->
-    <update id="updateProjectStatus">
-        UPDATE projects
-        SET project_status = #{projectStatus},
-            updated_at = NOW()
-        WHERE project_id = #{projectId}
-    </update>
-
-
-    <!-- ?꾨줈?앺듃 ?곹깭 ?낅뜲?댄듃 (payment ?꾨찓?몄뿉???ъ슜) -->
 </mapper>

@@ -348,17 +348,19 @@
 <script>
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        var ctx = '${pageContext.request.contextPath}';
+
         const loginId = document.getElementById('loginId').value.trim();
         const password = document.getElementById('password').value.trim();
         const errorMessage = document.getElementById('errorMessage');
+
         // 입력값 검증
         if (!loginId || !password) {
             showError('아이디와 비밀번호를 입력해주세요.');
             return;
         }
+
         try {
-            const response = await fetch(ctx + '/login', {
+            const response = await fetch('${pageContext.request.contextPath}/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -368,14 +370,17 @@
                     password: password
                 })
             });
+
             const data = await response.json();
+
             if (data.success) {
                 // 로그인 성공 - UserType에 따라 리다이렉트
                 const userType = data.data.userInfo.userType;
+
                 if (userType === 'FREELANCER') {
-                    window.location.href = ctx + '/freelancer/dashboard';
+                    window.location.href = '${pageContext.request.contextPath}/freelancer/dashboard';
                 } else if (userType === 'CLIENT') {
-                    window.location.href = ctx + '/client/dashboard';
+                    window.location.href = '${pageContext.request.contextPath}/client/dashboard';
                 }
             } else {
                 // 로그인 실패

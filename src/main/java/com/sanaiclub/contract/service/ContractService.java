@@ -7,10 +7,10 @@ import com.sanaiclub.contract.dao.ContractMapper;
 import com.sanaiclub.contract.dao.ContractMilestoneMapper;
 import com.sanaiclub.project.dao.ProjectDetailMapper;
 import com.sanaiclub.project.model.vo.ProjectsVO;
+import com.sanaiclub.project.model.dto.ProjectDetailDTO;
 import com.sanaiclub.user.dao.UserMapper;
 import com.sanaiclub.user.dao.ClientProfileMapper;
 import com.sanaiclub.user.dao.CompanyMapper;
-import com.sanaiclub.user.model.vo.FreelancerProfileVO;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -637,24 +637,109 @@ public class ContractService {
     }
     
     /**
-     * 프로젝트 정보 조회
+     * 프로젝트 정보 조회 (develop 코드 존중: selectProjectDetail 사용)
      */
     public ProjectsVO getProjectById(Integer projectId) {
-        return projectDetailMapper.selectProjectById(projectId);
+        ProjectDetailDTO projectDetail = projectDetailMapper.selectProjectDetail(projectId);
+        if (projectDetail == null) {
+            return null;
+        }
+        // ProjectDetailDTO는 ProjectsVO를 상속하므로 그대로 반환 가능
+        return projectDetail;
     }
     
     /**
      * 클라이언트의 프로젝트 목록 조회. READY 상태만 반환.
+     * (develop 코드 존중: ContractMapper를 통해 계약 목록 조회 후 projectId 추출)
      */
     public List<ProjectsVO> getProjectsByClientId(Integer clientId) {
-        return projectDetailMapper.selectProjectsByClientId(clientId);
+        // ContractMapper를 통해 클라이언트의 계약 목록 조회
+        List<java.util.Map<String, Object>> contractsWithDetails = 
+            contractMapper.selectContractsByClientIdWithDetails(clientId);
+        
+        if (contractsWithDetails == null || contractsWithDetails.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // 각 계약의 origin_contract_url에서 projectId 추출
+        java.util.Set<Integer> projectIds = new java.util.HashSet<>();
+        for (java.util.Map<String, Object> contract : contractsWithDetails) {
+            String originContractUrl = (String) contract.get("originContractUrl");
+            if (originContractUrl != null && originContractUrl.startsWith("contracts/")) {
+                // 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
+                String[] parts = originContractUrl.split("/");
+                if (parts.length >= 3) {
+                    try {
+                        Integer projectId = Integer.parseInt(parts[2]);
+                        projectIds.add(projectId);
+                    } catch (NumberFormatException e) {
+                        logger.warn("프로젝트 ID 추출 실패: originContractUrl={}", originContractUrl);
+                    }
+                }
+            }
+        }
+        
+        // 각 projectId로 프로젝트 정보 조회 (READY 상태만 필터링)
+        List<ProjectsVO> projects = new ArrayList<>();
+        for (Integer projectId : projectIds) {
+            ProjectDetailDTO projectDetail = projectDetailMapper.selectProjectDetail(projectId);
+            if (projectDetail != null && "READY".equals(projectDetail.getProjectStatus().name())) {
+                projects.add(projectDetail);
+            }
+        }
+        
+        return projects;
     }
     
     /**
      * 프로젝트별 프리랜서 목록 조회
+     * (develop 코드 존중: ContractMapper를 통해 계약 목록 조회 후 프리랜서 정보 추출)
      */
     public List<java.util.Map<String, Object>> getFreelancersByProjectId(Integer projectId) {
-        return projectDetailMapper.selectFreelancersByProjectId(projectId);
+        // ContractMapper를 통해 모든 계약 목록 조회
+        List<java.util.Map<String, Object>> allContracts = 
+            contractMapper.selectAllContractsWithDetails();
+        
+        if (allContracts == null || allContracts.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // 해당 projectId와 일치하는 계약들의 프리랜서 정보 추출
+        List<java.util.Map<String, Object>> freelancers = new ArrayList<>();
+        java.util.Set<Integer> freelancerIds = new java.util.HashSet<>();
+        
+        for (java.util.Map<String, Object> contract : allContracts) {
+            String originContractUrl = (String) contract.get("originContractUrl");
+            if (originContractUrl != null && originContractUrl.startsWith("contracts/")) {
+                // 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
+                String[] parts = originContractUrl.split("/");
+                if (parts.length >= 4) {
+                    try {
+                        Integer contractProjectId = Integer.parseInt(parts[2]);
+                        Integer freelancerId = Integer.parseInt(parts[3]);
+                        
+                        if (contractProjectId.equals(projectId) && !freelancerIds.contains(freelancerId)) {
+                            freelancerIds.add(freelancerId);
+                            
+                            java.util.Map<String, Object> freelancer = new java.util.HashMap<>();
+                            freelancer.put("userId", freelancerId);
+                            freelancer.put("name", contract.get("freelancerName"));
+                            // email은 UserMapper를 통해 조회 필요
+                            com.sanaiclub.user.model.vo.UserVO freelancerUser = 
+                                userMapper.findByUserId(freelancerId);
+                            if (freelancerUser != null) {
+                                freelancer.put("email", freelancerUser.getEmail());
+                            }
+                            freelancers.add(freelancer);
+                        }
+                    } catch (NumberFormatException e) {
+                        logger.warn("프로젝트 ID 또는 프리랜서 ID 추출 실패: originContractUrl={}", originContractUrl);
+                    }
+                }
+            }
+        }
+        
+        return freelancers;
     }
     
     // =========================================================

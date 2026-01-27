@@ -12,9 +12,7 @@ import com.sanaiclub.payment.model.vo.PaymentTransactionStatus;
 import com.sanaiclub.payment.model.vo.PaymentVO;
 import com.sanaiclub.payment.service.PaymentService;
 import com.sanaiclub.payment.util.*;
-import com.sanaiclub.project.dao.ProjectDetailMapper;
 import com.sanaiclub.project.model.vo.ProjectStatus;
-import com.sanaiclub.user.dao.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +34,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final ContractMapper contractMapper;
     private final ContractMilestoneMapper contractMilestoneMapper;
-    private final ProjectDetailMapper projectDetailMapper;
-    private final UserMapper userMapper;
     private final PortoneApiClient portoneApiClient;
 
     @Value("${portone.imp.code}")
@@ -148,14 +144,21 @@ public class PaymentServiceImpl implements PaymentService {
             // contractMapper.updatePaymentStatus(contractId, PaymentStatus.PAID.name());
 
             // 8. 프로젝트 상태 업데이트 (READY → IN_PROGRESS)
+            // (develop 코드 존중: ProjectDetailMapper를 수정하지 않고 ContractMapper 사용)
             ContractDetailDTO contractDetail = contractMapper.selectContractDetailWithJoin(contractId);
             if (contractDetail != null && contractDetail.getProjectId() != null) {
-                projectDetailMapper.updateProjectStatus(
+                int updated = contractMapper.updateProjectStatus(
                         contractDetail.getProjectId(),
                         ProjectStatus.IN_PROGRESS.name()
                 );
-                logger.info("프로젝트 상태 업데이트: projectId={}, status=IN_PROGRESS",
-                        contractDetail.getProjectId());
+                
+                if (updated > 0) {
+                    logger.info("프로젝트 상태 업데이트: projectId={}, status=IN_PROGRESS",
+                            contractDetail.getProjectId());
+                } else {
+                    logger.warn("프로젝트 상태 업데이트 실패: projectId={}, 업데이트된 행이 없습니다.",
+                            contractDetail.getProjectId());
+                }
             } else {
                 logger.warn("프로젝트 상태 업데이트 실패: contractId={}, projectId를 찾을 수 없습니다.", contractId);
             }

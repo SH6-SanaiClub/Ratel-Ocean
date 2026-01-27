@@ -517,4 +517,13 @@
           AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = #{freelancerId}
         ORDER BY c.contract_id DESC
     </select>
+
+    <!-- 프로젝트 상태 업데이트 (payment 도메인에서 사용, develop 코드 침범 방지를 위해 contract 도메인에 추가) -->
+    <update id="updateProjectStatus" parameterType="map">
+        UPDATE projects
+        SET project_status = #{projectStatus},
+            updated_at = NOW()
+        WHERE project_id = #{projectId}
+    </update>
+
 </mapper>

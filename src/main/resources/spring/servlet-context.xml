@@ -11,7 +11,7 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:property-placeholder location="classpath:jwt.properties, classpath:deepseek-api.properties" ignore-unresolvable="true"/>
+    <context:property-placeholder location="classpath:jwt.properties" ignore-unresolvable="true"/>
 
     <!-- Annotation-driven MVC -->
     <mvc:annotation-driven>
@@ -40,8 +40,7 @@
     <mvc:resources mapping="/resources/**" location="/resources/"/>
     <mvc:resources mapping="/css/**" location="/resources/css/"/>
     <mvc:resources mapping="/js/**" location="/resources/js/"/>
-    <!-- images 폴더가 실제로 없다면 아래 라인은 주석 처리 또는 삭제해도 무방 -->
-    <!-- <mvc:resources mapping="/images/**" location="/resources/images/"/> -->
+    <mvc:resources mapping="/images/**" location="/resources/images/"/>
 
     <!-- Interceptor 등록 -->
     <mvc:interceptors>
@@ -60,8 +59,6 @@
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/js/**"/>
             <mvc:exclude-mapping path="/images/**"/>
-            <!-- contract 관련 URL 인증 예외 추가 -->
-            <mvc:exclude-mapping path="/contract/**"/>
 
             <!-- 인증 인터셉터 -->
             <bean class="com.sanaiclub.common.interceptor.AuthenticationInterceptor"/>
