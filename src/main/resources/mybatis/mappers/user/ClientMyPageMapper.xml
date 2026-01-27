@@ -10,6 +10,7 @@
             cp.client_type, cp.company_id,
             c.company_name, c.ceo_name, c.business_number, c.industry, c.address, c.website_url,
 
+            -- [계약 수]
             (SELECT COUNT(*)
              FROM contracts con
                       INNER JOIN project_applications app ON con.contract_id = app.application_id
@@ -17,6 +18,7 @@
              WHERE p.client_id = u.user_id
                AND con.contract_status = 'COMPLETED') as contract_count,
 
+            -- [외주 평균 평점] "클라이언트 본인이 프리랜서들에게 남긴 평점(client_rating)"의 평균
             COALESCE(
                     (SELECT AVG(con.client_rating)
                      FROM contracts con
@@ -53,6 +55,7 @@
             <result property="contractCount" column="contract_count"/>
             <result property="avgRating" column="avg_rating"/>
             <collection property="reviewList" column="user_id" select="selectClientReviews"/>
+            <collection property="receivedReviewList" column="user_id" select="selectReceivedReviews"/>
         </association>
     </resultMap>
 
@@ -64,10 +67,12 @@
             con.total_budget as budget,
             DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
             DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
+
+            -- [내가 준 점수] client_rating (INT)
             con.client_rating as rating,
             con.client_experience as content,
 
-            -- [컬럼명 renewal로 수정됨]
+            -- [재계약 의사] (DB 에러 로그 기반 'renewal'로 수정됨)
             con.client_is_renewal_intended as recontractIntended,
 
             DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
@@ -81,12 +86,38 @@
         ORDER BY con.contracted_at DESC
     </select>
 
+    <select id="selectReceivedReviews" resultType="com.sanaiclub.user.model.dto.ClientReviewHistoryDTO">
+        SELECT
+            u.name as freelancerName,
+            u.user_id as freelancerId,
+            p.title as projectTitle,
+            con.total_budget as budget,
+            DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
+            DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
+
+            -- [받은 점수] freelancer_rating (VARCHAR -> 숫자 변환)
+            CAST(con.freelancer_rating AS UNSIGNED) as rating,
+            con.freelancer_experience as content,
+
+            -- [NULL] 프리랜서는 재계약 의사 컬럼 없음
+            NULL as recontractIntended,
+
+            DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
+        FROM contracts con
+                 INNER JOIN project_applications app ON con.contract_id = app.application_id
+                 INNER JOIN projects p ON app.project_id = p.project_id
+                 INNER JOIN users u ON app.freelancer_id = u.user_id
+        WHERE p.client_id = #{userId}
+          AND con.freelancer_rating IS NOT NULL
+          AND con.freelancer_experience IS NOT NULL
+        ORDER BY con.contracted_at DESC
+    </select>
+
     <update id="updateUserInfo" parameterType="com.sanaiclub.user.model.vo.UserVO">
         UPDATE users SET name=#{name}, phone=#{phone}, updated_at=NOW()
         <if test="profileImageUrl != null">, profile_image_url=#{profileImageUrl}</if>
         WHERE user_id=#{userId}
     </update>
-
     <update id="updateCompanyInfo" parameterType="com.sanaiclub.user.model.vo.CompanyVO">
         UPDATE companies
         SET company_name=#{companyName},
@@ -97,15 +128,12 @@
             website_url=#{websiteUrl}
         WHERE company_id=#{companyId}
     </update>
-
     <select id="selectCompanyIdByClientId" resultType="Integer">
         SELECT company_id FROM client_profiles WHERE client_id=#{clientId}
     </select>
-
     <select id="selectPassword" resultType="String">
         SELECT password FROM users WHERE user_id=#{userId}
     </select>
-
     <update id="updatePassword">
         UPDATE users SET password=#{newPassword} WHERE user_id=#{userId}
     </update>

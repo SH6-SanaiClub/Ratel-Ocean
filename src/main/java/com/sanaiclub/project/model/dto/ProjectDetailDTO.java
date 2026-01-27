@@ -36,6 +36,10 @@ public class ProjectDetailDTO extends ProjectsVO {
     private Integer maxRevisionCount;   // 수정 횟수
     private String changePolicy;        // 수정 정책
 
+    private Integer completedContractCount;  // 클라이언트 계약 건수
+    private Double clientAvgRating;     // 클라이언트 평균 평점
+    private String clientProfileImageUrl;   // 클라이언트 프로필 이미지 URL
+
     // DTO 생성 편의 메서드
     public static ProjectDetailDTO of(Boolean budgetNegotiable,
                                       Boolean durationNegotiable,

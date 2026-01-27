@@ -1,7 +1,7 @@
-package com.sanaiclub.project.controller;
+package com.sanaiclub.wallet.controller;
 
 import com.sanaiclub.project.model.dto.ClientProjectProgressDTO; // [수정] import 변경
-import com.sanaiclub.project.service.ClientProgressService;
+import com.sanaiclub.wallet.service.ClientProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

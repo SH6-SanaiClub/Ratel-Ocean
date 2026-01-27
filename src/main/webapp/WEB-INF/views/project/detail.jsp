@@ -337,15 +337,23 @@
         <div class="sidebar-box">
             <span class="client-label">클라이언트 정보</span>
             <div class="client-profile">
-                <div class="cp-img">
-                    <c:choose>
-                        <c:when test="${project.clientType eq 'CORPORATION'}">
-                            <i class="fa-regular fa-building"></i>
-                        </c:when>
-                        <c:otherwise>
-                            <i class="fa-solid fa-user-tie"></i>
-                        </c:otherwise>
-                    </c:choose>
+                <div class="cp-img" style="position: relative; overflow: hidden;">
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: absolute; top:0; left:0; z-index: 1;">
+                        <c:choose>
+                            <c:when test="${project.clientType eq 'CORPORATION'}">
+                                <i class="fa-regular fa-building"></i>
+                            </c:when>
+                            <c:otherwise>
+                                <i class="fa-solid fa-user-tie"></i>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <c:if test="${not empty project.clientProfileImageUrl}">
+                        <img src="${pageContext.request.contextPath}${project.clientProfileImageUrl}"
+                             alt="프로필"
+                             style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2; background-color: #fff;"
+                             onerror="this.style.display='none'">
+                    </c:if>
                 </div>
                 <div class="cp-info">
                     <div>
@@ -372,11 +380,22 @@
             <div class="cp-stats">
                 <div class="cp-stat-item">
                     <span class="cp-stat-label">누적 계약</span>
-                    <span class="cp-stat-val">- 건</span>
+                    <span class="cp-stat-val">
+                        ${not empty project.completedContractCount ? project.completedContractCount : '-'} 건
+                    </span>
                 </div>
                 <div class="cp-stat-item" style="border-left:1px solid #eee; padding-left:12px;">
                     <span class="cp-stat-label">평점</span>
-                    <span class="cp-stat-val rating">- / 5.0</span>
+                    <span class="cp-stat-val rating">
+                        <c:choose>
+                            <c:when test="${not empty project.clientAvgRating and project.clientAvgRating > 0}">
+                                <i class="fa-solid fa-star" style="color:#F39C12; font-size:12px;"></i> ${project.clientAvgRating}
+                            </c:when>
+                            <c:otherwise>
+                                - / 5.0
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
                 </div>
             </div>
         </div>

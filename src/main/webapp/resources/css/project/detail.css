@@ -391,16 +391,29 @@ body {
 }
 
 .cp-img {
-    width: 48px;
-    height: 48px;
-    background: #FFD966;
-    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;       /* 완전한 원형 */
+    background: #e0e0e0;      /* 기본 배경: 회색 (노란색 삭제) */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    color: #fff;
-    font-size: 20px;
+    overflow: hidden;         /* 이미지가 원 밖으로 나가지 않게 자름 */
+    flex-shrink: 0;
+    color: #fff;              /* 아이콘 색상 */
+    font-size: 24px;
+    border: 1px solid #ddd;   /* 테두리 추가 */
+}
+
+.cp-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;        /* 비율 유지하며 꽉 채우기 */
+    background: #fff;         /* 투명 이미지일 경우 흰 배경 깔기 */
+}
+
+.cp-img i {
+    color: #757575; /* 아이콘은 진한 회색으로 */
 }
 
 .cp-info div {

@@ -2,11 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.sanaiclub.project.dao.ClientProgressMapper">
+<mapper namespace="com.sanaiclub.wallet.dao.ClientProgressMapper">
 
     <resultMap id="ProjectProgressMap" type="com.sanaiclub.project.model.dto.ClientProjectProgressDTO">
         <id property="contractId" column="contractId"/>
-
         <result property="freelancerName" column="freelancerName"/>
         <result property="startDate" column="startDate"/>
         <result property="endDate" column="endDate"/>
@@ -16,7 +15,7 @@
         <result property="maxRevisionCount" column="maxRevisionCount"/>
         <result property="originContractUrl" column="originContractUrl"/>
 
-        <collection property="milestones" ofType="com.sanaiclub.project.model.dto.ClientMilestoneDTO">
+        <collection property="milestones" ofType="com.sanaiclub.wallet.model.dto.ClientMilestoneDTO">
             <id property="milestoneId" column="milestoneId"/>
             <result property="contractId" column="contractId"/>
             <result property="stepOrder" column="stepOrder"/>
@@ -30,7 +29,6 @@
     <select id="selectMilestonesByProjectId" resultMap="ProjectProgressMap">
         SELECT
             IFNULL(c.contract_id, pa.application_id) AS contractId,
-
             u.name                AS freelancerName,
             c.contract_start_date AS startDate,
             c.contract_end_date   AS endDate,
@@ -47,16 +45,13 @@
             cm.amount             AS amount,
             cm.due_date           AS dueDate,
             cm.status             AS status
-
         FROM projects p
                  INNER JOIN project_applications pa ON p.project_id = pa.project_id
                  LEFT JOIN contracts c ON pa.application_id = c.contract_id
                  LEFT JOIN users u ON pa.freelancer_id = u.user_id
                  LEFT JOIN contract_milestones cm ON c.contract_id = cm.contract_id
-
         WHERE p.project_id = #{projectId}
           AND (pa.application_status = 'CONTRACTED' OR c.contract_status = 'SIGNED')
-
         ORDER BY cm.step_order ASC
     </select>
 
@@ -65,5 +60,13 @@
         SET status = #{status}
         WHERE milestone_id = #{milestoneId}
     </update>
+
+    <!-- 지급 예정일로부터 7일 지난 건들 찾아내기 -->
+    <select id="selectAutoPaymentTargets" resultType="integer">
+        SELECT milestone_id
+        FROM contract_milestones
+        WHERE status = 'REQUESTED'
+          AND due_date &lt; DATE_SUB(NOW(), INTERVAL 7 DAY)
+    </select>
 
 </mapper>
