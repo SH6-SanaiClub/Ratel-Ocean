@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.manage.dao.FreelancerProjectBoardMapper">
+
+    <sql id="baseList">
+        SELECT
+            p.project_id        AS projectId,
+            pa.application_id   AS applicationId,
+            ct.contract_id      AS contractId,
+            p.title             AS title,
+            u.name              AS clientName,
+            co.company_name     AS companyName,
+            DATE_FORMAT(ct.contract_start_date, '%Y-%m-%d') AS startDate,
+            DATE_FORMAT(ct.contract_end_date, '%Y-%m-%d')   AS endDate,
+            DATEDIFF(p.deadline_date, CURDATE()) AS dday,
+            ct.contract_status  AS contractStatus,
+            (CASE WHEN ct.freelancer_rating IS NOT NULL OR ct.freelancer_experience IS NOT NULL THEN 1 ELSE 0 END) AS hasFreelancerReview,
+            (CASE WHEN ct.client_rating IS NOT NULL OR ct.client_experience IS NOT NULL THEN 1 ELSE 0 END) AS hasClientReview
+        FROM contracts ct
+                 JOIN project_applications pa ON pa.application_id = ct.contract_id
+                 JOIN projects p ON p.project_id = pa.project_id
+                 JOIN users u ON u.user_id = p.client_id
+                 LEFT JOIN client_profiles cp ON cp.client_id = p.client_id
+                 LEFT JOIN companies co ON co.company_id = cp.company_id
+        WHERE pa.freelancer_id = #{freelancerId}
+    </sql>
+
+    <select id="selectInProgressProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+        <include refid="baseList"/>
+        AND ct.contract_status = 'SIGNED'
+        ORDER BY ct.contracted_at DESC
+    </select>
+
+    <select id="selectCompletedProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+        <include refid="baseList"/>
+        AND ct.contract_status = 'COMPLETED'
+        ORDER BY ct.completed_at DESC, ct.contracted_at DESC
+    </select>
+
+    <select id="selectReviewProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+        <include refid="baseList"/>
+        AND ct.contract_status IN ('COMPLETED','TERMINATED')
+        ORDER BY ct.completed_at DESC, ct.contracted_at DESC
+    </select>
+
+    <select id="selectProjectHeader" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+        <include refid="baseList"/>
+        AND ct.contract_id = #{contractId}
+        LIMIT 1
+    </select>
+
+    <select id="existsContractForFreelancer" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM contracts ct
+                     JOIN project_applications pa ON pa.application_id = ct.contract_id
+            WHERE ct.contract_id = #{contractId}
+              AND pa.freelancer_id = #{freelancerId}
+        )
+    </select>
+
+    <select id="selectMilestones" resultType="com.sanaiclub.manage.model.dto.MilestoneDTO">
+        SELECT
+            cm.milestone_id   AS milestoneId,
+            cm.contract_id    AS contractId,
+            cm.step_order     AS stepOrder,
+            cm.milestone_name AS milestoneName,
+            cm.work_scope     AS workScope,
+            cm.amount         AS amount,
+            DATE_FORMAT(cm.due_date, '%Y-%m-%d') AS dueDate,
+            cm.status         AS status
+        FROM contract_milestones cm
+        WHERE cm.contract_id = #{contractId}
+        ORDER BY cm.step_order ASC
+    </select>
+
+    <select id="selectActionableStepOrder" resultType="int">
+        SELECT MIN(step_order)
+        FROM contract_milestones
+        WHERE contract_id = #{contractId}
+          AND status IN ('WAITING','REQUESTED')
+    </select>
+
+    <select id="selectContractIdByMilestone" resultType="int">
+        SELECT contract_id
+        FROM contract_milestones
+        WHERE milestone_id = #{milestoneId}
+    </select>
+
+    <select id="selectStepOrderByMilestone" resultType="int">
+        SELECT step_order
+        FROM contract_milestones
+        WHERE milestone_id = #{milestoneId}
+    </select>
+
+
+    <select id="selectMilestoneStatus" resultType="string">
+        SELECT status
+        FROM contract_milestones
+        WHERE milestone_id = #{milestoneId}
+    </select>
+
+    <update id="toggleMilestoneRequest">
+        UPDATE contract_milestones
+        SET status = CASE
+                         WHEN status = 'WAITING' THEN 'REQUESTED'
+                         WHEN status = 'REQUESTED' THEN 'WAITING'
+                         ELSE status
+            END
+        WHERE milestone_id = #{milestoneId}
+    </update>
+
+    <insert id="insertMilestoneHistory">
+        INSERT INTO milestone_histories (milestone_id, action_type, prev_value, curr_value)
+        VALUES (#{milestoneId}, #{actionType}, #{prevValue}, #{currValue})
+    </insert>
+
+    <!-- contractId로 applicationId 찾기 (contracts PK=application_id 구조) -->
+    <select id="selectApplicationIdByContract" resultType="int">
+        SELECT pa.application_id
+        FROM project_applications pa
+        WHERE pa.application_id = #{contractId}
+          AND pa.freelancer_id = #{freelancerId}
+            LIMIT 1
+    </select>
+
+    <!-- contractId로 projectId 찾기 -->
+    <select id="selectProjectIdByContract" resultType="int">
+        SELECT pa.project_id
+        FROM project_applications pa
+        WHERE pa.application_id = #{contractId}
+          AND pa.freelancer_id = #{freelancerId}
+            LIMIT 1
+    </select>
+
+    <!-- 완료탭: 기존 저장된 선택스택(project_freelancer_stacks) -->
+    <select id="selectSelectedStackIds" resultType="int">
+        SELECT stack_id
+        FROM project_freelancer_stacks
+        WHERE application_id = #{applicationId}
+        ORDER BY stack_id ASC
+    </select>
+
+    <!-- 완료탭: 요구스택(project_stacks) id만 -->
+    <select id="selectRequiredStackIdsByProject" resultType="int">
+        SELECT stack_id
+        FROM project_stacks
+        WHERE project_id = #{projectId}
+        ORDER BY stack_id ASC
+    </select>
+
+    <!-- 완료탭: 요구스택 상세 -->
+    <select id="selectRequiredStacksByProject" resultType="com.sanaiclub.project.model.dto.StackDTO">
+        SELECT
+            s.stack_id AS stackId,
+            s.stack_name AS stackName,
+            s.category AS category
+        FROM project_stacks ps
+                 JOIN stacks s ON s.stack_id = ps.stack_id
+        WHERE ps.project_id = #{projectId}
+        ORDER BY s.category ASC, s.stack_name ASC
+    </select>
+
+    <delete id="deleteProjectFreelancerStacks">
+        DELETE FROM project_freelancer_stacks
+        WHERE application_id = #{applicationId}
+    </delete>
+
+    <insert id="insertProjectFreelancerStacks">
+        INSERT INTO project_freelancer_stacks (application_id, stack_id, is_primary)
+        VALUES
+        <foreach collection="stackIds" item="sid" separator=",">
+            (#{applicationId}, #{sid}, FALSE)
+        </foreach>
+    </insert>
+
+    <!-- 리뷰: 양방향 보기 -->
+    <select id="selectContractReviewView" resultType="com.sanaiclub.manage.model.dto.FreelancerContractReviewViewDTO">
+        SELECT
+            ct.contract_id AS contractId,
+
+            ct.freelancer_rating     AS freelancerRating,
+            ct.freelancer_experience AS freelancerExperience,
+
+            ct.client_rating         AS clientRating,
+            ct.client_experience     AS clientExperience
+        FROM contracts ct
+        WHERE ct.contract_id = #{contractId}
+    </select>
+
+    <!-- 프리랜서 -> 클라이언트 리뷰 저장 -->
+    <update id="updateFreelancerReview">
+        UPDATE contracts
+        SET freelancer_rating = #{rating},
+            freelancer_experience = #{experience}
+        WHERE contract_id = #{contractId}
+    </update>
+
+</mapper>
