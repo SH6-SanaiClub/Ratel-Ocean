@@ -193,8 +193,17 @@ function handlePdfFinalSubmit(e) {
     
     console.log('[DEBUG] PDF 업로드 정보:', { projectId, freelancerId, filePath });
     
-    if (!projectId || !freelancerId || !filePath) {
-        alert('필수 정보가 누락되었습니다.');
+    // ID 검증 (숫자인지 확인)
+    if (!projectId || isNaN(projectId) || projectId.trim() === '') {
+        alert('올바른 프로젝트를 선택해주세요.');
+        return false;
+    }
+    if (!freelancerId || isNaN(freelancerId) || freelancerId.trim() === '') {
+        alert('올바른 프리랜서를 선택해주세요.');
+        return false;
+    }
+    if (!filePath) {
+        alert('PDF 파일을 업로드해주세요.');
         return false;
     }
 
@@ -215,8 +224,13 @@ function handleFinalSubmit(e) {
     const projectId = document.getElementById('projectSelect') ? document.getElementById('projectSelect').value : '';
     const freelancerId = document.getElementById('freelancerSelect') ? document.getElementById('freelancerSelect').value : '';
     
-    if (!projectId || !freelancerId) {
-        alert('프로젝트와 프리랜서를 선택해주세요.');
+    // ID 검증 (숫자인지 확인)
+    if (!projectId || isNaN(projectId) || projectId.trim() === '') {
+        alert('올바른 프로젝트를 선택해주세요.');
+        return false;
+    }
+    if (!freelancerId || isNaN(freelancerId) || freelancerId.trim() === '') {
+        alert('올바른 프리랜서를 선택해주세요.');
         return false;
     }
 
@@ -278,6 +292,20 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
 
 function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
     console.log('[DEBUG] submitToContractCheck called', { inputType, projectId, freelancerId, fileName });
+    
+    // 프리랜서 ID 검증 (숫자인지 확인)
+    if (!freelancerId || isNaN(freelancerId) || freelancerId.trim() === '') {
+        alert('올바른 프리랜서를 선택해주세요.');
+        console.error('[ERROR] 잘못된 프리랜서 ID:', freelancerId);
+        return;
+    }
+    
+    // 프로젝트 ID 검증 (숫자인지 확인)
+    if (!projectId || isNaN(projectId) || projectId.trim() === '') {
+        alert('올바른 프로젝트를 선택해주세요.');
+        console.error('[ERROR] 잘못된 프로젝트 ID:', projectId);
+        return;
+    }
     
     const modalEl = document.getElementById('aiAnalysisModal');
     if (modalEl) {
@@ -546,11 +574,20 @@ $(function () {
                     return;
                 }
                 list.forEach(function(f) {
-                    const name = normalizeDisplayValue(f.name) || ('ID ' + f.id);
+                    // Service에서 반환하는 키: userId, name, email
+                    const freelancerId = f.userId || f.id; // userId 우선, 없으면 id
+                    const name = normalizeDisplayValue(f.name) || ('ID ' + freelancerId);
                     const email = normalizeDisplayValue(f.email) || '';
+                    
+                    // ID가 유효한 숫자인지 확인
+                    if (!freelancerId || isNaN(freelancerId)) {
+                        console.warn('[WARN] 유효하지 않은 프리랜서 ID:', freelancerId, f);
+                        return; // 건너뜀
+                    }
+                    
                     $('#freelancerSelect').append(
                         $('<option>', {
-                            value: f.id,
+                            value: String(freelancerId), // 숫자를 문자열로 변환하여 명시적으로 설정
                             text: name
                         })
                             .attr('data-name', name)

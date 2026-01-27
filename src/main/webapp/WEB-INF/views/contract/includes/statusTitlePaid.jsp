@@ -19,15 +19,15 @@
 </c:forEach>
 <c:choose>
     <c:when test="${totalRequested > 0}">
-        ✅ 최종 승인 대기 (지급 요청 대기: ${totalRequested}건)
+        ✅ 결제 완료 (지급 요청 대기: ${totalRequested}건 - 수락/거부 필요)
     </c:when>
     <c:when test="${totalDeposited > 0}">
-        ✅ 최종 승인 대기 (입금 완료: ${totalDeposited}건)
+        ✅ 결제 완료 (에스크로 입금 완료: ${totalDeposited}건 - 프리랜서 지급 요청 대기 중)
     </c:when>
     <c:when test="${totalPaid > 0}">
-        ✅ 최종 승인 대기 (지급 진행 중: ${totalPaid}/${totalMilestones})
+        ✅ 결제 완료 (지급 진행 중: ${totalPaid}/${totalMilestones})
     </c:when>
     <c:otherwise>
-        ✅ 최종 승인 대기
+        ✅ 결제 완료 (프리랜서 지급 요청 대기 중)
     </c:otherwise>
 </c:choose>

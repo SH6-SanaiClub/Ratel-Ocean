@@ -533,6 +533,25 @@ public class ContractService {
     }
     
     /**
+     * 에러 상황에서도 계약서 확인 화면용 기본 데이터 조회 및 Map 변환
+     * 파라미터가 null이어도 가능한 데이터만 조회하여 반환
+     */
+    public ContractCheckViewMapData prepareErrorViewData(
+            Integer userId, Integer projectId, Integer freelancerId) {
+        
+        // 가능한 데이터만 조회
+        ContractCheckViewData viewData = getContractCheckViewData(userId, projectId, freelancerId);
+        
+        // Map 변환 (FreelancerProfile은 null로 전달)
+        return convertToContractCheckViewMaps(
+            viewData.getClientUser(),
+            viewData.getCompany(),
+            viewData.getFreelancerUser(),
+            null
+        );
+    }
+    
+    /**
      * PDF 생성용 사용자 정보 조회
      */
     public PdfGenerationUserData getPdfGenerationUserData(Integer clientId, Integer freelancerId) {
@@ -710,32 +729,57 @@ public class ContractService {
         
         for (java.util.Map<String, Object> contract : allContracts) {
             String originContractUrl = (String) contract.get("originContractUrl");
-            if (originContractUrl != null && originContractUrl.startsWith("contracts/")) {
-                // 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
-                String[] parts = originContractUrl.split("/");
+            if (originContractUrl == null || !originContractUrl.startsWith("contracts/")) {
+                continue;
+            }
+            
+            // 경로 형식 파싱
+            // 형식 1: contracts/{clientId}/{projectId}/{freelancerId}/{fileName} (올바른 형식)
+            // 형식 2: contracts/{clientId}/{projectId}/{fileName} (freelancerId 없음)
+            String[] parts = originContractUrl.split("/");
+            if (parts.length < 3) {
+                continue;
+            }
+            
+            Integer contractProjectId = null;
+            Integer freelancerId = null;
+            
+            try {
+                // projectId는 항상 parts[2]에 있음
+                contractProjectId = Integer.parseInt(parts[2]);
+                
+                // freelancerId는 parts[3]에 있을 수 있음 (형식 1)
+                // parts[3]이 숫자인지 확인 (파일명이 아닌 경우)
                 if (parts.length >= 4) {
-                    try {
-                        Integer contractProjectId = Integer.parseInt(parts[2]);
-                        Integer freelancerId = Integer.parseInt(parts[3]);
-                        
-                        if (contractProjectId.equals(projectId) && !freelancerIds.contains(freelancerId)) {
-                            freelancerIds.add(freelancerId);
-                            
-                            java.util.Map<String, Object> freelancer = new java.util.HashMap<>();
-                            freelancer.put("userId", freelancerId);
-                            freelancer.put("name", contract.get("freelancerName"));
-                            // email은 UserMapper를 통해 조회 필요
-                            com.sanaiclub.user.model.vo.UserVO freelancerUser = 
-                                userMapper.findByUserId(freelancerId);
-                            if (freelancerUser != null) {
-                                freelancer.put("email", freelancerUser.getEmail());
-                            }
-                            freelancers.add(freelancer);
-                        }
-                    } catch (NumberFormatException e) {
-                        logger.warn("프로젝트 ID 또는 프리랜서 ID 추출 실패: originContractUrl={}", originContractUrl);
+                    String thirdPart = parts[3];
+                    // 숫자로만 구성되어 있고, 확장자가 없으면 freelancerId로 간주
+                    if (thirdPart.matches("^\\d+$")) {
+                        freelancerId = Integer.parseInt(thirdPart);
                     }
+                    // parts[3]이 파일명인 경우 (형식 2) - freelancerId 추출 불가, 건너뜀
                 }
+            } catch (NumberFormatException e) {
+                // 경로 형식이 맞지 않음 (예: contracts/8/20/file.pdf)
+                // debug 레벨로 변경하여 불필요한 경고 로그 방지
+                logger.debug("경로에서 프로젝트 ID 또는 프리랜서 ID 추출 실패 (경로 형식 불일치): originContractUrl={}", originContractUrl);
+                continue;
+            }
+            
+            // projectId가 일치하고 freelancerId가 유효한 경우에만 추가
+            if (contractProjectId != null && contractProjectId.equals(projectId) 
+                    && freelancerId != null && !freelancerIds.contains(freelancerId)) {
+                freelancerIds.add(freelancerId);
+                
+                java.util.Map<String, Object> freelancer = new java.util.HashMap<>();
+                freelancer.put("userId", freelancerId);
+                freelancer.put("name", contract.get("freelancerName"));
+                // email은 UserMapper를 통해 조회 필요
+                com.sanaiclub.user.model.vo.UserVO freelancerUser = 
+                    userMapper.findByUserId(freelancerId);
+                if (freelancerUser != null) {
+                    freelancer.put("email", freelancerUser.getEmail());
+                }
+                freelancers.add(freelancer);
             }
         }
         
@@ -773,42 +817,45 @@ public class ContractService {
                     contract -> contract.getContractStatus().name()
                 ));
         
-        // 2단계: PAID 상태를 "정산 대기" 또는 "완료 내역"으로 분류
-        List<ContractResponseDTO> paidContracts = contractsByStatus.remove("PAID");
+        // 2단계: PAID 상태는 유지하고, 완전히 완료된 계약만 COMPLETED_HISTORY로 분류
+        // PAID 상태를 제거하지 않고 그대로 유지하여 DB 흐름을 정확히 반영
+        List<ContractResponseDTO> paidContracts = contractsByStatus.get("PAID");
         List<ContractResponseDTO> completedHistory = new ArrayList<>();
-        List<ContractResponseDTO> settlementPending = new ArrayList<>();
+        
         if (paidContracts != null && !paidContracts.isEmpty()) {
+            // 완전히 완료된 계약만 COMPLETED_HISTORY로 이동
+            List<ContractResponseDTO> remainingPaid = new ArrayList<>();
             for (ContractResponseDTO contract : paidContracts) {
-                boolean isLumpSum = (contract.getTotalMilestones() == null || contract.getTotalMilestones() == 0)
-                        && ("FIXED".equals(contract.getPaymentMethod()) 
-                            || "FULL".equals(contract.getPaymentMethod()) 
-                            || contract.getPaymentMethod() == null);
-                
-                if (isLumpSum) {
-                    settlementPending.add(contract);
-                } else if (isFullyCompleted(contract)) {
+                if (isFullyCompleted(contract)) {
                     completedHistory.add(contract);
                 } else {
-                    settlementPending.add(contract);
+                    // PAID 상태 유지 (결제 완료 직후 상태를 명확히 표시)
+                    remainingPaid.add(contract);
                 }
+            }
+            // 완료되지 않은 PAID 계약은 그대로 유지
+            if (remainingPaid.isEmpty()) {
+                contractsByStatus.remove("PAID");
+            } else {
+                contractsByStatus.put("PAID", remainingPaid);
             }
         }
         
-        // 3단계: COMPLETED 상태를 "정산 대기" 또는 "완료 내역"으로 분류
+        // 3단계: COMPLETED 상태를 "완료 내역"으로 분류
         List<ContractResponseDTO> completedContracts = contractsByStatus.remove("COMPLETED");
         if (completedContracts != null && !completedContracts.isEmpty()) {
             for (ContractResponseDTO contract : completedContracts) {
                 if (isFullyCompleted(contract)) {
                     completedHistory.add(contract);
                 } else {
-                    settlementPending.add(contract);
+                    // 완료되지 않은 COMPLETED 계약은 다시 COMPLETED로 유지
+                    List<ContractResponseDTO> remainingCompleted = contractsByStatus.getOrDefault("COMPLETED", new ArrayList<>());
+                    remainingCompleted.add(contract);
+                    contractsByStatus.put("COMPLETED", remainingCompleted);
                 }
             }
         }
         
-        if (!settlementPending.isEmpty()) {
-            contractsByStatus.put("SETTLEMENT_PENDING", settlementPending);
-        }
         if (!completedHistory.isEmpty()) {
             contractsByStatus.put("COMPLETED_HISTORY", completedHistory);
         }
@@ -843,43 +890,45 @@ public class ContractService {
                     contract -> contract.getContractStatus().name()
                 ));
         
-        // 2단계: PAID 상태와 COMPLETED 상태를 "정산 대기" 또는 "완료 내역"으로 분류
-        List<ContractResponseDTO> paidContracts = contractsByStatus.remove("PAID");
-        List<ContractResponseDTO> settlementPending = new ArrayList<>();
+        // 2단계: PAID 상태는 유지하고, 완전히 완료된 계약만 COMPLETED_HISTORY로 분류
+        // PAID 상태를 제거하지 않고 그대로 유지하여 DB 흐름을 정확히 반영
+        List<ContractResponseDTO> paidContracts = contractsByStatus.get("PAID");
         List<ContractResponseDTO> completedHistory = new ArrayList<>();
         
         if (paidContracts != null && !paidContracts.isEmpty()) {
+            // 완전히 완료된 계약만 COMPLETED_HISTORY로 이동
+            List<ContractResponseDTO> remainingPaid = new ArrayList<>();
             for (ContractResponseDTO contract : paidContracts) {
-                boolean isLumpSum = (contract.getTotalMilestones() == null || contract.getTotalMilestones() == 0)
-                        && ("FIXED".equals(contract.getPaymentMethod()) 
-                            || "FULL".equals(contract.getPaymentMethod()) 
-                            || contract.getPaymentMethod() == null);
-                
-                if (isLumpSum) {
-                    settlementPending.add(contract);
-                } else if (isFullyCompleted(contract)) {
+                if (isFullyCompleted(contract)) {
                     completedHistory.add(contract);
                 } else {
-                    settlementPending.add(contract);
+                    // PAID 상태 유지 (결제 완료 직후 상태를 명확히 표시)
+                    remainingPaid.add(contract);
                 }
+            }
+            // 완료되지 않은 PAID 계약은 그대로 유지
+            if (remainingPaid.isEmpty()) {
+                contractsByStatus.remove("PAID");
+            } else {
+                contractsByStatus.put("PAID", remainingPaid);
             }
         }
         
-        // 3단계: COMPLETED 상태를 "정산 대기" 또는 "완료 내역"으로 분류
+        // 3단계: COMPLETED 상태를 "완료 내역"으로 분류
         List<ContractResponseDTO> completedContracts = contractsByStatus.remove("COMPLETED");
         if (completedContracts != null && !completedContracts.isEmpty()) {
             for (ContractResponseDTO contract : completedContracts) {
                 if (isFullyCompleted(contract)) {
                     completedHistory.add(contract);
                 } else {
-                    settlementPending.add(contract);
+                    // 완료되지 않은 COMPLETED 계약은 다시 COMPLETED로 유지
+                    List<ContractResponseDTO> remainingCompleted = contractsByStatus.getOrDefault("COMPLETED", new ArrayList<>());
+                    remainingCompleted.add(contract);
+                    contractsByStatus.put("COMPLETED", remainingCompleted);
                 }
             }
         }
         
-        if (!settlementPending.isEmpty()) {
-            contractsByStatus.put("SETTLEMENT_PENDING", settlementPending);
-        }
         if (!completedHistory.isEmpty()) {
             contractsByStatus.put("COMPLETED_HISTORY", completedHistory);
         }

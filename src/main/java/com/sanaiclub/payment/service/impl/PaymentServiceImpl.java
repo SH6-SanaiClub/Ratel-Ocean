@@ -92,15 +92,29 @@ public class PaymentServiceImpl implements PaymentService {
 
     /**
      * 결제 완료 검증 및 처리
+     * 
+     * [DB 상태 변화 흐름]
+     * 1. 결제 정보 저장 (payments 테이블 INSERT)
+     * 2. 모든 마일스톤 상태 변경: WAITING → DEPOSITED (에스크로 입금 완료)
+     * 3. 계약 상태 변경: SIGNED → PAID
+     * 4. 프로젝트 상태 변경: READY → IN_PROGRESS
+     * 
+     * [트랜잭션]
+     * - @Transactional로 모든 DB 작업이 원자적으로 처리됨
+     * - 중간에 실패 시 전체 롤백
      */
     @Override
     @Transactional
     public PaymentResponseDTO completePayment(PaymentCompleteDTO request) {
-        logger.info("결제 완료 처리 시작: impUid={}", request.getImpUid());
+        logger.info("=== 결제 완료 처리 시작: impUid={} ===", request.getImpUid());
 
         try {
-            // 1. 포트원 API로 결제 정보 조회
+            // ====================================================================
+            // 1단계: 포트원 API로 결제 정보 조회 및 검증
+            // ====================================================================
+            logger.info("[1단계] 포트원 API 결제 정보 조회 시작");
             JsonNode paymentInfo = portoneApiClient.getPaymentInfo(request.getImpUid());
+            logger.info("[1단계] 포트원 API 결제 정보 조회 완료");
 
             // 2. merchant_uid에서 계약 ID 추출
             String merchantUid = paymentInfo.get("merchant_uid").asText();
@@ -109,68 +123,121 @@ public class PaymentServiceImpl implements PaymentService {
             if (contractId == null) {
                 throw new IllegalArgumentException("잘못된 merchant_uid 형식: " + merchantUid);
             }
+            logger.info("[2단계] 계약 ID 추출 완료: contractId={}, merchantUid={}", contractId, merchantUid);
 
-            // 3. 계약 정보 조회
+            // ====================================================================
+            // 2단계: 계약 정보 조회 및 검증
+            // ====================================================================
+            logger.info("[3단계] 계약 정보 조회 시작: contractId={}", contractId);
             ContractVO contract = contractMapper.selectContractById(contractId);
             if (contract == null) {
                 throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
             }
+            logger.info("[3단계] 계약 정보 조회 완료: contractId={}, 현재 상태={}, 총 예산={}",
+                    contractId, contract.getContractStatus(), contract.getTotalBudget());
 
-            // 4. 결제 정보 검증
+            // 계약 상태 검증 (SIGNED 상태여야 결제 가능)
+            if (!ContractStatus.SIGNED.equals(contract.getContractStatus())) {
+                throw new IllegalStateException(
+                        String.format("결제 가능한 상태가 아닙니다. 현재 상태: %s (예상: SIGNED)", contract.getContractStatus()));
+            }
+
+            // ====================================================================
+            // 3단계: 결제 정보 검증
+            // ====================================================================
+            logger.info("[4단계] 결제 정보 검증 시작");
             Long actualAmount = paymentInfo.get("amount").asLong();
             if (!PaymentValidator.validate(paymentInfo, merchantUid, contract.getTotalBudget())) {
                 throw new IllegalStateException("결제 정보 검증 실패");
             }
+            logger.info("[4단계] 결제 정보 검증 완료: 실제 결제 금액={}, 계약 금액={}", actualAmount, contract.getTotalBudget());
 
-            // 5. 결제 정보 저장
+            // ====================================================================
+            // 4단계: 결제 정보 저장 (DB INSERT)
+            // ====================================================================
+            logger.info("[5단계] 결제 정보 저장 시작: contractId={}, amount={}", contractId, actualAmount);
             PaymentVO payment = buildPaymentVO(paymentInfo, contractId);
             paymentMapper.insertPayment(payment);
+            logger.info("[5단계] 결제 정보 저장 완료: paymentId={}", payment.getPaymentId());
 
-            // 6. 모든 마일스톤 상태를 DEPOSITED로 변경
+            // ====================================================================
+            // 5단계: 모든 마일스톤 상태 변경 (WAITING → DEPOSITED)
+            // 에스크로 시스템 특성: 총 예산이 한 번에 입금되므로 모든 마일스톤이 DEPOSITED 상태가 됨
+            // ====================================================================
+            logger.info("[6단계] 마일스톤 상태 변경 시작: contractId={}", contractId);
             List<ContractMilestoneVO> milestones = contractMilestoneMapper
                     .selectMilestonesByContractId(contractId);
 
-            for (ContractMilestoneVO milestone : milestones) {
-                contractMilestoneMapper.updateMilestoneStatus(
-                        contractId,
-                        milestone.getStep(),
-                        MilestoneStatus.DEPOSITED.name()
-                );
+            if (milestones == null || milestones.isEmpty()) {
+                logger.warn("[6단계] 마일스톤이 없습니다: contractId={}", contractId);
+            } else {
+                logger.info("[6단계] 마일스톤 개수: {}개, 상태 변경 시작 (WAITING → DEPOSITED)", milestones.size());
+                int updatedCount = 0;
+                for (ContractMilestoneVO milestone : milestones) {
+                    logger.debug("[6단계] 마일스톤 상태 변경: step={}, milestoneId={}, 현재 상태={} → DEPOSITED",
+                            milestone.getStep(), milestone.getMilestoneId(), milestone.getStatus());
+                    
+                    contractMilestoneMapper.updateMilestoneStatus(
+                            contractId,
+                            milestone.getStep(),
+                            MilestoneStatus.DEPOSITED.name()
+                    );
+                    updatedCount++;
+                }
+                logger.info("[6단계] 마일스톤 상태 변경 완료: {}개 마일스톤이 DEPOSITED 상태로 변경됨", updatedCount);
             }
 
-            // 7. 계약 상태 업데이트 (SIGNED → PAID)
-            contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), null);
-            // Note: PaymentStatus는 별도 테이블이 없으므로 계약 상태로 관리
-            // contractMapper.updatePaymentStatus(contractId, PaymentStatus.PAID.name());
+            // ====================================================================
+            // 6단계: 계약 상태 변경 (SIGNED → PAID)
+            // ====================================================================
+            logger.info("[7단계] 계약 상태 변경 시작: contractId={}, SIGNED → PAID", contractId);
+            int contractUpdated = contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), null);
+            if (contractUpdated > 0) {
+                logger.info("[7단계] 계약 상태 변경 완료: contractId={}, 상태=PAID", contractId);
+            } else {
+                logger.warn("[7단계] 계약 상태 변경 실패: contractId={}, 업데이트된 행이 없습니다.", contractId);
+            }
 
-            // 8. 프로젝트 상태 업데이트 (READY → IN_PROGRESS)
-            // (develop 코드 존중: ProjectDetailMapper를 수정하지 않고 ContractMapper 사용)
+            // ====================================================================
+            // 7단계: 프로젝트 상태 변경 (READY → IN_PROGRESS)
+            // ====================================================================
+            logger.info("[8단계] 프로젝트 상태 변경 시작: contractId={}", contractId);
             ContractDetailDTO contractDetail = contractMapper.selectContractDetailWithJoin(contractId);
             if (contractDetail != null && contractDetail.getProjectId() != null) {
-                int updated = contractMapper.updateProjectStatus(
+                int projectUpdated = contractMapper.updateProjectStatus(
                         contractDetail.getProjectId(),
                         ProjectStatus.IN_PROGRESS.name()
                 );
                 
-                if (updated > 0) {
-                    logger.info("프로젝트 상태 업데이트: projectId={}, status=IN_PROGRESS",
+                if (projectUpdated > 0) {
+                    logger.info("[8단계] 프로젝트 상태 변경 완료: projectId={}, 상태=IN_PROGRESS",
                             contractDetail.getProjectId());
                 } else {
-                    logger.warn("프로젝트 상태 업데이트 실패: projectId={}, 업데이트된 행이 없습니다.",
+                    logger.warn("[8단계] 프로젝트 상태 변경 실패: projectId={}, 업데이트된 행이 없습니다.",
                             contractDetail.getProjectId());
                 }
             } else {
-                logger.warn("프로젝트 상태 업데이트 실패: contractId={}, projectId를 찾을 수 없습니다.", contractId);
+                logger.warn("[8단계] 프로젝트 상태 변경 건너뜀: contractId={}, projectId를 찾을 수 없습니다.", contractId);
             }
 
-            logger.info("결제 완료: paymentId={}, contractId={}, amount={}",
+            // ====================================================================
+            // 최종 로깅 및 응답 생성
+            // ====================================================================
+            logger.info("=== 결제 완료 처리 성공: paymentId={}, contractId={}, amount={} ===",
                     payment.getPaymentId(), contractId, actualAmount);
+            logger.info("=== DB 상태 변화 요약 ===");
+            logger.info("  - 결제 정보: INSERT 완료 (paymentId={})", payment.getPaymentId());
+            logger.info("  - 마일스톤 상태: {}개 마일스톤 WAITING → DEPOSITED",
+                    milestones != null ? milestones.size() : 0);
+            logger.info("  - 계약 상태: SIGNED → PAID");
+            logger.info("  - 프로젝트 상태: READY → IN_PROGRESS");
 
             // 9. 응답 DTO 생성
             return buildPaymentResponseDTO(payment, true, "결제가 완료되었습니다.");
 
         } catch (Exception e) {
-            logger.error("결제 완료 처리 실패: impUid={}", request.getImpUid(), e);
+            logger.error("=== 결제 완료 처리 실패: impUid={} ===", request.getImpUid(), e);
+            logger.error("트랜잭션 롤백 예정: 모든 DB 변경사항이 취소됩니다.");
             throw new RuntimeException("결제 처리 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }

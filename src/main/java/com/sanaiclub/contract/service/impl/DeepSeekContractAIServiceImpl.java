@@ -70,9 +70,24 @@ public class DeepSeekContractAIServiceImpl implements ContractAIService {
         HttpEntity<Map<String, Object>> request =
                 new HttpEntity<Map<String, Object>>(body, headers);
 
+        // URL 검증
+        if (apiUrl == null || apiUrl.trim().isEmpty()) {
+            logger.error("DeepSeek API URL이 설정되지 않았습니다. deepseek-api.properties 파일을 확인하세요.");
+            throw new IllegalStateException("DeepSeek API URL 없음");
+        }
+
+        // URI 객체로 명시적 변환 (RestTemplate이 템플릿으로 인식하지 않도록)
+        java.net.URI uri;
+        try {
+            uri = java.net.URI.create(apiUrl.trim());
+        } catch (IllegalArgumentException e) {
+            logger.error("DeepSeek API URL 형식이 올바르지 않습니다: {}", apiUrl);
+            throw new IllegalStateException("DeepSeek API URL 형식 오류: " + e.getMessage());
+        }
+
         // DeepSeek API 호출
         ResponseEntity<Map> response = restTemplate.exchange(
-                apiUrl,
+                uri,
                 HttpMethod.POST,
                 request,
                 Map.class

@@ -315,16 +315,16 @@
                                             <c:when test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid')}">
                                                 <c:choose>
                                                     <c:when test="${selectedContract.requestedMilestones > 0}">
-                                                        ✅ 최종 승인 대기 (지급 요청 대기: ${selectedContract.requestedMilestones}건)
+                                                        ✅ 결제 완료 (지급 요청 대기: ${selectedContract.requestedMilestones}건 - 수락/거부 필요)
                                                     </c:when>
                                                     <c:when test="${selectedContract.depositedMilestones > 0}">
-                                                        ✅ 최종 승인 대기 (입금 완료: ${selectedContract.depositedMilestones}건)
+                                                        ✅ 결제 완료 (에스크로 입금 완료: ${selectedContract.depositedMilestones}건 - 프리랜서 지급 요청 대기 중)
                                                     </c:when>
                                                     <c:when test="${selectedContract.paidMilestones > 0}">
-                                                        ✅ 최종 승인 대기 (지급 진행 중: ${selectedContract.paidMilestones}/${selectedContract.totalMilestones})
+                                                        ✅ 결제 완료 (지급 진행 중: ${selectedContract.paidMilestones}/${selectedContract.totalMilestones})
                                                     </c:when>
                                                     <c:otherwise>
-                                                        ✅ 최종 승인 대기
+                                                        ✅ 결제 완료 (프리랜서 지급 요청 대기 중)
                                                     </c:otherwise>
                                                 </c:choose>
                                             </c:when>
@@ -565,6 +565,37 @@
                         <!-- 마일스톤 (마일스톤이 있는 경우 표시) -->
                         <c:if test="${not empty milestones}">
                             <div class="section-title">🎯 마일스톤 내역</div>
+                            <%-- 마일스톤 집계 정보 표시 (PAID 상태일 때만) --%>
+                            <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid')}">
+                                <div class="milestone-summary" style="background-color: #f3f4f6; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                                    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px;">
+                                        <c:if test="${selectedContract.totalMilestones != null and selectedContract.totalMilestones > 0}">
+                                            <div style="text-align: center;">
+                                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">전체 마일스톤</div>
+                                                <div style="font-size: 18px; font-weight: bold; color: #1f2937;">${selectedContract.totalMilestones}건</div>
+                                            </div>
+                                        </c:if>
+                                        <c:if test="${selectedContract.depositedMilestones != null and selectedContract.depositedMilestones > 0}">
+                                            <div style="text-align: center;">
+                                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">💳 입금 완료</div>
+                                                <div style="font-size: 18px; font-weight: bold; color: #059669;">${selectedContract.depositedMilestones}건</div>
+                                            </div>
+                                        </c:if>
+                                        <c:if test="${selectedContract.requestedMilestones != null and selectedContract.requestedMilestones > 0}">
+                                            <div style="text-align: center;">
+                                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">📤 지급 요청</div>
+                                                <div style="font-size: 18px; font-weight: bold; color: #d97706;">${selectedContract.requestedMilestones}건</div>
+                                            </div>
+                                        </c:if>
+                                        <c:if test="${selectedContract.paidMilestones != null and selectedContract.paidMilestones > 0}">
+                                            <div style="text-align: center;">
+                                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">✅ 지급 완료</div>
+                                                <div style="font-size: 18px; font-weight: bold; color: #059669;">${selectedContract.paidMilestones}건</div>
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                </div>
+                            </c:if>
                             <table class="milestone-table">
                                 <thead>
                                     <tr>
@@ -600,6 +631,7 @@
                                                 </c:choose>
                                             </td>
                                             <td style="text-align: center;">
+                                                <%-- REQUESTED 상태: 지급 수락/거부 버튼 (프리랜서가 지급 요청한 경우) --%>
                                                 <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed') and m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested')}">
                                                     <form method="post" action="${pageContext.request.contextPath}/client/contract/management/approve-payment" style="display: inline;">
                                                         <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
@@ -615,6 +647,27 @@
                                                             ❌ 지급 거부
                                                         </button>
                                                     </form>
+                                                </c:if>
+                                                <%-- DEPOSITED 상태: 에스크로 입금 완료, 프리랜서 지급 요청 대기 중 --%>
+                                                <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed') and m.status != null and (m.status.name() eq 'DEPOSITED' or m.status.name() eq 'deposited')}">
+                                                    <div class="milestone-status-hint" style="font-size: 11px; color: #059669; margin-top: 4px;">
+                                                        💳 에스크로 입금 완료
+                                                    </div>
+                                                    <div class="milestone-status-hint" style="font-size: 11px; color: #6b7280; margin-top: 2px;">
+                                                        ⏳ 프리랜서 지급 요청 대기 중
+                                                    </div>
+                                                </c:if>
+                                                <%-- WAITING 상태: 아직 지급 요청 전 (결제 전 상태) --%>
+                                                <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed') and m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting')}">
+                                                    <div class="milestone-status-hint" style="font-size: 11px; color: #6b7280; margin-top: 4px;">
+                                                        ⏳ 프리랜서 지급 요청 대기 중
+                                                    </div>
+                                                </c:if>
+                                                <%-- PAID 상태: 지급 완료 --%>
+                                                <c:if test="${m.status != null and (m.status.name() eq 'PAID' or m.status.name() eq 'paid')}">
+                                                    <div class="milestone-status-hint" style="font-size: 11px; color: #059669; margin-top: 4px;">
+                                                        ✅ 지급 완료
+                                                    </div>
                                                 </c:if>
                                             </td>
                                         </tr>

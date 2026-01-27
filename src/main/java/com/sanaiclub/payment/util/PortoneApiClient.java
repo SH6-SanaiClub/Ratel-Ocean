@@ -85,15 +85,27 @@ public class PortoneApiClient {
      * @throws Exception 토큰 발급 실패 시
      */
     public String getAccessToken() throws Exception {
-        String url = apiUrl + "/users/getToken";
+        // URL 검증
+        if (apiUrl == null || apiUrl.trim().isEmpty()) {
+            logger.error("포트원 API URL이 설정되지 않았습니다. portone-api.properties 파일을 확인하세요.");
+            throw new IllegalStateException("포트원 API URL 없음: portone.api.url 속성이 설정되지 않았습니다.");
+        }
+
+        String url = apiUrl.trim() + "/users/getToken";
+
+        // API Key/Secret 검증
+        if (apiKey == null || apiKey.trim().isEmpty() || apiSecret == null || apiSecret.trim().isEmpty()) {
+            logger.error("포트원 API 인증 정보가 설정되지 않았습니다. portone-api.properties 파일을 확인하세요.");
+            throw new IllegalStateException("포트원 API 인증 정보 없음");
+        }
 
         Map<String, String> params = new HashMap<>();
-        params.put("imp_key", apiKey);
-        params.put("imp_secret", apiSecret);
+        params.put("imp_key", apiKey.trim());
+        params.put("imp_secret", apiSecret.trim());
 
         String requestBody = objectMapper.writeValueAsString(params);
 
-        logger.info("포트원 액세스 토큰 발급 요청");
+        logger.info("포트원 액세스 토큰 발급 요청: url={}", url);
 
         String response = sendPostRequest(url, requestBody, null);
 
@@ -102,8 +114,15 @@ public class PortoneApiClient {
 
         if (code != 0) {
             String message = jsonNode.has("message") ? jsonNode.get("message").asText() : "Unknown error";
-            logger.error("포트원 토큰 발급 실패: code={}, message={}", code, message);
-            throw new Exception("포트원 토큰 발급 실패: " + message);
+            logger.error("포트원 토큰 발급 실패: code={}, message={}, response={}", code, message, response);
+            
+            // 포트원 API 에러 코드별 상세 메시지
+            String detailedMessage = String.format("포트원 토큰 발급 실패 (code=%d): %s", code, message);
+            if (code == -1) {
+                detailedMessage += " - API Key 또는 Secret이 잘못되었습니다. portone-api.properties 파일을 확인하세요.";
+            }
+            
+            throw new Exception(detailedMessage);
         }
 
         String accessToken = jsonNode.get("response").get("access_token").asText();
@@ -146,14 +165,20 @@ public class PortoneApiClient {
         int maxRetries = 3;
         int retryDelay = 2000; // 2초
 
-        Exception lastException = null;
+        Exception lastException = new Exception("알 수 없는 오류");
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                String accessToken = getAccessToken();
-                String url = apiUrl + "/payments/" + impUid + "?include_sandbox=true";
+                // URL 검증
+                if (apiUrl == null || apiUrl.trim().isEmpty()) {
+                    logger.error("포트원 API URL이 설정되지 않았습니다. portone-api.properties 파일을 확인하세요.");
+                    throw new IllegalStateException("포트원 API URL 없음: portone.api.url 속성이 설정되지 않았습니다.");
+                }
 
-                logger.info("결제 정보 조회 시도 {}/{}: imp_uid={}", attempt, maxRetries, impUid);
+                String accessToken = getAccessToken();
+                String url = apiUrl.trim() + "/payments/" + impUid + "?include_sandbox=true";
+
+                logger.info("결제 정보 조회 시도 {}/{}: imp_uid={}, url={}", attempt, maxRetries, impUid, url);
 
                 String response = sendGetRequest(url, accessToken);
 
@@ -301,7 +326,25 @@ public class PortoneApiClient {
      * HTTP POST 요청 전송
      */
     private String sendPostRequest(String urlString, String requestBody, String accessToken) throws Exception {
-        URL url = new URL(urlString);
+        // URL 검증
+        if (urlString == null || urlString.trim().isEmpty()) {
+            throw new IllegalArgumentException("URL이 비어있습니다.");
+        }
+
+        // URL 형식 검증 (프로토콜 포함 여부)
+        if (!urlString.trim().startsWith("http://") && !urlString.trim().startsWith("https://")) {
+            logger.error("잘못된 URL 형식: 프로토콜이 없습니다. url={}", urlString);
+            throw new IllegalArgumentException("URL 형식 오류: 프로토콜(http:// 또는 https://)이 필요합니다. url=" + urlString);
+        }
+
+        URL url;
+        try {
+            url = new URL(urlString.trim());
+        } catch (java.net.MalformedURLException e) {
+            logger.error("잘못된 URL 형식: {}", urlString, e);
+            throw new IllegalArgumentException("URL 형식 오류: " + e.getMessage() + ", url=" + urlString, e);
+        }
+
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         try {
@@ -327,8 +370,32 @@ public class PortoneApiClient {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 return readResponse(conn);
             } else {
-                logger.error("HTTP 요청 실패: responseCode={}, requestBody={}", responseCode, requestBody);
-                throw new Exception("HTTP 요청 실패: " + responseCode);
+                // 에러 응답 본문 읽기
+                String errorBody = readErrorResponse(conn);
+                logger.error("HTTP POST 요청 실패: responseCode={}, url={}", responseCode, urlString);
+                logger.error("에러 응답 본문: {}", errorBody);
+                
+                // 401 Unauthorized 오류인 경우 더 명확한 메시지 제공
+                if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    String errorMessage = "포트원 API 인증 실패 (401)";
+                    try {
+                        // JSON 응답 파싱 시도
+                        if (errorBody != null && !errorBody.trim().isEmpty()) {
+                            JsonNode errorJson = objectMapper.readTree(errorBody);
+                            if (errorJson.has("message")) {
+                                errorMessage = "포트원 API 인증 실패: " + errorJson.get("message").asText();
+                            } else if (errorJson.has("code")) {
+                                errorMessage = "포트원 API 인증 실패: code=" + errorJson.get("code").asInt();
+                            }
+                        }
+                    } catch (Exception e) {
+                        // JSON 파싱 실패 시 원본 에러 본문 사용
+                        logger.debug("에러 응답 JSON 파싱 실패: {}", e.getMessage());
+                    }
+                    throw new Exception(errorMessage + " (responseCode: " + responseCode + ", errorBody: " + errorBody + ")");
+                }
+                
+                throw new Exception("HTTP 요청 실패: " + responseCode + " - " + errorBody);
             }
         } finally {
             conn.disconnect();

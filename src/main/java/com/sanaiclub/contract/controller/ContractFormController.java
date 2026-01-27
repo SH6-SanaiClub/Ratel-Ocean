@@ -89,8 +89,38 @@ public class ContractFormController {
             Integer freelancerId = extractFreelancerId(params, model);
             
             if (projectId == null || freelancerId == null) {
-                if (projectId == null && freelancerId == null) {
-                    model.addAttribute("errorMessage", "프로젝트와 프리랜서를 모두 선택해주세요.");
+                // 에러 메시지가 이미 설정되지 않았다면 기본 메시지 설정
+                if (!model.containsAttribute("errorMessage")) {
+                    if (projectId == null && freelancerId == null) {
+                        model.addAttribute("errorMessage", "프로젝트와 프리랜서를 모두 선택해주세요.");
+                    } else if (projectId == null) {
+                        model.addAttribute("errorMessage", "프로젝트를 선택해주세요.");
+                    } else {
+                        model.addAttribute("errorMessage", "프리랜서를 선택해주세요.");
+                    }
+                }
+                
+                // Service를 통해 에러 상황에서도 기본 데이터 조회 및 설정
+                Integer userId = AuthContext.getCurrentUserId();
+                if (userId != null) {
+                    try {
+                        // Service를 통해 View 데이터 조회
+                        ContractService.ContractCheckViewData viewData = 
+                            contractService.getContractCheckViewData(userId, projectId, freelancerId);
+                        
+                        // 프로젝트 정보 설정
+                        if (viewData.getProject() != null) {
+                            model.addAttribute("project", viewData.getProject());
+                        }
+                        
+                        // Service를 통해 Map 변환
+                        ContractService.ContractCheckViewMapData mapData = 
+                            contractService.prepareErrorViewData(userId, projectId, freelancerId);
+                        model.addAttribute("client", mapData.getClientMap());
+                        model.addAttribute("freelancer", mapData.getFreelancerMap());
+                    } catch (Exception e) {
+                        log.warn("에러 발생 시 기본 데이터 조회 실패: {}", e.getMessage());
+                    }
                 }
                 return "contract/contractCheck";
             }
@@ -241,28 +271,34 @@ public class ContractFormController {
 
     /** 파라미터에서 프로젝트 ID 추출 */
     private Integer extractProjectId(Map<String, String> params, Model model) {
-        try {
-            String projectIdStr = params.get("projectId");
-            if (projectIdStr != null && !projectIdStr.isBlank()) {
-                return Integer.valueOf(projectIdStr);
-            }
-        } catch (NumberFormatException e) {
-            model.addAttribute("errorMessage", "잘못된 프로젝트 ID입니다.");
+        String projectIdStr = params.get("projectId");
+        if (projectIdStr == null || projectIdStr.isBlank()) {
+            return null;
         }
-        return null;
+        
+        try {
+            return Integer.valueOf(projectIdStr.trim());
+        } catch (NumberFormatException e) {
+            log.warn("잘못된 프로젝트 ID 형식: {}", projectIdStr);
+            model.addAttribute("errorMessage", "잘못된 프로젝트 ID입니다. (" + projectIdStr + ")");
+            return null;
+        }
     }
 
     /** 파라미터에서 프리랜서 ID 추출 */
     private Integer extractFreelancerId(Map<String, String> params, Model model) {
-        try {
-            String freelancerIdStr = params.get("freelancerId");
-            if (freelancerIdStr != null && !freelancerIdStr.isBlank()) {
-                return Integer.valueOf(freelancerIdStr);
-            }
-        } catch (NumberFormatException e) {
-            model.addAttribute("errorMessage", "잘못된 프리랜서 ID입니다.");
+        String freelancerIdStr = params.get("freelancerId");
+        if (freelancerIdStr == null || freelancerIdStr.isBlank()) {
+            return null;
         }
-        return null;
+        
+        try {
+            return Integer.valueOf(freelancerIdStr.trim());
+        } catch (NumberFormatException e) {
+            log.warn("잘못된 프리랜서 ID 형식: {}", freelancerIdStr);
+            model.addAttribute("errorMessage", "잘못된 프리랜서 ID입니다. (" + freelancerIdStr + ")");
+            return null;
+        }
     }
 
     /** PDF 경로 정규화. 표준 형식으로 변환. */

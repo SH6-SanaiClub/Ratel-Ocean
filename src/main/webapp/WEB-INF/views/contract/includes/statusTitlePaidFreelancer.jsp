@@ -19,10 +19,10 @@
 </c:forEach>
 <c:choose>
     <c:when test="${totalRequested > 0}">
-        💰 결제 완료 (지급 요청 중: ${totalRequested}건)
+        💰 결제 완료 (지급 요청 중: ${totalRequested}건 - 클라이언트 승인 대기)
     </c:when>
     <c:when test="${totalDeposited > 0}">
-        💰 결제 완료 (입금 완료: ${totalDeposited}건)
+        💰 결제 완료 (에스크로 입금 완료: ${totalDeposited}건 - 지급 요청 가능)
     </c:when>
     <c:when test="${totalPaid > 0}">
         💰 결제 완료 (수령 진행 중: ${totalPaid}/${totalMilestones})
