@@ -27,6 +27,20 @@
                p.duration_negotiable AS durationNegotiable,
                p.plan_url            AS planUrl,
 
+               (SELECT ROUND(AVG(CAST(c.freelancer_rating AS DECIMAL(2,1))), 1)
+                FROM contracts c
+                         JOIN project_applications pa ON c.contract_id = pa.application_id
+                         JOIN projects p2 ON pa.project_id = p2.project_id
+                WHERE p2.client_id = p.client_id
+                  AND c.freelancer_rating IS NOT NULL) AS clientAvgRating,
+
+               (SELECT COUNT(*)
+                FROM contracts c
+                         JOIN project_applications pa ON c.contract_id = pa.application_id
+                         JOIN projects p2 ON pa.project_id = p2.project_id
+                WHERE p2.client_id = p.client_id
+                  AND c.contract_status = 'COMPLETED') AS completedContractCount,
+
                (SELECT stack_level
                 FROM project_stacks
                 WHERE project_id = p.project_id
@@ -40,6 +54,7 @@
                p.change_policy       AS changePolicy,
 
                u.name                AS clientName,
+               u.profile_image_url   AS clientProfileImageUrl,
                c.company_name        AS companyName,
                cp.client_type        AS clientType,
                c.industry            AS companyIndustry
