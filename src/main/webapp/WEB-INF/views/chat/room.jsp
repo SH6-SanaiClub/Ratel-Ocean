@@ -200,14 +200,24 @@
         let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
         if (room.lastMessageDeleted === 1) lastMsg = "메시지가 삭제되었습니다.";
         const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
+        // loginUserType이 'FREELANCER'인 경우 프로젝트 타이틀을 이름 옆이나 아래에 추가
+        let nameHtml = "";
 
+        if (loginUserType === 'FREELANCER') {
+            // 프리랜서: 프로젝트명을 앞에 두고 더 강조 (진한 파란색 + 굵게)
+            nameHtml = '<span class="room-project-tag" style="font-size: 17px; font-weight: 600; margin-right: 6px;">[' + room.title + ']'+' -</span>' +
+                '<span class="room-name-main" style="font-size: 15px; color: #333; font-weight: 500;">' + room.name + '</span>';
+        } else {
+            // 클라이언트: 기존 유지 (사용자 이름만 강조)
+            nameHtml = '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>';
+        }
         return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
             '<div class="avatar-box">' +
             '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
             '</div>' +
             '<div class="room-info" style="flex: 1;">' +
             '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
-            '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' +  room.name + '</span>' +
+            '<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">' + nameHtml + '</div>' +
             '<span class="room-time">' + timeText + '</span>' +
             '</div>' +
             '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
@@ -575,7 +585,7 @@
                     '<h4>공유 파일</h4>' +
                     '<div class="file-list"></div>' +
                     '</div>';
-                updateSharedFiles(roomId);
+                updateSharedFilesFromMessages(roomId);
             })
             .catch(err => console.error("방 정보 로드 실패:", err));
     }
