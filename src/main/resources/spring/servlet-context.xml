@@ -11,6 +11,8 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <context:property-placeholder location="classpath:jwt.properties" ignore-unresolvable="true"/>
+
     <!-- Annotation-driven MVC -->
     <mvc:annotation-driven>
         <mvc:message-converters>
@@ -40,6 +42,29 @@
     <mvc:resources mapping="/js/**" location="/resources/js/"/>
     <mvc:resources mapping="/images/**" location="/resources/images/"/>
 
+    <!-- Interceptor 등록 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 모든 URL에 적용 -->
+            <mvc:mapping path="/**"/>
+
+            <!-- 제외할 URL (비로그인 허용) -->
+            <mvc:exclude-mapping path="/"/>
+            <mvc:exclude-mapping path="/login"/>
+            <mvc:exclude-mapping path="/join/**"/>
+            <mvc:exclude-mapping path="/test"/>
+            <mvc:exclude-mapping path="/api/test"/>
+            <mvc:exclude-mapping path="/db/test"/>
+            <mvc:exclude-mapping path="/resources/**"/>
+            <mvc:exclude-mapping path="/css/**"/>
+            <mvc:exclude-mapping path="/js/**"/>
+            <mvc:exclude-mapping path="/images/**"/>
+
+            <!-- 인증 인터셉터 -->
+            <bean class="com.sanaiclub.common.interceptor.AuthenticationInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
     <!-- ViewResolver -->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/views/"/>
@@ -47,8 +72,8 @@
         <property name="contentType" value="text/html;charset=UTF-8"/>
     </bean>
 
-    <!-- Controller Component Scan -->
-    <context:component-scan base-package="com.sanaiclub"/>
+    <!-- Controller 패키지만 스캔 -->
+    <context:component-scan base-package="com.sanaiclub.**.controller"/>
 
     <!-- 파일 업로드 설정 -->
     <bean id="multipartResolver"

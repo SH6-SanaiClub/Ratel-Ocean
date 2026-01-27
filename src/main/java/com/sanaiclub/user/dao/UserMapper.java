@@ -1,0 +1,71 @@
+package com.sanaiclub.user.dao;
+
+import com.sanaiclub.user.model.vo.UserVO;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+@Mapper
+public interface UserMapper {
+
+    /**
+     * 로그인 ID로 사용자 조회
+     */
+    UserVO findByLoginId(@Param("loginId") String loginId);
+
+    /**
+     * 사용자 PK로 조회
+     */
+    UserVO findByUserId(@Param("userId") Integer userId);
+
+    /**
+     * 이메일로 사용자 조회
+     */
+    UserVO findByEmail(@Param("email") String email);
+
+    /**
+     * Refresh Token으로 사용자 조회
+     */
+    UserVO findByRefreshToken(@Param("refreshToken") String refreshToken);
+
+    /**
+     * 아이디 중복 체크
+     *
+     * @param loginId 확인할 로그인 ID
+     * @return 존재하면 1, 없으면 0
+     */
+    int checkId(@Param("loginId") String loginId);
+
+    /**
+     * 이메일 중복 확인
+     *
+     * @param email 확인할 이메일
+     * @return 존재하면 1, 없으면 0
+     */
+    int checkEmail(@Param("email") String email);
+
+    /**
+     * 신규 사용자 등록
+     *
+     * @param user 등록할 사용자 정보
+     * @return 등록된 행 수
+     */
+    int insertUser(UserVO user);
+
+    /**
+     * Refresh Token 저장/갱신
+     *
+     * @param userId       사용자 PK
+     * @param refreshToken 저장할 Refresh Token (로그아웃 시 null)
+     * @return 수정된 행 수
+     */
+    int updateRefreshToken(@Param("userId") Integer userId,
+                           @Param("refreshToken") String refreshToken);
+
+    /**
+     * 사용자 정보 수정
+     *
+     * @param user 수정할 사용자 정보
+     * @return 수정된 행 수
+     */
+    int updateUser(UserVO user);
+}

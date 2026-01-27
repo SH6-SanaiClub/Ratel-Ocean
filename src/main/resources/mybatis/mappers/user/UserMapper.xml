@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.user.dao.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.sanaiclub.user.model.vo.UserVO">
+        <id property="userId" column="user_id"/>
+        <result property="loginId" column="login_id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="refreshToken" column="refresh_token"/>
+        <result property="userType" column="user_type"/>
+        <result property="status" column="status"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 로그인 ID로 사용자 조회 -->
+    <select id="findByLoginId" resultMap="UserResultMap">
+        SELECT
+            user_id,
+            login_id,
+            email,
+            password,
+            refresh_token,
+            user_type,
+            status,
+            name,
+            phone,
+            birth_date,
+            profile_image_url,
+            created_at,
+            updated_at
+        FROM users
+        WHERE login_id = #{loginId}
+    </select>
+
+    <!-- 사용자 PK로 조회 -->
+    <select id="findByUserId" resultMap="UserResultMap">
+        SELECT
+            user_id,
+            login_id,
+            email,
+            password,
+            refresh_token,
+            user_type,
+            status,
+            name,
+            phone,
+            birth_date,
+            profile_image_url,
+            created_at,
+            updated_at
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 이메일로 사용자 조회 -->
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT
+            user_id,
+            login_id,
+            email,
+            password,
+            refresh_token,
+            user_type,
+            status,
+            name,
+            phone,
+            birth_date,
+            profile_image_url,
+            created_at,
+            updated_at
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!-- Refresh Token으로 사용자 조회 -->
+    <select id="findByRefreshToken" resultMap="UserResultMap">
+        SELECT
+            user_id,
+            login_id,
+            email,
+            password,
+            refresh_token,
+            user_type,
+            status,
+            name,
+            phone,
+            birth_date,
+            profile_image_url,
+            created_at,
+            updated_at
+        FROM users
+        WHERE refresh_token = #{refreshToken}
+    </select>
+
+    <!-- 아이디 중복 체크 -->
+    <select id="checkId" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE login_id = #{loginId}
+    </select>
+
+    <!-- 이메일 중복 확인 -->
+    <select id="checkEmail" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <!-- 신규 사용자 등록 -->
+    <insert id="insertUser" parameterType="com.sanaiclub.user.model.vo.UserVO"
+            useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (
+            login_id,
+            email,
+            password,
+            user_type,
+            name,
+            phone,
+            birth_date,
+            status
+        ) VALUES (
+                     #{loginId},
+                     #{email},
+                     #{password},
+                     #{userType},
+                     #{name},
+                     #{phone},
+                     #{birthDate},
+                     'ACTIVE'
+                 )
+    </insert>
+
+    <!-- Refresh Token 저장/갱신 -->
+    <update id="updateRefreshToken">
+        UPDATE users
+        SET refresh_token = #{refreshToken}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 사용자 정보 수정 -->
+    <update id="updateUser">
+        UPDATE users
+        SET
+            email = #{email},
+            name = #{name},
+            phone = #{phone},
+            birth_date = #{birthDate},
+            profile_image_url = #{profileImageUrl},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

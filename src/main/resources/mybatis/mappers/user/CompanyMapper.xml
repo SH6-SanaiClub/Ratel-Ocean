@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+═══════════════════════════════════════════════════════════════════════
+CompanyMapper.xml - 회사 정보 SQL
+═══════════════════════════════════════════════════════════════════════
+-->
+
+<mapper namespace="com.sanaiclub.user.dao.CompanyMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="CompanyResultMap" type="com.sanaiclub.user.model.vo.CompanyVO">
+        <id property="companyId" column="company_id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="ceoEmail" column="ceo_email"/>
+        <result property="businessNumber" column="business_number"/>
+        <result property="openingDate" column="opening_date"/>
+        <result property="businessVerified" column="business_verified"/>
+        <result property="industry" column="industry"/>
+        <result property="address" column="address"/>
+        <result property="companySize" column="company_size"/>
+        <result property="websiteUrl" column="website_url"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 컬럼 목록 -->
+    <sql id="companyColumns">
+        company_id,
+        company_name,
+        ceo_name,
+        ceo_email,
+        business_number,
+        opening_date,
+        business_verified,
+        industry,
+        address,
+        company_size,
+        website_url,
+        created_at
+    </sql>
+
+    <!--
+    회사 정보 등록
+    - useGeneratedKeys: AUTO_INCREMENT된 company_id를 VO에 자동 세팅
+    -->
+    <insert id="insertCompany"
+            parameterType="com.sanaiclub.user.model.vo.CompanyVO"
+            useGeneratedKeys="true"
+            keyProperty="companyId">
+        INSERT INTO companies (
+            company_name,
+            ceo_name,
+            ceo_email,
+            business_number,
+            opening_date,
+            business_verified,
+            industry,
+            address,
+            company_size,
+            website_url
+        ) VALUES (
+                     #{companyName},
+                     #{ceoName},
+                     #{ceoEmail},
+                     #{businessNumber},
+                     #{openingDate},
+                     #{businessVerified},
+                     #{industry},
+                     #{address},
+                     #{companySize},
+                     #{websiteUrl}
+                 )
+    </insert>
+
+    <!--
+    회사 ID로 조회
+    -->
+    <select id="findByCompanyId" parameterType="int" resultMap="CompanyResultMap">
+        SELECT <include refid="companyColumns"/>
+        FROM companies
+        WHERE company_id = #{companyId}
+    </select>
+
+    <!--
+    사업자등록번호로 조회
+    -->
+    <select id="findByBusinessNumber" parameterType="string" resultMap="CompanyResultMap">
+        SELECT <include refid="companyColumns"/>
+        FROM companies
+        WHERE business_number = #{businessNumber}
+    </select>
+
+    <!--
+    사업자등록번호 중복 확인
+    -->
+    <select id="checkBusinessNumber" parameterType="string" resultType="int">
+        SELECT EXISTS(
+            SELECT 1 FROM companies WHERE business_number = #{businessNumber}
+        )
+    </select>
+
+    <!--
+    회사 정보 수정
+    -->
+    <update id="updateCompany" parameterType="com.sanaiclub.user.model.vo.CompanyVO">
+        UPDATE companies
+        SET
+            company_name = #{companyName},
+            ceo_name = #{ceoName},
+            ceo_email = #{ceoEmail},
+            opening_date = #{openingDate},
+            industry = #{industry},
+            address = #{address},
+            company_size = #{companySize},
+            website_url = #{websiteUrl}
+        WHERE company_id = #{companyId}
+    </update>
+
+    <!--
+    사업자 인증 상태 업데이트
+    -->
+    <update id="updateVerificationStatus">
+        UPDATE companies
+        SET business_verified = #{verified}
+        WHERE company_id = #{companyId}
+    </update>
+
+</mapper>
