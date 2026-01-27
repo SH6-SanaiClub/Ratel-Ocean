@@ -599,7 +599,6 @@
                     '<h4>공유 파일</h4>' +
                     '<div class="file-list"></div>' +
                     '</div>';
-                updateSharedFilesFromMessages(roomId);
             })
             .catch(err => console.error("방 정보 로드 실패:", err));
     }
@@ -619,7 +618,7 @@
         fileContainer.innerHTML = ""; // 기존 내용 초기화
         let filesExist = false;
         messages.forEach(msg => {
-            if (msg.fileUrl) {
+            if (msg.fileUrl && msg.isDeleted != 1) {
                 filesExist = true;
                 const div = document.createElement("div");
                 div.className = "file-item";
@@ -692,7 +691,11 @@
         if (stompClient !== null) {
             stompClient.disconnect();
         }
-
+        messageInput.value = "";
+        const fileInput = document.getElementById("fileInput");
+        if (fileInput) fileInput.value = "";
+        const filePreview = document.getElementById("filePreview");
+        if (filePreview) filePreview.style.display = "none";
         selectedRoomId = roomId;
         opponentExited = false;
         document.getElementById("exitRoomBtn").style.display = "inline-block";
