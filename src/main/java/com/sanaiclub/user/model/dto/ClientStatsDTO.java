@@ -7,7 +7,6 @@ import java.util.List;
 public class ClientStatsDTO {
     private double avgRating;          // 평균 평점
     private int contractCount;         // 완료된 계약 수
-
-    // 방금 만든 DTO를 리스트로 사용
-    private List<ClientReviewHistoryDTO> reviewList;
+    private List<ClientReviewHistoryDTO> reviewList;        // 내가 쓴 리뷰 리스트
+    private List<ClientReviewHistoryDTO> receivedReviewList; // 내가 받은 리뷰 리스트
 }
