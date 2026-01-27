@@ -2,7 +2,6 @@ package com.sanaiclub.contract.model.vo;
 
 import lombok.Builder;
 import lombok.Getter;
-import com.sanaiclub.contract.model.enums.MilestoneStatus;
 
 import java.time.LocalDate;
 

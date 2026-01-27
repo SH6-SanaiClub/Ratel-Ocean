@@ -1,4 +1,4 @@
-package com.sanaiclub.contract.model.enums;
+package com.sanaiclub.contract.model.vo;
 
 /** 계약 상태 Enum. 상태 전이: WAITING → SIGNED → PAID → COMPLETED. 각 단계에서 TERMINATED 가능. */
 public enum ContractStatus {

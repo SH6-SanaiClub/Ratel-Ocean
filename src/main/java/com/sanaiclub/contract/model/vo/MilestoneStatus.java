@@ -1,4 +1,4 @@
-package com.sanaiclub.contract.model.enums;
+package com.sanaiclub.contract.model.vo;
 
 /** 마일스톤 상태 Enum. 상태 전이: WAITING → REQUESTED → DEPOSITED → PAID. REQUESTED → WAITING (거부 시 재요청 가능). */
 public enum MilestoneStatus {

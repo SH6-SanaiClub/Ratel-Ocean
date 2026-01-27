@@ -1,6 +1,6 @@
 package com.sanaiclub.contract.model.dto;
 
-import com.sanaiclub.contract.model.enums.ContractStatus;
+import com.sanaiclub.contract.model.vo.ContractStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

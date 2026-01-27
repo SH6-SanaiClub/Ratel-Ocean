@@ -4,8 +4,8 @@ import com.sanaiclub.contract.model.vo.ContractVO;
 import com.sanaiclub.contract.model.vo.ContractMilestoneVO;
 import com.sanaiclub.contract.model.dto.ContractResponseDTO;
 import com.sanaiclub.contract.model.dto.ContractMilestoneResponseDTO;
-import com.sanaiclub.contract.model.enums.ContractStatus;
-import com.sanaiclub.contract.model.enums.MilestoneStatus;
+import com.sanaiclub.contract.model.vo.ContractStatus;
+import com.sanaiclub.contract.model.vo.MilestoneStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

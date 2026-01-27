@@ -2,7 +2,6 @@ package com.sanaiclub.contract.model.vo;
 
 import lombok.Builder;
 import lombok.Getter;
-import com.sanaiclub.contract.model.enums.ContractStatus;
 
 /** 계약 Value Object. contracts 테이블과 1:1 매핑. 불변 객체. cancel_reason은 일시지급 지급 요청 상태 관리에도 재활용. */
 @Getter

@@ -1,6 +1,7 @@
 package com.sanaiclub.contract.controller;
 
 import com.sanaiclub.contract.model.dto.*;
+import com.sanaiclub.contract.model.vo.ContractStatus;
 import com.sanaiclub.contract.service.ContractAutoFillService;
 import com.sanaiclub.contract.service.ContractService;
 import com.sanaiclub.contract.service.ContractPdfService;
@@ -552,7 +553,7 @@ public class ContractFormController {
         }
         
         dto.setPaymentMethod(paymentMethod);
-        dto.setContractStatus(com.sanaiclub.contract.model.enums.ContractStatus.WAITING);
+        dto.setContractStatus(ContractStatus.WAITING);
         dto.setOriginContractUrl(originContractUrl);
         
         if ("FORM".equals(contractInputType)) {
@@ -605,7 +606,7 @@ public class ContractFormController {
         }
         
         dto.setPaymentMethod(paymentMethod);
-        dto.setContractStatus(com.sanaiclub.contract.model.enums.ContractStatus.WAITING);
+        dto.setContractStatus(ContractStatus.WAITING);
         dto.setOriginContractUrl(originContractUrl);
         
         if ("FORM".equals(contractInputType)) {

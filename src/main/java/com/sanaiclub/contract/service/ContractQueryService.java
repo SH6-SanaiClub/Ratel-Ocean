@@ -5,7 +5,7 @@ import com.sanaiclub.contract.model.vo.ContractMilestoneVO;
 import com.sanaiclub.contract.model.dto.ContractResponseDTO;
 import com.sanaiclub.contract.model.dto.ContractDetailDTO;
 import com.sanaiclub.contract.model.dto.ContractMilestoneResponseDTO;
-import com.sanaiclub.contract.model.enums.ContractStatus;
+import com.sanaiclub.contract.model.vo.ContractStatus;
 import com.sanaiclub.contract.dao.ContractMapper;
 import com.sanaiclub.contract.dao.ContractMilestoneMapper;
 import com.sanaiclub.project.dao.ProjectDetailMapper;

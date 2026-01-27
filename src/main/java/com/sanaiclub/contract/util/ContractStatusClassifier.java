@@ -1,7 +1,7 @@
 package com.sanaiclub.contract.util;
 
 import com.sanaiclub.contract.model.dto.ContractResponseDTO;
-import com.sanaiclub.contract.model.enums.ContractStatus;
+import com.sanaiclub.contract.model.vo.ContractStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
