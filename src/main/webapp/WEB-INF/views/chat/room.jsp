@@ -420,7 +420,7 @@
         // 예: <div id="msg-123">...</div>
         const msgElement = document.getElementById("msg-" + messageId);
         if (msgElement) {
-            const contentArea = msgElement.querySelector(".message-content");
+            const contentArea = msgElement.querySelector(".bubble");
             if(contentArea) {
                 contentArea.innerText = "삭제된 메시지입니다.";
                 contentArea.classList.add("deleted-text"); // 스타일링용 클래스

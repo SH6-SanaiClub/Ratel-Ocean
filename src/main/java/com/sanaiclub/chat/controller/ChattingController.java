@@ -220,7 +220,9 @@ public class ChattingController {
     public ResponseEntity<?> deleteMessage(@PathVariable int messageId, @RequestBody Map<String, Integer> payload) {
         try {
             Integer roomId = payload.get("roomId"); // 클라이언트에서 roomId를 함께 전달받음
-
+            if (roomId == null) {
+                return ResponseEntity.badRequest().body("roomId is missing");
+            }
             chatService.deleteMessage(messageId);
 
             // 실시간 삭제 알림 전송
