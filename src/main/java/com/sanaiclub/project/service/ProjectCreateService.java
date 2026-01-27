@@ -114,14 +114,19 @@ public class ProjectCreateService {
     private void insertStacks(ProjectCreateRequestDTO request) {
         Integer pId = request.getProjectId();
 
+        // minLevel과 minYear가 null인 경우 기본값 설정 (sanitizeRequest에서 처리했지만 이중 안전장치)
+        Integer stackLevel = (request.getMinLevel() != null) ? request.getMinLevel() : 1;
+        Integer stackYear = (request.getMinYear() != null) ? request.getMinYear() : 0;
+
         if (request.getPositionIds() != null) {
             for (Integer sId : request.getPositionIds()) {
-                projectCreateMapper.insertProjectStack(new ProjectStackVO(null, pId, sId, 0, 0));
+                // Position은 레벨/연차 정보가 없으므로 0으로 설정 (체크 제약 조건에 따라 1로 변경 가능)
+                projectCreateMapper.insertProjectStack(new ProjectStackVO(null, pId, sId, 1, 0));
             }
         }
         if (request.getStackIds() != null) {
             for (Integer sId : request.getStackIds()) {
-                projectCreateMapper.insertProjectStack(new ProjectStackVO(null, pId, sId, request.getMinLevel(), request.getMinYear()));
+                projectCreateMapper.insertProjectStack(new ProjectStackVO(null, pId, sId, stackLevel, stackYear));
             }
         }
     }
@@ -158,6 +163,14 @@ public class ProjectCreateService {
         // 예상 기간 (1개월 이하 등)
         if (request.getEstDuration() == null || request.getEstDuration().trim().isEmpty()) {
             request.setEstDuration("1개월 이하");
+        }
+        
+        // 3. 스택 레벨 및 연차 기본값 설정 (체크 제약 조건 위반 방지)
+        if (request.getMinLevel() == null) {
+            request.setMinLevel(1); // 기본값: 1 (초급)
+        }
+        if (request.getMinYear() == null) {
+            request.setMinYear(0); // 기본값: 0년 (신입 가능)
         }
     }
 }

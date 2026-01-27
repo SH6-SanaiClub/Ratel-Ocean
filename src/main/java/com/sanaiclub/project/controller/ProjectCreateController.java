@@ -44,6 +44,12 @@ public class ProjectCreateController {
         return "redirect:/project/success";
     }
 
+    // 프로젝트 등록 성공 페이지
+    @GetMapping("/success")
+    public String success() {
+        return "project/client/success";
+    }
+
     // 수정 페이지 이동
     @GetMapping("/edit/{projectId}")
     public String editForm(@PathVariable("projectId") Integer projectId, Model model, RedirectAttributes rttr) {
