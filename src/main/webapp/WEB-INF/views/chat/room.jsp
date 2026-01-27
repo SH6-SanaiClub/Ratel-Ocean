@@ -29,7 +29,7 @@
                 </div>
                 <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
 
-                    <div id="searchArea" style="display: flex; align-items: center; gap: 5px;">
+                    <div id="searchArea" style="display: none; align-items: center; gap: 5px;">
                         <input type="text" id="searchInput" placeholder="메시지 검색"
                                style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 130px;">
                         <button onclick="searchMessages()"
@@ -657,6 +657,10 @@
 
         // ✅ 나가기 버튼 숨김
         document.getElementById("exitRoomBtn").style.display = "none";
+        const searchArea = document.getElementById("searchArea");
+        if (searchArea) {
+            searchArea.style.display = "none";
+        }
     }
 
     function selectRoom( roomId) {
@@ -668,6 +672,10 @@
         selectedRoomId = roomId;
         opponentExited = false;
         document.getElementById("exitRoomBtn").style.display = "inline-block";
+        const searchArea = document.getElementById("searchArea");
+        if (searchArea) {
+            searchArea.style.display = "flex"; // 검색 영역 내부가 flex 구조이므로 flex로 설정
+        }
         loadMessages(roomId);
         const $roomItem = $('#room-item-' + roomId);
         $roomItem.find('.unread-badge').remove();
