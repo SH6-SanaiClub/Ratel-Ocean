@@ -330,22 +330,22 @@
       <div class="tabs">
         <div class="tabGroup">
           <a class="tab ${tab eq 'inProgress' ? 'active' : ''}"
-             href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=inProgress&ym=${ym}">
+             href="${pageContext.request.contextPath}/freelancer/project/manage?tab=inProgress&ym=${ym}">
             진행 중 (<c:out value="${summary.inProgressCount}"/>)
           </a>
           <a class="tab ${tab eq 'applied' ? 'active' : ''}"
-             href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=applied&ym=${ym}">
+             href="${pageContext.request.contextPath}/freelancer/project/manage?tab=applied&ym=${ym}">
             지원한 (<c:out value="${summary.appliedCount}"/>)
           </a>
           <a class="tab ${tab eq 'completed' ? 'active' : ''}"
-             href="${pageContext.request.contextPath}/freelancer/projects/manage?tab=completed&ym=${ym}">
+             href="${pageContext.request.contextPath}/freelancer/project/manage?tab=completed&ym=${ym}">
             완료 (<c:out value="${summary.completedCount}"/>)
           </a>
         </div>
 
         <div class="tabsRight">
           <a class="btn primary"
-             href="${pageContext.request.contextPath}/freelancer/projects/board"
+             href="${pageContext.request.contextPath}/freelancer/project/detail"
              style="text-decoration:none;">
             상세 관리
           </a>
@@ -515,7 +515,7 @@
 
               <div class="actions">
                 <a class="btn ghost" href="${pageContext.request.contextPath}/contract/detail?contractId=${p.contractId}" style="text-decoration:none;">상세 보기</a>
-                <a class="btn primary" href="${pageContext.request.contextPath}/freelancer/projects/board?tab=reviews&contractId=${p.contractId}" style="text-decoration:none;">리뷰 보기</a>
+                <a class="btn primary" href="${pageContext.request.contextPath}/freelancer/project/detail?tab=reviews&contractId=${p.contractId}" style="text-decoration:none;">리뷰 보기</a>
               </div>
             </div>
           </c:forEach>
@@ -715,7 +715,7 @@
 
     const nextYm = fmtYm(d);
     const tab = "${tab}";
-    window.location.href = ctx + "/freelancer/projects/manage?tab=" + encodeURIComponent(tab) + "&ym=" + nextYm;
+    window.location.href = ctx + "/freelancer/project/manage?tab=" + encodeURIComponent(tab) + "&ym=" + nextYm;
   }
 
   document.getElementById('prevBtn').onclick = () => goMonth(-1);
@@ -724,7 +724,7 @@
   document.getElementById('todayBtn').onclick = () => {
     const d = new Date();
     const tab = "${tab}";
-    window.location.href = ctx + "/freelancer/projects/manage?tab=" + encodeURIComponent(tab) + "&ym=" + fmtYm(d);
+    window.location.href = ctx + "/freelancer/project/manage?tab=" + encodeURIComponent(tab) + "&ym=" + fmtYm(d);
   };
 
   // 최초 렌더

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.sanaiclub.manage.dao.FreelancerProjectBoardMapper">
+<mapper namespace="com.sanaiclub.project.dao.FreelancerProjectManageDetailMapper">
 
     <sql id="baseList">
         SELECT
@@ -27,25 +27,25 @@
         WHERE pa.freelancer_id = #{freelancerId}
     </sql>
 
-    <select id="selectInProgressProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+    <select id="selectInProgressProjects" resultType="com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO">
         <include refid="baseList"/>
         AND ct.contract_status = 'SIGNED'
         ORDER BY ct.contracted_at DESC
     </select>
 
-    <select id="selectCompletedProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+    <select id="selectCompletedProjects" resultType="com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO">
         <include refid="baseList"/>
         AND ct.contract_status = 'COMPLETED'
         ORDER BY ct.completed_at DESC, ct.contracted_at DESC
     </select>
 
-    <select id="selectReviewProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+    <select id="selectReviewProjects" resultType="com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO">
         <include refid="baseList"/>
         AND ct.contract_status IN ('COMPLETED','TERMINATED')
         ORDER BY ct.completed_at DESC, ct.contracted_at DESC
     </select>
 
-    <select id="selectProjectHeader" resultType="com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO">
+    <select id="selectProjectHeader" resultType="com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO">
         <include refid="baseList"/>
         AND ct.contract_id = #{contractId}
         LIMIT 1
@@ -61,7 +61,7 @@
         )
     </select>
 
-    <select id="selectMilestones" resultType="com.sanaiclub.manage.model.dto.MilestoneDTO">
+    <select id="selectMilestones" resultType="com.sanaiclub.project.model.dto.MilestoneDTO">
         SELECT
             cm.milestone_id   AS milestoneId,
             cm.contract_id    AS contractId,
@@ -177,7 +177,7 @@
     </insert>
 
     <!-- 리뷰: 양방향 보기 -->
-    <select id="selectContractReviewView" resultType="com.sanaiclub.manage.model.dto.FreelancerContractReviewViewDTO">
+    <select id="selectContractReviewView" resultType="com.sanaiclub.project.model.dto.FreelancerContractReviewViewDTO">
         SELECT
             ct.contract_id AS contractId,
 

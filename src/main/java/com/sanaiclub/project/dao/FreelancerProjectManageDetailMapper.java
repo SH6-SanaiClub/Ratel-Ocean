@@ -1,8 +1,8 @@
-package com.sanaiclub.manage.dao;
+package com.sanaiclub.project.dao;
 
-import com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO;
-import com.sanaiclub.manage.model.dto.FreelancerContractReviewViewDTO;
-import com.sanaiclub.manage.model.dto.MilestoneDTO;
+import com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO;
+import com.sanaiclub.project.model.dto.FreelancerContractReviewViewDTO;
+import com.sanaiclub.project.model.dto.MilestoneDTO;
 import com.sanaiclub.project.model.dto.StackDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface FreelancerProjectBoardMapper {
+public interface FreelancerProjectManageDetailMapper {
 
     List<FreelancerBoardProjectDTO> selectInProgressProjects(@Param("freelancerId") Integer freelancerId);
 

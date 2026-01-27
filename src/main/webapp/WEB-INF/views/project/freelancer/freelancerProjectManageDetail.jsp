@@ -215,13 +215,13 @@
             </div>
             <div class="card-bd">
                 <div class="tabs" style="margin-bottom:12px;">
-                    <c:url var="tabInProgressUrl" value="/freelancer/projects/board">
+                    <c:url var="tabInProgressUrl" value="/freelancer/project/detail">
                         <c:param name="tab" value="inProgress"/>
                     </c:url>
-                    <c:url var="tabCompletedUrl" value="/freelancer/projects/board">
+                    <c:url var="tabCompletedUrl" value="/freelancer/project/detail">
                         <c:param name="tab" value="completed"/>
                     </c:url>
-                    <c:url var="tabReviewsUrl" value="/freelancer/projects/board">
+                    <c:url var="tabReviewsUrl" value="/freelancer/project/detail">
                         <c:param name="tab" value="reviews"/>
                     </c:url>
 
@@ -234,7 +234,7 @@
                     <c:choose>
                         <c:when test="${tab == 'inProgress'}">
                             <c:forEach var="p" items="${inProgressList}">
-                                <c:url var="go" value="/freelancer/projects/board">
+                                <c:url var="go" value="/freelancer/project/detail">
                                     <c:param name="tab" value="inProgress"/>
                                     <c:param name="contractId" value="${p.contractId}"/>
                                 </c:url>
@@ -257,7 +257,7 @@
 
                         <c:when test="${tab == 'completed'}">
                             <c:forEach var="p" items="${completedList}">
-                                <c:url var="go" value="/freelancer/projects/board">
+                                <c:url var="go" value="/freelancer/project/detail">
                                     <c:param name="tab" value="completed"/>
                                     <c:param name="contractId" value="${p.contractId}"/>
                                 </c:url>
@@ -280,7 +280,7 @@
 
                         <c:otherwise>
                             <c:forEach var="p" items="${reviewList}">
-                                <c:url var="go" value="/freelancer/projects/board">
+                                <c:url var="go" value="/freelancer/project/detail">
                                     <c:param name="tab" value="reviews"/>
                                     <c:param name="contractId" value="${p.contractId}"/>
                                 </c:url>
@@ -534,7 +534,7 @@
             btn.textContent = '처리중...';
 
             try{
-                const url = '<c:url value="/freelancer/projects/board/milestones"/>' + '/' + milestoneId + '/toggle';
+                const url = '<c:url value="/freelancer/project/detail/milestones"/>' + '/' + milestoneId + '/toggle';
                 const json = await postJson(url, {});
                 if(!json.ok){
                     alert('처리할 수 없는 상태입니다.');
@@ -584,7 +584,7 @@
             const msgEl = document.getElementById('stackSaveMsg');
             if(msgEl) msgEl.textContent = '저장 중...';
             try{
-                await postJson('<c:url value="/freelancer/projects/board/stacks/save"/>', {
+                await postJson('<c:url value="/freelancer/project/detail/stacks/save"/>', {
                     contractId: Number(contractId),
                     stackIds: selected
                 });
@@ -614,7 +614,7 @@
             const msgEl = document.getElementById('reviewMsg');
             if(msgEl) msgEl.textContent = '저장 중...';
             try{
-                await postJson('<c:url value="/freelancer/projects/board/review/save"/>', {
+                await postJson('<c:url value="/freelancer/project/detail/review/save"/>', {
                     contractId: Number(contractId),
                     rating: rating,
                     experience: experience

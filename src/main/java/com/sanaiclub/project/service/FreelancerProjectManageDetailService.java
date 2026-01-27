@@ -1,13 +1,13 @@
-package com.sanaiclub.manage.service;
+package com.sanaiclub.project.service;
 
-import com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO;
-import com.sanaiclub.manage.model.dto.FreelancerContractReviewViewDTO;
-import com.sanaiclub.manage.model.dto.MilestoneDTO;
+import com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO;
+import com.sanaiclub.project.model.dto.FreelancerContractReviewViewDTO;
+import com.sanaiclub.project.model.dto.MilestoneDTO;
 import com.sanaiclub.project.model.dto.StackDTO;
 
 import java.util.List;
 
-public interface FreelancerProjectBoardService {
+public interface FreelancerProjectManageDetailService {
 
     List<FreelancerBoardProjectDTO> getInProgressProjects(Integer freelancerId);
     List<FreelancerBoardProjectDTO> getCompletedProjects(Integer freelancerId);
