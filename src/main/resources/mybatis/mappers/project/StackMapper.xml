@@ -4,11 +4,22 @@
 
 <mapper namespace="com.sanaiclub.project.dao.StackMapper">
 
-    <!--  모든 스택 데이터를 가져오기  -->
     <select id="findAll" resultType="com.sanaiclub.project.model.dto.StackDTO">
         SELECT stack_id, stack_name, category
         FROM stacks
-        ORDER BY stack_id ASC
+        ORDER BY
+            category, -- 1차: 포지션/스킬 구분
+            CASE stack_name -- 2차: 사용자 지정 순서
+                WHEN '웹' THEN 1
+                WHEN '모바일앱' THEN 2
+                WHEN '데이터베이스' THEN 3
+                WHEN 'AI/빅데이터' THEN 4
+                WHEN 'DevOps/인프라' THEN 5
+                WHEN '게임/그래픽' THEN 6
+                WHEN '임베디드/하드웨어' THEN 7
+                WHEN '기타' THEN 99
+                ELSE 50
+                END ASC
     </select>
 
 </mapper>

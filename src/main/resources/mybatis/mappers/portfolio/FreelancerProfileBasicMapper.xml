@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.portfolio.dao.FreelancerProfileBasicMapper">
+
+    <select id="selectBasicProfile" parameterType="Integer"
+            resultType="com.sanaiclub.portfolio.model.dto.FreelancerProfileBasicViewDTO">
+        SELECT
+            u.user_id            AS userId,
+            u.profile_image_url  AS profileImageUrl,
+
+            fp.nickname          AS nickname,
+            fp.introduction      AS introduction,
+            fp.github_url        AS githubUrl,
+            fp.website_url       AS websiteUrl,
+
+            fp.school_name       AS schoolName,
+            fp.major             AS major,
+            fp.degree            AS degree,
+            fp.grad_status       AS gradStatus,
+
+            p.portfolio_id       AS portfolioId,
+            p.title              AS portfolioTitle,
+            p.portfolio_url      AS portfolioUrl,
+            p.file_size          AS portfolioFileSize,
+            p.is_public          AS portfolioPublic
+        FROM users u
+                 LEFT JOIN freelancer_profiles fp
+                           ON fp.freelancer_id = u.user_id
+                 LEFT JOIN (
+            SELECT pp.*
+            FROM freelancer_portfolios pp
+            WHERE pp.freelancer_id = #{userId}
+            ORDER BY pp.created_at DESC
+                LIMIT 1
+        ) p ON p.freelancer_id = u.user_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <insert id="insertBasicProfile" parameterType="com.sanaiclub.portfolio.model.dto.FreelancerProfileBasicSaveRequestDTO">
+        INSERT INTO freelancer_profiles
+        (freelancer_id, nickname, introduction, github_url, website_url,
+         school_name, major, degree, grad_status)
+        VALUES
+            (#{userId}, #{nickname}, #{introduction}, #{githubUrl}, #{websiteUrl},
+             #{schoolName}, #{major}, #{degree}, #{gradStatus})
+    </insert>
+
+
+    <update id="updateBasicProfile"
+            parameterType="com.sanaiclub.portfolio.model.dto.FreelancerProfileBasicSaveRequestDTO">
+        UPDATE freelancer_profiles
+        SET
+            nickname     = #{nickname},
+            introduction = #{introduction},
+            github_url   = #{githubUrl},
+            website_url  = #{websiteUrl},
+            school_name  = #{schoolName},
+            major        = #{major},
+            degree       = #{degree},
+            grad_status  = #{gradStatus}
+        WHERE freelancer_id = #{userId}
+    </update>
+
+    <select id="selectProfileImageUrl" parameterType="Integer" resultType="string">
+        SELECT profile_image_url
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateProfileImageUrl">
+        UPDATE users
+        SET profile_image_url = #{url}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="clearProfileImageUrl" parameterType="Integer">
+        UPDATE users
+        SET profile_image_url = NULL
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="selectLatestPortfolio" parameterType="Integer"
+            resultType="com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO">
+        SELECT *
+        FROM freelancer_portfolios
+        WHERE freelancer_id = #{userId}
+        ORDER BY created_at DESC
+            LIMIT 1
+    </select>
+
+    <select id="selectPortfolioById" parameterType="Integer"
+            resultType="com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO">
+        SELECT *
+        FROM freelancer_portfolios
+        WHERE portfolio_id = #{portfolioId}
+    </select>
+
+    <insert id="insertPortfolio"
+            parameterType="com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO"
+            useGeneratedKeys="true" keyProperty="portfolioId">
+        INSERT INTO freelancer_portfolios
+        (freelancer_id, title, description, portfolio_url, file_size, is_public)
+        VALUES
+            (#{freelancerId}, #{title}, #{description}, #{portfolioUrl}, #{fileSize}, #{isPublic})
+    </insert>
+
+    <update id="updatePortfolio"
+            parameterType="com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO">
+        UPDATE freelancer_portfolios
+        SET
+            title         = #{title},
+            description   = #{description},
+            portfolio_url = #{portfolioUrl},
+            file_size     = #{fileSize},
+            is_public     = #{isPublic}
+        WHERE portfolio_id = #{portfolioId}
+    </update>
+
+    <delete id="deletePortfolio">
+        DELETE FROM freelancer_portfolios
+        WHERE portfolio_id = #{portfolioId}
+          AND freelancer_id = #{userId}
+    </delete>
+
+    <select id="selectPublicPortfolios" parameterType="Integer"
+            resultType="com.sanaiclub.portfolio.model.vo.FreelancerPortfolioVO">
+        SELECT *
+        FROM freelancer_portfolios
+        WHERE freelancer_id = #{userId}
+          AND is_public = 1
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

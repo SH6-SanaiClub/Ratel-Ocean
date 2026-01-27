@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.user.dao.ClientMyPageMapper">
+
+    <select id="selectClientProfile" resultMap="clientProfileResultMap">
+        SELECT
+            u.user_id, u.login_id, u.email, u.name, u.phone, u.profile_image_url, u.status,
+            cp.client_type, cp.company_id,
+            c.company_name, c.ceo_name, c.business_number, c.industry, c.address, c.website_url,
+
+            -- [계약 수]
+            (SELECT COUNT(*)
+             FROM contracts con
+                      INNER JOIN project_applications app ON con.contract_id = app.application_id
+                      INNER JOIN projects p ON app.project_id = p.project_id
+             WHERE p.client_id = u.user_id
+               AND con.contract_status = 'COMPLETED') as contract_count,
+
+            -- [외주 평균 평점] "클라이언트 본인이 프리랜서들에게 남긴 평점(client_rating)"의 평균
+            COALESCE(
+                    (SELECT AVG(con.client_rating)
+                     FROM contracts con
+                              INNER JOIN project_applications app ON con.contract_id = app.application_id
+                              INNER JOIN projects p ON app.project_id = p.project_id
+                     WHERE p.client_id = u.user_id
+                       AND con.client_rating IS NOT NULL), 0
+            ) as avg_rating
+
+        FROM users u
+                 INNER JOIN client_profiles cp ON u.user_id = cp.client_id
+                 LEFT JOIN companies c ON cp.company_id = c.company_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <resultMap id="clientProfileResultMap" type="com.sanaiclub.user.model.dto.ClientMyPageDTO">
+        <id property="userId" column="user_id"/>
+        <result property="loginId" column="login_id"/>
+        <result property="email" column="email"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="userStatus" column="status"/>
+        <result property="clientType" column="client_type"/>
+        <result property="companyId" column="company_id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="businessNumber" column="business_number"/>
+        <result property="industry" column="industry"/>
+        <result property="address" column="address"/>
+        <result property="websiteUrl" column="website_url"/>
+
+        <association property="stats" javaType="com.sanaiclub.user.model.dto.ClientStatsDTO">
+            <result property="contractCount" column="contract_count"/>
+            <result property="avgRating" column="avg_rating"/>
+            <collection property="reviewList" column="user_id" select="selectClientReviews"/>
+            <collection property="receivedReviewList" column="user_id" select="selectReceivedReviews"/>
+        </association>
+    </resultMap>
+
+    <select id="selectClientReviews" resultType="com.sanaiclub.user.model.dto.ClientReviewHistoryDTO">
+        SELECT
+            u.name as freelancerName,
+            u.user_id as freelancerId,
+            p.title as projectTitle,
+            con.total_budget as budget,
+            DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
+            DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
+
+            -- [내가 준 점수] client_rating (INT)
+            con.client_rating as rating,
+            con.client_experience as content,
+
+            -- [재계약 의사] (DB 에러 로그 기반 'renewal'로 수정됨)
+            con.client_is_renewal_intended as recontractIntended,
+
+            DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
+        FROM contracts con
+                 INNER JOIN project_applications app ON con.contract_id = app.application_id
+                 INNER JOIN projects p ON app.project_id = p.project_id
+                 INNER JOIN users u ON app.freelancer_id = u.user_id
+        WHERE p.client_id = #{userId}
+          AND con.client_rating IS NOT NULL
+          AND con.client_experience IS NOT NULL
+        ORDER BY con.contracted_at DESC
+    </select>
+
+    <select id="selectReceivedReviews" resultType="com.sanaiclub.user.model.dto.ClientReviewHistoryDTO">
+        SELECT
+            u.name as freelancerName,
+            u.user_id as freelancerId,
+            p.title as projectTitle,
+            con.total_budget as budget,
+            DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
+            DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
+
+            -- [받은 점수] freelancer_rating (VARCHAR -> 숫자 변환)
+            CAST(con.freelancer_rating AS UNSIGNED) as rating,
+            con.freelancer_experience as content,
+
+            -- [NULL] 프리랜서는 재계약 의사 컬럼 없음
+            NULL as recontractIntended,
+
+            DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
+        FROM contracts con
+                 INNER JOIN project_applications app ON con.contract_id = app.application_id
+                 INNER JOIN projects p ON app.project_id = p.project_id
+                 INNER JOIN users u ON app.freelancer_id = u.user_id
+        WHERE p.client_id = #{userId}
+          AND con.freelancer_rating IS NOT NULL
+          AND con.freelancer_experience IS NOT NULL
+        ORDER BY con.contracted_at DESC
+    </select>
+
+    <update id="updateUserInfo" parameterType="com.sanaiclub.user.model.vo.UserVO">
+        UPDATE users SET name=#{name}, phone=#{phone}, updated_at=NOW()
+        <if test="profileImageUrl != null">, profile_image_url=#{profileImageUrl}</if>
+        WHERE user_id=#{userId}
+    </update>
+    <update id="updateCompanyInfo" parameterType="com.sanaiclub.user.model.vo.CompanyVO">
+        UPDATE companies
+        SET company_name=#{companyName},
+            ceo_name=#{ceoName},
+            business_number=#{businessNumber},
+            industry=#{industry},
+            address=#{address},
+            website_url=#{websiteUrl}
+        WHERE company_id=#{companyId}
+    </update>
+    <select id="selectCompanyIdByClientId" resultType="Integer">
+        SELECT company_id FROM client_profiles WHERE client_id=#{clientId}
+    </select>
+    <select id="selectPassword" resultType="String">
+        SELECT password FROM users WHERE user_id=#{userId}
+    </select>
+    <update id="updatePassword">
+        UPDATE users SET password=#{newPassword} WHERE user_id=#{userId}
+    </update>
+
+</mapper>
