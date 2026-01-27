@@ -56,14 +56,6 @@ public class ChatService {
     // =========================================
     // 4. 메시지 전송
     // =========================================
-    // =========================================
-    // 5. 공유 파일 조회
-    // =========================================
-    public List<ChatMessageDTO> findSharedFiles(Integer roomId) {
-        List<ChatMessageDTO> messages = chatMessageMapper.findMessages(roomId);
-        messages.removeIf(m -> m.getFileUrl() == null || m.getFileUrl().isEmpty());
-        return messages;
-    }
 
     // =========================================
     // 6. 메시지 읽음 처리
