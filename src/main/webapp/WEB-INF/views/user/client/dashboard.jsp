@@ -457,9 +457,9 @@
         </a>
 
         <nav class="nav-menu">
-            <a href="${pageContext.request.contextPath}/client/dashboard" class="nav-link active">대시보드</a>
+            <a href="${pageContext.request.contextPath}/project/dashboard" class="nav-link active">프로젝트 찾기</a>
             <a href="${pageContext.request.contextPath}/project/create" class="nav-link">프로젝트 등록</a>
-            <a href="${pageContext.request.contextPath}/client/manage" class="nav-link">내 프로젝트</a>
+            <a href="${pageContext.request.contextPath}/client/manage" class="nav-link">프로젝트 관리</a>
             <a href="${pageContext.request.contextPath}/client/applicants" class="nav-link">지원자 관리</a>
             <a href="${pageContext.request.contextPath}/client/contracts" class="nav-link">계약 관리</a>
         </nav>
