@@ -389,4 +389,21 @@
         ORDER BY pa.applied_at DESC
     </select>
 
+    <!-- 특정 클라이언트와 관련된 모든 계약 조회 -->
+    <select id="selectContractsByClientId" parameterType="int" resultType="com.sanaiclub.contract.model.dto.ContractResponseDTO">
+        SELECT
+            c.contract_id,
+            c.contract_status,
+            c.payment_status,
+            c.total_budget,
+            c.created_at,
+            p.title AS project_title,
+            u.name AS freelancer_name
+        FROM contracts c
+                 JOIN project_applications pa ON c.contract_id = pa.application_id
+                 JOIN projects p ON pa.project_id = p.project_id
+                 JOIN users u ON pa.freelancer_id = u.user_id
+        WHERE p.client_id = #{clientId}  ORDER BY c.created_at DESC
+    </select>
+
 </mapper>

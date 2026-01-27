@@ -1,5 +1,6 @@
 package com.sanaiclub.contract.dao;
 
+import com.sanaiclub.contract.model.dto.ContractResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import com.sanaiclub.contract.model.vo.ContractVO;
@@ -99,4 +100,8 @@ public interface ContractMapper {
     int updatePaymentStatus(@Param("contractId") Integer contractId,
                             @Param("paymentStatus") String paymentStatus);
 
+    /**
+     * 클라이언트 아이디로 계약 모두 조회
+     */
+    List<ContractResponseDTO> selectContractsByClientId(Integer clientId);
 }
