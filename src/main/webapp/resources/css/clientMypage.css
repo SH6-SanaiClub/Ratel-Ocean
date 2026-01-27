@@ -1,0 +1,461 @@
+/* [기본 스타일] */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: #f4f7f8;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #333;
+}
+
+.mp-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* [1. 헤더 영역] */
+.header-card {
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+.header-content {
+    flex-grow: 1;
+}
+
+.header-top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.client-id {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* 상태 배지 */
+.status-badge {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-active {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.status-inactive {
+    background: #f5f5f5;
+    color: #757575;
+    border: 1px solid #e0e0e0;
+}
+
+.header-company {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.header-tags {
+    display: flex;
+    gap: 10px;
+}
+
+.tag-item {
+    font-size: 13px;
+    color: #666;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-header-action {
+    background: #fff;
+    border: 1px solid #1F7A8C;
+    color: #1F7A8C;
+    padding: 8px 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-header-action:hover {
+    background: #e0f2f1;
+}
+
+/* [2. 하단 본문 영역] */
+.body-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* 좌측 사이드바 */
+.sidebar {
+    width: 230px;
+    flex-shrink: 0;
+}
+
+.sidebar-group {
+    margin-bottom: 25px;
+}
+
+.sidebar-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    padding: 12px 15px;
+    font-size: 15px;
+    color: #555;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.sidebar-menu li:hover {
+    background: #f0f4f8;
+    color: #333;
+}
+
+.sidebar-menu li.active {
+    background: #eef7f9;
+    color: #1F7A8C;
+    font-weight: 700;
+    border-left: 3px solid #1F7A8C;
+}
+
+/* 우측 메인 콘텐츠 */
+.main-content {
+    flex-grow: 1;
+    min-height: 500px;
+}
+
+.view-section {
+    display: none;
+}
+
+.view-section.active {
+    display: block;
+}
+
+.dash-card {
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.dash-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* [통계 스타일] */
+.stats-row {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.stat-box h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* [리뷰 리스트 스타일] */
+.review-item {
+    border-bottom: 1px solid #eee;
+    padding: 20px 0;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.review-writer {
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.review-date {
+    font-size: 12px;
+    color: #999;
+}
+
+.review-content {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555;
+}
+
+/* [폼 스타일] */
+.form-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-row {
+    margin-bottom: 20px;
+}
+
+.form-row label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-input:focus {
+    border-color: #1F7A8C;
+    outline: none;
+}
+
+.form-input[readonly] {
+    background: #f9f9f9;
+    color: #888;
+}
+
+.btn-submit {
+    background: #1F7A8C;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    background: #155b6a;
+}
+
+.corp-area {
+    background: #fcfcfc;
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* [나의 평가 - 상세 카드 스타일] */
+.review-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 5px solid #1F7A8C; /* 포인트 컬러 라인 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: 0.2s;
+}
+
+.review-card:hover {
+    box-shadow: 0 5px 12px rgba(0,0,0,0.08);
+}
+
+.rc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #eee;
+}
+
+.rc-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+}
+
+.rc-date {
+    font-size: 12px;
+    color: #888;
+}
+
+.rc-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.rc-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rc-info-item .label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+}
+
+.rc-info-item .value {
+    font-size: 13px;
+    color: #444;
+}
+
+.rc-content-area {
+    background: #fff;
+    padding: 5px 0;
+}
+
+.rc-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+    white-space: pre-wrap;
+}
+
+/* 프리랜서 프로필 버튼 */
+.btn-profile-link {
+    background: #fff;
+    border: 1px solid #1F7A8C;
+    color: #1F7A8C;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-profile-link:hover {
+    background: #1F7A8C;
+    color: #fff;
+}
+
+/* [수정] 프로필 이미지 프레임 (원형 틀) */
+.profile-frame {
+    width: 90px;              /* 너비 고정 */
+    height: 90px;             /* 높이 고정 */
+    border-radius: 50%;       /* 완전한 원형 */
+    background-color: #e0e0e0;/* 기본 배경색 (회색) */
+    border: 1px solid #ddd;   /* 테두리 */
+
+    display: flex;
+    align-items: center;      /* 아이콘 수직 중앙 정렬 */
+    justify-content: center;  /* 아이콘 수평 중앙 정렬 */
+
+    position: relative;       /* 내부 이미지 배치를 위한 기준점 */
+    overflow: hidden;         /* [중요] 이미지가 원 밖으로 넘치면 잘라냄 */
+    flex-shrink: 0;           /* 찌그러짐 방지 */
+}
+
+/* [핵심] 이미지 태그 강제 리사이징 */
+.profile-frame img {
+    width: 100% !important;   /* 프레임 너비에 딱 맞춤 */
+    height: 100% !important;  /* 프레임 높이에 딱 맞춤 */
+    object-fit: cover;        /* [중요] 비율 유지하며 빈공간 없이 꽉 채움 */
+
+    position: absolute;       /* 아이콘 위에 덮어씌움 */
+    top: 0;
+    left: 0;
+    z-index: 5;               /* 아이콘(z-index:1)보다 위 */
+    background-color: #fff;   /* 투명 이미지일 때 뒤에 아이콘 안 보이게 흰색 배경 */
+}
+
+/* 기본 사람 아이콘 스타일 */
+.profile-frame i {
+    font-size: 45px;          /* 아이콘 크기 적절히 조절 */
+    color: #fff;              /* 흰색 아이콘 */
+    z-index: 1;               /* 이미지 뒤에 위치 */
+}
+
+/* [수정폼용] 작은 사이즈 미리보기 프레임 */
+.profile-frame.preview-size {
+    width: 80px;
+    height: 80px;
+}
+.profile-frame.preview-size i {
+    font-size: 40px;
+}

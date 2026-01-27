@@ -6,6 +6,11 @@ import java.util.List;
 
 @Data
 public class ProjectCreateRequestDTO {
+    private Integer clientId;
+    private Integer projectId;
+    private String existingPlanUrl;
+    private List<StackDTO> stacks;
+
     // Step 1
     private List<Integer> positionIds;
     private String title;
@@ -20,13 +25,12 @@ public class ProjectCreateRequestDTO {
     // Step 3
     private String budget;
     private Boolean budgetNegotiable;
-
     private String startType;
     private String startDate;
     private Boolean startNegotiable;
-
     private String estDuration;
     private Boolean durationNegotiable;
+    private String deadlineDate;
 
     // Step 4
     private String communicateMethod;
@@ -37,7 +41,9 @@ public class ProjectCreateRequestDTO {
     // Hidden Fields
     private Boolean isPublic;
     private ProjectStatus projectStatus;
-
     private String planUrl;
     private String fileSize;
+
+    private Integer viewCount;
+    private Integer applicantCount;
 }

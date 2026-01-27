@@ -19,7 +19,9 @@ public class ProjectDetailDTO extends ProjectsVO {
 
     private List<RequiredStackDTO> stacks; // 기술 스택
 
-    private boolean isApplied;    // 지원 여부
+
+    private boolean isApplied;      // 화면 표시용 (CANCELED가 아니면 true)
+    private String applicationStatus; // 상세 상태 (PENDING, CANCELED 등)
     private boolean isWishlisted; // 찜 여부
 
     private String clientName;  // 개인 이름
@@ -33,6 +35,10 @@ public class ProjectDetailDTO extends ProjectsVO {
     private String paymentMethod;       // 대금 지급 (LUMP_SUM, INSTALLMENT)
     private Integer maxRevisionCount;   // 수정 횟수
     private String changePolicy;        // 수정 정책
+
+    private Integer completedContractCount;  // 클라이언트 계약 건수
+    private Double clientAvgRating;     // 클라이언트 평균 평점
+    private String clientProfileImageUrl;   // 클라이언트 프로필 이미지 URL
 
     // DTO 생성 편의 메서드
     public static ProjectDetailDTO of(Boolean budgetNegotiable,

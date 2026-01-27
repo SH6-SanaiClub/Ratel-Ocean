@@ -33,7 +33,7 @@
 
         <div class="btn-area-center">
             <a href="${pageContext.request.contextPath}/project/dashboard" class="btn btn-home">메인으로 이동</a>
-            <a href="${pageContext.request.contextPath}/" class="btn btn-submit">내 프로젝트 확인</a>
+            <a href="${pageContext.request.contextPath}/client/manage" class="btn btn-submit">내 프로젝트 확인</a>
         </div>
     </div>
 </div>

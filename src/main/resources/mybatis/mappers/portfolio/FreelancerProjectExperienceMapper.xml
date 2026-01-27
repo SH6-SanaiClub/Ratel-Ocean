@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.portfolio.dao.FreelancerProjectExperienceMapper">
+
+    <sql id="expColumns">
+        experience_id,
+        freelancer_id,
+        title,
+        client_name,
+        start_date,
+        end_date,
+        role,
+        description,
+        created_at,
+        updated_at
+    </sql>
+
+    <select id="selectByFreelancerId" resultType="com.sanaiclub.portfolio.model.vo.FreelancerProjectExperienceVO">
+        SELECT <include refid="expColumns"/>
+        FROM freelancer_project_experiences
+        WHERE freelancer_id = #{freelancerId}
+        ORDER BY start_date DESC, experience_id DESC
+    </select>
+
+    <insert id="insertExperience"
+            parameterType="com.sanaiclub.portfolio.model.vo.FreelancerProjectExperienceVO"
+            useGeneratedKeys="true" keyProperty="experienceId" keyColumn="experience_id">
+        INSERT INTO freelancer_project_experiences (
+            freelancer_id, title, client_name, start_date, end_date, role, description, created_at, updated_at
+        ) VALUES (
+                     #{freelancerId}, #{title}, #{clientName}, #{startDate}, #{endDate}, #{role}, #{description},
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                 )
+    </insert>
+
+    <update id="updateExperience" parameterType="com.sanaiclub.portfolio.model.vo.FreelancerProjectExperienceVO">
+        UPDATE freelancer_project_experiences
+        SET
+            title = #{title},
+            client_name = #{clientName},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            role = #{role},
+            description = #{description},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE experience_id = #{experienceId}
+          AND freelancer_id = #{freelancerId}
+    </update>
+
+    <delete id="deleteExperience">
+        DELETE FROM freelancer_project_experiences
+        WHERE experience_id = #{experienceId}
+          AND freelancer_id = #{freelancerId}
+    </delete>
+
+</mapper>

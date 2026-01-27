@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.portfolio.dao.FreelancerCareerMapper">
+
+    <sql id="careerColumns">
+        career_id,
+        freelancer_id,
+        company_name,
+        role,
+        position,
+        start_date,
+        end_date,
+        description,
+        created_at,
+        updated_at
+    </sql>
+
+    <select id="selectByFreelancerId" resultType="com.sanaiclub.portfolio.model.vo.FreelancerCareerVO">
+        SELECT <include refid="careerColumns"/>
+        FROM freelancer_careers
+        WHERE freelancer_id = #{freelancerId}
+        ORDER BY start_date DESC, career_id DESC
+    </select>
+
+    <insert id="insertCareer"
+            parameterType="com.sanaiclub.portfolio.model.vo.FreelancerCareerVO"
+            useGeneratedKeys="true" keyProperty="careerId" keyColumn="career_id">
+        INSERT INTO freelancer_careers (
+            freelancer_id, company_name, role, position, start_date, end_date, description, created_at, updated_at
+        ) VALUES (
+                     #{freelancerId}, #{companyName}, #{role}, #{position}, #{startDate}, #{endDate}, #{description},
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                 )
+    </insert>
+
+    <update id="updateCareer" parameterType="com.sanaiclub.portfolio.model.vo.FreelancerCareerVO">
+        UPDATE freelancer_careers
+        SET
+            company_name = #{companyName},
+            role = #{role},
+            position = #{position},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            description = #{description},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE career_id = #{careerId}
+          AND freelancer_id = #{freelancerId}
+    </update>
+
+    <delete id="deleteCareer">
+        DELETE FROM freelancer_careers
+        WHERE career_id = #{careerId}
+          AND freelancer_id = #{freelancerId}
+    </delete>
+
+</mapper>

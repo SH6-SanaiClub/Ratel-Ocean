@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.sanaiclub.chat.dao.ChatRoomMapper">
+    <resultMap id="chatRoomMap" type="com.sanaiclub.chat.model.dto.ChatRoomDTO">
+        <id property="roomId" column="room_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="isActive" column="is_active"/>
+        <result property="title" column="title"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="lastMessageContent" column="last_message_content"/>
+        <result property="lastMessageSenderId" column="last_message_sender_id"/>
+        <result property="freelancerExited" column="freelancer_exited"/>
+        <result property="clientExited" column="client_exited"/>
+        <result property="lastMessageAt" column="last_message_at"/>
+        <result property="unreadCount" column="unread_count"/>
+        <result property="name" column="name"/>
+        <result property="opponentId" column="opponent_id"/>
+    </resultMap>
+
+    <select id="findMyRooms" parameterType="int" resultMap="chatRoomMap">
+        SELECT
+            rooms.room_id,
+            rooms.freelancer_id,
+            rooms.project_id,
+            rooms.is_active,
+            rooms.last_message_at,
+            rooms.created_at,
+            rooms.freelancer_exited,
+            rooms.client_exited,
+
+            CASE
+                WHEN m.is_deleted = 1 THEN '삭제된 메시지입니다.'
+                WHEN m.file_name IS NOT NULL THEN CONCAT('📎 ', m.file_name)
+                ELSE m.content
+                END AS last_message_content,            m.sender_id   AS last_message_sender_id,
+            m.created_at  AS last_message_at,
+            p.title,
+            u.name,
+            u.profile_image_url,
+
+            (
+                SELECT COUNT(*)
+                FROM messages m3
+                WHERE m3.room_id = rooms.room_id
+                  AND m3.sender_id != #{loginUserId}
+            AND m3.is_read = 0
+            ) AS unread_count
+
+        FROM chat_rooms rooms
+            LEFT JOIN projects p
+        ON p.project_id = rooms.project_id
+            LEFT JOIN users u
+            ON u.user_id =
+            CASE
+            WHEN rooms.freelancer_id = #{loginUserId}
+            THEN p.client_id
+            ELSE rooms.freelancer_id
+        END
+        LEFT JOIN messages m
+            ON m.message_id = (
+            SELECT m2.message_id
+            FROM messages m2
+            WHERE m2.room_id = rooms.room_id
+            ORDER BY m2.created_at DESC
+            LIMIT 1
+            )
+        WHERE
+(
+    rooms.freelancer_id = #{loginUserId}
+        AND rooms.freelancer_exited = 0
+        )
+        OR
+        (
+        rooms.freelancer_id != #{loginUserId}
+        AND rooms.client_exited = 0
+        AND p.client_id = #{loginUserId}
+        )
+
+
+        ORDER BY
+    m.created_at DESC
+    </select>
+    <resultMap id="chatMessageMap" type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
+        <id property="messageId" column="message_id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="title" column="title"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="profileImageUrl" column="profile_image_url"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <result property="isRead" column="is_read"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="fileName" column="file_name"/>
+        <result property="fileUrl" column="file_url"/>
+        <result property="fileSize" column="file_size"/>
+    </resultMap>
+
+    <select id="findRoomById" resultMap="chatMessageMap">
+        SELECT
+            cr.room_id,
+            cr.project_id,
+            p.title,
+            u.user_id,
+            u.name,
+            u.profile_image_url,
+            m.message_id,
+            m.content,
+            m.sender_id,
+            m.created_at,
+            m.deleted_at,
+            m.is_read,
+            m.is_deleted,
+            m.file_name,
+            m.file_url,
+            m.file_size
+        FROM chat_rooms cr
+                 JOIN projects p
+                      ON cr.project_id = p.project_id
+                 JOIN users u
+                      ON u.user_id =
+                         CASE
+                             WHEN p.client_id = #{loginUserId}
+                                 THEN cr.freelancer_id
+                             ELSE p.client_id
+                             END
+                 LEFT JOIN messages m ON m.room_id = cr.room_id
+        WHERE cr.room_id = #{roomId}
+        ORDER BY m.created_at ASC
+    </select>
+    <update id="exitRoom" parameterType="map">
+        UPDATE chat_rooms r
+            JOIN projects p ON r.project_id = p.project_id
+        SET
+            r.freelancer_exited = CASE
+                                    WHEN r.freelancer_id = #{userId} THEN 1
+                                    ELSE r.freelancer_exited
+                END,
+            r.client_exited = CASE
+                                WHEN p.client_id = #{userId} THEN 1
+                                ELSE r.client_exited
+                END
+        WHERE r.room_id = #{roomId}
+    </update>
+    <insert id="insertExitMessage" parameterType="map">
+        INSERT INTO messages
+            (room_id, sender_id, content, created_at, is_read)
+        VALUES
+            (#{roomId}, #{userId}, #{exitMessage}, NOW(), 0)
+    </insert>
+    <select id="findRoomInfo" resultMap="chatRoomMap">
+        SELECT
+            r.room_id,
+            r.project_id,
+            p.title,
+            u.user_id AS opponent_id,  u.name,
+            u.profile_image_url
+        FROM chat_rooms r
+                 JOIN projects p ON r.project_id = p.project_id
+                 JOIN users u
+                      ON (CASE WHEN r.freelancer_id = #{loginUserId} THEN p.client_id ELSE r.freelancer_id END) = u.user_id
+        WHERE r.room_id = #{roomId}
+    </select>
+
+    <update id="updateLastMessage" parameterType="int">
+        UPDATE chat_rooms
+        SET last_message_at = CURRENT_TIMESTAMP
+        WHERE room_id = #{roomId}
+    </update>
+
+    <select id="getUserTypeById" parameterType="int" resultType="string">
+        SELECT user_type
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+</mapper>
