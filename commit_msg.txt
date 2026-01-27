@@ -1,0 +1,5 @@
+Refactor: ContractCommandService와 ContractQueryService 삭제
+
+- CQRS 패턴에서 단일 서비스 패턴으로 전환
+- 모든 메서드가 ContractService로 통합 완료
+- 불필요한 서비스 클래스 제거

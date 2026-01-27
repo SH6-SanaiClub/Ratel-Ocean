@@ -10,6 +10,7 @@ import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.user.dao.UserMapper;
 import com.sanaiclub.user.dao.ClientProfileMapper;
 import com.sanaiclub.user.dao.CompanyMapper;
+import com.sanaiclub.user.model.vo.FreelancerProfileVO;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -299,8 +300,15 @@ public class ContractService {
      * 계약 최종 완료 (결제 완료)
      */
     public void finalizeContract(Integer contractId) {
-        // 계약 상태를 COMPLETED로 변경
-        // 완료 처리이므로 취소 사유 없음 (null)
+        // 계약 상태를 PAID로 변경
+        contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), null);
+    }
+    
+    /**
+     * 계약 정산 완료 (PAID → COMPLETED)
+     */
+    @Transactional
+    public void completeContract(Integer contractId) {
         contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
     }
 
@@ -571,6 +579,32 @@ public class ContractService {
      */
     public java.util.Map<String, Object> createBasicProjectMap(ContractResponseDTO selectedContract) {
         return convertToProjectMap(null, selectedContract);
+    }
+    
+    /**
+     * 계약서 확인 화면용 클라이언트/프리랜서 정보 Map 변환
+     */
+    public ContractCheckViewMapData convertToContractCheckViewMaps(
+            com.sanaiclub.user.model.vo.UserVO clientUser,
+            com.sanaiclub.user.model.vo.CompanyVO company,
+            com.sanaiclub.user.model.vo.UserVO freelancerUser,
+            com.sanaiclub.user.model.vo.FreelancerProfileVO freelancerProfile) {
+        
+        // 클라이언트 정보 Map 변환
+        java.util.Map<String, Object> clientMap = new java.util.HashMap<>();
+        clientMap.put("clientName", clientUser != null ? clientUser.getName() : "");
+        clientMap.put("email", clientUser != null ? clientUser.getEmail() : "");
+        clientMap.put("phone", clientUser != null ? clientUser.getPhone() : "");
+        clientMap.put("companyName", company != null ? company.getCompanyName() : null);
+        
+        // 프리랜서 정보 Map 변환
+        java.util.Map<String, Object> freelancerMap = new java.util.HashMap<>();
+        freelancerMap.put("name", freelancerUser != null ? freelancerUser.getName() : "");
+        freelancerMap.put("email", freelancerUser != null ? freelancerUser.getEmail() : "");
+        freelancerMap.put("phone", freelancerUser != null ? freelancerUser.getPhone() : "");
+        freelancerMap.put("nickname", freelancerProfile != null ? freelancerProfile.getNickname() : null);
+        
+        return new ContractCheckViewMapData(clientMap, freelancerMap);
     }
     
     /**
@@ -846,6 +880,83 @@ public class ContractService {
     // =========================================================
     // 지급 관련 메서드들 (ContractCommandService에서 가져옴)
     // =========================================================
+    
+    /**
+     * 클라이언트 지급 수락. 마일스톤: REQUESTED → DEPOSITED, 일시지급: PAID → COMPLETED.
+     */
+    @Transactional
+    public int approvePayment(Integer contractId, Integer step) {
+        // 계약 상태 확인
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+        if (contract.getContractStatus() != ContractStatus.PAID 
+                && contract.getContractStatus() != ContractStatus.COMPLETED) {
+            throw new IllegalStateException("결제 완료 또는 정산 완료된 계약만 지급 수락할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+        }
+        
+        // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
+        if (("FIXED".equals(contract.getPaymentMethod()) || "FULL".equals(contract.getPaymentMethod()) || contract.getPaymentMethod() == null)
+                && "[지급요청]".equals(contract.getCancelReason())) {
+            contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            contractMapper.updateCancelReason(contractId, null);
+            logger.info("일시지급 수락: contractId={}", contractId);
+            return 1;
+        }
+        
+        // 마일스톤 상태 업데이트: REQUESTED → DEPOSITED
+        if (step == null) {
+            // 모든 REQUESTED 마일스톤을 DEPOSITED로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            int count = 0;
+            
+            for (ContractMilestoneVO milestone : milestones) {
+                if (milestone.getStatus() == MilestoneStatus.REQUESTED) {
+                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), MilestoneStatus.DEPOSITED.name());
+                    count++;
+                }
+            }
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID인지 확인
+            boolean allDepositedOrPaid = true;
+            for (ContractMilestoneVO milestone : milestones) {
+                MilestoneStatus status = milestone.getStatus();
+                if (status != MilestoneStatus.DEPOSITED && status != MilestoneStatus.PAID) {
+                    allDepositedOrPaid = false;
+                    break;
+                }
+            }
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID면 COMPLETED로 변경
+            if (allDepositedOrPaid && !milestones.isEmpty()) {
+                contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            }
+            
+            return count;
+        } else {
+            // 특정 마일스톤만 DEPOSITED로 변경
+            int updated = contractMilestoneMapper.updateMilestoneStatus(contractId, step, MilestoneStatus.DEPOSITED.name());
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID인지 확인
+            List<ContractMilestoneVO> allMilestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            boolean allDepositedOrPaid = true;
+            for (ContractMilestoneVO milestone : allMilestones) {
+                MilestoneStatus status = milestone.getStatus();
+                if (status != MilestoneStatus.DEPOSITED && status != MilestoneStatus.PAID) {
+                    allDepositedOrPaid = false;
+                    break;
+                }
+            }
+            
+            // 모든 마일스톤이 DEPOSITED 또는 PAID면 COMPLETED로 변경
+            if (allDepositedOrPaid && !allMilestones.isEmpty()) {
+                contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            }
+            
+            return updated;
+        }
+    }
     
     /**
      * 클라이언트 지급 거부. 마일스톤: REQUESTED → WAITING, 일시지급: cancel_reason null로 초기화.
@@ -1221,6 +1332,24 @@ public class ContractService {
         // Getters
         public ContractDetailDTO getContractDetail() { return contractDetail; }
         public java.util.Map<String, Object> getProject() { return project; }
+    }
+    
+    /**
+     * 계약서 확인 화면용 View Map 데이터 클래스
+     */
+    public static class ContractCheckViewMapData {
+        private final java.util.Map<String, Object> clientMap;
+        private final java.util.Map<String, Object> freelancerMap;
+        
+        public ContractCheckViewMapData(
+                java.util.Map<String, Object> clientMap,
+                java.util.Map<String, Object> freelancerMap) {
+            this.clientMap = clientMap;
+            this.freelancerMap = freelancerMap;
+        }
+        
+        public java.util.Map<String, Object> getClientMap() { return clientMap; }
+        public java.util.Map<String, Object> getFreelancerMap() { return freelancerMap; }
     }
     
     /**
