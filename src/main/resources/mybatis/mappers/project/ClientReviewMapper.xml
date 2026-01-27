@@ -4,7 +4,7 @@
 
 <mapper namespace="com.sanaiclub.project.dao.ClientReviewMapper">
 
-    <select id="selectReviewTargetInfo" resultType="com.sanaiclub.project.model.dto.ClientReviewDTO">
+    <select id="selectReviewTargetInfo" resultType="com.sanaiclub.project.model.dto.ReviewWriteDTO">
         SELECT
             p.project_id                 AS projectId,
             p.title                      AS projectTitle,

@@ -110,22 +110,66 @@
                 </div>
 
                 <div class="dash-card">
-                    <div class="dash-title">나의 평가</div>
+                    <div class="dash-title">나의 평가 (작성한 리뷰)</div>
 
                     <c:choose>
                         <c:when test="${not empty profile.stats.reviewList}">
                             <c:forEach var="review" items="${profile.stats.reviewList}">
-                                <div class="review-item">
-                                    <div class="review-header">
-                                        <span class="review-writer">
-                                            <i class="fa-regular fa-user"></i> ${review.freelancerName}
-                                        </span>
-                                        <span class="review-date">${review.contractedAt}</span>
+
+                                <div class="review-card">
+
+                                    <div class="rc-header">
+                                        <div class="rc-title">${review.projectTitle}</div>
+                                        <div class="rc-date">계약일: ${review.contractedAt}</div>
                                     </div>
-                                    <div style="margin-bottom:8px; color:#fdd835; font-size:12px;">
-                                        <c:forEach begin="1" end="${review.rating}">★</c:forEach>
+
+                                    <div class="rc-info-grid">
+                                        <div class="rc-info-item">
+                                            <span class="label">프로젝트 기간</span>
+                                            <span class="value">${review.startDate} ~ ${review.endDate}</span>
+                                        </div>
+                                        <div class="rc-info-item">
+                                            <span class="label">총 예산</span>
+                                            <span class="value">₩ <fmt:formatNumber value="${review.budget}" type="number"/></span>
+                                        </div>
+                                        <div class="rc-info-item">
+                                            <span class="label">담당 프리랜서</span>
+                                            <span class="value" style="font-weight:700;">${review.freelancerName}</span>
+                                        </div>
+                                        <div class="rc-info-item">
+                                            <span class="label">재계약 의사</span>
+                                            <c:choose>
+                                                <c:when test="${review.recontractIntended}">
+                                                    <span class="value" style="color:#2E7D32; font-weight:700;">
+                                                        <i class="fa-solid fa-circle-check"></i> 있음
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="value" style="color:#999;">없음</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
                                     </div>
-                                    <div class="review-content">${review.content}</div>
+
+                                    <div class="rc-content-area">
+                                        <div style="margin-bottom:8px; color:#fdd835; font-size:14px;">
+                                            <c:forEach begin="1" end="${review.rating}">★</c:forEach>
+                                            <span style="color:#333; font-weight:700; font-size:13px; margin-left:5px;">
+                                                ${review.rating}.0
+                                            </span>
+                                        </div>
+                                        <div class="rc-text">${review.content}</div>
+                                    </div>
+
+                                    <c:if test="${review.recontractIntended}">
+                                        <div style="margin-top:15px; text-align:right;">
+                                            <button type="button" class="btn-profile-link"
+                                                    onclick="window.open('${pageContext.request.contextPath}/profile/${review.freelancerId}', '_blank')">
+                                                <i class="fa-solid fa-user-tag"></i> 프리랜서 프로필 상세보기
+                                            </button>
+                                        </div>
+                                    </c:if>
+
                                 </div>
                             </c:forEach>
                         </c:when>

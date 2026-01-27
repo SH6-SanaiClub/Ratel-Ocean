@@ -1,13 +1,11 @@
 package com.sanaiclub.project.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
-public class ClientReviewDTO {
+public class ReviewWriteDTO {
     private Integer projectId;
     private Integer contractId;
     private String projectTitle;

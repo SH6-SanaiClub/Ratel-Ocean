@@ -56,11 +56,20 @@
         </association>
     </resultMap>
 
-    <select id="selectClientReviews" resultType="com.sanaiclub.user.model.dto.ClientStatsDTO$ReviewDTO">
+    <select id="selectClientReviews" resultType="com.sanaiclub.user.model.dto.ClientReviewHistoryDTO">
         SELECT
             u.name as freelancerName,
+            u.user_id as freelancerId,
+            p.title as projectTitle,
+            con.total_budget as budget,
+            DATE_FORMAT(con.contract_start_date, '%Y-%m-%d') as startDate,
+            DATE_FORMAT(con.contract_end_date, '%Y-%m-%d') as endDate,
             con.client_rating as rating,
             con.client_experience as content,
+
+            -- [컬럼명 renewal로 수정됨]
+            con.client_is_renewal_intended as recontractIntended,
+
             DATE_FORMAT(con.contracted_at, '%Y-%m-%d') as contractedAt
         FROM contracts con
                  INNER JOIN project_applications app ON con.contract_id = app.application_id
@@ -70,7 +79,6 @@
           AND con.client_rating IS NOT NULL
           AND con.client_experience IS NOT NULL
         ORDER BY con.contracted_at DESC
-            LIMIT 5
     </select>
 
     <update id="updateUserInfo" parameterType="com.sanaiclub.user.model.vo.UserVO">

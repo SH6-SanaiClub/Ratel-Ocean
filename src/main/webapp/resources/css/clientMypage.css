@@ -320,3 +320,96 @@ body {
     border-radius: 4px;
     margin-top: 10px;
 }
+
+/* [나의 평가 - 상세 카드 스타일] */
+.review-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 5px solid #1F7A8C; /* 포인트 컬러 라인 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: 0.2s;
+}
+
+.review-card:hover {
+    box-shadow: 0 5px 12px rgba(0,0,0,0.08);
+}
+
+.rc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #eee;
+}
+
+.rc-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+}
+
+.rc-date {
+    font-size: 12px;
+    color: #888;
+}
+
+.rc-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.rc-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rc-info-item .label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+}
+
+.rc-info-item .value {
+    font-size: 13px;
+    color: #444;
+}
+
+.rc-content-area {
+    background: #fff;
+    padding: 5px 0;
+}
+
+.rc-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+    white-space: pre-wrap;
+}
+
+/* 프리랜서 프로필 버튼 */
+.btn-profile-link {
+    background: #fff;
+    border: 1px solid #1F7A8C;
+    color: #1F7A8C;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-profile-link:hover {
+    background: #1F7A8C;
+    color: #fff;
+}
