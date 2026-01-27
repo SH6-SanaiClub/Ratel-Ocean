@@ -132,9 +132,10 @@
     var totalAmount = ${contract.totalBudget};
     var contractName = "프로젝트 계약 대금 (계약 #" + contractId + ")";
 
-    // 구매자 정보 (필요 시 UserVO에서 가져와 채우세요)
-    var buyerEmail = "client@example.com";
-    var buyerName = "클라이언트";
+    // 구매자 정보 바인딩
+    var buyerEmail = "${buyer.email}";
+    var buyerName = "${buyer.name}";
+    var buyerTel = "";
 
     function requestPayment() {
         if(totalAmount <= 0) {

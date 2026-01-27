@@ -215,6 +215,7 @@
                     <!-- 액션 버튼 (SIGNED 상태일 때만 표시) -->
                     <c:if test="${selectedContract.contractStatus.name() eq 'SIGNED'}">
                         <div class="action-buttons">
+
                             <!-- 결제하기 버튼 (모달 열기) -->
                             <c:set var="freelancerName" value="프리랜서"/>
                             <c:if test="${not empty contractDetail and not empty contractDetail.freelancerUser}">
@@ -226,7 +227,10 @@
                                         ${selectedContract.contractId},
                                         ${selectedContract.totalBudget},
                                             '<c:out value="${not empty project ? project.title : '프로젝트'}"/>',
-                                            '<c:out value="${freelancerName}"/>'
+                                            '<c:out value="${freelancerName}"/>',
+                                            '<c:out value="${clientUser.name}"/>',
+                                            '<c:out value="${clientUser.email}"/>',
+                                            ''
                                             )">
                                 💳 결제하기
                             </button>

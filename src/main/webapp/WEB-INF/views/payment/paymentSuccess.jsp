@@ -56,8 +56,34 @@
     이제 프로젝트를 본격적으로 시작하실 수 있습니다.
   </p>
 
-  <a href="${pageContext.request.contextPath}/project/client/dashboard" class="btn-home">
-    내 프로젝트 보러가기
+  <!-- ✅ 결제 상세 정보 표시 -->
+  <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: left;">
+    <h3 style="margin-bottom: 15px; color: #333; font-size: 18px;">결제 정보</h3>
+    <p style="margin: 8px 0; color: #555; font-size: 14px;">
+      <strong style="color: #333;">계약 ID:</strong> #${contract.contractId}
+    </p>
+    <p style="margin: 8px 0; color: #555; font-size: 14px;">
+      <strong style="color: #333;">결제 금액:</strong>
+      <fmt:formatNumber value="${payment.amount}" pattern="#,###"/>원
+    </p>
+    <p style="margin: 8px 0; color: #555; font-size: 14px;">
+      <strong style="color: #333;">결제 시각:</strong>
+      <fmt:formatDate value="${payment.paidAt}" pattern="yyyy-MM-dd HH:mm:ss"/>
+    </p>
+    <p style="margin: 8px 0; color: #555; font-size: 14px;">
+      <strong style="color: #333;">결제 수단:</strong> ${payment.paymentMethod}
+    </p>
+
+    <c:if test="${not empty payment.receiptUrl}">
+      <a href="${payment.receiptUrl}" target="_blank"
+         style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-size: 14px;">
+        📄 영수증 확인
+      </a>
+    </c:if>
+  </div>
+
+  <a href="${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}" class="btn-home">
+    계약 관리로 돌아가기
   </a>
 </div>
 </body>

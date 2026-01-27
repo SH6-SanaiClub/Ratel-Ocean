@@ -16,6 +16,9 @@
  * ============================================================================
  */
 
+// contextPath 변수 선언
+const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 2));
+
 // 전역 변수
 let IMP_CODE = 'imp57425168'; // 포트원 식별코드
 let currentContractId = null;
@@ -57,15 +60,22 @@ $(document).ready(function() {
  * 결제 모달 열기
  * ============================================================================
  */
-function openPaymentModal(contractId, totalBudget, projectTitle, freelancerName) {
-    console.log('[Payment Modal] 모달 열기:', { contractId, totalBudget, projectTitle, freelancerName });
+function openPaymentModal(contractId, totalBudget, projectTitle, freelancerName,
+                          buyerName, buyerEmail, buyerTel) {
+    console.log('[Payment Modal] 모달 열기:', {
+        contractId, totalBudget, projectTitle, freelancerName,
+        buyerName, buyerEmail, buyerTel
+    });
 
     currentContractId = contractId;
     currentContractData = {
         contractId: contractId,
         totalBudget: totalBudget,
-        projectTitle: projectTitle || '프로젝트',
-        freelancerName: freelancerName || '프리랜서'
+        projectTitle: projectTitle,
+        freelancerName: freelancerName,
+        buyerName: buyerName,
+        buyerEmail: buyerEmail,
+        buyerTel: buyerTel || ""
     };
 
     // 모달에 정보 표시
@@ -126,16 +136,16 @@ function preparePayment() {
     console.log('[Payment Modal] 서버에 결제 준비 요청');
 
     const requestData = {
-        contractId: currentContractId,
+        contractId: currentContractData.contractId,
         amount: currentContractData.totalBudget,
-        name: currentContractData.projectTitle + ' 계약',
-        buyerName: '클라이언트', // 실제 클라이언트명은 서버에서 조회
-        buyerEmail: '', // 서버에서 조회
-        buyerTel: '' // 서버에서 조회
+        name: '프로젝트 계약: ' + currentContractData.projectTitle,
+        buyerName: currentContractData.buyerName,
+        buyerEmail: currentContractData.buyerEmail,
+        buyerTel: currentContractData.buyerTel
     };
 
     $.ajax({
-        url: '/payment/prepare',
+        url: contextPath + '/payment/prepare',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(requestData),
@@ -193,43 +203,53 @@ function callPortonePayment(prepareData) {
         return;
     }
 
-    // 결제 요청 데이터
-    const paymentData = {
-        pg: 'html5_inicis', // PG사 (테스트용)
-        pay_method: 'card', // 결제 수단
-        merchant_uid: prepareData.merchantUid, // 서버에서 생성한 주문번호
-        name: prepareData.name, // 상품명
-        amount: prepareData.amount, // 결제 금액
-        buyer_email: prepareData.buyerEmail || '',
-        buyer_name: prepareData.buyerName || '클라이언트',
-        buyer_tel: prepareData.buyerTel || '',
-        buyer_addr: '',
-        buyer_postcode: '',
-        m_redirect_url: window.location.origin + '/payment/mobile/callback', // 모바일 리다이렉트 URL
-        notice_url: window.location.origin + '/payment/webhook', // 웹훅 URL
-        app_scheme: 'ratelapp' // 앱 스킴 (모바일)
-    };
+    // ✅ 모달 페이드아웃 (포트원 창이 보이도록)
+    $('.payment-modal-overlay').fadeOut(200, function() {
 
-    console.log('[Payment Modal] 결제 데이터:', paymentData);
+        // 결제 요청 데이터
+        const paymentData = {
+            pg: 'html5_inicis', // PG사 (테스트용)
+            pay_method: 'card', // 결제 수단
+            merchant_uid: prepareData.merchantUid, // 서버에서 생성한 주문번호
+            name: prepareData.name, // 상품명
+            amount: prepareData.amount, // 결제 금액
+            buyer_email: prepareData.buyerEmail || '',
+            buyer_name: prepareData.buyerName || '클라이언트',
+            buyer_tel: prepareData.buyerTel || '',
+            buyer_addr: '',
+            buyer_postcode: '',
+            m_redirect_url: window.location.origin + '/payment/mobile/callback', // 모바일 리다이렉트 URL
+            notice_url: window.location.origin + '/payment/webhook', // 웹훅 URL
+            app_scheme: 'ratelapp' // 앱 스킴 (모바일)
+        };
 
-    // 포트원 결제창 호출
-    IMP.request_pay(paymentData, function(response) {
-        console.log('[Payment Modal] 포트원 응답:', response);
+        console.log('[Payment Modal] 결제 데이터:', paymentData);
 
-        // 버튼 복원
-        const $btn = $('#payment-submit-btn');
-        $btn.prop('disabled', false);
-        $btn.html('💳 결제하기');
+        IMP.request_pay(paymentData, function(response) {
+            console.log('[Payment Modal] 포트원 응답:', response);
 
-        if (response.success) {
-            // 결제 성공 → 서버 검증
-            console.log('[Payment Modal] 결제 성공, 서버 검증 시작');
-            verifyPayment(response.imp_uid, response.merchant_uid);
-        } else {
-            // 결제 실패
-            console.error('[Payment Modal] 결제 실패:', response.error_msg);
-            showPaymentFailModal(response.error_msg || '결제에 실패했습니다.');
-        }
+            if (response.success) {
+                console.log('[Payment Modal] 결제 성공, 서버 검증 시작');
+                verifyPayment(response.imp_uid, response.merchant_uid);
+            } else {
+                console.error('[Payment Modal] 결제 실패:', response.error_msg);
+
+                // 실패 시 모달 다시 표시
+                $('.payment-modal-overlay').fadeIn(200);
+
+                const $btn = $('#payment-submit-btn');
+                $btn.prop('disabled', false);
+                $btn.html('💳 결제하기');
+
+                // 사용자가 취소한 경우와 오류인 경우 구분
+                if (response.error_msg) {
+                    alert('결제에 실패했습니다.\n' + response.error_msg);
+                } else {
+                    // 사용자가 취소 버튼 클릭
+                    console.log('[Payment Modal] 결제를 취소했습니다.');
+                }
+            }
+        });
     });
 }
 
@@ -250,7 +270,7 @@ function verifyPayment(impUid, merchantUid) {
     };
 
     $.ajax({
-        url: '/payment/complete',
+        url: contextPath + '/payment/complete',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(requestData),
