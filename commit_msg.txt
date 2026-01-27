@@ -1,5 +1,9 @@
-Refactor: ContractCommandService와 ContractQueryService 삭제
+Fix: ContractService에 누락된 메서드 추가 및 컴파일 오류 수정
 
-- CQRS 패턴에서 단일 서비스 패턴으로 전환
-- 모든 메서드가 ContractService로 통합 완료
-- 불필요한 서비스 클래스 제거
+- completeContract 메서드 추가 (계약 정산 완료 처리)
+- approvePayment 메서드 추가 (클라이언트 지급 수락)
+- convertToContractCheckViewMaps 메서드 추가
+- ContractCheckViewMapData Inner Class 추가
+- FreelancerProfileVO import 추가
+- root-context.xml에 portone-api.properties 추가
+- finalizeContract 메서드 수정 (PAID로 변경)

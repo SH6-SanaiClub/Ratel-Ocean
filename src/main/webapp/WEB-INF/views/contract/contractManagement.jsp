@@ -11,6 +11,14 @@
     <meta http-equiv="Expires" content="0">
     <title>계약 관리</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-common.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/payment/payment-modal.css"/>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 포트원 SDK -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <!-- 결제 모달 JavaScript -->
+    <script src="${pageContext.request.contextPath}/resources/js/payment/payment-modal.js"></script>
 </head>
 <body>
     <div class="container">
@@ -618,12 +626,9 @@
                         <!-- 액션 버튼 (SIGNED 상태일 때만) -->
                         <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'SIGNED' or selectedContract.contractStatus.name() eq 'signed')}">
                             <div class="action-buttons">
-                                <form method="post" action="${pageContext.request.contextPath}/client/contract/management/finalize" style="display: inline;">
-                                    <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
-                                    <button type="submit" class="btn btn-primary" onclick="return confirm('계약 결제를 완료하시겠습니까?')">
-                                        💰 계약 결제 완료
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-primary" onclick="openPaymentModalForContract(${selectedContract.contractId}, ${selectedContract.totalBudget}, '${selectedContract.projectTitle != null ? fn:replace(selectedContract.projectTitle, "'", "\\'") : "프로젝트"}', '${selectedContract.freelancerName != null ? fn:replace(selectedContract.freelancerName, "'", "\\'") : "프리랜서"}')">
+                                    💰 계약 결제 완료
+                                </button>
                                 <form method="post" action="${pageContext.request.contextPath}/client/contract/management/cancel" class="cancel-form" style="display: inline;">
                                     <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
                                     <input type="text" name="reason" placeholder="취소 사유를 입력하세요" required 
@@ -725,6 +730,91 @@
                 }
             }
         });
+        
+        // 결제 모달 열기 함수 (계약 정보 기반)
+        function openPaymentModalForContract(contractId, totalBudget, projectTitle, freelancerName) {
+            <c:if test="${not empty selectedContract and not empty clientUser}">
+            const buyerName = '<c:out value="${clientUser.name}" default="클라이언트"/>';
+            const buyerEmail = '<c:out value="${clientUser.email}" default=""/>';
+            const buyerTel = '<c:out value="${clientUser.phone}" default=""/>';
+            
+            openPaymentModal(
+                contractId,
+                totalBudget,
+                projectTitle || '프로젝트',
+                freelancerName || '프리랜서',
+                buyerName,
+                buyerEmail,
+                buyerTel
+            );
+            </c:if>
+            <c:if test="${empty clientUser}">
+            // 사용자 정보가 없으면 기본값 사용
+            openPaymentModal(
+                contractId,
+                totalBudget,
+                projectTitle || '프로젝트',
+                freelancerName || '프리랜서',
+                '클라이언트',
+                '',
+                ''
+            );
+            </c:if>
+        }
     </script>
+    
+    <!-- 결제 모달 HTML -->
+    <div class="payment-modal-overlay">
+        <div class="payment-modal-container">
+            <div class="payment-modal-header">
+                <button type="button" class="payment-modal-close" onclick="closePaymentModal()">×</button>
+                <h2 class="payment-modal-title">💳 안전한 결제</h2>
+                <p class="payment-modal-subtitle">에스크로 시스템으로 보호되는 결제입니다</p>
+            </div>
+            
+            <div class="payment-modal-body">
+                <div class="payment-info-section">
+                    <h3 class="payment-info-title">📋 결제 정보</h3>
+                    <div class="payment-info-grid">
+                        <div class="payment-info-item">
+                            <span class="payment-info-label">프로젝트</span>
+                            <span class="payment-info-value" id="payment-project-title">-</span>
+                        </div>
+                        <div class="payment-info-item">
+                            <span class="payment-info-label">프리랜서</span>
+                            <span class="payment-info-value" id="payment-freelancer-name">-</span>
+                        </div>
+                        <div class="payment-info-item">
+                            <span class="payment-info-label">계약 ID</span>
+                            <span class="payment-info-value" id="payment-contract-id">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-amount-highlight">
+                        <div class="payment-amount-label">최종 결제 금액</div>
+                        <div class="payment-amount-value" id="payment-total-amount">-</div>
+                    </div>
+                </div>
+                
+                <div class="payment-notice">
+                    <h4 class="payment-notice-title">🔒 안전한 에스크로 결제</h4>
+                    <ul class="payment-notice-list">
+                        <li>결제 금액은 프로젝트 완료 시까지 안전하게 보관됩니다</li>
+                        <li>프리랜서가 작업을 완료하면 자동으로 지급됩니다</li>
+                        <li>문제 발생 시 환불이 가능합니다</li>
+                    </ul>
+                </div>
+                
+                <div class="payment-modal-buttons">
+                    <button type="button" class="payment-modal-btn payment-modal-btn-primary" id="payment-submit-btn" onclick="startPayment()">
+                        💳 결제하기
+                    </button>
+                    <button type="button" class="payment-modal-btn payment-modal-btn-secondary" onclick="closePaymentModal()">
+                        취소
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

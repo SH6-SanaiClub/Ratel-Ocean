@@ -59,7 +59,9 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // 3. 결제 상태 검증 (UNPAID 상태여야 함)
-        if (!PaymentStatus.UNPAID.equals(contract.getPaymentStatus())) {
+        // Note: PaymentStatus는 별도 컬럼이 없으므로 계약 상태로 판단
+        if (ContractStatus.PAID.equals(contract.getContractStatus()) || 
+            ContractStatus.COMPLETED.equals(contract.getContractStatus())) {
             throw new IllegalStateException("이미 결제된 계약입니다.");
         }
 
@@ -130,14 +132,16 @@ public class PaymentServiceImpl implements PaymentService {
 
             for (ContractMilestoneVO milestone : milestones) {
                 contractMilestoneMapper.updateMilestoneStatus(
-                        milestone.getMilestoneId(),
-                        MilestoneStatus.DEPOSITED
+                        contractId,
+                        milestone.getStep(),
+                        MilestoneStatus.DEPOSITED.name()
                 );
             }
 
             // 7. 계약 상태 업데이트 (SIGNED → PAID)
             contractMapper.updateContractStatus(contractId, ContractStatus.PAID.name(), null);
-            contractMapper.updatePaymentStatus(contractId, PaymentStatus.PAID.name());
+            // Note: PaymentStatus는 별도 테이블이 없으므로 계약 상태로 관리
+            // contractMapper.updatePaymentStatus(contractId, PaymentStatus.PAID.name());
 
             logger.info("결제 완료: paymentId={}, contractId={}, amount={}",
                     payment.getPaymentId(), contractId, actualAmount);
@@ -233,8 +237,10 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalStateException("결제 가능한 상태가 아닙니다. 현재 상태: " + contract.getContractStatus());
         }
 
-        // 3. 결제 상태 검증 (UNPAID 상태여야 함)
-        if (!PaymentStatus.UNPAID.equals(contract.getPaymentStatus())) {
+        // 3. 결제 상태 검증 (PAID 상태가 아니어야 함)
+        // Note: PaymentStatus는 별도 컬럼이 없으므로 계약 상태로 판단
+        if (ContractStatus.PAID.equals(contract.getContractStatus()) || 
+            ContractStatus.COMPLETED.equals(contract.getContractStatus())) {
             throw new IllegalStateException("이미 결제된 계약입니다.");
         }
 
