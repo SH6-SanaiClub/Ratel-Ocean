@@ -285,7 +285,8 @@
     <div class="stat">
       <div class="label"><span class="dot info"></span> 진행 중</div>
       <div class="value"><c:out value="${summary.inProgressCount}"/></div>
-      <div class="small">예상 수익 ₩ <c:out value="${summary.expectedRevenue}"/></div>
+      <div class="small">예상 수익 ₩ <fmt:formatNumber value="${summary.expectedRevenue}" type="number" groupingUsed="true"/></div>
+
     </div>
 
     <div class="stat">
@@ -463,7 +464,8 @@
 
                 <div>
                   <div class="k">예산</div>
-                  <div class="v">₩ <c:out value="${p.totalBudget}"/></div>
+                  <div class="v">₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/></div>
+
                 </div>
               </div>
 
@@ -504,7 +506,7 @@
 
                 <div>
                   <div class="k">총 금액</div>
-                  <div class="v">₩ <c:out value="${p.totalBudget}"/></div>
+                  <div class="v">₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/></div>
                 </div>
 
                 <div>
