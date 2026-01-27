@@ -129,12 +129,14 @@ ContractMilestoneMapper.xml - 계약 마일스톤(Milestone) 관련 SQL 쿼리 �
     -->
     <select id="selectMilestonesByContractId" parameterType="int" resultType="com.sanaiclub.contract.model.vo.ContractMilestoneVO">
         SELECT 
+            milestone_id as milestoneId,
             contract_id as contractId,
             step_order as step, 
             milestone_name as title, 
             work_scope as description, 
             amount,
-            status
+            due_date as dueDate,
+            CAST(status AS CHAR) as status
         FROM contract_milestones 
         WHERE contract_id = #{contractId} 
         ORDER BY step_order

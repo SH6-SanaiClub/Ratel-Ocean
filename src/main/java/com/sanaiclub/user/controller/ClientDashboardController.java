@@ -2,6 +2,7 @@ package com.sanaiclub.user.controller;
 
 import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.contract.model.dto.ContractResponseDTO;
+import com.sanaiclub.contract.model.enums.ContractStatus;
 import com.sanaiclub.contract.service.ContractService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -78,25 +79,16 @@ public class ClientDashboardController {
         }
 
         try {
-            // 모든 계약 조회
-            List<ContractResponseDTO> allContractsList = contractService.getAllContracts();
-            
-            // 클라이언트의 계약만 필터링 (origin_contract_url이 클라이언트 ID로 시작하는 경우만)
-            List<ContractResponseDTO> clientContracts = allContractsList.stream()
-                .filter(contract -> {
-                    String originUrl = contract.getOriginContractUrl();
-                    if (originUrl == null || originUrl.isEmpty()) {
-                        return false;
-                    }
-                    return originUrl.startsWith("contracts/" + userId + "/");
-                })
-                .collect(Collectors.toList());
+            // 클라이언트의 계약 목록 조회 (쿼리에서 필터링)
+            List<ContractResponseDTO> clientContracts = contractService.getContractsByClientId(userId);
 
             // 통계 계산
             long activeContracts = clientContracts.stream()
                 .filter(c -> {
-                    String status = c.getContractStatus();
-                    return "WAITING".equals(status) || "SIGNED".equals(status) || "PAID".equals(status);
+                    ContractStatus status = c.getContractStatus();
+                    return status != null && (status == ContractStatus.WAITING 
+                        || status == ContractStatus.SIGNED 
+                        || status == ContractStatus.PAID);
                 })
                 .count();
 
@@ -113,7 +105,7 @@ public class ClientDashboardController {
                     
                     if (isLumpSum) {
                         // 일시지급: COMPLETED 상태이면 완료
-                        return "COMPLETED".equals(c.getContractStatus());
+                        return c.getContractStatus() == ContractStatus.COMPLETED;
                     } else {
                         // 마일스톤 계약: 모든 마일스톤이 완료되어야 함
                         if (c.getTotalMilestones() != null && c.getTotalMilestones() > 0) {
@@ -134,7 +126,7 @@ public class ClientDashboardController {
                                 || c.getPaymentMethod() == null);
                     
                     if (isLumpSum) {
-                        return "COMPLETED".equals(c.getContractStatus()) && c.getTotalBudget() != null;
+                        return c.getContractStatus() == ContractStatus.COMPLETED && c.getTotalBudget() != null;
                     } else {
                         if (c.getTotalMilestones() != null && c.getTotalMilestones() > 0) {
                             boolean isFullyCompleted = c.getPaidMilestones() != null 
@@ -150,8 +142,10 @@ public class ClientDashboardController {
             // 진행중인 계약 금액: WAITING, SIGNED, PAID 상태 계약의 총 계약금액
             long activeContractAmount = clientContracts.stream()
                 .filter(c -> {
-                    String status = c.getContractStatus();
-                    return ("WAITING".equals(status) || "SIGNED".equals(status) || "PAID".equals(status))
+                    ContractStatus status = c.getContractStatus();
+                    return status != null && (status == ContractStatus.WAITING 
+                        || status == ContractStatus.SIGNED 
+                        || status == ContractStatus.PAID)
                             && c.getTotalBudget() != null;
                 })
                 .mapToLong(c -> c.getTotalBudget())
@@ -161,10 +155,10 @@ public class ClientDashboardController {
             // paymentPendingContracts와 동일한 로직 사용
             long settlementPending = clientContracts.stream()
                 .filter(c -> {
-                    String status = c.getContractStatus();
+                    ContractStatus status = c.getContractStatus();
                     
                     // 일시지급: PAID 상태이고 cancel_reason이 "[지급요청]"인 경우만
-                    if ("PAID".equals(status)) {
+                    if (status == ContractStatus.PAID) {
                         boolean isLumpSum = (c.getTotalMilestones() == null || c.getTotalMilestones() == 0)
                                 && ("FIXED".equals(c.getPaymentMethod()) 
                                     || "FULL".equals(c.getPaymentMethod()) 
@@ -189,10 +183,10 @@ public class ClientDashboardController {
             // 마일스톤: REQUESTED 상태인 마일스톤이 있는 경우
             List<ContractResponseDTO> paymentPendingContracts = clientContracts.stream()
                 .filter(c -> {
-                    String status = c.getContractStatus();
+                    ContractStatus status = c.getContractStatus();
                     
                     // 일시지급: PAID 상태이고 cancel_reason이 "[지급요청]"인 경우
-                    if ("PAID".equals(status)) {
+                    if (status == ContractStatus.PAID) {
                         boolean isLumpSum = (c.getTotalMilestones() == null || c.getTotalMilestones() == 0)
                                 && ("FIXED".equals(c.getPaymentMethod()) 
                                     || "FULL".equals(c.getPaymentMethod()) 
@@ -240,7 +234,7 @@ public class ClientDashboardController {
                         String monthKey = null;
                         
                         // 완료된 계약은 완료일 기준, 그 외는 체결일 기준
-                        if ("COMPLETED".equals(c.getContractStatus()) && c.getCompletedAt() != null) {
+                        if (c.getContractStatus() == ContractStatus.COMPLETED && c.getCompletedAt() != null) {
                             dateStr = c.getCompletedAt();
                         } else if (c.getContractedAt() != null) {
                             dateStr = c.getContractedAt();
@@ -261,7 +255,7 @@ public class ClientDashboardController {
             // 계약 상태별 분포 계산
             Map<String, Long> statusDistribution = clientContracts.stream()
                 .collect(Collectors.groupingBy(
-                    c -> c.getContractStatus() != null ? c.getContractStatus() : "UNKNOWN",
+                    c -> c.getContractStatus() != null ? c.getContractStatus().name() : "UNKNOWN",
                     Collectors.counting()
                 ));
 

@@ -1,43 +1,19 @@
-package com.sanaiclub.contract.service;
+package com.sanaiclub.contract.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sanaiclub.contract.model.dto.ContractAnalysisDTO;
 import com.sanaiclub.contract.model.dto.ContractDetailDTO;
 import com.sanaiclub.contract.model.dto.ContractMilestoneResponseDTO;
 import com.sanaiclub.contract.model.dto.ContractResponseDTO;
+import com.sanaiclub.contract.service.ContractAnalysisService;
+import com.sanaiclub.contract.service.ContractAIService;
 import com.sanaiclub.contract.util.PromptTemplateLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * ============================================================================
- * ContractAnalysisServiceImpl - 계약서 AI 분석 서비스 구현체
- * ============================================================================
- * 
- * [역할]
- * - ContractAnalysisService 인터페이스의 구현체
- * - 프리랜서가 계약을 수락하기 전에 계약서의 위험 요소를 AI로 분석
- * 
- * [처리 흐름]
- * 1. 프롬프트 템플릿 로드
- * 2. 마일스톤 정보를 JSON 문자열로 변환 (있는 경우)
- * 3. 모든 치환 필드(${...})를 실제 값으로 치환 (null 안전 처리)
- * 4. AI API 호출 (ContractAIService)
- * 5. JSON 응답 파싱 및 DTO 변환
- * 
- * [의존성]
- * - ContractAIService: AI API 호출
- * - PromptTemplateLoader: 프롬프트 템플릿 로딩
- * 
- * [책임 분리]
- * - AI 호출: ContractAIService에 위임
- * - 프롬프트 생성: 이 서비스에서 담당
- * - JSON 파싱: 이 서비스에서 담당
- * 
- * ============================================================================
- */
+/** 계약서 AI 분석 서비스 구현체. 프롬프트 생성, AI 호출, JSON 파싱 담당. */
 @Slf4j
 @Service
 public class ContractAnalysisServiceImpl implements ContractAnalysisService {
@@ -82,38 +58,27 @@ public class ContractAnalysisServiceImpl implements ContractAnalysisService {
             .replace("${contractEndDate}", safe(contract != null ? contract.getContractEndDate() : null))
             .replace("${totalBudget}", safe(contract != null ? contract.getTotalBudget() : null))
             .replace("${paymentMethod}", safe(contract != null ? contract.getPaymentMethod() : null))
-            .replace("${contractStatus}", safe(contract != null ? contract.getContractStatus() : null))
+            .replace("${contractStatus}", safe(contract != null && contract.getContractStatus() != null ? contract.getContractStatus().name() : null))
             .replace("${contractedAt}", safe(contract != null ? contract.getContractedAt() : null))
             
             // 프로젝트 정보
-            .replace("${projectId}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getProjectId() : null))
-            .replace("${projectTitle}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getTitle() : null))
-            .replace("${projectDescription}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getDescription() : null))
-            .replace("${projectBudget}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getBudget() : null))
-            .replace("${projectStartDate}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getStartDate() : null))
-            .replace("${projectDeadlineDate}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getDeadlineDate() : null))
-            .replace("${projectEstDuration}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getEstDuration() : null))
-            .replace("${projectPaymentMethod}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getPaymentMethod() : null))
-            .replace("${communicateMethod}", safe(contractDetail != null && contractDetail.getProject() != null 
-                ? contractDetail.getProject().getCommunicateMethod() : null))
+            .replace("${projectId}", safe(contractDetail != null ? contractDetail.getProjectId() : null))
+            .replace("${projectTitle}", safe(contractDetail != null ? contractDetail.getProjectTitle() : null))
+            .replace("${projectDescription}", safe(contractDetail != null ? contractDetail.getProjectDescription() : null))
+            .replace("${projectBudget}", safe(contractDetail != null ? contractDetail.getProjectBudget() : null))
+            .replace("${projectStartDate}", safe(contractDetail != null && contractDetail.getProjectStartDate() != null 
+                ? contractDetail.getProjectStartDate().toString() : null))
+            .replace("${projectDeadlineDate}", safe(contractDetail != null && contractDetail.getProjectDeadlineDate() != null 
+                ? contractDetail.getProjectDeadlineDate().toString() : null))
+            .replace("${projectEstDuration}", safe(contractDetail != null ? contractDetail.getProjectEstDuration() : null))
+            .replace("${projectPaymentMethod}", safe(contractDetail != null ? contractDetail.getProjectPaymentMethod() : null))
+            .replace("${communicateMethod}", safe(contractDetail != null ? contractDetail.getProjectCommunicateMethod() : null))
             
             // 클라이언트 정보
-            .replace("${clientName}", safe(contractDetail != null && contractDetail.getClientUser() != null 
-                ? contractDetail.getClientUser().getName() : null))
-            .replace("${clientEmail}", safe(contractDetail != null && contractDetail.getClientUser() != null 
-                ? contractDetail.getClientUser().getEmail() : null))
-            .replace("${clientPhone}", safe(contractDetail != null && contractDetail.getClientUser() != null 
-                ? contractDetail.getClientUser().getPhone() : null))
-            .replace("${companyName}", safe(contractDetail != null && contractDetail.getCompany() != null 
-                ? contractDetail.getCompany().getCompanyName() : null))
+            .replace("${clientName}", safe(contractDetail != null ? contractDetail.getClientName() : null))
+            .replace("${clientEmail}", safe(contractDetail != null ? contractDetail.getClientEmail() : null))
+            .replace("${clientPhone}", safe(contractDetail != null ? contractDetail.getClientPhone() : null))
+            .replace("${companyName}", safe(contractDetail != null ? contractDetail.getCompanyName() : null))
             
             // 마일스톤 정보
             .replace("${milestonesJson}", milestonesJson)

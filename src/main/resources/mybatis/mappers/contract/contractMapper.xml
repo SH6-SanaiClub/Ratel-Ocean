@@ -250,7 +250,7 @@ ContractMapper.xml - 계약(Contract) 관련 SQL 쿼리 매퍼
             #{contract.freelancerRating},
             #{contract.freelancerExperience}
         )
-        <selectKey keyProperty="contractId" resultType="int" order="AFTER">
+        <selectKey keyProperty="contract.contractId" resultType="int" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
@@ -693,22 +693,19 @@ ContractMapper.xml - 계약(Contract) 관련 SQL 쿼리 매퍼
        - 경로의 4번째 부분(freelancerId) 추출
        - user_type = 'FREELANCER' 조건으로 프리랜서만 조인
        - 예) "contracts/1/100/50/file.pdf" → freelancerId = 50
+       - 주의: freelancer_profiles JOIN은 제거됨 (사용하지 않는 필드만 조회했기 때문)
     
-    4. freelancer_profiles (LEFT JOIN)
-       - 프리랜서 프로필 정보
-       - fu.user_id = fp.freelancer_id로 조인
-       - 주의: fp.freelancer_id 사용 (fp.user_id 아님)
-    
-    5. users - 클라이언트 (LEFT JOIN)
+    4. users - 클라이언트 (LEFT JOIN)
        - projects 테이블의 client_id를 통해 클라이언트 정보 조인
        - user_type = 'CLIENT' 조건으로 클라이언트만 조인
        - projects.client_id = cu.user_id
     
-    6. client_profiles (LEFT JOIN)
+    5. client_profiles (LEFT JOIN)
        - 클라이언트 프로필 정보
        - cu.user_id = cp.client_id로 조인
+       - 주의: cp.company_id를 통해 companies 테이블과 조인하기 위해 필수
     
-    7. companies (LEFT JOIN)
+    6. companies (LEFT JOIN)
        - 회사 정보 (클라이언트가 회사인 경우)
        - cp.company_id = co.company_id로 조인
        - 개인 클라이언트는 company_id가 NULL이므로 조인 실패 (NULL 반환)
@@ -739,6 +736,12 @@ ContractMapper.xml - 계약(Contract) 관련 SQL 쿼리 매퍼
     - contract_id (PK), project_id (PK), user_id (PK) 등 인덱스 활용
     - LEFT JOIN으로 인해 일부 정보가 NULL일 수 있음
     
+    [최적화 사항]
+    - 실제 사용되는 필드만 SELECT하여 쿼리 성능 최적화
+    - freelancer_profiles JOIN 제거 (사용하지 않는 nickname, introduction 필드만 조회했기 때문)
+    - 불필요한 컬럼 조회 제거 (약 20개 필드)
+    - client_profiles, companies JOIN은 유지 (companyName 조회를 위해 필수)
+    
     [호출 위치]
     - ContractService.getContractDetail(): 계약 상세 정보 조회 시
     - ClientContractManagementController: 클라이언트 계약 관리 페이지
@@ -748,448 +751,66 @@ ContractMapper.xml - 계약(Contract) 관련 SQL 쿼리 매퍼
     
     ============================================================================
     -->
-    <select id="selectContractDetailWithJoin" parameterType="int" resultMap="contractDetailResultMap">
+    <select id="selectContractDetailWithJoin" parameterType="int" resultType="com.sanaiclub.contract.model.dto.ContractDetailDTO">
         SELECT
             -- Contract 정보
-            c.contract_id,
-            c.contract_start_date,
-            c.contract_end_date,
-            c.total_budget,
-            c.payment_method,
-            c.contract_status,
-            c.origin_contract_url,
-            c.platform_contract_url,
-            c.ai_report_url,
-            c.contracted_at,
-            c.completed_at,
-            c.cancel_reason,
-            c.client_rating,
-            c.client_experience,
-            c.client_is_renewal_intended,
-            c.freelancer_rating,
-            c.freelancer_experience,
-            -- Project 정보 (origin_contract_url에서 projectId 추출)
-            p.project_id,
-            p.client_id as project_client_id,
-            p.title,
-            p.description,
-            p.start_date,
-            p.deadline_date,
-            p.est_duration,
-            p.budget,
-            p.communicate_method,
-            p.payment_method as project_payment_method,
-            p.change_policy,
-            p.max_revision_count,
-            p.project_status,
-            p.is_public,
-            p.created_at as project_created_at,
-            p.updated_at as project_updated_at,
-            p.view_count,
-            p.applicant_count,
-            p.plan_url,
-            p.file_size,
-            p.budget_negotiable,
-            p.duration_negotiable,
-            -- Freelancer User 정보 (origin_contract_url에서 freelancerId 추출)
-            fu.user_id as freelancer_user_id,
-            fu.login_id as freelancer_login_id,
-            fu.email as freelancer_email,
-            fu.password as freelancer_password,
-            fu.refresh_token as freelancer_refresh_token,
-            fu.user_type as freelancer_user_type,
-            fu.status as freelancer_status,
-            fu.name as freelancer_name,
-            fu.phone as freelancer_phone,
-            fu.birth_date as freelancer_birth_date,
-            fu.profile_image_url as freelancer_profile_image_url,
-            fu.created_at as freelancer_created_at,
-            fu.updated_at as freelancer_updated_at,
-            -- Freelancer Profile 정보
-            fp.freelancer_id as freelancer_id,
-            fp.nickname,
-            fp.introduction,
-            fp.github_url,
-            fp.website_url,
-            fp.school_name,
-            fp.major,
-            fp.degree,
-            fp.grad_status,
-            fp.is_profile_complete,
-            -- Client User 정보 (project의 client_id로 조회)
-            cu.user_id as client_user_id,
-            cu.login_id as client_login_id,
-            cu.email as client_email,
-            cu.password as client_password,
-            cu.refresh_token as client_refresh_token,
-            cu.user_type as client_user_type,
-            cu.status as client_status,
-            cu.name as client_name,
-            cu.phone as client_phone,
-            cu.birth_date as client_birth_date,
-            cu.profile_image_url as client_profile_image_url,
-            cu.created_at as client_created_at,
-            cu.updated_at as client_updated_at,
-            -- Client Profile 정보
-            cp.client_id as client_profile_client_id,
-            cp.company_id,
-            cp.client_type,
-            -- Company 정보
-            co.company_id as company_company_id,
-            co.company_name,
-            co.ceo_name,
-            co.ceo_email,
-            co.business_number,
-            co.business_verified,
-            co.industry,
-            co.address,
-            co.company_size,
-            co.website_url as company_website_url,
-            co.created_at as company_created_at
+            c.contract_id as contractId,
+            c.contract_start_date as contractStartDate,
+            c.contract_end_date as contractEndDate,
+            c.total_budget as totalBudget,
+            c.payment_method as paymentMethod,
+            c.contract_status as contractStatus,
+            c.origin_contract_url as originContractUrl,
+            c.platform_contract_url as platformContractUrl,
+            c.ai_report_url as aiReportUrl,
+            c.contracted_at as contractedAt,
+            c.completed_at as completedAt,
+            c.cancel_reason as cancelReason,
+            c.client_rating as clientRating,
+            c.client_experience as clientExperience,
+            c.client_is_renewal_intended as clientIsRenewalIntended,
+            c.freelancer_rating as freelancerRating,
+            c.freelancer_experience as freelancerExperience,
+            -- Project 정보 (필요한 필드만)
+            p.project_id as projectId,
+            p.title as projectTitle,
+            p.description as projectDescription,
+            p.start_date as projectStartDate,
+            p.deadline_date as projectDeadlineDate,
+            p.est_duration as projectEstDuration,
+            p.budget as projectBudget,
+            p.communicate_method as projectCommunicateMethod,
+            p.payment_method as projectPaymentMethod,
+            -- Freelancer 정보 (필요한 필드만)
+            fu.user_id as freelancerId,
+            fu.name as freelancerName,
+            fu.email as freelancerEmail,
+            -- Client 정보 (필요한 필드만)
+            cu.user_id as clientId,
+            cu.name as clientName,
+            cu.email as clientEmail,
+            cu.phone as clientPhone,
+            -- Company 정보 (필요한 필드만)
+            co.company_name as companyName
         FROM contracts c
-        -- ====================================================================
         -- 프로젝트 정보 조인
-        -- origin_contract_url에서 projectId 추출하여 projects 테이블과 조인
-        -- 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
-        -- SUBSTRING_INDEX로 경로의 3번째 부분(projectId) 추출
-        -- ====================================================================
         LEFT JOIN projects p ON 
             c.origin_contract_url IS NOT NULL
             AND c.origin_contract_url LIKE 'contracts/%/%/%'
             AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
-        -- ====================================================================
         -- 프리랜서 사용자 정보 조인
-        -- origin_contract_url에서 freelancerId 추출하여 users 테이블과 조인
-        -- 경로의 4번째 부분(freelancerId) 추출
-        -- user_type = 'FREELANCER' 조건으로 프리랜서만 조인
-        -- ====================================================================
         LEFT JOIN users fu ON 
             c.origin_contract_url IS NOT NULL
             AND c.origin_contract_url LIKE 'contracts/%/%/%'
             AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
             AND fu.user_type = 'FREELANCER'
-        -- 프리랜서 프로필 정보 조인
-        LEFT JOIN freelancer_profiles fp ON fu.user_id = fp.freelancer_id
-        -- ====================================================================
         -- 클라이언트 사용자 정보 조인
-        -- projects 테이블의 client_id를 통해 클라이언트 정보 조인
-        -- user_type = 'CLIENT' 조건으로 클라이언트만 조인
-        -- ====================================================================
         LEFT JOIN users cu ON p.client_id = cu.user_id AND cu.user_type = 'CLIENT'
         -- 클라이언트 프로필 정보 조인
         LEFT JOIN client_profiles cp ON cu.user_id = cp.client_id
-        -- 회사 정보 조인 (클라이언트가 회사인 경우)
+        -- 회사 정보 조인
         LEFT JOIN companies co ON cp.company_id = co.company_id
         WHERE c.contract_id = #{contractId}
-    </select>
-    
-    <!--
-    ============================================================================
-    contractDetailResultMap - 계약 상세 정보 결과 매핑
-    ============================================================================
-    
-    [목적]
-    - selectContractDetailWithJoin 쿼리의 결과를 ContractDetailDTO 객체로 매핑
-    - 여러 테이블의 컬럼을 중첩된 객체 구조로 변환
-    
-    [매핑 구조]
-    ContractDetailDTO {
-        contract: ContractVO          (계약 정보)
-        project: ProjectsVO          (프로젝트 정보)
-        freelancerUser: UserVO       (프리랜서 사용자 정보)
-        freelancerProfile: FreelancerProfileVO (프리랜서 프로필)
-        clientUser: UserVO          (클라이언트 사용자 정보)
-        clientProfile: ClientProfileVO (클라이언트 프로필)
-        company: CompanyVO          (회사 정보)
-    }
-    
-    [매핑 방식]
-    - <association>: 1:1 관계 매핑 (ContractDetailDTO 내부의 객체들)
-    - <id>: PK 매핑
-    - <result>: 일반 컬럼 매핑
-    - column 속성: SQL SELECT 절의 컬럼명 (별칭 포함)
-    - property 속성: Java 객체의 필드명
-    
-    [주의사항]
-    - 컬럼 별칭(alias)을 사용하여 중복된 컬럼명 구분
-    - 예) project_client_id, freelancer_user_id, client_user_id 등
-    - LEFT JOIN으로 인해 일부 정보가 NULL일 수 있음
-    -->
-    <resultMap id="contractDetailResultMap" type="com.sanaiclub.contract.model.dto.ContractDetailDTO">
-        <!-- ====================================================================
-             Contract 매핑 - 계약 기본 정보
-             ==================================================================== -->
-        <association property="contract" javaType="com.sanaiclub.contract.model.vo.ContractVO">
-            <id property="contractId" column="contract_id"/>
-            <result property="contractStartDate" column="contract_start_date"/>
-            <result property="contractEndDate" column="contract_end_date"/>
-            <result property="totalBudget" column="total_budget"/>
-            <result property="paymentMethod" column="payment_method"/>
-            <result property="contractStatus" column="contract_status"/>
-            <result property="originContractUrl" column="origin_contract_url"/>
-            <result property="platformContractUrl" column="platform_contract_url"/>
-            <result property="aiReportUrl" column="ai_report_url"/>
-            <result property="contractedAt" column="contracted_at"/>
-            <result property="completedAt" column="completed_at"/>
-            <result property="cancelReason" column="cancel_reason"/>
-            <result property="clientRating" column="client_rating"/>
-            <result property="clientExperience" column="client_experience"/>
-            <result property="clientIsRenewalIntended" column="client_is_renewal_intended"/>
-            <result property="freelancerRating" column="freelancer_rating"/>
-            <result property="freelancerExperience" column="freelancer_experience"/>
-        </association>
-        <!-- ====================================================================
-             Project 매핑 - 프로젝트 정보
-             ==================================================================== -->
-        <association property="project" javaType="com.sanaiclub.project.model.vo.ProjectsVO">
-            <id property="projectId" column="project_id"/>
-            <result property="clientId" column="project_client_id"/>
-            <result property="title" column="title"/>
-            <result property="description" column="description"/>
-            <result property="startDate" column="start_date"/>
-            <result property="deadlineDate" column="deadline_date"/>
-            <result property="estDuration" column="est_duration"/>
-            <result property="budget" column="budget"/>
-            <result property="communicateMethod" column="communicate_method"/>
-            <result property="paymentMethod" column="project_payment_method"/>
-            <result property="changePolicy" column="change_policy"/>
-            <result property="maxRevisionCount" column="max_revision_count"/>
-            <result property="projectStatus" column="project_status"/>
-            <result property="isPublic" column="is_public"/>
-            <result property="createdAt" column="project_created_at"/>
-            <result property="updatedAt" column="project_updated_at"/>
-            <result property="viewCount" column="view_count"/>
-            <result property="applicantCount" column="applicant_count"/>
-            <result property="planUrl" column="plan_url"/>
-            <result property="fileSize" column="file_size"/>
-            <result property="budgetNegotiable" column="budget_negotiable"/>
-            <result property="durationNegotiable" column="duration_negotiable"/>
-        </association>
-        <!-- ====================================================================
-             Freelancer User 매핑 - 프리랜서 사용자 정보
-             ==================================================================== -->
-        <association property="freelancerUser" javaType="com.sanaiclub.user.model.vo.UserVO">
-            <id property="userId" column="freelancer_user_id"/>
-            <result property="loginId" column="freelancer_login_id"/>
-            <result property="email" column="freelancer_email"/>
-            <result property="password" column="freelancer_password"/>
-            <result property="refreshToken" column="freelancer_refresh_token"/>
-            <result property="userType" column="freelancer_user_type"/>
-            <result property="status" column="freelancer_status"/>
-            <result property="name" column="freelancer_name"/>
-            <result property="phone" column="freelancer_phone"/>
-            <result property="birthDate" column="freelancer_birth_date"/>
-            <result property="profileImageUrl" column="freelancer_profile_image_url"/>
-            <result property="createdAt" column="freelancer_created_at"/>
-            <result property="updatedAt" column="freelancer_updated_at"/>
-        </association>
-        <!-- ====================================================================
-             Freelancer Profile 매핑 - 프리랜서 프로필 정보
-             ==================================================================== -->
-        <association property="freelancerProfile" javaType="com.sanaiclub.user.model.vo.FreelancerProfileVO">
-            <id property="freelancerId" column="freelancer_id"/>
-            <result property="nickname" column="nickname"/>
-            <result property="introduction" column="introduction"/>
-            <result property="githubUrl" column="github_url"/>
-            <result property="websiteUrl" column="website_url"/>
-            <result property="schoolName" column="school_name"/>
-            <result property="major" column="major"/>
-            <result property="degree" column="degree"/>
-            <result property="gradStatus" column="grad_status"/>
-            <result property="isProfileComplete" column="is_profile_complete"/>
-        </association>
-        <!-- ====================================================================
-             Client User 매핑 - 클라이언트 사용자 정보
-             ==================================================================== -->
-        <association property="clientUser" javaType="com.sanaiclub.user.model.vo.UserVO">
-            <id property="userId" column="client_user_id"/>
-            <result property="loginId" column="client_login_id"/>
-            <result property="email" column="client_email"/>
-            <result property="password" column="client_password"/>
-            <result property="refreshToken" column="client_refresh_token"/>
-            <result property="userType" column="client_user_type"/>
-            <result property="status" column="client_status"/>
-            <result property="name" column="client_name"/>
-            <result property="phone" column="client_phone"/>
-            <result property="birthDate" column="client_birth_date"/>
-            <result property="profileImageUrl" column="client_profile_image_url"/>
-            <result property="createdAt" column="client_created_at"/>
-            <result property="updatedAt" column="client_updated_at"/>
-        </association>
-        <!-- ====================================================================
-             Client Profile 매핑 - 클라이언트 프로필 정보
-             ==================================================================== -->
-        <association property="clientProfile" javaType="com.sanaiclub.user.model.vo.ClientProfileVO">
-            <id property="clientId" column="client_profile_client_id"/>
-            <result property="companyId" column="company_id"/>
-            <result property="clientType" column="client_type"/>
-        </association>
-        <!-- ====================================================================
-             Company 매핑 - 회사 정보 (클라이언트가 회사인 경우)
-             ==================================================================== -->
-        <association property="company" javaType="com.sanaiclub.user.model.vo.CompanyVO">
-            <id property="companyId" column="company_company_id"/>
-            <result property="companyName" column="company_name"/>
-            <result property="ceoName" column="ceo_name"/>
-            <result property="ceoEmail" column="ceo_email"/>
-            <result property="businessNumber" column="business_number"/>
-            <result property="businessVerified" column="business_verified"/>
-            <result property="industry" column="industry"/>
-            <result property="address" column="address"/>
-            <result property="companySize" column="company_size"/>
-            <result property="websiteUrl" column="company_website_url"/>
-            <result property="createdAt" column="company_created_at"/>
-        </association>
-    </resultMap>
-    
-    <!--
-    ============================================================================
-    selectProjectById - 프로젝트 ID로 프로젝트 정보 조회 (contract 도메인에서 사용)
-    ============================================================================
-    
-    [목적]
-    - 계약서 작성 시 프로젝트 정보가 필요할 때 사용
-    - contract 도메인 내에서 프로젝트 정보를 직접 조회
-    - 다른 도메인 Mapper를 참조하지 않고 contract 도메인 내에서 해결
-    
-    [사용 시나리오]
-    1. 계약서 작성 화면에서 프로젝트 선택
-    2. 선택한 프로젝트의 상세 정보 조회
-    3. 계약서 초안 생성 시 프로젝트 정보 활용
-    
-    [파라미터]
-    - projectId: 조회할 프로젝트의 ID
-    
-    [반환값]
-    - ProjectsVO 객체 (프로젝트 정보)
-    
-    [주의사항]
-    - contract 도메인 내에서 프로젝트 정보를 조회하는 것이므로, 
-      project 도메인의 Mapper를 참조하지 않음
-    - JOIN을 통해 contract 도메인 내에서 해결
-    -->
-    <select id="selectProjectById" parameterType="Integer" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
-        SELECT 
-            project_id as projectId,
-            client_id as clientId,
-            title,
-            description,
-            start_date as startDate,
-            deadline_date as deadlineDate,
-            est_duration as estDuration,
-            budget,
-            communicate_method as communicateMethod,
-            payment_method as paymentMethod,
-            change_policy as changePolicy,
-            max_revision_count as maxRevisionCount,
-            project_status as projectStatus,
-            is_public as isPublic,
-            created_at as createdAt,
-            updated_at as updatedAt,
-            view_count as viewCount,
-            applicant_count as applicantCount,
-            plan_url as planUrl,
-            file_size as fileSize,
-            budget_negotiable as budgetNegotiable,
-            duration_negotiable as durationNegotiable
-        FROM projects
-        WHERE project_id = #{projectId}
-    </select>
-
-    <!--
-    ============================================================================
-    selectProjectsByClientId - 클라이언트 ID로 프로젝트 목록 조회 (contract 도메인에서 사용)
-    ============================================================================
-    
-    [목적]
-    - 계약서 작성 시 클라이언트의 프로젝트 목록이 필요할 때 사용
-    - contract 도메인 내에서 프로젝트 목록을 직접 조회
-    - 다른 도메인 Mapper를 참조하지 않고 contract 도메인 내에서 해결
-    
-    [사용 시나리오]
-    1. 계약서 작성 화면에서 클라이언트의 프로젝트 목록 표시
-    2. 프로젝트 선택 드롭다운에 사용
-    3. READY 상태인 프로젝트만 표시
-    
-    [파라미터]
-    - clientId: 조회할 클라이언트의 ID
-    
-    [반환값]
-    - 프로젝트 목록 (List<ProjectsVO>), READY 상태인 프로젝트만 반환
-    
-    [주의사항]
-    - contract 도메인 내에서 프로젝트 목록을 조회하는 것이므로, 
-      project 도메인의 Mapper를 참조하지 않음
-    - JOIN을 통해 contract 도메인 내에서 해결
-    -->
-    <select id="selectProjectsByClientId" parameterType="Integer" resultType="com.sanaiclub.project.model.vo.ProjectsVO">
-        SELECT 
-            project_id as projectId,
-            client_id as clientId,
-            title,
-            description,
-            start_date as startDate,
-            deadline_date as deadlineDate,
-            est_duration as estDuration,
-            budget,
-            communicate_method as communicateMethod,
-            payment_method as paymentMethod,
-            change_policy as changePolicy,
-            max_revision_count as maxRevisionCount,
-            project_status as projectStatus,
-            is_public as isPublic,
-            created_at as createdAt,
-            updated_at as updatedAt,
-            view_count as viewCount,
-            applicant_count as applicantCount,
-            plan_url as planUrl,
-            file_size as fileSize,
-            budget_negotiable as budgetNegotiable,
-            duration_negotiable as durationNegotiable
-        FROM projects
-        WHERE client_id = #{clientId}
-        AND project_status = 'READY'
-    </select>
-
-    <!--
-    ============================================================================
-    selectFreelancersByProjectId - 프로젝트에 지원한 프리랜서 목록 조회 (contract 도메인에서 사용)
-    ============================================================================
-    
-    [목적]
-    - 계약서 작성 시 프로젝트에 지원한 프리랜서 목록이 필요할 때 사용
-    - contract 도메인 내에서 프리랜서 목록을 직접 조회
-    - 다른 도메인 Mapper를 참조하지 않고 contract 도메인 내에서 해결
-    
-    [사용 시나리오]
-    1. 계약서 작성 화면에서 프로젝트 선택 시
-    2. AJAX로 해당 프로젝트에 지원한 프리랜서 목록 조회
-    3. 프리랜서 선택 드롭다운에 사용
-    
-    [파라미터]
-    - projectId: 조회할 프로젝트의 ID
-    
-    [반환값]
-    - 프리랜서 정보 리스트 (List<Map<String, Object>>)
-      * id: 프리랜서 ID (userId)
-      * name: 프리랜서 이름
-      * email: 프리랜서 이메일
-    
-    [주의사항]
-    - contract 도메인 내에서 프리랜서 목록을 조회하는 것이므로, 
-      project 도메인의 Mapper를 참조하지 않음
-    - JOIN을 통해 contract 도메인 내에서 해결
-    - project_applications와 users 테이블을 JOIN하여 조회
-    -->
-    <select id="selectFreelancersByProjectId" parameterType="Integer" resultType="java.util.HashMap">
-        SELECT 
-            u.user_id as id,
-            u.name,
-            u.email
-        FROM project_applications pa
-        INNER JOIN users u ON u.user_id = pa.freelancer_id
-        WHERE pa.project_id = #{projectId}
-        ORDER BY pa.applied_at DESC
     </select>
     
     <!--
@@ -1390,5 +1011,235 @@ ContractMapper.xml - 계약(Contract) 관련 SQL 쿼리 매퍼
             p.client_id = cu.user_id 
             AND cu.user_type = 'CLIENT'
         WHERE c.contract_id = #{contractId}
+    </select>
+    
+    <!--
+    ============================================================================
+    selectContractsByClientIdWithDetails - 클라이언트의 계약 목록 조회 (프로젝트 및 상대방 정보 포함)
+    ============================================================================
+    
+    [목적]
+    특정 클라이언트의 모든 계약 목록을 조회하되, 프로젝트 이름, 상대방 이름, 마일스톤 상태 집계 정보를
+    함께 조회하는 쿼리입니다. selectAllContractsWithDetails와 동일한 구조이지만
+    클라이언트 ID로 필터링하여 필요한 데이터만 조회합니다.
+    
+    [연관 파일]
+    - ContractService.getContractsByClientId(): 이 쿼리를 호출하여 클라이언트의 계약 목록 조회
+    - ContractResponseDTO: 반환된 Map을 이 DTO로 변환
+    - ClientContractManagementController: 클라이언트 계약 관리 페이지에서 사용
+    
+    [JOIN 구조]
+    selectAllContractsWithDetails와 동일:
+    1. contracts (기본 테이블)
+    2. projects (LEFT JOIN): origin_contract_url에서 projectId 추출하여 조인
+    3. users - 프리랜서 (LEFT JOIN): origin_contract_url에서 freelancerId 추출하여 조인
+    4. users - 클라이언트 (LEFT JOIN): projects.client_id로 조인
+    5. contract_milestones (LEFT JOIN 서브쿼리): 마일스톤 상태 집계
+    
+    [필터링 조건]
+    - origin_contract_url LIKE CONCAT('contracts/', #{clientId}, '/%')
+    - 클라이언트 ID로 시작하는 경로만 조회
+    
+    [반환값]
+    - List<Map<String, Object>>: 각 Map에는 다음 키가 포함됨
+      * 계약 기본 정보: contractId, contractStartDate, contractEndDate, totalBudget, 
+        paymentMethod, contractStatus, originContractUrl, platformContractUrl, 
+        aiReportUrl, contractedAt, completedAt, cancelReason, 평가 관련 필드들
+      * 프로젝트 정보: projectTitle
+      * 프리랜서 정보: freelancerName
+      * 클라이언트 정보: clientName
+      * 마일스톤 집계: totalMilestones, paidMilestones, requestedMilestones, 
+        depositedMilestones, waitingMilestones
+    
+    [정렬]
+    - ORDER BY c.contract_id DESC: 계약 ID 내림차순 (최신 계약이 먼저)
+    
+    [주의사항]
+    - 클라이언트의 계약이 없으면 빈 리스트 반환
+    - 모든 상태의 계약 포함 (TERMINATED 포함)
+    - origin_contract_url이 NULL이거나 형식이 맞지 않으면 조회되지 않음
+    
+    [호출 위치]
+    - ContractService.getContractsByClientId(): 클라이언트의 계약 목록 조회 시
+    -->
+    <select id="selectContractsByClientIdWithDetails" parameterType="int" resultType="java.util.HashMap">
+        SELECT
+            -- Contract 정보
+            c.contract_id as contractId,
+            c.contract_start_date as contractStartDate,
+            c.contract_end_date as contractEndDate,
+            c.total_budget as totalBudget,
+            c.payment_method as paymentMethod,
+            c.contract_status as contractStatus,
+            c.origin_contract_url as originContractUrl,
+            c.platform_contract_url as platformContractUrl,
+            c.ai_report_url as aiReportUrl,
+            c.contracted_at as contractedAt,
+            c.completed_at as completedAt,
+            c.cancel_reason as cancelReason,
+            c.client_rating as clientRating,
+            c.client_experience as clientExperience,
+            c.client_is_renewal_intended as clientIsRenewalIntended,
+            c.freelancer_rating as freelancerRating,
+            c.freelancer_experience as freelancerExperience,
+            -- Project 정보
+            p.title as projectTitle,
+            -- Freelancer 정보
+            fu.name as freelancerName,
+            -- Client 정보
+            cu.name as clientName,
+            -- 마일스톤 상태 집계
+            COALESCE(ms.total_milestones, 0) as totalMilestones,
+            COALESCE(ms.paid_milestones, 0) as paidMilestones,
+            COALESCE(ms.requested_milestones, 0) as requestedMilestones,
+            COALESCE(ms.deposited_milestones, 0) as depositedMilestones,
+            COALESCE(ms.waiting_milestones, 0) as waitingMilestones
+        FROM contracts c
+        -- 프로젝트 정보 조인
+        LEFT JOIN projects p ON 
+            c.origin_contract_url IS NOT NULL
+            AND c.origin_contract_url LIKE 'contracts/%/%/%'
+            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+        -- 프리랜서 정보 조인
+        LEFT JOIN users fu ON 
+            c.origin_contract_url IS NOT NULL
+            AND c.origin_contract_url LIKE 'contracts/%/%/%'
+            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+            AND fu.user_type = 'FREELANCER'
+        -- 클라이언트 정보 조인
+        LEFT JOIN users cu ON 
+            p.client_id = cu.user_id 
+            AND cu.user_type = 'CLIENT'
+        -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
+        LEFT JOIN (
+            SELECT 
+                contract_id,
+                COUNT(*) as total_milestones,
+                SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_milestones,
+                SUM(CASE WHEN status = 'REQUESTED' THEN 1 ELSE 0 END) as requested_milestones,
+                SUM(CASE WHEN status = 'DEPOSITED' THEN 1 ELSE 0 END) as deposited_milestones,
+                SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END) as waiting_milestones
+            FROM contract_milestones
+            GROUP BY contract_id
+        ) ms ON c.contract_id = ms.contract_id
+        WHERE c.origin_contract_url LIKE CONCAT('contracts/', #{clientId}, '/%')
+        ORDER BY c.contract_id DESC
+    </select>
+    
+    <!--
+    ============================================================================
+    selectContractsByFreelancerIdWithDetails - 프리랜서의 계약 목록 조회 (프로젝트 및 상대방 정보 포함)
+    ============================================================================
+    
+    [목적]
+    특정 프리랜서의 모든 계약 목록을 조회하되, 프로젝트 이름, 상대방 이름, 마일스톤 상태 집계 정보를
+    함께 조회하는 쿼리입니다. selectAllContractsWithDetails와 동일한 구조이지만
+    프리랜서 ID로 필터링하여 필요한 데이터만 조회합니다.
+    
+    [연관 파일]
+    - ContractService.getContractsByFreelancerId(): 이 쿼리를 호출하여 프리랜서의 계약 목록 조회
+    - ContractResponseDTO: 반환된 Map을 이 DTO로 변환
+    - FreelancerContractController: 프리랜서 계약 목록 페이지에서 사용
+    
+    [JOIN 구조]
+    selectAllContractsWithDetails와 동일:
+    1. contracts (기본 테이블)
+    2. projects (LEFT JOIN): origin_contract_url에서 projectId 추출하여 조인
+    3. users - 프리랜서 (LEFT JOIN): origin_contract_url에서 freelancerId 추출하여 조인
+    4. users - 클라이언트 (LEFT JOIN): projects.client_id로 조인
+    5. contract_milestones (LEFT JOIN 서브쿼리): 마일스톤 상태 집계
+    
+    [필터링 조건]
+    - origin_contract_url에서 freelancerId 추출
+    - 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
+    - SUBSTRING_INDEX로 경로의 4번째 부분(freelancerId) 추출
+    - 추출한 freelancerId가 #{freelancerId}와 일치하는 계약만 조회
+    
+    [반환값]
+    - List<Map<String, Object>>: 각 Map에는 다음 키가 포함됨
+      * 계약 기본 정보: contractId, contractStartDate, contractEndDate, totalBudget, 
+        paymentMethod, contractStatus, originContractUrl, platformContractUrl, 
+        aiReportUrl, contractedAt, completedAt, cancelReason, 평가 관련 필드들
+      * 프로젝트 정보: projectTitle
+      * 프리랜서 정보: freelancerName
+      * 클라이언트 정보: clientName
+      * 마일스톤 집계: totalMilestones, paidMilestones, requestedMilestones, 
+        depositedMilestones, waitingMilestones
+    
+    [정렬]
+    - ORDER BY c.contract_id DESC: 계약 ID 내림차순 (최신 계약이 먼저)
+    
+    [주의사항]
+    - 프리랜서의 계약이 없으면 빈 리스트 반환
+    - 모든 상태의 계약 포함 (TERMINATED 포함)
+    - origin_contract_url이 NULL이거나 형식이 맞지 않으면 조회되지 않음
+    
+    [호출 위치]
+    - ContractService.getContractsByFreelancerId(): 프리랜서의 계약 목록 조회 시
+    -->
+    <select id="selectContractsByFreelancerIdWithDetails" parameterType="int" resultType="java.util.HashMap">
+        SELECT
+            -- Contract 정보
+            c.contract_id as contractId,
+            c.contract_start_date as contractStartDate,
+            c.contract_end_date as contractEndDate,
+            c.total_budget as totalBudget,
+            c.payment_method as paymentMethod,
+            c.contract_status as contractStatus,
+            c.origin_contract_url as originContractUrl,
+            c.platform_contract_url as platformContractUrl,
+            c.ai_report_url as aiReportUrl,
+            c.contracted_at as contractedAt,
+            c.completed_at as completedAt,
+            c.cancel_reason as cancelReason,
+            c.client_rating as clientRating,
+            c.client_experience as clientExperience,
+            c.client_is_renewal_intended as clientIsRenewalIntended,
+            c.freelancer_rating as freelancerRating,
+            c.freelancer_experience as freelancerExperience,
+            -- Project 정보
+            p.title as projectTitle,
+            -- Freelancer 정보
+            fu.name as freelancerName,
+            -- Client 정보
+            cu.name as clientName,
+            -- 마일스톤 상태 집계
+            COALESCE(ms.total_milestones, 0) as totalMilestones,
+            COALESCE(ms.paid_milestones, 0) as paidMilestones,
+            COALESCE(ms.requested_milestones, 0) as requestedMilestones,
+            COALESCE(ms.deposited_milestones, 0) as depositedMilestones,
+            COALESCE(ms.waiting_milestones, 0) as waitingMilestones
+        FROM contracts c
+        -- 프로젝트 정보 조인
+        LEFT JOIN projects p ON 
+            c.origin_contract_url IS NOT NULL
+            AND c.origin_contract_url LIKE 'contracts/%/%/%'
+            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+        -- 프리랜서 정보 조인
+        LEFT JOIN users fu ON 
+            c.origin_contract_url IS NOT NULL
+            AND c.origin_contract_url LIKE 'contracts/%/%/%'
+            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+            AND fu.user_type = 'FREELANCER'
+        -- 클라이언트 정보 조인
+        LEFT JOIN users cu ON 
+            p.client_id = cu.user_id 
+            AND cu.user_type = 'CLIENT'
+        -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
+        LEFT JOIN (
+            SELECT 
+                contract_id,
+                COUNT(*) as total_milestones,
+                SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_milestones,
+                SUM(CASE WHEN status = 'REQUESTED' THEN 1 ELSE 0 END) as requested_milestones,
+                SUM(CASE WHEN status = 'DEPOSITED' THEN 1 ELSE 0 END) as deposited_milestones,
+                SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END) as waiting_milestones
+            FROM contract_milestones
+            GROUP BY contract_id
+        ) ms ON c.contract_id = ms.contract_id
+        WHERE c.origin_contract_url IS NOT NULL
+          AND c.origin_contract_url LIKE 'contracts/%/%/%'
+          AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = #{freelancerId}
+        ORDER BY c.contract_id DESC
     </select>
 </mapper>

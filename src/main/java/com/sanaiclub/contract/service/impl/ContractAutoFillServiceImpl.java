@@ -1,8 +1,9 @@
-package com.sanaiclub.contract.service;
+package com.sanaiclub.contract.service.impl;
 
 import com.sanaiclub.contract.model.dto.ContractAutoFillDTO;
 import com.sanaiclub.contract.service.PDFProcessingService;
 import com.sanaiclub.contract.service.ContractAIService;
+import com.sanaiclub.contract.service.ContractAutoFillService;
 
 import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.user.model.vo.UserVO;
@@ -15,38 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 
-/**
- * ============================================================================
- * ContractAutoFillServiceImpl - 계약 자동 초안 생성 서비스 구현체
- * ============================================================================
- * 
- * [역할]
- * - ContractAutoFillService 인터페이스의 구현체
- * - PDF 계약서, 사용자 입력 내용, 프로젝트/프리랜서 정보를 종합하여
- *   AI가 계약 주요 정보 초안을 생성하는 서비스
- * 
- * [처리 흐름]
- * 1. 파라미터 검증 (프로젝트, 프리랜서 정보 확인)
- * 2. 날짜 계산 (프로젝트 기간 기반)
- * 3. PDF 텍스트 추출 (PDF가 있는 경우)
- * 4. 프롬프트 템플릿 로딩
- * 5. 프롬프트 완성 (모든 치환 필드 명시)
- * 6. AI API 호출
- * 7. JSON 응답 파싱 및 DTO 변환
- * 
- * [의존성]
- * - PDFProcessingService: PDF 텍스트 추출
- * - ContractAIService: AI API 호출
- * - PromptTemplateLoader: 프롬프트 템플릿 로딩
- * 
- * [책임 분리]
- * - PDF 처리: PDFProcessingService에 위임
- * - AI 호출: ContractAIService에 위임
- * - 프롬프트 생성: 이 서비스에서 담당
- * - JSON 파싱: 이 서비스에서 담당
- * 
- * ============================================================================
- */
+/** 계약 자동 초안 생성 서비스 구현체. PDF/사용자 입력/프로젝트/프리랜서 정보를 AI로 분석하여 계약 초안 생성. */
 @Slf4j
 @Service
 public class ContractAutoFillServiceImpl implements ContractAutoFillService {
@@ -54,12 +24,6 @@ public class ContractAutoFillServiceImpl implements ContractAutoFillService {
     private final PDFProcessingService pdfProcessingService;
     private final ContractAIService contractAIService;
 
-    /**
-     * 생성자 주입
-     * 
-     * @param pdfProcessingService PDF 처리 서비스
-     * @param contractAIService AI 호출 서비스
-     */
     public ContractAutoFillServiceImpl(
             PDFProcessingService pdfProcessingService,
             ContractAIService contractAIService
@@ -68,35 +32,7 @@ public class ContractAutoFillServiceImpl implements ContractAutoFillService {
         this.contractAIService = contractAIService;
     }
 
-    /**
-     * 계약 주요 정보 초안 생성
-     * 
-     * [기능]
-     * - PDF 계약서, 사용자 입력 내용, 프로젝트/프리랜서 정보를 종합하여
-     *   AI가 계약 주요 정보 초안을 생성
-     * 
-     * [처리 흐름]
-     * 1. 파라미터 검증: 프로젝트, 프리랜서 정보 확인
-     * 2. 날짜 계산: 프로젝트 기간 기반으로 계약 기간 설정
-     *    - 시작일: 프로젝트 시작일 또는 현재 + 7일
-     *    - 종료일: 프로젝트 마감일 또는 시작일 + 2개월
-     * 3. PDF 텍스트 추출: PDF가 있으면 텍스트 추출
-     * 4. 프롬프트 템플릿 로딩: contract_autofill_prompt.txt 로드
-     * 5. 프롬프트 완성: 모든 치환 필드(${...})를 실제 값으로 치환
-     * 6. AI API 호출: ContractAIService.requestContractDraft() 호출
-     * 7. JSON 파싱: AI 응답을 ContractAutoFillDTO로 변환
-     * 
-     * [프롬프트 치환 필드]
-     * - ${projectId}, ${projectTitle}, ${projectDescription}, ${projectBudget}
-     * - ${projectStartDate}, ${projectDeadlineDate}, ${projectEstDuration}
-     * - ${projectPaymentMethod}, ${communicateMethod}
-     * - ${freelancerId}, ${freelancerName}, ${freelancerEmail}
-     * - ${manualContractText}, ${pdfText}
-     * 
-     * [에러 처리]
-     * - PDF 추출 실패: 빈 문자열로 처리하고 계속 진행
-     * - AI 호출 실패: IllegalStateException 발생
-     * - JSON 파싱 실패: IllegalStateException 발생
+    /** 계약 주요 정보 초안 생성. PDF/사용자 입력/프로젝트/프리랜서 정보를 AI로 분석하여 계약 초안 생성.
      * 
      * @param pdfFile 업로드된 PDF 계약서 (없을 수도 있음, null 가능)
      * @param manualText 사용자가 직접 작성한 계약 내용 (없을 수도 있음, null 가능)
