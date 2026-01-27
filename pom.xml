@@ -49,8 +49,19 @@
     <jsp.version>2.3.3</jsp.version>
     <jstl.version>1.2</jstl.version>
   </properties>
-
+  <!-- ===== Web Socket ===== -->
   <dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-websocket</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-messaging</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+
     <!-- ===== Spring Framework ===== -->
     <dependency>
       <groupId>org.springframework</groupId>
