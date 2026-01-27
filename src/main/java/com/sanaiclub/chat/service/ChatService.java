@@ -32,10 +32,6 @@ public class ChatService {
         return rooms;
     }
 
-    public Map<String, Object> getRoomParticipants(int roomId) {
-        return chatRoomMapper.findParticipantsByRoomId(roomId);
-    }
-
     @Transactional
     public ChatMessageDTO sendAndReturnMessage(Integer roomId, Integer senderId, String content, String fileName, String fileUrl, Long fileSize) {
         chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
