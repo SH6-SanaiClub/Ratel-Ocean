@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProjectCreateService {
-    private static final String UPLOAD_DIR = "D:\\workspace\\Ratel-Ocean\\src\\main\\webapp\\resources\\upload\\project\\";
+    private static final String UPLOAD_DIR = "C:\\Users\\fzaca\\IdeaProjects\\Ratel-Ocean\\src\\main\\webapp\\resources\\upload\\project\\";
 
     private final ProjectCreateMapper projectCreateMapper;
     private final StackMapper stackMapper;
