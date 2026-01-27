@@ -711,7 +711,7 @@
 
         bubbles.forEach(bubble => {
             const text = bubble.innerText;
-            if (text.includes(keyword)) {
+            if (text.toLowerCase().includes(keyword)) {
                 // 키워드 하이라이트 (노란색 배경)
                 const regex = new RegExp(`(${keyword})`, "gi");
                 bubble.innerHTML = text.replace(regex, '<span class="search-highlight" style="background: yellow; font-weight: bold;">$1</span>');
@@ -786,6 +786,17 @@
             console.error("STOMP connection error:", error);
         });
     }
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // 엔터키의 기본 동작(폼 제출 등) 방지
+                    searchMessages();
+                }
+            });
+        }
+    });
     document.getElementById("fileInput").addEventListener("change", function () {
         const file = this.files[0];
 
