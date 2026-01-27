@@ -47,54 +47,46 @@ public class ContractService {
             ? dto.getContractStatus() 
             : ContractStatus.WAITING;
         
-        // 계약 체결 시각 설정
         String contractedAt = java.time.LocalDateTime.now()
             .toString()
             .substring(0, 19)
             .replace('T', ' ');
         
-        // ContractVO 객체 생성
         ContractVO contract = ContractVO.builder()
-            .contractStartDate(dto.getContractStartDate())      // 계약 시작일
-            .contractEndDate(dto.getContractEndDate())          // 계약 종료일
-            .totalBudget(dto.getTotalBudget())                  // 총 예산
-            .paymentMethod(dto.getPaymentMethod())              // 결제 방식
-            .contractStatus(contractStatus)                      // 계약 상태 (기본값: WAITING)
-            .originContractUrl(dto.getOriginContractUrl())      // 원본 계약서 경로 (선택)
-            .contractedAt(contractedAt)                          // 계약 체결 시각
+            .contractStartDate(dto.getContractStartDate())
+            .contractEndDate(dto.getContractEndDate())
+            .totalBudget(dto.getTotalBudget())
+            .paymentMethod(dto.getPaymentMethod())
+            .contractStatus(contractStatus)
+            .originContractUrl(dto.getOriginContractUrl())
+            .contractedAt(contractedAt)
             .build();
 
-        // 2단계: 계약 정보 저장
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
         contractMapper.insertContract(contract, resultMap);
         
-        // 생성된 계약 ID 추출
         Integer contractId = (Integer) resultMap.get("contractId");
 
-        // 마일스톤 저장
         if (dto.getMilestones() != null && !dto.getMilestones().isEmpty() && contractId != null) {
-            // 각 마일스톤을 순회하며 저장
             for (ContractMilestoneRequestDTO milestoneDto : dto.getMilestones()) {
                 contractMilestoneMapper.insertMilestone(
-                    contractId,                                 // 계약 ID (FK)
-                    milestoneDto.getStep(),                    // 단계 순서 (1, 2, 3, ...)
-                    milestoneDto.getTitle(),                   // 마일스톤 제목
-                    milestoneDto.getDescription(),             // 작업 범위/설명
-                    milestoneDto.getAmount()                   // 해당 마일스톤의 결제 금액
+                    contractId,
+                    milestoneDto.getStep(),
+                    milestoneDto.getTitle(),
+                    milestoneDto.getDescription(),
+                    milestoneDto.getAmount()
                 );
             }
         } else if ("FULL".equals(dto.getPaymentMethod()) && contractId != null) {
-            // FULL 방식: 전액 지급용 마일스톤 1개 자동 생성
             contractMilestoneMapper.insertMilestone(
                     contractId,
-                    1,                              // step: 1
-                    "프로젝트 완료 시 전액 지급",              // title
-                    "프로젝트 완료 후 전체 금액 일괄 지급",      // description
-                    dto.getTotalBudget()                // amount: 전체 예산
+                    1,
+                    "프로젝트 완료 시 전액 지급",
+                    "프로젝트 완료 후 전체 금액 일괄 지급",
+                    dto.getTotalBudget()
             );
         }
         
-        // 생성된 계약 ID 반환
         return contractId;
     }
 
@@ -102,39 +94,18 @@ public class ContractService {
      * 계약 단건 조회
      */
     public ContractResponseDTO getContractById(Integer contractId) {
-        // ====================================================================
-        // 1단계: 계약 정보 조회
-        // ====================================================================
-        
         ContractVO contract = contractMapper.selectContractById(contractId);
         if (contract == null) {
-            // 계약이 존재하지 않으면 null 반환
-            // Controller에서 404 에러 처리 또는 적절한 응답 반환
             return null;
         }
         
-        // ====================================================================
-        // 2단계: VO → DTO 변환
-        // ====================================================================
-        
-        // ContractVO를 ContractResponseDTO로 변환
-        // originContractUrl에서 projectId와 freelancerId 추출 포함
         ContractResponseDTO dto = toResponseDTO(contract);
         
-        // ====================================================================
-        // 3단계: 마일스톤 정보 조회 및 변환
-        // ====================================================================
-        
-        // 계약의 마일스톤 목록 조회
-        // 결제 방식이 MILESTONE인 경우에만 마일스톤 존재
         List<ContractMilestoneVO> milestoneVOs = contractMilestoneMapper.selectMilestonesByContractId(contractId);
-        
-        // 마일스톤이 존재하면 DTO로 변환하여 설정
         if (milestoneVOs != null && !milestoneVOs.isEmpty()) {
-            // Stream API를 사용하여 VO 리스트를 DTO 리스트로 변환
             List<ContractMilestoneResponseDTO> milestoneDTOs = milestoneVOs.stream()
-                .map(this::toMilestoneResponseDTO)  // 각 VO를 DTO로 변환
-                .collect(Collectors.toList());       // 리스트로 수집
+                .map(this::toMilestoneResponseDTO)
+                .collect(Collectors.toList());
             dto.setMilestones(milestoneDTOs);
         }
         
@@ -202,82 +173,44 @@ public class ContractService {
      */
     @Transactional
     public void updateContract(ContractUpdateRequestDTO dto) {
-        // ====================================================================
-        // 1단계: 계약 상태 설정
-        // ====================================================================
-        
-        // 계약 상태가 설정되지 않았으면 기본값 WAITING으로 설정
-        // WAITING은 계약 수정 후에도 기본 상태로 유지
         ContractStatus contractStatus = dto.getContractStatus() != null ? dto.getContractStatus() : ContractStatus.WAITING;
         
-        // ====================================================================
-        // 2단계: 기존 계약 조회
-        // ====================================================================
-        
-        // 기존 계약 정보를 조회하여 기존 값 유지
-        // contracted_at, platformContractUrl, aiReportUrl 등은 수정하지 않고 기존 값 유지
         ContractVO existingContract = contractMapper.selectContractById(dto.getContractId());
         if (existingContract == null) {
             throw new IllegalStateException("계약을 찾을 수 없습니다: " + dto.getContractId());
         }
         
-        // ====================================================================
-        // 3단계: DTO → VO 변환 (기존 값 유지)
-        // ====================================================================
-        
-        // DTO의 값으로 업데이트하되, 일부 필드는 기존 값 유지
         ContractVO contract = ContractVO.builder()
-            .contractId(dto.getContractId())                                    // 계약 ID (수정 불가)
-            .contractStartDate(dto.getContractStartDate())                      // 계약 시작일 (수정)
-            .contractEndDate(dto.getContractEndDate())                          // 계약 종료일 (수정)
-            .totalBudget(dto.getTotalBudget())                                  // 총 예산 (수정)
-            .paymentMethod(dto.getPaymentMethod())                              // 결제 방식 (수정)
-            .contractStatus(contractStatus)                                      // 계약 상태 (수정 또는 기본값)
-            .originContractUrl(dto.getOriginContractUrl())                      // 원본 계약서 경로 (수정)
-            .platformContractUrl(existingContract.getPlatformContractUrl())     // 플랫폼 계약서 경로 (기존 값 유지)
-            .aiReportUrl(existingContract.getAiReportUrl())                      // AI 리포트 경로 (기존 값 유지)
-            .contractedAt(existingContract.getContractedAt())                    // 계약 체결 시각 (기존 값 유지)
-            .completedAt(existingContract.getCompletedAt())                     // 계약 완료 시각 (기존 값 유지)
-            .cancelReason(existingContract.getCancelReason())                    // 취소 사유 (기존 값 유지)
-            .clientRating(existingContract.getClientRating())                   // 클라이언트 평점 (기존 값 유지)
-            .clientExperience(existingContract.getClientExperience())            // 클라이언트 경험 평가 (기존 값 유지)
-            .clientIsRenewalIntended(existingContract.getClientIsRenewalIntended()) // 재계약 의향 (기존 값 유지)
-            .freelancerRating(existingContract.getFreelancerRating())            // 프리랜서 평점 (기존 값 유지)
-            .freelancerExperience(existingContract.getFreelancerExperience())    // 프리랜서 경험 평가 (기존 값 유지)
+            .contractId(dto.getContractId())
+            .contractStartDate(dto.getContractStartDate())
+            .contractEndDate(dto.getContractEndDate())
+            .totalBudget(dto.getTotalBudget())
+            .paymentMethod(dto.getPaymentMethod())
+            .contractStatus(contractStatus)
+            .originContractUrl(dto.getOriginContractUrl())
+            .platformContractUrl(existingContract.getPlatformContractUrl())
+            .aiReportUrl(existingContract.getAiReportUrl())
+            .contractedAt(existingContract.getContractedAt())
+            .completedAt(existingContract.getCompletedAt())
+            .cancelReason(existingContract.getCancelReason())
+            .clientRating(existingContract.getClientRating())
+            .clientExperience(existingContract.getClientExperience())
+            .clientIsRenewalIntended(existingContract.getClientIsRenewalIntended())
+            .freelancerRating(existingContract.getFreelancerRating())
+            .freelancerExperience(existingContract.getFreelancerExperience())
             .build();
         
-        // ====================================================================
-        // 4단계: 기존 마일스톤 삭제
-        // ====================================================================
-        
-        // 기존 마일스톤을 모두 삭제
-        // 새로운 마일스톤으로 전체 교체하기 위한 작업
-        // 부분 수정이 아닌 전체 교체 방식 사용
         contractMilestoneMapper.deleteMilestonesByContractId(dto.getContractId());
-        
-        // ====================================================================
-        // 5단계: 계약 정보 업데이트
-        // ====================================================================
-        
-        // 계약 정보를 업데이트
-        // 모든 컬럼을 업데이트하지만, 일부는 기존 값으로 유지됨
         contractMapper.updateContract(contract);
         
-        // ====================================================================
-        // 6단계: 새로운 마일스톤 추가
-        // ====================================================================
-        
-        // 새로운 마일스톤이 있으면 추가
-        // 마일스톤이 없으면 삭제만 수행 (새로 추가하지 않음)
         if (dto.getMilestones() != null && !dto.getMilestones().isEmpty()) {
-            // 각 마일스톤을 순회하며 저장
             for (ContractMilestoneRequestDTO milestoneDto : dto.getMilestones()) {
                 contractMilestoneMapper.insertMilestone(
-                    dto.getContractId(),                    // 계약 ID (FK)
-                    milestoneDto.getStep(),                 // 단계 순서
-                    milestoneDto.getTitle(),                // 마일스톤 제목
-                    milestoneDto.getDescription(),           // 작업 범위/설명
-                    milestoneDto.getAmount()                // 결제 금액
+                    dto.getContractId(),
+                    milestoneDto.getStep(),
+                    milestoneDto.getTitle(),
+                    milestoneDto.getDescription(),
+                    milestoneDto.getAmount()
                 );
             }
         }
@@ -287,13 +220,10 @@ public class ContractService {
      * 클라이언트의 계약 목록 조회
      */
     public List<ContractResponseDTO> getContractsByClientPathPattern(String pathPattern) {
-        // 경로 패턴으로 계약 목록 조회
         List<ContractVO> contracts = contractMapper.selectContractsByClientPathPattern(pathPattern);
-        
-        // VO 리스트를 DTO 리스트로 변환
         return contracts.stream()
-            .map(this::toResponseDTO)  // 각 VO를 DTO로 변환
-            .collect(Collectors.toList());  // 리스트로 수집
+            .map(this::toResponseDTO)
+            .collect(Collectors.toList());
     }
     
     /**
@@ -324,18 +254,13 @@ public class ContractService {
      * 모든 계약 목록 조회 (프리랜서용)
      */
     public List<ContractResponseDTO> getAllContracts() {
-        // 모든 계약 조회
         List<ContractVO> contracts = contractMapper.selectAllContracts();
-        
-        // VO 리스트를 DTO 리스트로 변환
         return contracts.stream()
-            .map(this::toResponseDTO)  // 각 VO를 DTO로 변환
-            .collect(Collectors.toList());  // 리스트로 수집
+            .map(this::toResponseDTO)
+            .collect(Collectors.toList());
     }
     
-    // =========================================================
     // VO ↔ DTO 변환 메서드
-    // =========================================================
     
     /**
      * ContractVO → ContractResponseDTO 변환
@@ -880,6 +805,53 @@ public class ContractService {
     // =========================================================
     // 지급 관련 메서드들 (ContractCommandService에서 가져옴)
     // =========================================================
+    
+    /**
+     * 프리랜서 지급 요청. 마일스톤: WAITING → REQUESTED, 일시지급: cancel_reason에 "[지급요청]" 저장.
+     */
+    @Transactional
+    public int requestPayment(Integer contractId, Integer step) {
+        // 계약 상태 확인
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+        if (contract.getContractStatus() != ContractStatus.PAID 
+                && contract.getContractStatus() != ContractStatus.COMPLETED) {
+            throw new IllegalStateException("결제 완료된 계약만 지급 요청할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+        }
+        
+        // 일시지급인 경우 (FIXED, FULL, 또는 paymentMethod가 null)
+        if ("FIXED".equals(contract.getPaymentMethod()) 
+                || "FULL".equals(contract.getPaymentMethod()) 
+                || contract.getPaymentMethod() == null) {
+            contractMapper.updateCancelReason(contractId, "[지급요청]");
+            logger.info("일시지급 요청: contractId={}", contractId);
+            return 1;
+        }
+        
+        // 마일스톤 상태 업데이트: WAITING → REQUESTED
+        if (step == null) {
+            // 모든 WAITING 마일스톤을 REQUESTED로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            int count = 0;
+            
+            for (ContractMilestoneVO milestone : milestones) {
+                if (milestone.getStatus() == MilestoneStatus.WAITING) {
+                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), MilestoneStatus.REQUESTED.name());
+                    count++;
+                }
+            }
+            
+            logger.info("모든 마일스톤 지급 요청: contractId={}, count={}", contractId, count);
+            return count;
+        } else {
+            // 특정 마일스톤만 REQUESTED로 변경
+            int updated = contractMilestoneMapper.updateMilestoneStatus(contractId, step, MilestoneStatus.REQUESTED.name());
+            logger.info("마일스톤 지급 요청: contractId={}, step={}", contractId, step);
+            return updated;
+        }
+    }
     
     /**
      * 클라이언트 지급 수락. 마일스톤: REQUESTED → DEPOSITED, 일시지급: PAID → COMPLETED.

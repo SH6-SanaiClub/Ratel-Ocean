@@ -12,7 +12,7 @@ import java.util.List;
 public interface ContractMapper {
 
     /** 새 계약 생성. INSERT 후 생성된 contract_id를 resultMap에 반환. */
-    int insertContract(@Param("contract") ContractVO contract, @Param("contractId") java.util.Map<String, Object> resultMap);
+    int insertContract(@Param("contract") ContractVO contract, @Param("resultMap") java.util.Map<String, Object> resultMap);
 
     /** 계약 ID로 계약 정보 조회. */
     ContractVO selectContractById(

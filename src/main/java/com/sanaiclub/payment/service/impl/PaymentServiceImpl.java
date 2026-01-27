@@ -4,6 +4,7 @@ package com.sanaiclub.payment.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sanaiclub.contract.dao.ContractMapper;
 import com.sanaiclub.contract.dao.ContractMilestoneMapper;
+import com.sanaiclub.contract.model.dto.ContractDetailDTO;
 import com.sanaiclub.contract.model.vo.*;
 import com.sanaiclub.payment.dao.PaymentMapper;
 import com.sanaiclub.payment.model.dto.*;
@@ -11,6 +12,8 @@ import com.sanaiclub.payment.model.vo.PaymentTransactionStatus;
 import com.sanaiclub.payment.model.vo.PaymentVO;
 import com.sanaiclub.payment.service.PaymentService;
 import com.sanaiclub.payment.util.*;
+import com.sanaiclub.project.dao.ProjectDetailMapper;
+import com.sanaiclub.project.model.vo.ProjectStatus;
 import com.sanaiclub.user.dao.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -33,6 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final ContractMapper contractMapper;
     private final ContractMilestoneMapper contractMilestoneMapper;
+    private final ProjectDetailMapper projectDetailMapper;
     private final UserMapper userMapper;
     private final PortoneApiClient portoneApiClient;
 
@@ -143,10 +147,23 @@ public class PaymentServiceImpl implements PaymentService {
             // Note: PaymentStatus는 별도 테이블이 없으므로 계약 상태로 관리
             // contractMapper.updatePaymentStatus(contractId, PaymentStatus.PAID.name());
 
+            // 8. 프로젝트 상태 업데이트 (READY → IN_PROGRESS)
+            ContractDetailDTO contractDetail = contractMapper.selectContractDetailWithJoin(contractId);
+            if (contractDetail != null && contractDetail.getProjectId() != null) {
+                projectDetailMapper.updateProjectStatus(
+                        contractDetail.getProjectId(),
+                        ProjectStatus.IN_PROGRESS.name()
+                );
+                logger.info("프로젝트 상태 업데이트: projectId={}, status=IN_PROGRESS",
+                        contractDetail.getProjectId());
+            } else {
+                logger.warn("프로젝트 상태 업데이트 실패: contractId={}, projectId를 찾을 수 없습니다.", contractId);
+            }
+
             logger.info("결제 완료: paymentId={}, contractId={}, amount={}",
                     payment.getPaymentId(), contractId, actualAmount);
 
-            // 8. 응답 DTO 생성
+            // 9. 응답 DTO 생성
             return buildPaymentResponseDTO(payment, true, "결제가 완료되었습니다.");
 
         } catch (Exception e) {

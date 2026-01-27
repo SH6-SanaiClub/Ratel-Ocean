@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Builder
 public class ContractMilestoneVO {
     
-    private final Long milestoneId;
+    private final Integer milestoneId;
     private final Integer contractId;
     private final Integer step;
     private final String title;
