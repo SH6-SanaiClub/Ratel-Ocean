@@ -143,26 +143,56 @@ public class PortoneApiClient {
      * @throws Exception 조회 실패 시
      */
     public JsonNode getPaymentInfo(String impUid) throws Exception {
-        String accessToken = getAccessToken();
-        String url = apiUrl + "/payments/" + impUid;
+        int maxRetries = 3;
+        int retryDelay = 2000; // 2초
 
-        logger.info("결제 정보 조회 요청: imp_uid={}", impUid);
+        Exception lastException = null;
 
-        String response = sendGetRequest(url, accessToken);
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                String accessToken = getAccessToken();
+                String url = apiUrl + "/payments/" + impUid + "?include_sandbox=true";
 
-        JsonNode jsonNode = objectMapper.readTree(response);
-        int code = jsonNode.get("code").asInt();
+                logger.info("결제 정보 조회 시도 {}/{}: imp_uid={}", attempt, maxRetries, impUid);
 
-        if (code != 0) {
-            String message = jsonNode.has("message") ? jsonNode.get("message").asText() : "Unknown error";
-            logger.error("결제 정보 조회 실패: code={}, message={}", code, message);
-            throw new Exception("결제 정보 조회 실패: " + message);
+                String response = sendGetRequest(url, accessToken);
+
+                JsonNode jsonNode = objectMapper.readTree(response);
+                int code = jsonNode.get("code").asInt();
+
+                if (code != 0) {
+                    String message = jsonNode.has("message") ?
+                            jsonNode.get("message").asText() : "Unknown error";
+                    logger.error("결제 정보 조회 실패: code={}, message={}", code, message);
+                    throw new Exception("결제 정보 조회 실패: " + message);
+                }
+
+                JsonNode paymentInfo = jsonNode.get("response");
+                String status = paymentInfo.has("status") ? paymentInfo.get("status").asText() : "unknown";
+                logger.info("✅ 결제 정보 조회 성공 (시도 {}): imp_uid={}, status={}",
+                        attempt, impUid, status);
+
+                return paymentInfo;
+
+            } catch (Exception e) {
+                lastException = e;
+                logger.warn("❌ 결제 정보 조회 실패 (시도 {}/{}): {}",
+                        attempt, maxRetries, e.getMessage());
+
+                // 마지막 시도가 아니면 재시도
+                if (attempt < maxRetries) {
+                    logger.info("⏳ {}ms 후 재시도...", retryDelay);
+                    try {
+                        Thread.sleep(retryDelay);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new Exception("재시도 중 인터럽트 발생", ie);
+                    }
+                }
+            }
         }
-
-        JsonNode paymentInfo = jsonNode.get("response");
-        logger.info("결제 정보 조회 성공: imp_uid={}, amount={}", impUid, paymentInfo.get("amount").asLong());
-
-        return paymentInfo;
+        logger.error("💥 결제 정보 조회 최종 실패 ({}회 시도): impUid={}", maxRetries, impUid);
+        throw new Exception("결제 정보 조회 실패 (모든 재시도 실패): " + lastException.getMessage(), lastException);
     }
 
     /**
@@ -206,9 +236,15 @@ public class PortoneApiClient {
 
         Map<String, Object> params = new HashMap<>();
         params.put("imp_uid", impUid);
-        params.put("amount", refundAmount);
         params.put("checksum", checksum);
-        params.put("reason", reason);
+
+        if (refundAmount != null) {
+            params.put("amount", refundAmount);
+        }
+
+        if (reason != null && !reason.isEmpty()) {
+            params.put("reason", reason);
+        }
 
         String requestBody = objectMapper.writeValueAsString(params);
 
@@ -250,8 +286,11 @@ public class PortoneApiClient {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 return readResponse(conn);
             } else {
-                logger.error("HTTP 요청 실패: responseCode={}", responseCode);
-                throw new Exception("HTTP 요청 실패: " + responseCode);
+                // ✅ 에러 응답 본문 읽기
+                String errorBody = readErrorResponse(conn);
+                logger.error("🚨 HTTP GET 요청 실패: responseCode={}, url={}", responseCode, urlString);
+                logger.error("🚨 에러 응답 본문: {}", errorBody);
+                throw new Exception("HTTP 요청 실패: " + responseCode + " - " + errorBody);
             }
         } finally {
             conn.disconnect();
@@ -311,6 +350,44 @@ public class PortoneApiClient {
             }
 
             return response.toString();
+        }
+    }
+
+    /**
+     * HTTP 에러 응답 읽기 (실패 시)
+     * ✅ 새로 추가된 메서드
+     */
+    private String readErrorResponse(HttpURLConnection conn) {
+        try {
+            // 에러 스트림이 없으면 일반 응답 스트림 시도
+            if (conn.getErrorStream() == null) {
+                logger.warn("에러 스트림이 없습니다. 일반 응답 스트림을 시도합니다.");
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        response.append(line);
+                    }
+                    return response.toString();
+                } catch (Exception e) {
+                    return "No error stream available and failed to read input stream";
+                }
+            }
+
+            // 에러 스트림에서 응답 읽기
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line);
+                }
+                return response.toString();
+            }
+        } catch (Exception e) {
+            logger.error("에러 응답 읽기 실패: {}", e.getMessage());
+            return "에러 응답 읽기 실패: " + e.getMessage();
         }
     }
 }
