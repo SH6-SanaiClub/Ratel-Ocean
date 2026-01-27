@@ -1,5 +1,6 @@
 package com.sanaiclub.payment.service;
 
+import com.sanaiclub.contract.model.vo.ContractVO;
 import com.sanaiclub.payment.model.dto.*;
 
 
@@ -29,4 +30,14 @@ public interface PaymentService {
      * 계약별 결제 정보 조회
      */
     PaymentResponseDTO getPaymentByContractId(Integer contractId);
+
+    /**
+     * 결제 페이지용 계약 정보 조회 및 검증
+     */
+    ContractVO getContractForPayment(Integer contractId);
+
+    /**
+     * 결제 완료된 계약 정보 조회 (성공 페이지용)
+     */
+    ContractVO getContractById(Integer contractId);
 }

@@ -13,6 +13,7 @@ import com.sanaiclub.payment.model.vo.PaymentVO;
 import com.sanaiclub.payment.service.PaymentService;
 import com.sanaiclub.payment.service.EscrowService;
 import com.sanaiclub.payment.util.*;
+import com.sanaiclub.user.dao.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentMapper paymentMapper;
     private final ContractMapper contractMapper;
+    private final UserMapper userMapper;
     private final EscrowService escrowService;
     private final PortoneApiClient portoneApiClient;
 
@@ -208,6 +210,49 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return buildPaymentResponseDTO(payment, true, null);
+    }
+
+    /**
+     * 결제 페이지용 계약 정보 조회 및 검증
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ContractVO getContractForPayment(Integer contractId) {
+        logger.info("결제 페이지용 계약 조회: contractId={}", contractId);
+
+        // 1. 계약 정보 조회
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+
+        // 2. 계약 상태 검증 (SIGNED 상태여야 결제 가능)
+        if (!ContractStatus.SIGNED.equals(contract.getContractStatus())) {
+            throw new IllegalStateException("결제 가능한 상태가 아닙니다. 현재 상태: " + contract.getContractStatus());
+        }
+
+        // 3. 결제 상태 검증 (UNPAID 상태여야 함)
+        if (!PaymentStatus.UNPAID.equals(contract.getPaymentStatus())) {
+            throw new IllegalStateException("이미 결제된 계약입니다.");
+        }
+
+        return contract;
+    }
+
+    /**
+     * 결제 완료된 계약 정보 조회 (성공 페이지용)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ContractVO getContractById(Integer contractId) {
+        logger.info("계약 정보 조회: contractId={}", contractId);
+
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + contractId);
+        }
+
+        return contract;
     }
 
     // ========================================================================
