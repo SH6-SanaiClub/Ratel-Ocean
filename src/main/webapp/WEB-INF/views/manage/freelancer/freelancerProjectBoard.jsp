@@ -102,7 +102,13 @@
             cursor:pointer;user-select:none;background:#fff;font-weight:800;font-size:13px
         }
         .chip input{display:none}
-        .chip.on{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-weak)}
+        .chip.on{
+            border-color:var(--primary);
+            background:var(--primary-weak);
+            color:var(--primary);
+            box-shadow:0 0 0 3px var(--primary-weak);
+        }
+
 
         .stars{display:flex;gap:8px;align-items:center}
         .star{font-size:22px;cursor:pointer;user-select:none;color:#d1d5db}
@@ -118,6 +124,80 @@
             .tab{flex:unset}
             .tab.tab-wide{flex:unset}
         }
+
+        /* ===== 스킬 검색 영역 ===== */
+        #skillKeyword{
+            background:#fff;
+            font-size:14px;
+            font-weight:600;
+            color:var(--text);
+        }
+
+        #skillKeyword::placeholder{
+            color:#9ca3af;
+            font-weight:500;
+        }
+
+        /* 검색 / 초기화 버튼 살짝 덜 강조 */
+        #btnSkillSearch,
+        #btnSkillReset{
+            height:44px;
+            padding:0 18px;
+            border-radius:999px;
+            font-weight:800;
+        }
+
+        /* ===== 스킬 칩 컨테이너 ===== */
+        #skillChips{
+            border:1px dashed var(--line);
+            border-radius:16px;
+            padding:14px;
+            background:#fafafa;
+        }
+
+        /* 스크롤바 (디자인용, 없어도 됨) */
+        #skillChips::-webkit-scrollbar{
+            width:6px;
+        }
+        #skillChips::-webkit-scrollbar-thumb{
+            background:#d1d5db;
+            border-radius:6px;
+        }
+        #skillChips::-webkit-scrollbar-track{
+            background:transparent;
+        }
+
+        /* ===== 스킬 칩 ===== */
+        #skillChips .chip{
+            background:#fff;
+            border:1px solid #d1d5db;
+            color:#374151;
+            transition:
+                    background .15s ease,
+                    border-color .15s ease,
+                    box-shadow .15s ease,
+                    color .15s ease;
+        }
+
+        /* hover */
+        #skillChips .chip:hover{
+            border-color:var(--primary);
+            color:var(--primary);
+        }
+
+        /* 선택된 상태 */
+        #skillChips .chip.on{
+            background:var(--primary-weak);
+            border-color:var(--primary);
+            color:var(--primary);
+            box-shadow:0 0 0 3px var(--primary-weak);
+        }
+
+        /* 선택된 칩 텍스트 강조 */
+        #skillChips .chip.on span{
+            font-weight:900;
+        }
+
     </style>
 </head>
 <body>
@@ -288,20 +368,43 @@
 
                         <c:when test="${tab == 'completed'}">
                             <div class="muted" style="font-size:13px;margin-bottom:10px;">
-                                기본 선택 = “프로젝트 요구 스택(project_stacks)”. 저장은 <b>project_freelancer_stacks</b>에만 됩니다.
+                                프로젝트에서 사용한 기술을 선택하고 저장해주세요!
                             </div>
                             <div class="divider"></div>
 
-                            <div class="chips" id="stackChips">
-                                <c:forEach var="s" items="${requiredStacks}">
+                            <div class="muted" style="font-weight:900;margin:10px 0 8px;">포지션</div>
+
+                            <div class="chips" id="positionChips">
+                                <c:forEach var="s" items="${positionStacks}">
                                     <c:set var="isOn" value="${preSelectedIds != null && preSelectedIds.contains(s.stackId)}" />
                                     <label class="chip ${isOn ? 'on' : ''}">
                                         <input type="checkbox" class="js-stack" value="${s.stackId}" ${isOn ? 'checked' : ''}/>
                                         <span>${fn:escapeXml(s.stackName)}</span>
-                                        <span class="badge">${s.category}</span>
                                     </label>
                                 </c:forEach>
                             </div>
+
+                            <div class="divider"></div>
+
+                            <div class="muted" style="font-weight:900;margin:10px 0 8px;">스킬</div>
+
+                            <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+                                <input id="skillKeyword" type="text" placeholder="스킬 검색 (예: Java, Spring)"
+                                       style="flex:1;height:44px;border-radius:999px;border:1px solid var(--line);padding:0 16px;outline:none;" />
+                                <button class="btn outline" id="btnSkillSearch" type="button">검색</button>
+                                <button class="btn outline" id="btnSkillReset" type="button">초기화</button>
+                            </div>
+
+                            <div class="chips" id="skillChips" style="max-height:260px;overflow:auto;padding-right:6px;">
+                                <c:forEach var="s" items="${skillStacks}">
+                                    <c:set var="isOn" value="${preSelectedIds != null && preSelectedIds.contains(s.stackId)}" />
+                                    <label class="chip ${isOn ? 'on' : ''}" data-name="${fn:escapeXml(s.stackName)}">
+                                        <input type="checkbox" class="js-stack" value="${s.stackId}" ${isOn ? 'checked' : ''}/>
+                                        <span>${fn:escapeXml(s.stackName)}</span>
+                                    </label>
+                                </c:forEach>
+                            </div>
+
 
                             <div style="display:flex;gap:10px;margin-top:14px;">
                                 <button class="btn" id="btnSaveStacks" data-contract-id="${selectedContractId}">선택 저장</button>
@@ -343,7 +446,7 @@
                                 </c:when>
 
                                 <c:otherwise>
-                                    <div style="font-weight:900;margin-bottom:8px;">내가 남긴 리뷰(프리랜서 → 클라이언트)</div>
+                                    <div style="font-weight:900;margin-bottom:8px;">내가 남긴 리뷰</div>
                                     <div class="milestone">
                                         <div class="row" style="justify-content:flex-start;gap:10px;">
                                             <span class="badge primary">평점</span>
@@ -354,7 +457,7 @@
                                         </div>
                                     </div>
 
-                                    <div style="font-weight:900;margin:18px 0 8px;">클라이언트가 남긴 리뷰(클라이언트 → 프리랜서)</div>
+                                    <div style="font-weight:900;margin:18px 0 8px;">클라이언트가 남긴 리뷰</div>
                                     <div class="milestone">
                                         <div class="row" style="justify-content:flex-start;gap:10px;">
                                             <span class="badge primary">평점</span>
@@ -448,17 +551,24 @@
         btnResetStacks.addEventListener('click', () => location.reload());
     }
 
-    const chips = document.getElementById('stackChips');
-    if(chips){
-        chips.addEventListener('click', (e) => {
+    function bindChipToggle(containerId){
+        const box = document.getElementById(containerId);
+        if(!box) return;
+
+        box.addEventListener('click', (e) => {
             const label = e.target.closest('.chip');
-            if(!label) return;
-            const input = label.querySelector('input');
+            if(!label || !box.contains(label)) return;
+
+            const input = label.querySelector('input[type="checkbox"]');
             if(!input) return;
+
             input.checked = !input.checked;
             label.classList.toggle('on', input.checked);
         });
     }
+
+    bindChipToggle('positionChips');
+    bindChipToggle('skillChips');
 
     const btnSaveStacks = document.getElementById('btnSaveStacks');
     if(btnSaveStacks){
@@ -528,6 +638,32 @@
             if(msgEl) msgEl.textContent = '';
         });
     }
+
+    const skillKeyword = document.getElementById('skillKeyword');
+    const btnSkillSearch = document.getElementById('btnSkillSearch');
+    const btnSkillReset = document.getElementById('btnSkillReset');
+    const skillChips = document.getElementById('skillChips');
+
+    function filterSkills(){
+        if(!skillChips) return;
+        const q = (skillKeyword?.value || '').trim().toLowerCase();
+        skillChips.querySelectorAll('.chip').forEach(chip => {
+            const name = (chip.dataset.name || chip.textContent || '').toLowerCase();
+            chip.style.display = (!q || name.includes(q)) ? '' : 'none';
+        });
+    }
+
+    if(btnSkillSearch) btnSkillSearch.addEventListener('click', filterSkills);
+    if(skillKeyword) skillKeyword.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){ e.preventDefault(); filterSkills(); }
+    });
+    if(btnSkillReset){
+        btnSkillReset.addEventListener('click', () => {
+            if(skillKeyword) skillKeyword.value = '';
+            filterSkills();
+        });
+    }
+
 </script>
 </body>
 </html>

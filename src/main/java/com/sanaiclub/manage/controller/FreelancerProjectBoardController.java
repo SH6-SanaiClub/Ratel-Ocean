@@ -7,6 +7,8 @@ import com.sanaiclub.manage.model.dto.MilestoneDTO;
 import com.sanaiclub.manage.model.dto.SaveReviewRequestDTO;
 import com.sanaiclub.manage.model.dto.SaveStacksRequestDTO;
 import com.sanaiclub.manage.service.FreelancerProjectBoardService;
+import com.sanaiclub.portfolio.dao.StackOptionMapper;
+import com.sanaiclub.project.dao.StackMapper;
 import com.sanaiclub.project.model.dto.StackDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class FreelancerProjectBoardController {
 
     private final FreelancerProjectBoardService boardService;
+    private final StackOptionMapper stackOptionMapper;
 
     /**
      * tab = inProgress | completed | reviews
@@ -77,6 +80,16 @@ public class FreelancerProjectBoardController {
 //            List<Integer> preSelected = boardService.getPreselectedStackIdsForCompleted(freelancerId, selectedContractId);
 //
             model.addAttribute("requiredStacks", requiredStacks);
+
+            List<StackDTO> positionStacks =
+                    stackOptionMapper.findByCategory("POSITION");
+
+            List<StackDTO> skillStacks =
+                    stackOptionMapper.findByCategory("SKILL");
+
+            model.addAttribute("positionStacks", positionStacks);
+            model.addAttribute("skillStacks", skillStacks);
+
 
             List<Integer> preSelected = boardService.getPreselectedStackIdsForCompleted(freelancerId, selectedContractId);
             model.addAttribute("preSelectedIds", new HashSet<>(preSelected));
