@@ -211,15 +211,26 @@ public class ChattingController {
         return "chat/room";
     }
 
-    @PostMapping("/message/{messageId}/delete") // message_id -> messageId
+    @PostMapping("/message/{messageId}/delete")
     @ResponseBody
-    public ResponseEntity<?> deleteMessage(@PathVariable int messageId) {
+    public ResponseEntity<?> deleteMessage(@PathVariable int messageId, @RequestBody Map<String, Integer> payload) {
         try {
-            chatService.deleteMessage(messageId); // delete_message -> deleteMessage
-            return ResponseEntity.ok().build(); // 200 OK
+            Integer roomId = payload.get("roomId"); // 클라이언트에서 roomId를 함께 전달받음
+
+            chatService.deleteMessage(messageId);
+
+            // 실시간 삭제 알림 전송
+            Map<String, Object> deleteSignal = new HashMap<>();
+            deleteSignal.put("type", "DELETE");
+            deleteSignal.put("messageId", messageId);
+
+            // 해당 채팅방을 구독 중인 사용자들에게 신호 전송
+            messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, deleteSignal);
+
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fail to delete");
         }
     }
 }

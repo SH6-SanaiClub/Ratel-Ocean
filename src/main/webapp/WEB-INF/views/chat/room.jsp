@@ -157,7 +157,6 @@
 
         connectStomp();
     }
-    // ================== 방 선택 ==================
 
     messageInput.addEventListener("keydown", (e) => {
         if (!selectedRoomId) return;
@@ -167,9 +166,11 @@
             return;
         }
     });
+
     function openFile() {
         document.getElementById("fileInput").click();
     }
+
     function removeFile() {
         const fileInput = document.getElementById("fileInput");
         fileInput.value = ""; // 파일 선택 초기화
@@ -188,18 +189,17 @@
         });
     }
     function deleteMessage(messageId) {
-        if (!confirm("메시지를 삭제할까요?")) return;
+        if (!confirm("메시지를 삭제하시겠습니까?")) return;
+
+        const roomId = selectedRoomId;
+
         fetch("/ratelocean/chat/message/" + messageId + "/delete", {
-            method: "POST"
-        })
-            .then(res => {
-                if (res.ok) {
-                    loadMessages(selectedRoomId);
-                } else {
-                    alert("삭제에 실패했습니다.");
-                }
-            })
-            .catch(err => console.error(err));
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId: parseInt(roomId) })
+        }).then(res => {
+            if(!res.ok) alert("삭제 실패");
+        });
     }
     // ================== 메시지 로드 ==================
     function loadMessages(roomId) {
@@ -234,6 +234,7 @@
                     }
                     const div = document.createElement("div");
                     div.className = "message " + (mine ? "mine" : "");
+                    div.id = "msg-" + msg.messageId;
                     div.dataset.messageId = msg.messageId; // 메시지 ID 저장
                     if (msg.isDeleted == 1) {
                         div.innerHTML =
@@ -334,31 +335,22 @@
             })
             .catch(err => console.error("Message send error:", err));
     }
-/*
-        // STOMP로 메시지 전송 (/pub/chat/message)
-        stompClient.send("/pub/chat/message", {}, JSON.stringify(chatMessage));
 
-        messageInput.value = ""; // 입력창 초기화
-        // loadMessages() 호출 불필요 -> 구독 콜백에서 화면에 그리기 때문
-        /*
-        const formData = new FormData();
-        formData.append("content", content);
-
-        fetch("/ratelocean/chat/room/" + selectedRoomId + "/message", {
-            method: "POST",
-            body: formData
-        })
-            .then(res => res.json())
-            .then(msg => {
-                messageInput.value = "";
-                loadMessages(selectedRoomId);
-            })
-            .catch(err => {
-                console.error(err);
-            });
-
+    function handleDeleteMessageUI(messageId) {
+        // 해당 messageId를 id로 가진 HTML 요소를 찾아 제거하거나 내용을 변경함
+        // 예: <div id="msg-123">...</div>
+        const msgElement = document.getElementById("msg-" + messageId);
+        if (msgElement) {
+            const contentArea = msgElement.querySelector(".message-content");
+            if(contentArea) {
+                contentArea.innerText = "삭제된 메시지입니다.";
+                contentArea.classList.add("deleted-text"); // 스타일링용 클래스
+            }
+            // 삭제 버튼 등 컨트롤 요소 숨기기
+            const actionBtn = msgElement.querySelector(".delete-btn");
+            if(actionBtn) actionBtn.style.display = "none";
+        }
     }
-    */
 
     function updateChatListUI(msg) {
         const roomId = msg.roomId;
@@ -409,7 +401,7 @@
         }
     }
 
-    // [신규] 수신된 메시지를 화면에 그리기
+    // 수신된 메시지를 화면에 그리기
     function showReceivedMessage(msg) {
         const body = document.getElementById("chatBody");
         const mine = (msg.senderId == loginUserId);
@@ -419,6 +411,7 @@
 
         const div = document.createElement("div");
         div.className = "message " + (mine ? "mine" : "");
+        div.id = "msg-" + msg.messageId;
         div.dataset.messageId = msg.messageId;
 
         let deleteBtn = "";
@@ -621,12 +614,16 @@
             console.log('STOMP Connected: ' + frame);
             // 해당 채팅방 구독 (/sub/chat/room/{roomId})
             stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
-                const receivedMsg = JSON.parse(message.body);
-                showReceivedMessage(receivedMsg); // 화면에 메시지 추가
+                const received = JSON.parse(message.body);
+
+                if (received.type === 'DELETE') {
+                    handleDeleteMessageUI(received.messageId);
+                } else {
+                    showReceivedMessage(received);
+                }
             });
 
-            // 2. [신규] "나의 채팅 목록" 구독 (왼쪽 사이드바용)
-            // 내가 속한 어떤 방에서든 메시지가 오면 이쪽으로 알림이 옴
+            // "나의 채팅 목록" 구독 (왼쪽 사이드바용)
             stompClient.subscribe('/sub/chat/list/' + loginUserId, function (message) {
                 const msg = JSON.parse(message.body);
                 updateChatListUI(msg);
