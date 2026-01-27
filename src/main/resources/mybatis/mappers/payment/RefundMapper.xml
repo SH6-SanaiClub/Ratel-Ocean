@@ -7,7 +7,6 @@
     <resultMap id="RefundResultMap" type="com.sanaiclub.payment.model.vo.RefundVO">
         <id property="refundId" column="refund_id"/>
         <result property="paymentId" column="payment_id"/>
-        <result property="escrowId" column="escrow_id"/>
         <result property="contractId" column="contract_id"/>
         <result property="refundAmount" column="refund_amount"/>
         <result property="reason" column="reason"/>
@@ -25,10 +24,10 @@
     <insert id="insertRefund" parameterType="com.sanaiclub.payment.model.vo.RefundVO"
             useGeneratedKeys="true" keyProperty="refundId">
         INSERT INTO refunds (
-            payment_id, escrow_id, contract_id, refund_amount, reason,
+            payment_id, contract_id, refund_amount, reason,
             requested_by, refund_status, imp_refund_uid, refunded_at, failed_reason
         ) VALUES (
-                     #{paymentId}, #{escrowId}, #{contractId}, #{refundAmount}, #{reason},
+                     #{paymentId}, #{contractId}, #{refundAmount}, #{reason},
                      #{requestedBy}, #{refundStatus}, #{impRefundUid}, #{refundedAt}, #{failedReason}
                  )
     </insert>
