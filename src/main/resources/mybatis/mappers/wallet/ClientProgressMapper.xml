@@ -61,4 +61,12 @@
         WHERE milestone_id = #{milestoneId}
     </update>
 
+    <!-- 지급 예정일로부터 7일 지난 건들 찾아내기 -->
+    <select id="selectAutoPaymentTargets" resultType="integer">
+        SELECT milestone_id
+        FROM contract_milestones
+        WHERE status = 'REQUESTED'
+          AND due_date &lt; DATE_SUB(NOW(), INTERVAL 7 DAY)
+    </select>
+
 </mapper>
