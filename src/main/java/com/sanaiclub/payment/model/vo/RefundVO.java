@@ -22,9 +22,6 @@ public class RefundVO {
     /** 원본 결제 ID (FK) */
     private Integer paymentId;
 
-    /** 에스크로 ID (FK) */
-    private Integer escrowId;
-
     /** 계약 ID (FK) */
     private Integer contractId;
 

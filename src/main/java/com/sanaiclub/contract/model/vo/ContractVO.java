@@ -19,7 +19,7 @@ public class ContractVO {
     /** 총 예산 (Long 타입, 원 단위) */
     private final Long totalBudget;
     
-    /** 결제 방식 ("MILESTONE" 또는 "FIXED") */
+    /** 결제 방식 ("MILESTONE" 또는 "FULL") */
     private final String paymentMethod;
     
     /** 계약 상태 (WAITING, SIGNED, TERMINATED, COMPLETED) */

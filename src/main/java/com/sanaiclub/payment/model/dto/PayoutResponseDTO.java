@@ -32,9 +32,6 @@ public class PayoutResponseDTO {
     /** 프리랜서 지갑 잔액 (지급 후) */
     private Long walletBalance;
 
-    /** 에스크로 보유 금액 (지급 후) */
-    private Long escrowHeldAmount;
-
     /** 지급 완료 시각 */
     private LocalDateTime paidAt;
 
