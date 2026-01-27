@@ -90,7 +90,13 @@ public class ChatService {
         chatRoomMapper.exitRoom(param);
 
     }
+    public String getUserType() {
+        Integer userId = getLoginUserId();
+        if (userId == null) return null;
 
+        // 추가된 매퍼 메서드 호출
+        return chatRoomMapper.getUserTypeById(userId);
+    }
     // =========================================
     // 로그인 유저 ID 가져오기 (테스트용)
     // =========================================
@@ -99,4 +105,5 @@ public class ChatService {
         HttpSession session = attrs.getRequest().getSession();
         return (Integer) session.getAttribute("loginUserId");
     }
+
 }

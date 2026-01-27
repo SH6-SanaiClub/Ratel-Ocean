@@ -174,4 +174,9 @@
         WHERE room_id = #{roomId}
     </update>
 
+    <select id="getUserTypeById" parameterType="int" resultType="string">
+        SELECT user_type
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
 </mapper>
