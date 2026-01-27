@@ -39,4 +39,12 @@ public interface ProjectDetailMapper {
      * @return 프리랜서 정보 리스트 (userId, name, email)
      */
     List<java.util.Map<String, Object>> selectFreelancersByProjectId(@Param("projectId") Integer projectId);
+
+    /**
+     * 프로젝트 상태 업데이트 (payment 도메인에서 사용)
+     * 
+     * @param projectId 프로젝트 ID
+     * @param projectStatus 프로젝트 상태 (READY, IN_PROGRESS, CLOSED)
+     */
+    int updateProjectStatus(@Param("projectId") Integer projectId, @Param("projectStatus") String projectStatus);
 }

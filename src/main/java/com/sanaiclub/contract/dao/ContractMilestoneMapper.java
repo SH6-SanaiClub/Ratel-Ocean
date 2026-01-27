@@ -35,4 +35,13 @@ public interface ContractMilestoneMapper {
             @Param("step") Integer step,
             @Param("status") String status
     );
+
+    /** 마일스톤 ID로 마일스톤 조회. */
+    ContractMilestoneVO selectMilestoneById(@Param("milestoneId") Integer milestoneId);
+
+    /** 마일스톤 ID로 마일스톤 상태 업데이트. */
+    int updateMilestoneStatusById(
+            @Param("milestoneId") Integer milestoneId,
+            @Param("status") String status
+    );
 }

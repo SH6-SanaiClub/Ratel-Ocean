@@ -11,7 +11,6 @@ import com.sanaiclub.payment.dao.PaymentMapper;
 import com.sanaiclub.payment.dao.RefundMapper;
 import com.sanaiclub.payment.model.dto.RefundRequestDTO;
 import com.sanaiclub.payment.model.dto.RefundResponseDTO;
-import com.sanaiclub.contract.model.vo.PaymentStatus;
 import com.sanaiclub.payment.model.vo.RefundStatus;
 import com.sanaiclub.payment.model.vo.PaymentVO;
 import com.sanaiclub.payment.model.vo.RefundVO;
@@ -116,13 +115,11 @@ public class RefundServiceImpl implements RefundService {
             );
 
             // 8. 계약 결제 상태 업데이트
-            Long totalPayment = payment.getAmount();
-            boolean isFullRefund = actualRefundAmount.equals(totalPayment);
-            PaymentStatus newPaymentStatus = isFullRefund
-                    ? PaymentStatus.REFUNDED
-                    : PaymentStatus.PARTIAL_REFUNDED;
-
-            contractMapper.updatePaymentStatus(request.getContractId(), newPaymentStatus.name());
+            // Note: PaymentStatus는 별도 테이블이 없으므로 contract_status로 관리
+            // 환불 시에는 이미 updateContractStatus로 TERMINATED 상태로 변경됨
+            // Long totalPayment = payment.getAmount();
+            // boolean isFullRefund = actualRefundAmount.equals(totalPayment);
+            // PaymentStatus는 contract_status로 관리되므로 별도 업데이트 불필요
 
             // 9. 미지급 마일스톤 취소 처리
             for (ContractMilestoneVO milestone : milestones) {
@@ -130,8 +127,9 @@ public class RefundServiceImpl implements RefundService {
                         MilestoneStatus.REQUESTED.equals(milestone.getStatus()) ||
                         MilestoneStatus.WAITING.equals(milestone.getStatus())) {
                     milestoneMapper.updateMilestoneStatus(
-                            milestone.getMilestoneId(),
-                            MilestoneStatus.CANCELED
+                            request.getContractId(),
+                            milestone.getStep(),
+                            MilestoneStatus.CANCELED.name()
                     );
                 }
             }

@@ -87,7 +87,7 @@ public class PayoutServiceImpl implements PayoutService {
         walletMapper.insertWalletHistory(history);
 
         // 8. 마일스톤 상태 업데이트 (DEPOSITED → PAID)
-        milestoneMapper.updateMilestoneStatus(milestoneId, MilestoneStatus.PAID);
+        milestoneMapper.updateMilestoneStatusById(milestoneId, MilestoneStatus.PAID.name());
 
         // 9. 모든 마일스톤이 지급되었는지 확인
         List<ContractMilestoneVO> allMilestones = milestoneMapper.selectMilestonesByContractId(contractId);
@@ -139,7 +139,7 @@ public class PayoutServiceImpl implements PayoutService {
         }
 
         // 3. 마일스톤 상태 업데이트 (DEPOSITED → REQUESTED)
-        milestoneMapper.updateMilestoneStatus(request.getMilestoneId(), MilestoneStatus.REQUESTED);
+        milestoneMapper.updateMilestoneStatusById(request.getMilestoneId(), MilestoneStatus.REQUESTED.name());
 
         logger.info("마일스톤 지급 요청 완료: milestoneId={}", request.getMilestoneId());
 

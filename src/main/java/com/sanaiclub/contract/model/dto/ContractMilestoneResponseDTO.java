@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractMilestoneResponseDTO {
-    private Long milestoneId;
+    private Integer milestoneId;
     private Integer step;
     private String title;
     private String description;
