@@ -62,8 +62,8 @@
                 <button type="button" class="remove-file" onclick="removeFile()">✕</button>
             </div>
 
-            <input type="text" id="messageInput" placeholder="메시지를 입력하세요">
-
+            <textarea id="messageInput" placeholder="메시지를 입력하세요" rows="1"
+                      style="flex: 1; border: none; outline: none; padding: 10px; resize: none; overflow-y: hidden; max-height: 150px; font-family: inherit;"></textarea>
             <button class="send-btn" onclick="sendMessage()">전송</button>
         </div>
     </main>
@@ -82,7 +82,8 @@
         return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
+            .replace(/>/g, "&gt;")
+            .replace(/\n/g, "<br>");
     }
 
     let stompClient = null;
@@ -202,13 +203,27 @@
         const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
         // loginUserType이 'FREELANCER'인 경우 프로젝트 타이틀을 이름 옆이나 아래에 추가
         let nameHtml = "";
-
         if (loginUserType === 'FREELANCER') {
-            // 프리랜서: 프로젝트명을 앞에 두고 더 강조 (진한 파란색 + 굵게)
-            nameHtml = '<span class="room-project-tag" style="font-size: 17px; font-weight: 600; margin-right: 6px;">[' + room.title + ']'+' -</span>' +
-                '<span class="room-name-main" style="font-size: 15px; color: #333; font-weight: 500;">' + room.name + '</span>';
+            // 1. 부모(.avatar-box)를 기준으로 이름을 아래로 내리기 위해 스타일 적용
+            // 2. 프로젝트명은 원래 위치에 남겨둠
+            nameHtml =
+                // 프로젝트명 (상단 유지)
+                '<span class="room-project-tag" style="font-size: 13px; font-weight: bold; color: #333;">[' + room.title + ']</span>' +
+                // 사용자 이름 (CSS를 이용해 프로필 사진 아래로 강제 이동)
+                '<span class="room-name-main" style="' +
+                'position: absolute; ' +    // 절대 위치 지정
+                'left: 12px; ' +            // 아바타 박스 안에서의 왼쪽 여백 (조절 필요)
+                'top: 58px; ' +             // 아바타 이미지 아래로 내려오는 높이 (조절 필요)
+                'width: 50px; ' +           // 이름 영역 너비
+                'font-size: 9px; ' +       // 이름은 작게
+                'color: #666; ' +
+                'text-align: center; ' +
+                'white-space: nowrap; ' +
+                'overflow: hidden; ' +
+                'text-overflow: ellipsis; ' +
+                '">' + room.name + '</span>';
         } else {
-            // 클라이언트: 기존 유지 (사용자 이름만 강조)
+            // 클라이언트: 기존 유지
             nameHtml = '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>';
         }
         return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
@@ -246,14 +261,13 @@
             }
         }
     }
-    messageInput.addEventListener("keydown", (e) => {
-        if (!selectedRoomId) return;
-        if (e.keyCode === 13 && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-            return;
-        }
-    });
+
+    // (선택사항) 입력 내용에 따라 입력창 높이가 늘어나는 함수
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+    messageInput.addEventListener("input", () => autoResize(messageInput));
     function openFile() {
         document.getElementById("fileInput").click();
     }
@@ -804,15 +818,22 @@
             console.error("STOMP connection error:", error);
         });
     }
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        if (searchInput) {
-            searchInput.addEventListener("keydown", function(event) {
-                if (event.key === "Enter") {
-                    event.preventDefault(); // 엔터키의 기본 동작(폼 제출 등) 방지
-                    searchMessages();
-                }
-            });
+    messageInput.addEventListener("keydown", (e) => {
+        if (!selectedRoomId) return;
+
+        // 엔터키 입력 시
+        if (e.key === "Enter") {
+            if (e.shiftKey) {
+                // Shift + Enter: 기본 동작인 줄바꿈을 허용함
+                // textarea 높이를 자동 조절하고 싶다면 아래 함수 호출 (선택사항)
+                setTimeout(() => autoResize(messageInput), 0);
+            } else {
+                // 그냥 Enter: 메시지 전송
+                e.preventDefault(); // 줄바꿈 방지
+                sendMessage();
+                // 전송 후 높이 초기화
+                messageInput.style.height = 'auto';
+            }
         }
     });
     document.getElementById("fileInput").addEventListener("change", function () {
