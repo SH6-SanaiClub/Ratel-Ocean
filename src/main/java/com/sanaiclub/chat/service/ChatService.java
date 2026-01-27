@@ -27,11 +27,15 @@ public class ChatService {
     // 1. 내 채팅방 목록 조회 (AJAX용)
     // =========================================
     @Transactional
-    public List<ChatRoomDTO> findMyRooms() { // find_my_rooms -> findMyRooms
-        Integer loginUserId = getLoginUserId();
+    public List<ChatRoomDTO> findMyRooms(Integer loginUserId) {
         List<ChatRoomDTO> rooms = chatRoomMapper.findMyRooms(loginUserId);
         return rooms;
     }
+
+    public Map<String, Object> getRoomParticipants(int roomId) {
+        return chatRoomMapper.findParticipantsByRoomId(roomId);
+    }
+
     @Transactional
     public ChatMessageDTO sendAndReturnMessage(Integer roomId, Integer senderId, String content, String fileName, String fileUrl, Long fileSize) {
         chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
@@ -69,8 +73,7 @@ public class ChatService {
     // 6. 메시지 읽음 처리
     // =========================================
     @Transactional
-    public void markRoomAsRead(Integer roomId) {
-        Integer loginUserId = getLoginUserId();
+    public void markRoomAsRead(Integer roomId, Integer loginUserId) {
         chatMessageMapper.markRoomMessagesAsRead(roomId, loginUserId);
     }
 
@@ -89,21 +92,6 @@ public class ChatService {
         // 1. 채팅방 상태 업데이트
         chatRoomMapper.exitRoom(param);
 
-    }
-    public String getUserType() {
-        Integer userId = getLoginUserId();
-        if (userId == null) return null;
-
-        // 추가된 매퍼 메서드 호출
-        return chatRoomMapper.getUserTypeById(userId);
-    }
-    // =========================================
-    // 로그인 유저 ID 가져오기 (테스트용)
-    // =========================================
-    public Integer getLoginUserId() {
-        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        HttpSession session = attrs.getRequest().getSession();
-        return (Integer) session.getAttribute("loginUserId");
     }
 
 }
