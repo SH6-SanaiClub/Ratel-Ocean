@@ -1,9 +1,6 @@
 package com.sanaiclub.portfolio.service.impl;
 
-import com.sanaiclub.portfolio.dao.FreelancerCareerMapper;
-import com.sanaiclub.portfolio.dao.FreelancerProfileBasicMapper;
-import com.sanaiclub.portfolio.dao.FreelancerProjectExperienceMapper;
-import com.sanaiclub.portfolio.dao.FreelancerSkillMapper;
+import com.sanaiclub.portfolio.dao.*;
 import com.sanaiclub.portfolio.model.dto.FreelancerProfileBasicViewDTO;
 import com.sanaiclub.portfolio.model.dto.FreelancerProfileViewDTO;
 import com.sanaiclub.portfolio.model.dto.MyStackItemDTO;
@@ -26,6 +23,8 @@ public class FreelancerProfileViewServiceImpl implements com.sanaiclub.portfolio
     private final FreelancerSkillMapper freelancerSkillMapper;
     private final FreelancerCareerMapper freelancerCareerMapper;
     private final FreelancerProjectExperienceMapper freelancerProjectExperienceMapper;
+    private final FreelancerCompletedProjectMapper freelancerCompletedProjectMapper;
+
 
     @Override
     public FreelancerProfileViewDTO getProfile(Integer profileUserId, Integer viewerUserId) {
@@ -71,6 +70,7 @@ public class FreelancerProfileViewServiceImpl implements com.sanaiclub.portfolio
                 .publicPortfolios(freelancerProfileBasicMapper.selectPublicPortfolios(profileUserId))
 
                 .owner(viewerUserId != null && viewerUserId.equals(profileUserId))
+                .completedProjects(freelancerCompletedProjectMapper.selectCompletedProjects(profileUserId))
                 .build();
     }
 }
