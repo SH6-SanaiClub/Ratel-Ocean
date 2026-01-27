@@ -25,6 +25,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/chat")
@@ -142,14 +143,16 @@ public class ChattingController {
         String fileUrl = null;
         Long fileSize = null;
         if (file != null && !file.isEmpty()) {
-            fileName = file.getOriginalFilename();
+            String originalFileName = file.getOriginalFilename();
             fileSize = file.getSize();
+            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
             String uploadDir = session.getServletContext().getRealPath("/") + "upload/chat";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
-            File savedFile = new File(uploadDir, fileName);
+            File savedFile = new File(uploadDir, savedFileName);
             file.transferTo(savedFile);
-            fileUrl = "/upload/chat/" + fileName;
+            fileName = originalFileName;
+            fileUrl = "/upload/chat/" + savedFileName;
         }
         Integer senderId = chatService.getLoginUserId();
         ChatMessageDTO message =
@@ -177,16 +180,13 @@ public class ChattingController {
         }
 
         // 2️⃣ 실제 파일 경로
-
-        String filePath = session.getServletContext().getRealPath("/upload/chat") + "/" + msg.getFileName();
-        System.out.println(filePath);
+        String contextPath = session.getServletContext().getRealPath("/");
+        String filePath = contextPath + msg.getFileUrl();
         File file = new File(filePath);
 
         if (!file.exists()) {
-            System.out.println("파일존재XXXX");
             return ResponseEntity.notFound().build();
         }
-        System.out.println("파일존재");
         // 3️⃣ Resource로 변환
         Resource resource = new FileSystemResource(file);
 
