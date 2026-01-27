@@ -15,22 +15,16 @@
 <div class="mp-container">
 
     <div class="header-card">
-        <c:choose>
-            <%-- DB에 프로필 경로가 있으면 해당 경로 사용, 없으면 기본 아이콘 --%>
-            <c:when test="${not empty profile.profileImageUrl}">
-                <img src="${pageContext.request.contextPath}${profile.profileImageUrl}"
-                     class="header-img" id="headerProfileImg"
-                     onerror="this.style.display='none'; document.getElementById('headerDefaultIcon').style.display='flex';">
-                <div id="headerDefaultIcon" class="header-img default-profile-icon" style="display:none; font-size:40px;">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-            </c:when>
-            <c:otherwise>
-                <div class="header-img default-profile-icon" style="font-size:40px;">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-            </c:otherwise>
-        </c:choose>
+        <div class="profile-frame">
+            <%-- 1. 실제 이미지 (있으면 보이고, 없거나 에러나면 숨김) --%>
+            <img id="headerProfileImg"
+                 src="${not empty profile.profileImageUrl ? pageContext.request.contextPath.concat(profile.profileImageUrl) : ''}"
+                 style="${not empty profile.profileImageUrl ? '' : 'display:none;'}"
+                 onerror="this.style.display='none'">
+
+            <%-- 2. 기본 아이콘 (항상 뒤에 깔려있음) --%>
+            <i class="fa-solid fa-user"></i>
+        </div>
 
         <div class="header-content">
             <div class="header-top-row">
@@ -73,8 +67,8 @@
             <div class="sidebar-group">
                 <div class="sidebar-label">평가 관리</div>
                 <ul class="sidebar-menu">
-                    <li onclick="switchTab('dashboard', this)" class="active">내 평가</li>
-                    <li onclick="alert('준비 중인 기능입니다.')">프리랜서의 평가</li>
+                    <li onclick="switchTab('dashboard', this)" class="active">작성한 평가</li>
+                    <li onclick="switchTab('received', this)">받은 평가</li>
                 </ul>
             </div>
             <div class="sidebar-group">
@@ -88,11 +82,10 @@
 
         <div class="main-content">
 
+            <%-- 1. 내 평가 (작성한 리뷰) 화면 --%>
             <div id="view-dashboard" class="view-section active">
-
                 <div class="dash-card">
                     <div class="dash-title">외주 평균 평점</div>
-
                     <div class="stats-row">
                         <div class="stat-box">
                             <h4>평균 평점</h4>
@@ -106,7 +99,6 @@
                             <div class="stat-value">${profile.stats.contractCount} 건</div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="dash-card">
@@ -115,14 +107,11 @@
                     <c:choose>
                         <c:when test="${not empty profile.stats.reviewList}">
                             <c:forEach var="review" items="${profile.stats.reviewList}">
-
                                 <div class="review-card">
-
                                     <div class="rc-header">
                                         <div class="rc-title">${review.projectTitle}</div>
                                         <div class="rc-date">계약일: ${review.contractedAt}</div>
                                     </div>
-
                                     <div class="rc-info-grid">
                                         <div class="rc-info-item">
                                             <span class="label">프로젝트 기간</span>
@@ -150,7 +139,6 @@
                                             </c:choose>
                                         </div>
                                     </div>
-
                                     <div class="rc-content-area">
                                         <div style="margin-bottom:8px; color:#fdd835; font-size:14px;">
                                             <c:forEach begin="1" end="${review.rating}">★</c:forEach>
@@ -160,7 +148,6 @@
                                         </div>
                                         <div class="rc-text">${review.content}</div>
                                     </div>
-
                                     <c:if test="${review.recontractIntended}">
                                         <div style="margin-top:15px; text-align:right;">
                                             <button type="button" class="btn-profile-link"
@@ -169,7 +156,6 @@
                                             </button>
                                         </div>
                                     </c:if>
-
                                 </div>
                             </c:forEach>
                         </c:when>
@@ -182,6 +168,85 @@
                 </div>
             </div>
 
+            <%-- 2. 프리랜서의 평가 (받은 리뷰) 화면 --%>
+                <div id="view-received" class="view-section">
+
+                    <div class="dash-card">
+                        <div class="dash-title">받은 평균 평점</div>
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <h4>평균 평점</h4>
+                                <div class="stat-value">
+                                    <i class="fa-solid fa-star" style="color:#fdd835;"></i>
+                                    <fmt:formatNumber value="${profile.stats.avgRating}" pattern="0.0"/>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <h4>받은 리뷰 수</h4>
+                                <div class="stat-value">
+                                    ${empty profile.stats.receivedReviewList ? 0 : profile.stats.receivedReviewList.size()} 건
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dash-card">
+                        <div class="dash-title">프리랜서의 평가 (받은 리뷰)</div>
+
+                        <c:choose>
+                            <c:when test="${not empty profile.stats.receivedReviewList}">
+                                <c:forEach var="review" items="${profile.stats.receivedReviewList}">
+
+                                    <div class="review-card">
+                                        <div class="rc-header">
+                                            <div class="rc-title">${review.projectTitle}</div>
+                                            <div class="rc-date">계약일: ${review.contractedAt}</div>
+                                        </div>
+
+                                        <div class="rc-info-grid">
+                                            <div class="rc-info-item">
+                                                <span class="label">프로젝트 기간</span>
+                                                <span class="value">${review.startDate} ~ ${review.endDate}</span>
+                                            </div>
+                                            <div class="rc-info-item">
+                                                <span class="label">총 예산</span>
+                                                <span class="value">₩ <fmt:formatNumber value="${review.budget}" type="number"/></span>
+                                            </div>
+                                            <div class="rc-info-item">
+                                                <span class="label">작성자 (프리랜서)</span>
+                                                <span class="value" style="font-weight:700;">${review.freelancerName}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="rc-content-area">
+                                            <div style="margin-bottom:8px; color:#fdd835; font-size:14px;">
+                                                <c:forEach begin="1" end="${review.rating}">★</c:forEach>
+                                                <span style="color:#333; font-weight:700; font-size:13px; margin-left:5px;">
+                                                ${review.rating}.0
+                                            </span>
+                                            </div>
+                                            <div class="rc-text">${review.content}</div>
+                                        </div>
+
+                                        <div style="margin-top:15px; text-align:right;">
+                                            <button type="button" class="btn-profile-link"
+                                                    onclick="window.open('${pageContext.request.contextPath}/profile/${review.freelancerId}', '_blank')">
+                                                <i class="fa-solid fa-user-tag"></i> 작성자 프로필 보기
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="text-align:center; padding:50px; color:#999; background:#f9f9f9; border-radius:4px;">
+                                    아직 받은 평가가 없습니다.
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
             <div id="view-edit" class="view-section">
                 <div class="dash-card">
                     <h3 class="form-section-title">내 정보 수정</h3>
@@ -190,24 +255,21 @@
                         <input type="hidden" name="companyId" value="${profile.companyId}">
 
                         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px;">
-                            <div id="previewContainer" style="position:relative; width:80px; height:80px;">
-                                <c:choose>
-                                    <c:when test="${not empty profile.profileImageUrl}">
-                                        <img src="${pageContext.request.contextPath}${profile.profileImageUrl}"
-                                             id="previewImg" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #ddd;">
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div id="previewDefaultIcon" class="default-profile-icon" style="width:80px; height:80px; font-size:35px;">
-                                            <i class="fa-solid fa-user"></i>
-                                        </div>
-                                        <img id="previewImg" style="display:none; width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #ddd;">
-                                    </c:otherwise>
-                                </c:choose>
+
+                            <%-- [수정] 미리보기 영역 --%>
+                            <div class="profile-frame preview-size">
+                                <img id="previewImg"
+                                     src="${not empty profile.profileImageUrl ? pageContext.request.contextPath.concat(profile.profileImageUrl) : ''}"
+                                     style="${not empty profile.profileImageUrl ? '' : 'display:none;'}"
+                                     onerror="this.style.display='none'">
+                                <i class="fa-solid fa-user"></i>
                             </div>
+
                             <div>
                                 <label for="profileFile" style="cursor:pointer; background:#fff; border:1px solid #ccc; padding:6px 12px; border-radius:4px; font-size:13px; font-weight:600;">
                                     이미지 변경
                                 </label>
+                                <%-- 파일 입력 (기존 유지) --%>
                                 <input type="file" id="profileFile" name="profileFile" style="display:none;" accept="image/*" onchange="readURL(this)">
                                 <div style="font-size:12px; color:#888; margin-top:5px;">5MB 이하의 이미지 파일</div>
                             </div>

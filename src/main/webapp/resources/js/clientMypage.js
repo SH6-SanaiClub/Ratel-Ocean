@@ -31,21 +31,18 @@ function showEdit() {
 function readURL(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
+
         reader.onload = function (e) {
-            // 1. 수정 폼 미리보기 처리
+
             if($('#previewImg').length) {
                 $('#previewImg').attr('src', e.target.result).show();
-                $('#previewDefaultIcon').hide(); // 기본 아이콘 숨김
             }
-            // 2. 상단 헤더 이미지 처리
+
             if($('#headerProfileImg').length) {
                 $('#headerProfileImg').attr('src', e.target.result).show();
-                $('#headerDefaultIcon').hide();
-            } else {
-                // 헤더에 이미지가 없던 상태라면 태그를 생성해서 넣어줌
-                location.reload();
             }
         }
+
         reader.readAsDataURL(input.files[0]);
     }
 }
