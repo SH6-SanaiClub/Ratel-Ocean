@@ -1,5 +1,6 @@
 package com.sanaiclub.project.model.dto;
 
+import com.sanaiclub.wallet.model.dto.ClientMilestoneDTO;
 import lombok.Data;
 import java.util.Date;
 import java.util.List;

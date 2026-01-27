@@ -1,5 +1,6 @@
-package com.sanaiclub.project.model.dto;
+package com.sanaiclub.wallet.model.dto;
 
+import com.sanaiclub.contracts.model.vo.MilestoneStatus;
 import lombok.Data;
 import java.util.Date;
 
@@ -11,5 +12,6 @@ public class ClientMilestoneDTO {
     private String milestoneName;
     private Integer amount;
     private Date dueDate;
-    private String status;
+
+    private MilestoneStatus status;
 }

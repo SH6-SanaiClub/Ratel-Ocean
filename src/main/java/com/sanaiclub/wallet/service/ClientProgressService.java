@@ -1,6 +1,7 @@
-package com.sanaiclub.project.service;
+package com.sanaiclub.wallet.service;
 
-import com.sanaiclub.project.dao.ClientProgressMapper;
+import com.sanaiclub.contracts.model.vo.MilestoneStatus;
+import com.sanaiclub.wallet.dao.ClientProgressMapper;
 import com.sanaiclub.project.model.dto.ClientProjectProgressDTO; // [수정] import 변경
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,6 @@ public class ClientProgressService {
 
     @Transactional
     public void payMilestone(Integer milestoneId) {
-        clientProgressMapper.updateMilestoneStatus(milestoneId, "PAID");
+        clientProgressMapper.updateMilestoneStatus(milestoneId, MilestoneStatus.PAID);
     }
 }
