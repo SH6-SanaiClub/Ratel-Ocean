@@ -1,18 +1,22 @@
 package com.sanaiclub.payment.controller;
 
 import com.sanaiclub.common.util.AuthContext;
-import com.sanaiclub.contract.dao.ContractMapper;
 import com.sanaiclub.contract.model.vo.ContractVO;
 import com.sanaiclub.payment.model.dto.*;
 import com.sanaiclub.payment.service.PaymentService;
+import com.sanaiclub.user.model.dto.UserInfoDTO;
+import com.sanaiclub.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Map;
 
 
 @Controller
@@ -23,7 +27,7 @@ public class PaymentController {
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     private final PaymentService paymentService;
-    private final ContractMapper contractMapper;
+    private final UserService userService;
 
     // 포트원 식별코드 (properties에서 주입)
     @Value("${portone.imp.code}")
@@ -37,27 +41,31 @@ public class PaymentController {
         logger.info("결제 페이지 요청: contractId={}", contractId);
 
         try {
+            // 1. 현재 로그인한 사용자 ID 확인
             Integer userId = AuthContext.getCurrentUserId();
             if (userId == null) {
-                return "redirect:/user/login"; // 로그인 안되어있으면 로그인 페이지로
+                return "redirect:/user/login";
             }
 
-            // 1. 계약 정보 조회 (결제 금액 표시용)
-            ContractVO contract = contractMapper.selectContractById(contractId);
-            if (contract == null) {
-                throw new IllegalArgumentException("존재하지 않는 계약입니다.");
+            // 2. Service를 통해 계약 정보 조회 및 검증
+            ContractVO contract = paymentService.getContractForPayment(contractId);
+
+            // 3. 클라이언트(구매자) 정보 조회
+            UserInfoDTO buyer = userService.getUserInfo(userId);
+            if (buyer == null) {
+                throw new IllegalArgumentException("사용자 정보를 찾을 수 없습니다.");
             }
 
-            // 2. JSP로 데이터 전달
-            model.addAttribute("contract", contract); // 계약 정보 (금액, 기간 등)
-            model.addAttribute("impCode", impCode);   // 포트원 식별코드
-            model.addAttribute("userId", userId);
+            // 4. Model에 데이터 전달
+            model.addAttribute("contract", contract);
+            model.addAttribute("buyer", buyer);
+            model.addAttribute("impCode", impCode);
 
             return "payment/paymentRequest";
 
         } catch (Exception e) {
             logger.error("결제 페이지 로드 실패: contractId={}", contractId, e);
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", "결제 페이지를 불러오는데 실패했습니다.");
             return "error/error";
         }
     }
@@ -70,15 +78,27 @@ public class PaymentController {
      */
     @PostMapping("/prepare")
     @ResponseBody
-    public PaymentPrepareDTO preparePayment(@RequestBody PaymentRequestDTO request) {
+    public ResponseEntity<?> preparePayment(@RequestBody PaymentRequestDTO request) {
         logger.info("결제 준비 요청: contractId={}", request.getContractId());
 
         try {
-            return paymentService.preparePayment(request);
+            PaymentPrepareDTO result = paymentService.preparePayment(request);
+            return ResponseEntity.ok(result);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("결제 준비 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+
+        } catch (IllegalStateException e) {
+            logger.error("결제 준비 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
 
         } catch (Exception e) {
             logger.error("결제 준비 실패: contractId={}", request.getContractId(), e);
-            throw new RuntimeException("결제 준비 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "결제 준비 중 오류가 발생했습니다."));
         }
     }
 
@@ -91,15 +111,20 @@ public class PaymentController {
      */
     @PostMapping("/complete")
     @ResponseBody
-    public PaymentResponseDTO completePayment(@RequestBody PaymentCompleteDTO request) {
+    public ResponseEntity<?> completePayment(@RequestBody PaymentCompleteDTO request) {
         logger.info("결제 완료 검증: impUid={}", request.getImpUid());
 
         try {
-            return paymentService.completePayment(request);
+            PaymentResponseDTO result = paymentService.completePayment(request);
+            return ResponseEntity.ok(result);
 
         } catch (Exception e) {
             logger.error("결제 완료 처리 실패: impUid={}", request.getImpUid(), e);
-            throw new RuntimeException("결제 완료 처리 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(PaymentResponseDTO.builder()
+                            .success(false)
+                            .message("결제 완료 처리 중 오류가 발생했습니다: " + e.getMessage())
+                            .build());
         }
     }
 
@@ -113,9 +138,27 @@ public class PaymentController {
     @GetMapping("/success")
     public String paymentSuccess(@RequestParam("contractId") Integer contractId, Model model) {
 
-        model.addAttribute("contractId", contractId);
+        try {
+            // 1. 계약 정보 조회
+            ContractVO contract = paymentService.getContractById(contractId);
+            if (contract == null) {
+                throw new IllegalArgumentException("계약을 찾을 수 없습니다.");
+            }
 
-        return "payment/paymentSuccess";
+            // 2. 결제 정보 조회
+            PaymentResponseDTO payment = paymentService.getPaymentByContractId(contractId);
+
+            // 3. Model에 전달
+            model.addAttribute("contract", contract);
+            model.addAttribute("payment", payment);
+
+            return "payment/paymentSuccess";
+
+        } catch (Exception e) {
+            logger.error("결제 성공 페이지 로드 실패: contractId={}", contractId, e);
+            model.addAttribute("errorMsg", "결제 정보를 불러오는데 실패했습니다.");
+            return "payment/paymentFail";
+        }
     }
 
     /**

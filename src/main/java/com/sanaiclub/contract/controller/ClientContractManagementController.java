@@ -111,22 +111,6 @@ public class ClientContractManagementController {
     }
 
     /**
-     * 계약 최종 완료 처리
-     */
-    @PostMapping("/finalize")
-    public String finalizeContract(
-            @RequestParam("contractId") Integer contractId,
-            Model model) {
-        try {
-            contractService.finalizeContract(contractId);
-            return "redirect:/client/contract/management?contractId=" + contractId;
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "계약 최종 수락 처리 중 오류 발생: " + e.getMessage());
-            return "contract/contractManagement";
-        }
-    }
-
-    /**
      * 계약 취소 처리
      */
     @PostMapping("/cancel")
