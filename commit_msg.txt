@@ -1,9 +1,0 @@
-Fix: ContractService에 누락된 메서드 추가 및 컴파일 오류 수정
-
-- completeContract 메서드 추가 (계약 정산 완료 처리)
-- approvePayment 메서드 추가 (클라이언트 지급 수락)
-- convertToContractCheckViewMaps 메서드 추가
-- ContractCheckViewMapData Inner Class 추가
-- FreelancerProfileVO import 추가
-- root-context.xml에 portone-api.properties 추가
-- finalizeContract 메서드 수정 (PAID로 변경)
