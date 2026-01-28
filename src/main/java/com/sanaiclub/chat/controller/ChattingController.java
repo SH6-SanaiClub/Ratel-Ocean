@@ -57,7 +57,6 @@ public class ChattingController {
         return "chat/room"; // /WEB-INF/views/chat/room.jsp
     }
 
-
     @GetMapping("/room/{roomId}/info")
     @ResponseBody
     public ChatRoomDTO roomInfo( @PathVariable Integer roomId) {
@@ -107,7 +106,6 @@ public class ChattingController {
                 file,
                 uploadPath
         );
-
         return ResponseEntity.ok(message);
     }
     @GetMapping("/file/{messageId}")

@@ -831,6 +831,19 @@
             }
         }
     });
+    document.addEventListener("keydown", (e) => {
+        const fileInput = document.getElementById("fileInput");
+        const hasFile = fileInput && fileInput.files.length > 0; // 파일이 선택되었는지 확인
+
+        // 엔터키를 눌렀고, 파일이 선택된 상태이며, 채팅방이 선택되어 있을 때
+        if (e.key === "Enter" && !e.shiftKey && hasFile && selectedRoomId) {
+            // 단, 검색창(searchInput)이나 다른 입력창에 있을 때는 제외
+            if (e.target.tagName !== "TEXTAREA" && e.target.tagName !== "INPUT") {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+    });
     document.addEventListener("DOMContentLoaded", function() {
         const searchInput = document.getElementById("searchInput");
         if (searchInput) {
