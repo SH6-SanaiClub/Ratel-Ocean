@@ -1221,3 +1221,923 @@ body {
     background: #fee2e2;
     color: #991b1b;
 }
+
+/* =========================
+   3컬럼 레이아웃 (계약 관리 대시보드 개선)
+   ========================= */
+.main-layout.layout-3col {
+    grid-template-columns: 320px minmax(0, 1fr) 360px;
+    align-items: start;
+    gap: 24px;
+}
+
+/* =========================
+   사이드바 검색 기능
+   ========================= */
+.sidebar-search {
+    padding: 0 0 16px 0;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.sidebar-search input {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.sidebar-search input::placeholder {
+    color: #9ca3af;
+}
+
+.sidebar-search input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.12);
+    background: #fff;
+}
+
+.sidebar-search-wrapper {
+    position: relative;
+}
+
+.sidebar-search-wrapper::before {
+    content: '🔍';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* =========================
+   계약 아이템 미니 진행률바 및 긴급도 표시
+   ========================= */
+.contract-item-progress {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.mini-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color) 0%, #10b981 100%);
+    transition: width 0.3s ease;
+    border-radius: 999px;
+}
+
+.mini-progress-label {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.urgent-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    display: inline-block;
+    margin-left: 6px;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+.contract-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.contract-item-header-left {
+    flex: 1;
+    min-width: 0;
+}
+
+/* =========================
+   우측 고정 요약 패널
+   ========================= */
+.summary-panel {
+    position: sticky;
+    top: 24px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.summary-card {
+    background: var(--white-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #eef2f7;
+}
+
+.summary-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--dark-color);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.summary-kv {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f9fafb;
+    border: 1px solid #eef2f7;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.summary-row:hover {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+}
+
+.summary-row .k {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-row .v {
+    color: #111827;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.summary-row .v.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.btn-block {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.summary-help-text {
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.summary-help-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 12px;
+    transition: all 0.2s;
+}
+
+.summary-help-link:hover {
+    color: var(--primary-hover);
+    gap: 8px;
+}
+
+/* =========================
+   계약서 미리보기 컨테이너 (우측 패널)
+   ========================= */
+.contract-preview-container {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f9fafb;
+    margin-bottom: 16px;
+}
+
+.contract-preview-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.contract-preview-empty {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================
+   PDF 모달 (계약서 원본 보기)
+   ========================= */
+.pdf-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    backdrop-filter: blur(4px);
+}
+
+.pdf-modal.show {
+    display: flex;
+}
+
+.pdf-modal-card {
+    width: min(1100px, 96vw);
+    height: min(820px, 92vh);
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    animation: modalFadeIn 0.3s ease;
+}
+
+.pdf-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eef2f7;
+    background: #f9fafb;
+}
+
+.pdf-modal-head .title {
+    font-weight: 800;
+    color: #111827;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pdf-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    color: #6b7280;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.pdf-modal-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.pdf-modal-body {
+    flex: 1;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.pdf-modal-body iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+/* =========================
+   프로젝트 오버뷰 섹션 (중앙 메인 영역 개선)
+   ========================= */
+.project-overview {
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #eef2f7;
+}
+
+.project-overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.project-overview-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--dark-color);
+    margin: 0;
+}
+
+.project-overview-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.project-overview-budget {
+    text-align: right;
+}
+
+.project-overview-budget-label {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.project-overview-budget-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.overall-progress-section {
+    margin-top: 20px;
+}
+
+.overall-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.overall-progress-bar {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.overall-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color) 0%, #10b981 100%);
+    transition: width 0.5s ease;
+    border-radius: 999px;
+}
+
+/* =========================
+   반응형 디자인
+   ========================= */
+@media (max-width: 1200px) {
+    .main-layout.layout-3col {
+        grid-template-columns: 320px 1fr;
+    }
+    
+    .summary-panel {
+        position: static;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+}
+
+@media (max-width: 960px) {
+    .main-layout.layout-3col {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        position: static;
+        top: auto;
+    }
+    
+    .summary-panel {
+        grid-template-columns: 1fr;
+    }
+    
+    .project-overview-header {
+        flex-direction: column;
+    }
+    
+    .project-overview-budget {
+        text-align: left;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .pdf-modal-card {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .project-overview {
+        padding: 16px;
+    }
+    
+    .summary-card {
+        padding: 16px;
+    }
+}
+
+/* =========================
+   KPI 스코어카드 (상단 요약 위젯)
+   ========================= */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.kpi-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 110px;
+}
+
+.kpi-card.kpi-wide {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.kpi-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.kpi-value {
+    font-size: 34px;
+    font-weight: 900;
+    color: #111827;
+    line-height: 1;
+}
+
+.kpi-unit {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.kpi-subrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.kpi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid transparent;
+}
+
+.kpi-chip.warn {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.kpi-chip.good {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.kpi-money {
+    font-size: 34px;
+    font-weight: 900;
+    color: var(--primary-color);
+    letter-spacing: -0.4px;
+}
+
+.kpi-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: rgba(31, 122, 140, 0.10);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+/* =========================
+   마일스톤 수직 로드맵(타임라인)
+   ========================= */
+.milestone-list.milestone-timeline {
+    position: relative;
+    padding-left: 56px;
+}
+
+.milestone-list.milestone-timeline::before {
+    content: '';
+    position: absolute;
+    left: 26px;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+.milestone-card {
+    position: relative;
+}
+
+.milestone-list.milestone-timeline .milestone-card::before {
+    content: '';
+    position: absolute;
+    left: -44px;
+    top: 26px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid #cbd5e1;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.milestone-list.milestone-timeline .milestone-card.milestone-paid::before {
+    border-color: #10b981;
+    background: #ecfdf5;
+}
+
+.milestone-list.milestone-timeline .milestone-card.milestone-requested::before {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.milestone-list.milestone-timeline .milestone-card.milestone-deposited::before {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.milestone-list.milestone-timeline .milestone-card.is-current {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 10px 28px rgba(31, 122, 140, 0.18);
+    transform: translateY(-1px);
+}
+
+.milestone-list.milestone-timeline .milestone-card.is-current::before {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 10px rgba(31, 122, 140, 0.12), 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* 반응형: 타임라인 좌측 여백 축소 */
+@media (max-width: 640px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .kpi-card.kpi-wide { flex-direction: column; align-items: flex-start; }
+    .milestone-list.milestone-timeline { padding-left: 40px; }
+    .milestone-list.milestone-timeline::before { left: 18px; }
+    .milestone-list.milestone-timeline .milestone-card::before { left: -34px; }
+}
+
+/* =========================
+   사이드바 슬림 모드 (이미지 스타일)
+   ========================= */
+.sidebar.sidebar-slim {
+    padding: 16px;
+}
+
+.sidebar.sidebar-slim .contract-item {
+    padding: 10px 12px;
+}
+
+.sidebar.sidebar-slim .contract-item-subtitle,
+.sidebar.sidebar-slim .contract-item-meta {
+    display: none;
+}
+
+.sidebar.sidebar-slim .contract-item-title {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* 사이드바 상태 지표 (상단 요약) */
+.sidebar-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-stat-item {
+    text-align: center;
+    padding: 8px 4px;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.sidebar-stat-value {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--dark-color);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.sidebar-stat-label {
+    font-size: 10px;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* 사이드바 필터 버튼 */
+.sidebar-filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-filter-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.sidebar-filter-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.sidebar-filter-btn.active {
+    background: #1F7A8C;
+    color: #fff;
+    border-color: #1F7A8C;
+    box-shadow: 0 2px 4px rgba(31, 122, 140, 0.2);
+}
+
+.sidebar-filter-btn .count {
+    margin-left: 4px;
+    font-weight: 700;
+}
+
+/* 사이드바 간단한 리스트 */
+.sidebar-contract-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-contract-item {
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sidebar-contract-item:hover {
+    background: #f9fafb;
+    border-color: var(--primary-color);
+    transform: translateX(2px);
+}
+
+.sidebar-contract-item.active {
+    background: #1F7A8C;
+    color: #fff;
+    border-color: #1F7A8C;
+    border-width: 2px;
+    box-shadow: 0 2px 8px rgba(31, 122, 140, 0.3);
+}
+
+.sidebar-contract-item.active .sidebar-contract-title {
+    color: #fff;
+    font-weight: 700;
+}
+
+.sidebar-contract-item.active .sidebar-contract-days {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.sidebar-contract-item.active .sidebar-contract-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+.sidebar-contract-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.sidebar-contract-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark-color);
+    line-height: 1.4;
+}
+
+.sidebar-contract-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.sidebar-contract-badge.urgent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sidebar-contract-badge.progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.sidebar-contract-badge.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.sidebar-contract-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+
+.sidebar-contract-days {
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* =========================
+   중앙 계약 정보 접기(요약)
+   ========================= */
+.contract-meta-card {
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.contract-meta-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.contract-meta-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.contract-meta-toggle {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.contract-meta-body {
+    padding: 0 14px 12px;
+}
+
+.contract-meta-card.collapsed .contract-meta-body {
+    display: none;
+}
+
+/* =========================
+   CTA 버튼 (검수 요청 등)
+   ========================= */
+.btn-cta {
+    background: var(--primary-color);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(31, 122, 140, 0.35);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+}
+
+.btn-cta:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(31, 122, 140, 0.45);
+}
+
+.btn-cta:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(31, 122, 140, 0.3);
+}
