@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface ProjectDetailMapper {
 
+    // 프로젝트 상세 조회
     ProjectDetailDTO selectProjectDetail(@Param("projectId") Integer projectId);
 
     /**
@@ -23,13 +24,18 @@ public interface ProjectDetailMapper {
     List<ProjectsVO> selectProjectsByClientId(@Param("clientId") Integer clientId);
 
     boolean hasUserApplied(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
+    // 현재 나의 지원 상태 조회 (PENDING, CANCELED 등)
+    String selectApplicationStatus(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
 
-    // 프로젝트 지원하기
+    // 최초 지원 (INSERT)
     void insertApplication(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
 
-    // 프로젝트 지원 취소
-    void deleteApplication(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
+    // 상태 변경 (UPDATE) - 지원취소/재지원 포함
+    void updateApplicationStatus(@Param("projectId") Integer projectId,
+                                 @Param("userId") Integer userId,
+                                 @Param("status") String status);
 
+    // 유저 타입 조회
     String selectUserType(@Param("userId") Integer userId);
 
     /**
@@ -47,4 +53,5 @@ public interface ProjectDetailMapper {
      * @param projectStatus 프로젝트 상태 (READY, IN_PROGRESS, CLOSED)
      */
     int updateProjectStatus(@Param("projectId") Integer projectId, @Param("projectStatus") String projectStatus);
+
 }
