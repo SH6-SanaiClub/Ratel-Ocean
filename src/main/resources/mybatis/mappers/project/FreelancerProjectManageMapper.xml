@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.FreelancerProjectManageMapper">
+
+    <!-- 요약 카드: 진행중/지원/완료 + 예상 수익(진행중 계약 total_budget 합) -->
+    <select id="selectSummary" resultType="com.sanaiclub.project.model.dto.FreelancerProjectSummaryDTO">
+        SELECT
+            /* 진행중: 계약 SIGNED */
+            (SELECT COUNT(*)
+             FROM contracts c
+                      JOIN project_applications pa ON pa.application_id = c.contract_id
+             WHERE pa.freelancer_id = #{freelancerId}
+               AND c.contract_status = 'SIGNED') AS inProgressCount,
+
+            /* 지원중: PENDING/VIEWED/CHATTING/OFFERED */
+            (SELECT COUNT(*)
+             FROM project_applications pa
+             WHERE pa.freelancer_id = #{freelancerId}
+               AND pa.application_status IN ('PENDING','VIEWED','CHATTING','OFFERED')) AS appliedCount,
+
+            /* 완료: 계약 COMPLETED */
+            (SELECT COUNT(*)
+             FROM contracts c
+                      JOIN project_applications pa ON pa.application_id = c.contract_id
+             WHERE pa.freelancer_id = #{freelancerId}
+               AND c.contract_status = 'COMPLETED') AS completedCount,
+
+            /* 예상 수익: 진행중 SIGNED 계약 총액 합 */
+            (SELECT COALESCE(SUM(c.total_budget),0)
+             FROM contracts c
+                      JOIN project_applications pa ON pa.application_id = c.contract_id
+             WHERE pa.freelancer_id = #{freelancerId}
+               AND c.contract_status = 'SIGNED') AS expectedRevenue
+    </select>
+
+    <!-- 공통 카드 베이스: 진행률 + 다음 마일스톤 -->
+    <!-- progressPercent = (PAID 개수 / 전체) * 100 -->
+    <sql id="projectCardBaseSelect">
+        SELECT
+            p.project_id             AS projectId,
+            pa.application_id        AS applicationId,
+            c.contract_id            AS contractId,
+
+            p.title                  AS title,
+            cu.name                  AS clientName,
+
+            pa.application_status    AS applicationStatus,
+            c.contract_status        AS contractStatus,
+
+            DATE_FORMAT(c.contract_start_date, '%Y-%m-%d') AS startDate,
+            DATE_FORMAT(c.contract_end_date, '%Y-%m-%d')   AS endDate,
+
+            nm.milestone_name        AS nextMilestoneName,
+            DATE_FORMAT(nm.due_date, '%Y-%m-%d')           AS nextMilestoneDueDate,
+
+            c.total_budget           AS totalBudget,
+
+            /* D-day: 계약 종료일 기준 */
+            DATEDIFF(c.contract_end_date, CURDATE())       AS dday,
+
+            /* 진행률 */
+            CASE
+                WHEN ms.total_cnt = 0 THEN 0
+                ELSE ROUND(ms.paid_cnt * 100.0 / ms.total_cnt)
+                END AS progressPercent
+        FROM contracts c
+                 JOIN project_applications pa ON pa.application_id = c.contract_id
+                 JOIN projects p ON p.project_id = pa.project_id
+                 JOIN users cu ON cu.user_id = p.client_id
+
+            /* 전체 마일스톤 수 + PAID 수 */
+                 LEFT JOIN (
+            SELECT
+                contract_id,
+                COUNT(*) AS total_cnt,
+                SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) AS paid_cnt
+            FROM contract_milestones
+            GROUP BY contract_id
+        ) ms ON ms.contract_id = c.contract_id
+
+            /* 다음 마일스톤 (PAID/CANCELED 제외 + due_date 빠른 순 1개) */
+                 LEFT JOIN (
+            SELECT m1.*
+            FROM contract_milestones m1
+                     JOIN (
+                SELECT contract_id, MIN(due_date) AS min_due
+                FROM contract_milestones
+                WHERE due_date IS NOT NULL
+                  AND status NOT IN ('PAID','CANCELED')
+                GROUP BY contract_id
+            ) x ON x.contract_id = m1.contract_id AND x.min_due = m1.due_date
+        ) nm ON nm.contract_id = c.contract_id
+    </sql>
+
+    <!-- 진행중 프로젝트: SIGNED -->
+    <select id="selectInProgressProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
+        <include refid="projectCardBaseSelect"/>
+        WHERE pa.freelancer_id = #{freelancerId}
+        AND c.contract_status = 'SIGNED'
+        ORDER BY c.contracted_at DESC
+    </select>
+
+    <!-- 지원중 프로젝트: 계약 전 상태 -->
+    <!-- 계약 테이블이 아직 없을 수 있으니: project_applications + projects 기준으로 별도 카드 -->
+    <select id="selectAppliedProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
+        SELECT
+            p.project_id          AS projectId,
+            pa.application_id     AS applicationId,
+            NULL                  AS contractId,
+
+            p.title               AS title,
+            cu.name               AS clientName,
+
+            pa.application_status AS applicationStatus,
+            NULL                  AS contractStatus,
+
+            DATE_FORMAT(p.start_date, '%Y-%m-%d')    AS startDate,
+            DATE_FORMAT(p.deadline_date, '%Y-%m-%d') AS endDate,
+
+            NULL AS nextMilestoneName,
+            NULL AS nextMilestoneDueDate,
+            p.budget AS totalBudget,
+            DATEDIFF(p.deadline_date, CURDATE()) AS dday,
+            0 AS progressPercent
+        FROM project_applications pa
+                 JOIN projects p ON p.project_id = pa.project_id
+                 JOIN users cu ON cu.user_id = p.client_id
+        WHERE pa.freelancer_id = #{freelancerId}
+          AND pa.application_status IN ('PENDING','VIEWED','CHATTING','OFFERED')
+        ORDER BY pa.applied_at DESC
+    </select>
+
+    <!-- 완료 프로젝트: COMPLETED -->
+    <select id="selectCompletedProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
+        <include refid="projectCardBaseSelect"/>
+        WHERE pa.freelancer_id = #{freelancerId}
+        AND c.contract_status = 'COMPLETED'
+        ORDER BY c.completed_at DESC
+    </select>
+
+    <!-- 캘린더 이벤트: 마일스톤 due_date + 계약 시작/종료 -->
+    <select id="selectCalendarEvents" resultType="com.sanaiclub.project.model.dto.CalendarEventDTO">
+        /* milestone due_date */
+        SELECT
+            DATE_FORMAT(m.due_date, '%Y-%m-%d') AS date,
+            'MILESTONE' AS type,
+            CONCAT(p.title, ' - ', m.milestone_name) AS title,
+            p.project_id AS projectId,
+            c.contract_id AS contractId,
+            m.milestone_id AS milestoneId,
+            m.step_order AS stepOrder
+        FROM contract_milestones m
+            JOIN contracts c ON c.contract_id = m.contract_id
+            JOIN project_applications pa ON pa.application_id = c.contract_id
+            JOIN projects p ON p.project_id = pa.project_id
+        WHERE pa.freelancer_id = #{freelancerId}
+          AND c.contract_status = 'SIGNED'
+          AND m.due_date IS NOT NULL
+          AND m.due_date BETWEEN #{start} AND #{end}
+
+        UNION ALL
+
+        /* contract start */
+        SELECT
+            DATE_FORMAT(c.contract_start_date, '%Y-%m-%d') AS date,
+            'CONTRACT_START' AS type,
+            p.title AS title,
+            p.project_id AS projectId,
+            c.contract_id AS contractId,
+            NULL AS milestoneId,
+            NULL AS stepOrder
+        FROM contracts c
+            JOIN project_applications pa ON pa.application_id = c.contract_id
+            JOIN projects p ON p.project_id = pa.project_id
+        WHERE pa.freelancer_id = #{freelancerId}
+          AND c.contract_status = 'SIGNED'
+          AND c.contract_start_date BETWEEN #{start} AND #{end}
+
+        UNION ALL
+
+        /* contract end */
+        SELECT
+            DATE_FORMAT(c.contract_end_date, '%Y-%m-%d') AS date,
+            'CONTRACT_END' AS type,
+            p.title AS title,
+            p.project_id AS projectId,
+            c.contract_id AS contractId,
+            NULL AS milestoneId,
+            NULL AS stepOrder
+        FROM contracts c
+            JOIN project_applications pa ON pa.application_id = c.contract_id
+            JOIN projects p ON p.project_id = pa.project_id
+        WHERE pa.freelancer_id = #{freelancerId}
+          AND c.contract_status = 'SIGNED'
+          AND c.contract_end_date BETWEEN #{start} AND #{end}
+
+        ORDER BY date ASC
+    </select>
+
+</mapper>

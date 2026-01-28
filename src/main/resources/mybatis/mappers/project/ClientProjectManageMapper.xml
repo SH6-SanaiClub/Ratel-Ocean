@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ClientProjectManageMapper">
+
+    <select id="selectMyProjects"
+            resultType="com.sanaiclub.project.model.dto.ClientProjectManageDTO">
+        SELECT
+        p.project_id          AS projectId,
+        p.title               AS title,
+        p.project_status      AS projectStatus,
+        p.deadline_date       AS deadlineDate,
+        p.applicant_count     AS applicantCount,
+        p.created_at          AS createdAt,
+
+        (SELECT COUNT(*)
+        FROM project_applications pa
+        WHERE pa.project_id = p.project_id
+        AND pa.application_status = 'PENDING') AS newApplicantCount,
+
+        (SELECT COUNT(*)
+        FROM contract_milestones cm
+        JOIN contracts c ON cm.contract_id = c.contract_id
+        JOIN project_applications pa ON c.contract_id = pa.application_id
+        WHERE pa.project_id = p.project_id
+        AND cm.status = 'REQUESTED') > 0 AS hasPaymentRequest,
+
+        (SELECT c.client_rating
+        FROM contracts c
+        JOIN project_applications pa ON c.contract_id = pa.application_id
+        WHERE pa.project_id = p.project_id
+        LIMIT 1)             AS clientRating
+
+        FROM projects p
+        WHERE p.client_id = #{clientId}
+
+        <if test="status == 'RECRUITING'">
+            AND p.project_status = 'READY'
+        </if>
+
+        <if test="status == 'ONGOING'">
+            AND p.project_status = 'IN_PROGRESS'
+        </if>
+
+        <if test="status == 'COMPLETED'">
+            AND p.project_status = 'CLOSED'
+        </if>
+
+        ORDER BY p.created_at DESC
+    </select>
+
+</mapper>

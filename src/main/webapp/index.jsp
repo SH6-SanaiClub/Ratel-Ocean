@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ratel-Ocean - 프리랜서 IT 개발 플랫폼</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/landing.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/landing.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -437,6 +437,6 @@
     </div>
 </footer>
 
-<script src="${pageContext.request.contextPath}/resources/js/landing.js"></script>
+<script src="${pageContext.request.contextPath}/js/landing.js"></script>
 </body>
 </html>

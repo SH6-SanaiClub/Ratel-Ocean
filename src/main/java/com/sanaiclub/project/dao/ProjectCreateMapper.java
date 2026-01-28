@@ -1,15 +1,28 @@
 package com.sanaiclub.project.dao;
 
-import com.sanaiclub.project.model.vo.ProjectsVO;
+import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
+import com.sanaiclub.project.model.dto.StackDTO;
 import com.sanaiclub.project.model.vo.ProjectStackVO;
+import com.sanaiclub.project.model.vo.ProjectsVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 @Mapper
 public interface ProjectCreateMapper {
 
-    // 1. 프로젝트 저장 (VO 사용)
-    void insertProject(ProjectsVO projectsVO);
+    // 등록
+    void insertProject(ProjectCreateRequestDTO request);
+    void insertProjectStack(ProjectStackVO vo);
 
-    // 2. 프로젝트 스택 저장 (VO 사용)
-    void insertProjectStack(ProjectStackVO projectStackVO);
+    // 수정/조회
+    ProjectsVO selectProjectById(Integer projectId);
+    List<StackDTO> selectStackListByProjectId(Integer projectId);
+    ProjectStackVO selectProjectStackConfig(Integer projectId); // 레벨, 연차 복구용
+
+    void updateProject(ProjectCreateRequestDTO request);
+
+    // 삭제
+    void deleteProjectStacks(Integer projectId);
+    void deleteProject(Integer projectId);
 }
