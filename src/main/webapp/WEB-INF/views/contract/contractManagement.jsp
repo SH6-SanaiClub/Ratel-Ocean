@@ -57,15 +57,19 @@
                 </div>
                 
                 <%-- 상태 지표 계산 --%>
-                <c:set var="totalRequested" value="0"/>
+                <c:set var="totalRequested" value="0"/><!-- 작업중 마일스톤 수 -->
                 <c:set var="totalInProgress" value="0"/><!-- SIGNED + PAID + WAITING -->
-                <c:set var="totalPaymentRequest" value="0"/>
+                <c:set var="totalPaymentRequest" value="0"/><!-- 승인 요청 건수 -->
                 <c:set var="totalTerminated" value="0"/>
                 <c:forEach var="statusEntry" items="${contractsByStatus}">
                     <c:forEach var="contract" items="${statusEntry.value}">
-                        <%-- 승인 / 지급 요청 건수 --%>
+                        <%-- 작업중 마일스톤 수: 계약 리스트에 "작업중 X건"으로 표시되는 조건과 동일 --%>
+                        <%-- 조건: requestedMilestones == 0 AND depositedMilestones > 0 AND totalMilestones > 0 --%>
+                        <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones > 0 and contract.totalMilestones > 0}">
+                            <c:set var="totalRequested" value="${totalRequested + contract.depositedMilestones}"/>
+                        </c:if>
+                        <%-- 승인 요청 건수 --%>
                         <c:if test="${contract.requestedMilestones > 0}">
-                            <c:set var="totalRequested" value="${totalRequested + 1}"/>
                             <c:set var="totalPaymentRequest" value="${totalPaymentRequest + contract.requestedMilestones}"/>
                         </c:if>
                         <%-- 진행 중으로 보는 상태 (SIGNED, PAID, WAITING) --%>
@@ -86,7 +90,7 @@
                 <div class="sidebar-stats">
                     <div class="sidebar-stat-item">
                         <span class="sidebar-stat-value">${totalRequested}</span>
-                        <span class="sidebar-stat-label">승인 대기</span>
+                        <span class="sidebar-stat-label">작업중</span>
                     </div>
                     <div class="sidebar-stat-item">
                         <span class="sidebar-stat-value">${totalInProgress}</span>
@@ -94,7 +98,7 @@
                     </div>
                     <div class="sidebar-stat-item">
                         <span class="sidebar-stat-value">${totalPaymentRequest}</span>
-                        <span class="sidebar-stat-label">지급 요청</span>
+                        <span class="sidebar-stat-label">승인 요청</span>
                     </div>
                 </div>
                 
