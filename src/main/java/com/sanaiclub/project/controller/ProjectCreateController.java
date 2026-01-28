@@ -88,4 +88,10 @@ public class ProjectCreateController {
             return "fail";
         }
     }
+
+    // 프로젝트 등록 성공 페이지
+    @GetMapping("/success")
+    public String success() {
+        return "project/client/success";
+    }
 }
