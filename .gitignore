@@ -60,6 +60,8 @@ buildNumber.properties
 .env.*.local
 **/jwt.properties
 **/bizno-api.properties
+**/deepseek-api.properties
+**/portone-api.properties
 
 # ===== 로그 파일 =====
 logs/
