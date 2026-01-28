@@ -57,7 +57,6 @@ public class ChattingController {
         return "chat/room"; // /WEB-INF/views/chat/room.jsp
     }
 
-
     @GetMapping("/room/{roomId}/info")
     @ResponseBody
     public ChatRoomDTO roomInfo( @PathVariable Integer roomId) {
@@ -99,40 +98,14 @@ public class ChattingController {
             HttpSession session
     ) throws IOException {
         Integer senderId = AuthContext.getCurrentUserId();
-        String fileName = null;
-        String fileUrl = null;
-        Long fileSize = null;
-
-        if (file != null && !file.isEmpty()) {
-            String originalFileName = file.getOriginalFilename();
-            fileSize = file.getSize();
-            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
-            String uploadDir = session.getServletContext().getRealPath("/") + "upload/chat";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
-            File savedFile = new File(uploadDir, savedFileName);
-            file.transferTo(savedFile);
-            fileName = originalFileName;
-            fileUrl = "/upload/chat/" + savedFileName;
-        }
-
-        // --- [1. DB 저장] ---
-        ChatMessageDTO message =
-                chatService.sendAndReturnMessage(
-                        roomId,
-                        senderId,
-                        content,
-                        fileName,
-                        fileUrl,
-                        fileSize
-                );
-        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);
-        messagingTemplate.convertAndSend("/sub/chat/list/" + senderId, message);
-        ChatRoomDTO roomInfo = chatService.findRoomInfo(roomId, senderId);
-        if (roomInfo != null && roomInfo.getOpponentId() != null) {
-            messagingTemplate.convertAndSend("/sub/chat/list/" + roomInfo.getOpponentId(), message);
-        }
-
+        String uploadPath = session.getServletContext().getRealPath("/") + "upload/chat";
+        ChatMessageDTO message = chatService.processAndSendMessage(
+                roomId,
+                senderId,
+                content,
+                file,
+                uploadPath
+        );
         return ResponseEntity.ok(message);
     }
     @GetMapping("/file/{messageId}")

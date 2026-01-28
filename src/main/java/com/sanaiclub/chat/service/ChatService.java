@@ -5,12 +5,18 @@ import com.sanaiclub.chat.dao.ChatRoomMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +33,41 @@ public class ChatService {
         List<ChatRoomDTO> rooms = chatRoomMapper.findMyRooms(loginUserId);
         return rooms;
     }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    @Transactional
+    public ChatMessageDTO processAndSendMessage(Integer roomId, Integer senderId, String content, MultipartFile file, String uploadPath) throws IOException {
+        String fileName = null;
+        String fileUrl = null;
+        Long fileSize = null;
+        if (file != null && !file.isEmpty()) {
+            String originalFileName = file.getOriginalFilename();
+            fileSize = file.getSize();
+            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+            File dir = new File(uploadPath);
+            if (!dir.exists()) dir.mkdirs();
+            File savedFile = new File(uploadPath, savedFileName);
+            file.transferTo(savedFile);
+            fileName = originalFileName;
+            fileUrl = "/upload/chat/" + savedFileName;
+        }
+        ChatMessageDTO message =sendAndReturnMessage(
+                roomId,
+                senderId,
+                content,
+                fileName,
+                fileUrl,
+                fileSize
+        );
+        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);
+        messagingTemplate.convertAndSend("/sub/chat/list/" + senderId, message);
+        ChatRoomDTO roomInfo = findRoomInfo(roomId, senderId);
+        if (roomInfo != null && roomInfo.getOpponentId() != null) {
+            messagingTemplate.convertAndSend("/sub/chat/list/" + roomInfo.getOpponentId(), message);
+        }
+        return message;
+    }
+
 
     @Transactional
     public ChatMessageDTO sendAndReturnMessage(Integer roomId, Integer senderId, String content, String fileName, String fileUrl, Long fileSize) {
