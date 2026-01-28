@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.sanaiclub.manage.dao.FreelancerProjectManageMapper">
+<mapper namespace="com.sanaiclub.project.dao.FreelancerProjectManageMapper">
 
     <!-- 요약 카드: 진행중/지원/완료 + 예상 수익(진행중 계약 total_budget 합) -->
-    <select id="selectSummary" resultType="com.sanaiclub.manage.model.dto.FreelancerProjectSummaryDTO">
+    <select id="selectSummary" resultType="com.sanaiclub.project.model.dto.FreelancerProjectSummaryDTO">
         SELECT
             /* 진행중: 계약 SIGNED */
             (SELECT COUNT(*)
@@ -95,7 +95,7 @@
     </sql>
 
     <!-- 진행중 프로젝트: SIGNED -->
-    <select id="selectInProgressProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerProjectCardDTO">
+    <select id="selectInProgressProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
         <include refid="projectCardBaseSelect"/>
         WHERE pa.freelancer_id = #{freelancerId}
         AND c.contract_status = 'SIGNED'
@@ -104,7 +104,7 @@
 
     <!-- 지원중 프로젝트: 계약 전 상태 -->
     <!-- 계약 테이블이 아직 없을 수 있으니: project_applications + projects 기준으로 별도 카드 -->
-    <select id="selectAppliedProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerProjectCardDTO">
+    <select id="selectAppliedProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
         SELECT
             p.project_id          AS projectId,
             pa.application_id     AS applicationId,
@@ -133,7 +133,7 @@
     </select>
 
     <!-- 완료 프로젝트: COMPLETED -->
-    <select id="selectCompletedProjects" resultType="com.sanaiclub.manage.model.dto.FreelancerProjectCardDTO">
+    <select id="selectCompletedProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
         <include refid="projectCardBaseSelect"/>
         WHERE pa.freelancer_id = #{freelancerId}
         AND c.contract_status = 'COMPLETED'
@@ -141,7 +141,7 @@
     </select>
 
     <!-- 캘린더 이벤트: 마일스톤 due_date + 계약 시작/종료 -->
-    <select id="selectCalendarEvents" resultType="com.sanaiclub.manage.model.dto.CalendarEventDTO">
+    <select id="selectCalendarEvents" resultType="com.sanaiclub.project.model.dto.CalendarEventDTO">
         /* milestone due_date */
         SELECT
             DATE_FORMAT(m.due_date, '%Y-%m-%d') AS date,

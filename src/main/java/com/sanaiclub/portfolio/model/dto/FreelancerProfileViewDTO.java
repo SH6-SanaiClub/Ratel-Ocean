@@ -46,4 +46,6 @@ public class FreelancerProfileViewDTO {
 
     // view flags
     private boolean owner; // 본인 여부
+
+    private List<CompletedPlatformProjectDTO> completedProjects;
 }

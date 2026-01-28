@@ -1,10 +1,10 @@
-package com.sanaiclub.manage.controller;
+package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
-import com.sanaiclub.manage.model.dto.CalendarEventDTO;
-import com.sanaiclub.manage.model.dto.FreelancerProjectCardDTO;
-import com.sanaiclub.manage.model.dto.FreelancerProjectSummaryDTO;
-import com.sanaiclub.manage.service.FreelancerProjectManageService;
+import com.sanaiclub.project.model.dto.CalendarEventDTO;
+import com.sanaiclub.project.model.dto.FreelancerProjectCardDTO;
+import com.sanaiclub.project.model.dto.FreelancerProjectSummaryDTO;
+import com.sanaiclub.project.service.FreelancerProjectManageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/freelancer/projects")
+@RequestMapping("/freelancer/project")
 public class FreelancerProjectManageController {
 
     private final FreelancerProjectManageService freelancerProjectManageService;
@@ -52,10 +52,10 @@ public class FreelancerProjectManageController {
 
         model.addAttribute("events", events);
 
-        return "manage/freelancer/freelancerProjectManage";
+        return "project/freelancer/freelancerProjectManage";
     }
 
-    // (옵션) 캘린더 AJAX용 JSON
+    // 캘린더 AJAX용 JSON
     @GetMapping("/events")
     @ResponseBody
     public Map<String, Object> events(

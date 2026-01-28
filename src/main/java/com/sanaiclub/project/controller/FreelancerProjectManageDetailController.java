@@ -1,12 +1,12 @@
-package com.sanaiclub.manage.controller;
+package com.sanaiclub.project.controller;
 
 import com.sanaiclub.common.util.AuthContext;
-import com.sanaiclub.manage.model.dto.FreelancerBoardProjectDTO;
-import com.sanaiclub.manage.model.dto.FreelancerContractReviewViewDTO;
-import com.sanaiclub.manage.model.dto.MilestoneDTO;
-import com.sanaiclub.manage.model.dto.SaveReviewRequestDTO;
-import com.sanaiclub.manage.model.dto.SaveStacksRequestDTO;
-import com.sanaiclub.manage.service.FreelancerProjectBoardService;
+import com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO;
+import com.sanaiclub.project.model.dto.MilestoneDTO;
+import com.sanaiclub.project.model.dto.SaveReviewRequestDTO;
+import com.sanaiclub.project.model.dto.SaveStacksRequestDTO;
+import com.sanaiclub.project.service.FreelancerProjectManageDetailService;
+import com.sanaiclub.portfolio.dao.StackOptionMapper;
 import com.sanaiclub.project.model.dto.StackDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -18,15 +18,16 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/freelancer/projects")
-public class FreelancerProjectBoardController {
+@RequestMapping("/freelancer/project")
+public class FreelancerProjectManageDetailController {
 
-    private final FreelancerProjectBoardService boardService;
+    private final FreelancerProjectManageDetailService freelancerProjectManageDetailService;
+    private final StackOptionMapper stackOptionMapper;
 
     /**
      * tab = inProgress | completed | reviews
      */
-    @GetMapping("/board")
+    @GetMapping("/detail")
     public String board(
             @RequestParam(value = "tab", defaultValue = "inProgress") String tab,
             @RequestParam(value = "contractId", required = false) Integer contractId,
@@ -34,9 +35,9 @@ public class FreelancerProjectBoardController {
     ) {
         Integer freelancerId = AuthContext.requireCurrentUserId();
 
-        List<FreelancerBoardProjectDTO> inProgressList = boardService.getInProgressProjects(freelancerId);
-        List<FreelancerBoardProjectDTO> completedList = boardService.getCompletedProjects(freelancerId);
-        List<FreelancerBoardProjectDTO> reviewList = boardService.getReviewProjects(freelancerId);
+        List<FreelancerBoardProjectDTO> inProgressList = freelancerProjectManageDetailService.getInProgressProjects(freelancerId);
+        List<FreelancerBoardProjectDTO> completedList = freelancerProjectManageDetailService.getCompletedProjects(freelancerId);
+        List<FreelancerBoardProjectDTO> reviewList = freelancerProjectManageDetailService.getReviewProjects(freelancerId);
 
         Integer selectedContractId = contractId;
         if (selectedContractId == null) {
@@ -60,25 +61,34 @@ public class FreelancerProjectBoardController {
             model.addAttribute("requiredStacks", Collections.emptyList());
             model.addAttribute("preSelectedCsv", "");
             model.addAttribute("reviewView", null);
-            return "manage/freelancer/freelancerProjectBoard";
+            return "project/freelancer/freelancerProjectManageDetail";
         }
 
-        FreelancerBoardProjectDTO selected = boardService.getProjectHeader(freelancerId, selectedContractId);
+        FreelancerBoardProjectDTO selected = freelancerProjectManageDetailService.getProjectHeader(freelancerId, selectedContractId);
         model.addAttribute("selected", selected);
 
         if ("inProgress".equals(tab)) {
-            List<MilestoneDTO> milestones = boardService.getMilestonesWithActionableFlag(freelancerId, selectedContractId);
+            List<MilestoneDTO> milestones = freelancerProjectManageDetailService.getMilestonesWithActionableFlag(freelancerId, selectedContractId);
             model.addAttribute("milestones", milestones);
-            // 오른쪽 패널 리뷰(기존 작성값 표시용)
-            model.addAttribute("reviewView", boardService.getContractReviewView(freelancerId, selectedContractId));
+            // 오른쪽 패널 리뷰(
+            model.addAttribute("reviewView", freelancerProjectManageDetailService.getContractReviewView(freelancerId, selectedContractId));
 
         } else if ("completed".equals(tab)) {
-            List<StackDTO> requiredStacks = boardService.getRequiredStacksForContract(freelancerId, selectedContractId);
-//            List<Integer> preSelected = boardService.getPreselectedStackIdsForCompleted(freelancerId, selectedContractId);
-//
+            List<StackDTO> requiredStacks = freelancerProjectManageDetailService.getRequiredStacksForContract(freelancerId, selectedContractId);
+
             model.addAttribute("requiredStacks", requiredStacks);
 
-            List<Integer> preSelected = boardService.getPreselectedStackIdsForCompleted(freelancerId, selectedContractId);
+            List<StackDTO> positionStacks =
+                    stackOptionMapper.findByCategory("POSITION");
+
+            List<StackDTO> skillStacks =
+                    stackOptionMapper.findByCategory("SKILL");
+
+            model.addAttribute("positionStacks", positionStacks);
+            model.addAttribute("skillStacks", skillStacks);
+
+
+            List<Integer> preSelected = freelancerProjectManageDetailService.getPreselectedStackIdsForCompleted(freelancerId, selectedContractId);
             model.addAttribute("preSelectedIds", new HashSet<>(preSelected));
 
             // JSTL contains용 csv
@@ -89,21 +99,21 @@ public class FreelancerProjectBoardController {
             if (preSelected.isEmpty()) preSelectedCsv = ","; // contains 체크용 안전 처리
             model.addAttribute("preSelectedCsv", preSelectedCsv);
 
-            model.addAttribute("reviewView", boardService.getContractReviewView(freelancerId, selectedContractId));
+            model.addAttribute("reviewView", freelancerProjectManageDetailService.getContractReviewView(freelancerId, selectedContractId));
 
         } else { // reviews
-            model.addAttribute("reviewView", boardService.getContractReviewView(freelancerId, selectedContractId));
+            model.addAttribute("reviewView", freelancerProjectManageDetailService.getContractReviewView(freelancerId, selectedContractId));
         }
 
-        return "manage/freelancer/freelancerProjectBoard";
+        return "project/freelancer/freelancerProjectManageDetail";
     }
 
     /** 마일스톤 승인요청(REQUESTED) ↔ 요청취소(WAITING) 토글 (가장 앞단계만 가능) */
-    @PostMapping("/board/milestones/{milestoneId}/toggle")
+    @PostMapping("/detail/milestones/{milestoneId}/toggle")
     @ResponseBody
     public Map<String, Object> toggleMilestoneRequest(@PathVariable("milestoneId") Integer milestoneId) {
         Integer freelancerId = AuthContext.requireCurrentUserId();
-        String status = boardService.toggleMilestoneRequest(freelancerId, milestoneId);
+        String status = freelancerProjectManageDetailService.toggleMilestoneRequest(freelancerId, milestoneId);
         Map<String, Object> res = new HashMap<>();
         res.put("ok", status != null);
         res.put("status", status);
@@ -111,20 +121,20 @@ public class FreelancerProjectBoardController {
     }
 
     /** 완료 프로젝트: 사용 스택 저장 (project_freelancer_stacks) */
-    @PostMapping("/board/stacks/save")
+    @PostMapping("/detail/stacks/save")
     @ResponseBody
     public Map<String, Object> saveUsedStacks(@RequestBody SaveStacksRequestDTO req) {
         Integer freelancerId = AuthContext.requireCurrentUserId();
-        boardService.saveUsedStacks(freelancerId, req.getContractId(), req.getStackIds());
+        freelancerProjectManageDetailService.saveUsedStacks(freelancerId, req.getContractId(), req.getStackIds());
         return Collections.<String, Object>singletonMap("ok", true);
     }
 
     /** 프리랜서 → 클라이언트 리뷰 저장 (contracts.freelancer_rating/experience) */
-    @PostMapping("/board/review/save")
+    @PostMapping("/detail/review/save")
     @ResponseBody
     public Map<String, Object> saveFreelancerReview(@RequestBody SaveReviewRequestDTO req) {
         Integer freelancerId = AuthContext.requireCurrentUserId();
-        boardService.saveFreelancerReview(freelancerId, req.getContractId(), req.getRating(), req.getExperience());
+        freelancerProjectManageDetailService.saveFreelancerReview(freelancerId, req.getContractId(), req.getRating(), req.getExperience());
         return Collections.<String, Object>singletonMap("ok", true);
     }
 

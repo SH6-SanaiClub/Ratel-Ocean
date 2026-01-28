@@ -1,8 +1,8 @@
-package com.sanaiclub.manage.dao;
+package com.sanaiclub.project.dao;
 
-import com.sanaiclub.manage.model.dto.CalendarEventDTO;
-import com.sanaiclub.manage.model.dto.FreelancerProjectCardDTO;
-import com.sanaiclub.manage.model.dto.FreelancerProjectSummaryDTO;
+import com.sanaiclub.project.model.dto.CalendarEventDTO;
+import com.sanaiclub.project.model.dto.FreelancerProjectCardDTO;
+import com.sanaiclub.project.model.dto.FreelancerProjectSummaryDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

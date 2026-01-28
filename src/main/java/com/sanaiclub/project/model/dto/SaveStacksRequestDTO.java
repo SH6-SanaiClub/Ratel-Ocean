@@ -1,4 +1,4 @@
-package com.sanaiclub.manage.model.dto;
+package com.sanaiclub.project.model.dto;
 
 import lombok.Data;
 import java.util.List;

@@ -1,10 +1,10 @@
-package com.sanaiclub.manage.service.impl;
+package com.sanaiclub.project.service.impl;
 
-import com.sanaiclub.manage.dao.FreelancerProjectManageMapper;
-import com.sanaiclub.manage.model.dto.CalendarEventDTO;
-import com.sanaiclub.manage.model.dto.FreelancerProjectCardDTO;
-import com.sanaiclub.manage.model.dto.FreelancerProjectSummaryDTO;
-import com.sanaiclub.manage.service.FreelancerProjectManageService;
+import com.sanaiclub.project.dao.FreelancerProjectManageMapper;
+import com.sanaiclub.project.model.dto.CalendarEventDTO;
+import com.sanaiclub.project.model.dto.FreelancerProjectCardDTO;
+import com.sanaiclub.project.model.dto.FreelancerProjectSummaryDTO;
+import com.sanaiclub.project.service.FreelancerProjectManageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
