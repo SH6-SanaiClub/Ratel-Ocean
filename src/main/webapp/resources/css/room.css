@@ -111,7 +111,8 @@ body {
     background: #e0e0e0;
     max-width: 70%;  /* 말풍선 최대 너비 */
     word-wrap: break-word; /* 길게 이어진 단어도 줄바꿈 */
-    white-space: normal;   /* 텍스트 줄바꿈 허용 */
+    white-space: pre-wrap !important;
+    word-break: break-all;
 }
 
 .message.mine .bubble {
