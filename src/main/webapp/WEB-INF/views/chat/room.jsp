@@ -82,8 +82,7 @@
         return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/\n/g, "<br>");
+            .replace(/>/g, "&gt;");
     }
 
     let stompClient = null;
@@ -267,7 +266,9 @@
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
-    messageInput.addEventListener("input", () => autoResize(messageInput));
+    messageInput.addEventListener("input", function() {
+        autoResize(this);
+    });
     function openFile() {
         document.getElementById("fileInput").click();
     }
@@ -837,7 +838,6 @@
             if (e.shiftKey) {
                 // Shift + Enter: 기본 동작인 줄바꿈을 허용함
                 // textarea 높이를 자동 조절하고 싶다면 아래 함수 호출 (선택사항)
-                setTimeout(() => autoResize(messageInput), 0);
             } else {
                 // 그냥 Enter: 메시지 전송
                 e.preventDefault(); // 줄바꿈 방지
@@ -845,6 +845,28 @@
                 // 전송 후 높이 초기화
                 messageInput.style.height = 'auto';
             }
+        }
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.addEventListener("keydown", function(event) {
+                // 1. 엔터키를 누르면 검색 실행
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    searchMessages();
+                }
+                // 2. 위쪽 방향키를 누르면 이전 결과로 이동 (▲ 버튼과 동일)
+                else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    if (typeof navSearch === "function") navSearch(-1);
+                }
+                // 3. 아래쪽 방향키를 누르면 다음 결과로 이동 (▼ 버튼과 동일)
+                else if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    if (typeof navSearch === "function") navSearch(1);
+                }
+            });
         }
     });
     document.getElementById("fileInput").addEventListener("change", function () {
