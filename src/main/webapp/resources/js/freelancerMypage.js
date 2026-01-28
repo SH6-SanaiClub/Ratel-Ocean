@@ -10,14 +10,84 @@ $(document).ready(function () {
     }
 });
 
-// 탭 전환 기능
+let historyOffset = 0;
+const historyLimit = 10;
+
 function switchTab(viewId, el) {
     $('.view-section').removeClass('active');
     $('#view-' + viewId).addClass('active');
 
     $('.sidebar-menu li').removeClass('active');
     if (el) $(el).addClass('active');
+
+    // 거래내역 탭 처음 열 때 1회 로드
+    if (viewId === 'received' && historyOffset === 0) {
+        loadMoreHistory(true);
+    }
 }
+
+function ioTypeLabel(type) {
+    switch (type) {
+        case 'DEPOSIT': return '입금';
+        case 'WITHDRAWAL': return '출금';
+        case 'PAYMENT': return '결제';
+        case 'REFUND': return '환불';
+        default: return type;
+    }
+}
+
+function loadMoreHistory(reset) {
+    if (reset) {
+        historyOffset = 0;
+        $('#historyList').empty();
+        $('#btnMoreHistory').show();
+    }
+
+    $.ajax({
+        url: contextPath + '/freelancer/mypage/wallet/history',
+        type: 'GET',
+        data: { offset: historyOffset, limit: historyLimit },
+        success: function (list) {
+            if (!list || list.length === 0) {
+                if (historyOffset === 0) {
+                    $('#historyList').html('<div style="color:#888;">거래 내역이 없습니다.</div>');
+                }
+                $('#btnMoreHistory').hide();
+                return;
+            }
+
+            list.forEach(function (h) {
+                const isMinus = (h.ioType === 'WITHDRAWAL' || h.ioType === 'PAYMENT');
+                const sign = isMinus ? '-' : '+';
+
+                const row = `
+          <div style="display:flex; justify-content:space-between; gap:15px; padding:14px 0; border-bottom:1px solid #eee;">
+            <div style="min-width:0;">
+              <div style="font-weight:800;">${ioTypeLabel(h.ioType)}</div>
+              <div style="color:#888; font-size:12px; margin-top:4px;">${h.summary || ''}</div>
+              <div style="color:#999; font-size:12px; margin-top:2px;">${h.createdAt || ''}</div>
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <div style="font-weight:800;">${sign}${Number(h.amount).toLocaleString()}원</div>
+              <div style="color:#888; font-size:12px; margin-top:4px;">잔액 ${Number(h.balance).toLocaleString()}원</div>
+            </div>
+          </div>
+        `;
+                $('#historyList').append(row);
+            });
+
+            historyOffset += list.length;
+
+            if (list.length < historyLimit) {
+                $('#btnMoreHistory').hide();
+            }
+        },
+        error: function () {
+            alert("거래 내역 조회 실패");
+        }
+    });
+}
+
 
 // 헤더 [내 프로필 수정] 버튼
 function showEdit() {

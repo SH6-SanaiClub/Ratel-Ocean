@@ -4,11 +4,17 @@ import com.sanaiclub.common.util.AuthContext;
 import com.sanaiclub.user.model.dto.ClientMyPageDTO;
 import com.sanaiclub.user.model.vo.UserVO;
 import com.sanaiclub.user.service.FreelancerMyPageService;
+import com.sanaiclub.wallet.model.dto.FreelancerWalletDTO;
+import com.sanaiclub.wallet.model.dto.WalletHistoryDTO;
+import com.sanaiclub.wallet.service.FreelancerWalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Collections;
+import java.util.List;
 
 @Controller
 @RequestMapping("/freelancer")
@@ -16,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class FreelancerMyPageController {
 
     private final FreelancerMyPageService freelancerMyPageService;
+    private final FreelancerWalletService freelancerWalletService;
 
     @GetMapping("/mypage")
     public String myPageForm(Model model, RedirectAttributes rttr) {
@@ -27,6 +34,10 @@ public class FreelancerMyPageController {
 
         UserVO profile = freelancerMyPageService.getFreelancerProfile(userId);
         model.addAttribute("profile", profile);
+
+        FreelancerWalletDTO wallet = freelancerWalletService.getWallet(userId);
+        model.addAttribute("wallet", wallet);
+
         return "user/freelancer/freelancerMyPage";
     }
 
@@ -56,4 +67,14 @@ public class FreelancerMyPageController {
         return result ? "success" : "fail";
     }
 
+    @GetMapping("/mypage/wallet/history")
+    @ResponseBody
+    public List<WalletHistoryDTO> walletHistory(@RequestParam(defaultValue = "0") int offset,
+                                                @RequestParam(defaultValue = "10") int limit) {
+        Integer userId = AuthContext.getCurrentUserId();
+        if (userId == null) return Collections.emptyList();
+
+        // userId == freelancerId 전제 (너 테이블 fk가 users(user_id)라서 OK)
+        return freelancerWalletService.getHistories(userId, offset, limit);
+    }
 }

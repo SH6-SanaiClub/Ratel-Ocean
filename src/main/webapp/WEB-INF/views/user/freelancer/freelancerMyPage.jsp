@@ -39,7 +39,11 @@
     </div>
 
     <div>
-      <button type="button" class="btn-header-action" onclick="showEdit()">내 프로필 수정</button>
+      <button type="button"
+              class="btn-header-action"
+              onclick="location.href='${pageContext.request.contextPath}/freelancer/profile/edit'">
+        내 프로필 수정
+      </button>
     </div>
   </div>
 
@@ -69,12 +73,64 @@
     <!-- 우측 메인 콘텐츠 -->
     <div class="main-content">
 
+      <!-- 내 지갑 (기본 활성) -->
+      <div id="view-dashboard" class="view-section active">
+        <div class="dash-card">
+          <h3 class="form-section-title">내 지갑</h3>
+
+          <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:260px; border:1px solid #eee; border-radius:4px; padding:20px;">
+              <div style="font-weight:700; margin-bottom:8px;">보유 금액</div>
+              <div style="font-size:28px; font-weight:800;">
+                <c:choose>
+                  <c:when test="${not empty wallet}">
+                    <fmt:formatNumber value="${wallet.balance}" type="number"/> 원
+                  </c:when>
+                  <c:otherwise>0 원</c:otherwise>
+                </c:choose>
+              </div>
+            </div>
+
+            <div style="flex:1; min-width:260px; border:1px solid #eee; border-radius:4px; padding:20px;">
+              <div style="font-weight:700; margin-bottom:8px;">총 수익</div>
+              <div style="font-size:28px; font-weight:800;">
+                <c:choose>
+                  <c:when test="${not empty wallet}">
+                    <fmt:formatNumber value="${wallet.totalEarned}" type="number"/> 원
+                  </c:when>
+                  <c:otherwise>0 원</c:otherwise>
+                </c:choose>
+              </div>
+
+            </div>
+          </div>
+
+          <div style="margin-top:18px; color:#888; font-size:12px;">
+            ※ 출금 기능 구현 예정
+          </div>
+        </div>
+      </div>
+
+      <!-- 거래 내역 -->
+      <div id="view-received" class="view-section">
+        <div class="dash-card">
+          <h3 class="form-section-title">거래 내역</h3>
+
+          <div id="historyList"></div>
+
+          <button type="button" id="btnMoreHistory" class="btn-submit"
+                  style="margin-top:15px; background:#555;"
+                  onclick="loadMoreHistory()">
+            더보기
+          </button>
+        </div>
+      </div>
+
       <!-- 내 정보 수정 -->
-      <div id="view-edit" class="view-section active">
+      <div id="view-edit" class="view-section">
         <div class="dash-card">
           <h3 class="form-section-title">내 정보 수정</h3>
 
-          <!-- 프리랜서 업데이트 엔드포인트로 변경 -->
           <form action="${pageContext.request.contextPath}/freelancer/mypage/update"
                 method="post"
                 enctype="multipart/form-data">
@@ -97,7 +153,6 @@
             <button type="submit" class="btn-submit">정보 수정 저장</button>
           </form>
 
-          <!-- 비밀번호 변경 -->
           <div style="margin-top:40px; padding-top:30px; border-top:1px solid #eee;">
             <h3 class="form-section-title" style="font-size:18px; border:none; margin-bottom:15px;">비밀번호 변경</h3>
 
@@ -117,7 +172,8 @@
         </div>
       </div>
 
-    </div><!-- /.main-content -->
+    </div>
+    <!-- /.main-content -->
 
   </div><!-- /.body-wrapper -->
 

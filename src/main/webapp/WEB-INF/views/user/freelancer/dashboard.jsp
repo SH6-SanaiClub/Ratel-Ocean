@@ -447,8 +447,8 @@
         </button>
 
         <div id="dropdownMenu" class="dropdown-menu">
-          <a href="${pageContext.request.contextPath}/freelancer/profile/edit" class="dropdown-item">마이페이지</a>
-          <a href="${pageContext.request.contextPath}/freelancer/wallet" class="dropdown-item">지갑</a>
+          <a href="${pageContext.request.contextPath}/freelancer/mypage" class="dropdown-item">마이페이지</a>
+          <a href="${pageContext.request.contextPath}/freelancer/mypage" class="dropdown-item">지갑</a>
           <a href="${pageContext.request.contextPath}/freelancer/earnings" class="dropdown-item">수익 관리</a>
           <div class="dropdown-divider"></div>
           <a href="#" onclick="logout(event)" class="dropdown-item">로그아웃</a>
