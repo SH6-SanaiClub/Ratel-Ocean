@@ -107,10 +107,15 @@ public class FreelancerContractController {
             Model model) {
         // 로그인 프리랜서 ID 조회
         Integer freelancerId = com.sanaiclub.common.util.AuthContext.getCurrentUserId();
+        String loginId = com.sanaiclub.common.util.AuthContext.getCurrentLoginId();
         if (freelancerId == null) {
             model.addAttribute("errorMessage", "로그인이 필요합니다.");
             return "contract/freelancerContractList";
         }
+        
+        // 헤더용 loginId 추가
+        model.addAttribute("loginId", loginId);
+        model.addAttribute("userId", freelancerId);
         
         // 프리랜서의 계약 목록 조회 (쿼리에서 필터링)
         List<ContractResponseDTO> allContracts = contractService.getContractsByFreelancerId(freelancerId);

@@ -2263,6 +2263,12 @@ body {
     color: #991b1b;
 }
 
+/* 승인대기 배지 - 마일스톤 "지급 요청 중" 배지와 동일한 색상 */
+.sidebar-contract-badge.approval-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
 .sidebar-contract-badge.progress {
     background: #dbeafe;
     color: #1e40af;
