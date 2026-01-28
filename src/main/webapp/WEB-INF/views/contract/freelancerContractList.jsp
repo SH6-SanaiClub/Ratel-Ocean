@@ -126,9 +126,6 @@
                             <div class="sidebar-contract-item-header">
                                 <div class="sidebar-contract-title">
                                     <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
-                                    <c:if test="${contract.requestedMilestones > 0}">
-                                        <span class="sidebar-contract-badge urgent">승인대기</span>
-                                    </c:if>
                                 </div>
                                 <span class="sidebar-contract-badge ${contract.requestedMilestones > 0 ? 'urgent' : 'progress'}">
                                     <c:choose>
@@ -258,40 +255,6 @@
 
                         <!-- KPI 스코어카드 -->
                         <div class="kpi-grid">
-                            <div class="kpi-card">
-                                <div class="kpi-title">남은 태스크</div>
-                                <div>
-                                    <span class="kpi-value"><fmt:formatNumber value="${kpiRemaining}" pattern="00"/></span>
-                                    <span class="kpi-unit">건</span>
-                                    </div>
-                                <div class="kpi-subrow">
-                                    <c:choose>
-                                        <c:when test="${kpiDeposited > 0}">
-                                            <span class="kpi-chip warn">📌 작업 가능 ${kpiDeposited}건</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="kpi-chip good">✅ 진행 양호</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                                        </div>
-                                                    </div>
-                            <div class="kpi-card">
-                                <div class="kpi-title">지급 요청 가능</div>
-                                <div>
-                                    <span class="kpi-value"><fmt:formatNumber value="${kpiDeposited}" pattern="00"/></span>
-                                    <span class="kpi-unit">건</span>
-                                                    </div>
-                                <div class="kpi-subrow">
-                                    <c:choose>
-                                        <c:when test="${kpiDeposited > 0}">
-                                            <span class="kpi-chip warn">⏱️ 요청 누락 방지</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="kpi-chip good">🎉 없음</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                                    </div>
-                                </div>
                             <div class="kpi-card kpi-wide">
                                 <div style="display:flex; flex-direction:column; gap:6px;">
                                     <div class="kpi-title">정산 예정 금액 (요청 가능)</div>

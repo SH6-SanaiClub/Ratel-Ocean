@@ -560,6 +560,7 @@ body {
     padding: 32px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     min-height: 600px;
+    align-self: start;
 }
 
 .action-buttons {
@@ -1226,9 +1227,40 @@ body {
    3컬럼 레이아웃 (계약 관리 대시보드 개선)
    ========================= */
 .main-layout.layout-3col {
+    display: grid;
     grid-template-columns: 320px minmax(0, 1fr) 360px;
     align-items: start;
     gap: 24px;
+    position: relative;
+    overflow: visible;
+}
+
+/* 그리드 아이템 명시적 배치 */
+.main-layout.layout-3col > .sidebar {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.main-layout.layout-3col > .content-area {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.main-layout.layout-3col > .summary-panel {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+/* summary-panel이 항상 상단에 고정되도록 (프리랜서와 동일하게) */
+.main-layout.layout-3col > .summary-panel {
+    position: sticky !important;
+    top: 24px !important;
+    align-self: start !important;
+    height: fit-content !important;
+    max-height: calc(100vh - 48px) !important;
+    margin-top: 0 !important;
+    grid-column: 3 !important;
+    grid-row: 1 !important;
 }
 
 /* =========================
@@ -1351,11 +1383,26 @@ body {
 .summary-panel {
     position: sticky;
     top: 24px;
+    align-self: start;
     height: fit-content;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    display: block;
+    z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
+    will-change: transform;
+    visibility: visible;
+    opacity: 1;
+    margin-top: 0;
+}
+
+.summary-panel > .summary-card {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
+
 
 .summary-card {
     background: var(--white-color);
@@ -1657,15 +1704,13 @@ body {
    ========================= */
 @media (max-width: 1200px) {
     .main-layout.layout-3col {
-        grid-template-columns: 320px 1fr;
+        grid-template-columns: 1fr;
     }
-    
     .summary-panel {
         position: static;
         grid-column: 1 / -1;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        display: block;
+        max-height: none;
     }
 }
 
