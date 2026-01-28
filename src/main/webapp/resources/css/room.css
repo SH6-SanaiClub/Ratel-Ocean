@@ -336,6 +336,20 @@ body {
     font-size: 9px;
     color: #777;
 }
+.find-out {
+    display: none;
+}
+/* 채팅방 목록의 마지막 메시지 스타일 */
+.last-msg-text {
+    display: block;
+    width: 100%;        /* 부모 너비에 맞춤 */
+    white-space: nowrap;     /* 줄바꿈 금지 */
+    overflow: hidden;        /* 넘치는 부분 숨김 */
+    text-overflow: ellipsis; /* 넘치는 부분 말줄임표(...) 처리 */
+    font-size: 0.9em;
+    color: #888;
+    margin-top: 5px;
+}
 
 /* 프로젝트명 (크게, 강조) */
 .room-title {

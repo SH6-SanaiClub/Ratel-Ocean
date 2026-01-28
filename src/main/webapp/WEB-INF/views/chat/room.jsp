@@ -229,12 +229,12 @@
             '<div class="avatar-box">' +
             '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
             '</div>' +
-            '<div class="room-info" style="flex: 1;">' +
+            '<div class="room-info" style="flex: 1; min-width: 0;">' +
             '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
             '<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">' + nameHtml + '</div>' +
             '<span class="room-time">' + timeText + '</span>' +
             '</div>' +
-            '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
+            '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;">' +
             '<span class="last-msg-text">' + lastMsg + '</span>' +
             '<div class="find-out" data-roomid="' + room.roomId + '">' +
             '<span class="freelancerExited" data-free="' + (room.freelancerExited?1:0 )+ '"/>'+
