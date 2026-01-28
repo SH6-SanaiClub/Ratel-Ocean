@@ -72,28 +72,17 @@
                     </div>
                 </c:if>
                 
-                <!-- 1-2. 작업 진행 중 (PAID + SETTLEMENT_PENDING) -->
+                <!-- 1-2. 작업 진행 중 (PAID - 모든 마일스톤이 PAID가 아닌 경우) -->
                 <c:set var="activePaidContracts" value="${contractsByStatus['PAID']}"/>
-                <c:set var="settlementPendingContracts" value="${contractsByStatus['SETTLEMENT_PENDING']}"/>
-                <c:if test="${not empty activePaidContracts or not empty settlementPendingContracts}">
+                <c:if test="${not empty activePaidContracts}">
                     <div class="status-section priority-high">
                         <div class="status-title" onclick="toggleSection(this)">
                             <span class="toggle-icon">▼</span>
                             <span class="status-icon">🚀</span>
                             <span class="status-text">작업 진행 중</span>
-                            <span class="status-badge paid">
-                                <c:set var="activeCount" value="0"/>
-                                <c:if test="${not empty activePaidContracts}">
-                                    <c:set var="activeCount" value="${activeCount + fn:length(activePaidContracts)}"/>
-                                </c:if>
-                                <c:if test="${not empty settlementPendingContracts}">
-                                    <c:set var="activeCount" value="${activeCount + fn:length(settlementPendingContracts)}"/>
-                                </c:if>
-                                ${activeCount}
-                            </span>
+                            <span class="status-badge paid">${fn:length(activePaidContracts)}</span>
                         </div>
                         <ul class="contract-list">
-                            <!-- PAID 상태 계약 -->
                             <c:forEach var="contract" items="${activePaidContracts}">
                                 <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
                                     onclick="location.href='?contractId=${contract.contractId}'">
@@ -104,13 +93,16 @@
                                         <div class="contract-item-status-badge status-paid-mini">
                                             <c:choose>
                                                 <c:when test="${contract.requestedMilestones > 0}">
-                                                    지급요청 ${contract.requestedMilestones}건
+                                                    📤 승인대기 ${contract.requestedMilestones}건
                                                 </c:when>
-                                                <c:when test="${contract.depositedMilestones > 0}">
-                                                    입금완료 ${contract.depositedMilestones}건
+                                                <c:when test="${contract.depositedMilestones > 0 and contract.totalMilestones > 0}">
+                                                    💳 작업가능 ${contract.depositedMilestones}건
                                                 </c:when>
                                                 <c:when test="${contract.paidMilestones > 0 and contract.totalMilestones > 0}">
-                                                    진행 ${contract.paidMilestones}/${contract.totalMilestones}
+                                                    ✅ 진행 ${contract.paidMilestones}/${contract.totalMilestones}
+                                                </c:when>
+                                                <c:when test="${contract.totalMilestones > 0}">
+                                                    ⏳ 대기중
                                                 </c:when>
                                                 <c:otherwise>진행중</c:otherwise>
                                             </c:choose>
@@ -125,35 +117,14 @@
                                         </span>
                                         <c:if test="${contract.totalMilestones > 0}">
                                             <span class="milestone-info">
-                                                마일스톤 ${contract.totalMilestones}개
-                                            </span>
-                                        </c:if>
-                                    </div>
-                                </li>
-                            </c:forEach>
-                            
-                            <!-- SETTLEMENT_PENDING 상태 계약 -->
-                            <c:forEach var="contract" items="${settlementPendingContracts}">
-                                <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
-                                    onclick="location.href='?contractId=${contract.contractId}'">
-                                    <div class="contract-item-header">
-                                        <div class="contract-item-title">
-                                            <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
-                                        </div>
-                                        <div class="contract-item-status-badge status-settlement-mini">
-                                            정산대기
-                                        </div>
-                                    </div>
-                                    <div class="contract-item-subtitle">
-                                        <c:out value="${contract.counterpartName != null ? contract.counterpartName : '클라이언트 정보 없음'}"/>
-                                    </div>
-                                    <div class="contract-item-meta">
-                                        <span class="contract-amount">
-                                            <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
-                                        </span>
-                                        <c:if test="${contract.totalMilestones > 0}">
-                                            <span class="milestone-info">
-                                                ${contract.paidMilestones}/${contract.totalMilestones} 완료
+                                                <c:choose>
+                                                    <c:when test="${contract.paidMilestones > 0}">
+                                                        ${contract.paidMilestones}/${contract.totalMilestones} 완료
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        마일스톤 ${contract.totalMilestones}개
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </span>
                                         </c:if>
                                     </div>
@@ -695,59 +666,127 @@
 
                         <!-- 마일스톤 (마일스톤이 있는 경우 표시) -->
                         <c:if test="${not empty milestones}">
-                            <div class="section-title">🎯 마일스톤 내역</div>
-                            <table class="milestone-table">
-                                <thead>
-                                    <tr>
-                                        <th>단계</th>
-                                        <th>마일스톤명</th>
-                                        <th class="text-right">지급금액</th>
-                                        <th>작업 내용</th>
-                                        <th>상태</th>
-                                        <th>액션</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="m" items="${milestones}" varStatus="status">
-                                        <tr>
-                                            <td class="text-center">${status.index + 1}단계</td>
-                                            <td><c:out value="${m.title}" default="-"/></td>
-                                            <td class="text-right">
+                            <div class="section-title">🎯 마일스톤 진행 현황</div>
+                            
+                            <!-- 마일스톤 진행률 표시 -->
+                            <c:set var="totalMilestones" value="${fn:length(milestones)}"/>
+                            <c:set var="paidCount" value="0"/>
+                            <c:set var="depositedCount" value="0"/>
+                            <c:set var="requestedCount" value="0"/>
+                            <c:set var="waitingCount" value="0"/>
+                            <c:forEach var="m" items="${milestones}">
+                                <c:choose>
+                                    <c:when test="${m.status != null and (m.status.name() eq 'PAID' or m.status.name() eq 'paid')}">
+                                        <c:set var="paidCount" value="${paidCount + 1}"/>
+                                    </c:when>
+                                    <c:when test="${m.status != null and (m.status.name() eq 'DEPOSITED' or m.status.name() eq 'deposited')}">
+                                        <c:set var="depositedCount" value="${depositedCount + 1}"/>
+                                    </c:when>
+                                    <c:when test="${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested')}">
+                                        <c:set var="requestedCount" value="${requestedCount + 1}"/>
+                                    </c:when>
+                                    <c:when test="${m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting')}">
+                                        <c:set var="waitingCount" value="${waitingCount + 1}"/>
+                                    </c:when>
+                                </c:choose>
+                            </c:forEach>
+                            <c:set var="progressPercentage" value="${(paidCount * 100) / totalMilestones}"/>
+                            
+                            <div class="milestone-progress-section">
+                                <div class="milestone-progress-bar">
+                                    <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                                    <span class="progress-text">${paidCount}/${totalMilestones} 완료</span>
+                                </div>
+                                <div class="milestone-summary">
+                                    <span class="milestone-summary-item">
+                                        <span class="summary-label">✅ 지급 완료:</span>
+                                        <span class="summary-value">${paidCount}개</span>
+                                    </span>
+                                    <span class="milestone-summary-item">
+                                        <span class="summary-label">💳 작업 가능:</span>
+                                        <span class="summary-value">${depositedCount}개</span>
+                                    </span>
+                                    <span class="milestone-summary-item">
+                                        <span class="summary-label">📤 승인 대기:</span>
+                                        <span class="summary-value">${requestedCount}개</span>
+                                    </span>
+                                    <span class="milestone-summary-item">
+                                        <span class="summary-label">⏳ 대기 중:</span>
+                                        <span class="summary-value">${waitingCount}개</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="milestone-list">
+                                <c:forEach var="m" items="${milestones}" varStatus="status">
+                                    <div class="milestone-card milestone-${fn:toLowerCase(m.status.name())}">
+                                        <div class="milestone-card-header">
+                                            <div class="milestone-step-badge">${m.step}단계</div>
+                                            <div class="milestone-status-badge status-${fn:toLowerCase(m.status.name())}">
                                                 <c:choose>
-                                                    <c:when test="${m.amount != null}">
-                                                        <fmt:formatNumber value="${m.amount}" pattern="#,###"/>원
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting')}">
+                                                        ⏳ 대기 중
                                                     </c:when>
-                                                    <c:otherwise>-</c:otherwise>
-                                                </c:choose>
-                                            </td>
-                                            <td><c:out value="${m.description}" default="-"/></td>
-                                            <td class="text-center">
-                                                <c:choose>
-                                                    <c:when test="${m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting')}">⏳ 대기 중</c:when>
-                                                    <c:when test="${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested')}">📤 지급 요청</c:when>
-                                                    <c:when test="${m.status != null and (m.status.name() eq 'DEPOSITED' or m.status.name() eq 'deposited')}">💳 입금 완료</c:when>
-                                                    <c:when test="${m.status != null and (m.status.name() eq 'PAID' or m.status.name() eq 'paid')}">✅ 지급 완료</c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'DEPOSITED' or m.status.name() eq 'deposited')}">
+                                                        💳 입금 완료 (작업 가능)
+                                                    </c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested')}">
+                                                        📤 지급 요청 중 (클라이언트 승인 대기)
+                                                    </c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'PAID' or m.status.name() eq 'paid')}">
+                                                        ✅ 지급 완료
+                                                    </c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'CANCELED' or m.status.name() eq 'canceled')}">
+                                                        ❌ 취소됨
+                                                    </c:when>
                                                     <c:otherwise>${m.status != null ? m.status.name() : '-'}</c:otherwise>
                                                 </c:choose>
-                                            </td>
-                                            <td class="text-center">
-                                                <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed') and m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting')}">
-                                                    <form method="post" action="${pageContext.request.contextPath}/freelancer/contract/request-payment" class="form-inline-display">
-                                                        <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
-                                                        <input type="hidden" name="step" value="${m.step}" />
-                                                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('${m.step}단계 마일스톤 지급을 요청하시겠습니까?')">
-                                                            💰 지급 요청
-                                                        </button>
-                                                    </form>
-                                                </c:if>
-                                                <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed') and m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting') and fn:contains(m.title, '일시지급')}">
-                                                    <span class="re-request-hint">(재요청 가능)</span>
-                                                </c:if>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="milestone-card-content">
+                                            <h4 class="milestone-title"><c:out value="${m.title}" default="마일스톤 ${m.step}"/></h4>
+                                            <p class="milestone-description"><c:out value="${m.description}" default="작업 내용 없음"/></p>
+                                            <div class="milestone-amount">
+                                                <fmt:formatNumber value="${m.amount != null ? m.amount : 0}" pattern="#,###"/>원
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 프리랜서 액션 버튼 -->
+                                        <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed')}">
+                                            <div class="milestone-actions">
+                                                <c:choose>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'DEPOSITED' or m.status.name() eq 'deposited')}">
+                                                        <!-- 작업 완료 후 지급 요청 -->
+                                                        <form method="post" action="${pageContext.request.contextPath}/freelancer/contract/request-payment" class="form-inline-display">
+                                                            <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
+                                                            <input type="hidden" name="step" value="${m.step}" />
+                                                            <button type="submit" class="btn btn-success" onclick="return confirm('${m.step}단계 마일스톤 작업이 완료되었나요? 지급을 요청하시겠습니까?')">
+                                                                ✅ 작업 완료 및 지급 요청
+                                                            </button>
+                                                        </form>
+                                                    </c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested')}">
+                                                        <div class="milestone-status-message">
+                                                            <span class="status-waiting">⏳ 클라이언트의 승인을 기다리는 중입니다...</span>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'PAID' or m.status.name() eq 'paid')}">
+                                                        <div class="milestone-status-message">
+                                                            <span class="status-completed">✅ 지급이 완료되었습니다.</span>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:when test="${m.status != null and (m.status.name() eq 'CANCELED' or m.status.name() eq 'canceled')}">
+                                                        <div class="milestone-status-message">
+                                                            <span class="status-cancelled">❌ 이 마일스톤은 취소되었습니다.</span>
+                                                        </div>
+                                                    </c:when>
+                                                </c:choose>
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                </c:forEach>
+                            </div>
                         </c:if>
 
                         <!-- 액션 버튼 (WAITING 상태일 때만) -->

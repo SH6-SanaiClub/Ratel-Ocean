@@ -10,7 +10,10 @@ import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.user.dao.UserMapper;
 import com.sanaiclub.user.dao.ClientProfileMapper;
 import com.sanaiclub.user.dao.CompanyMapper;
-import com.sanaiclub.user.model.vo.FreelancerProfileVO;
+import com.sanaiclub.payment.dao.WalletMapper;
+import com.sanaiclub.payment.model.vo.WalletIoType;
+import com.sanaiclub.payment.model.vo.FreelancerWalletVO;
+import com.sanaiclub.payment.model.vo.WalletHistoryVO;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 
@@ -36,6 +41,7 @@ public class ContractService {
     private final UserMapper userMapper;
     private final ClientProfileMapper clientProfileMapper;
     private final CompanyMapper companyMapper;
+    private final WalletMapper walletMapper;
 
     /**
      * 계약 생성 (INSERT)
@@ -688,10 +694,13 @@ public class ContractService {
                     contract -> contract.getContractStatus().name()
                 ));
         
-        // 2단계: PAID 상태를 "정산 대기" 또는 "완료 내역"으로 분류
+        // 2단계: PAID 상태를 "작업 진행 중" 또는 "완료 내역"으로 분류
+        // - 모든 마일스톤이 PAID가 아니면 "작업 진행 중"
+        // - 모든 마일스톤이 PAID이면 "완료 내역" (하지만 상태는 아직 PAID일 수 있음)
         List<ContractResponseDTO> paidContracts = contractsByStatus.remove("PAID");
-        List<ContractResponseDTO> completedHistory = new ArrayList<>();
-        List<ContractResponseDTO> settlementPending = new ArrayList<>();
+        List<ContractResponseDTO> activeContracts = new ArrayList<>();  // 작업 진행 중
+        List<ContractResponseDTO> completedHistory = new ArrayList<>();  // 완료 내역
+        
         if (paidContracts != null && !paidContracts.isEmpty()) {
             for (ContractResponseDTO contract : paidContracts) {
                 boolean isLumpSum = (contract.getTotalMilestones() == null || contract.getTotalMilestones() == 0)
@@ -700,30 +709,35 @@ public class ContractService {
                             || contract.getPaymentMethod() == null);
                 
                 if (isLumpSum) {
-                    settlementPending.add(contract);
-                } else if (isFullyCompleted(contract)) {
-                    completedHistory.add(contract);
+                    // 일시지급: 지급 요청 대기 중이면 작업 진행 중, COMPLETED면 완료 내역
+                    if (contract.getContractStatus() == ContractStatus.COMPLETED) {
+                        completedHistory.add(contract);
+                    } else {
+                        activeContracts.add(contract);
+                    }
                 } else {
-                    settlementPending.add(contract);
+                    // 마일스톤 계약: 모든 마일스톤이 PAID면 완료 내역, 아니면 작업 진행 중
+                    if (isFullyCompleted(contract)) {
+                        completedHistory.add(contract);
+                    } else {
+                        activeContracts.add(contract);
+                    }
                 }
             }
         }
         
-        // 3단계: COMPLETED 상태를 "정산 대기" 또는 "완료 내역"으로 분류
+        // 3단계: COMPLETED 상태는 모두 완료 내역
         List<ContractResponseDTO> completedContracts = contractsByStatus.remove("COMPLETED");
         if (completedContracts != null && !completedContracts.isEmpty()) {
-            for (ContractResponseDTO contract : completedContracts) {
-                if (isFullyCompleted(contract)) {
-                    completedHistory.add(contract);
-                } else {
-                    settlementPending.add(contract);
-                }
-            }
+            completedHistory.addAll(completedContracts);
         }
         
-        if (!settlementPending.isEmpty()) {
-            contractsByStatus.put("SETTLEMENT_PENDING", settlementPending);
+        // 작업 진행 중 계약을 PAID 키로 다시 추가 (사이드바에서 "작업 진행 중"으로 표시)
+        if (!activeContracts.isEmpty()) {
+            contractsByStatus.put("PAID", activeContracts);
         }
+        
+        // 완료 내역 추가
         if (!completedHistory.isEmpty()) {
             contractsByStatus.put("COMPLETED_HISTORY", completedHistory);
         }
@@ -758,10 +772,12 @@ public class ContractService {
                     contract -> contract.getContractStatus().name()
                 ));
         
-        // 2단계: PAID 상태와 COMPLETED 상태를 "정산 대기" 또는 "완료 내역"으로 분류
+        // 2단계: PAID 상태를 "작업 진행 중" 또는 "완료 내역"으로 분류
+        // - 모든 마일스톤이 PAID가 아니면 "작업 진행 중"
+        // - 모든 마일스톤이 PAID이면 "완료 내역" (하지만 상태는 아직 PAID일 수 있음)
         List<ContractResponseDTO> paidContracts = contractsByStatus.remove("PAID");
-        List<ContractResponseDTO> settlementPending = new ArrayList<>();
-        List<ContractResponseDTO> completedHistory = new ArrayList<>();
+        List<ContractResponseDTO> activeContracts = new ArrayList<>();  // 작업 진행 중
+        List<ContractResponseDTO> completedHistory = new ArrayList<>();  // 완료 내역
         
         if (paidContracts != null && !paidContracts.isEmpty()) {
             for (ContractResponseDTO contract : paidContracts) {
@@ -771,30 +787,35 @@ public class ContractService {
                             || contract.getPaymentMethod() == null);
                 
                 if (isLumpSum) {
-                    settlementPending.add(contract);
-                } else if (isFullyCompleted(contract)) {
-                    completedHistory.add(contract);
+                    // 일시지급: 지급 요청 대기 중이면 작업 진행 중, COMPLETED면 완료 내역
+                    if (contract.getContractStatus() == ContractStatus.COMPLETED) {
+                        completedHistory.add(contract);
+                    } else {
+                        activeContracts.add(contract);
+                    }
                 } else {
-                    settlementPending.add(contract);
+                    // 마일스톤 계약: 모든 마일스톤이 PAID면 완료 내역, 아니면 작업 진행 중
+                    if (isFullyCompleted(contract)) {
+                        completedHistory.add(contract);
+                    } else {
+                        activeContracts.add(contract);
+                    }
                 }
             }
         }
         
-        // 3단계: COMPLETED 상태를 "정산 대기" 또는 "완료 내역"으로 분류
+        // 3단계: COMPLETED 상태는 모두 완료 내역
         List<ContractResponseDTO> completedContracts = contractsByStatus.remove("COMPLETED");
         if (completedContracts != null && !completedContracts.isEmpty()) {
-            for (ContractResponseDTO contract : completedContracts) {
-                if (isFullyCompleted(contract)) {
-                    completedHistory.add(contract);
-                } else {
-                    settlementPending.add(contract);
-                }
-            }
+            completedHistory.addAll(completedContracts);
         }
         
-        if (!settlementPending.isEmpty()) {
-            contractsByStatus.put("SETTLEMENT_PENDING", settlementPending);
+        // 작업 진행 중 계약을 PAID 키로 다시 추가 (사이드바에서 "작업 진행 중"으로 표시)
+        if (!activeContracts.isEmpty()) {
+            contractsByStatus.put("PAID", activeContracts);
         }
+        
+        // 완료 내역 추가
         if (!completedHistory.isEmpty()) {
             contractsByStatus.put("COMPLETED_HISTORY", completedHistory);
         }
@@ -807,7 +828,7 @@ public class ContractService {
     // =========================================================
     
     /**
-     * 프리랜서 지급 요청. 마일스톤: WAITING → REQUESTED, 일시지급: cancel_reason에 "[지급요청]" 저장.
+     * 프리랜서 지급 요청. 마일스톤: DEPOSITED → REQUESTED, 일시지급: cancel_reason에 "[지급요청]" 저장.
      */
     @Transactional
     public int requestPayment(Integer contractId, Integer step) {
@@ -830,14 +851,14 @@ public class ContractService {
             return 1;
         }
         
-        // 마일스톤 상태 업데이트: WAITING → REQUESTED
+        // 마일스톤 상태 업데이트: DEPOSITED → REQUESTED
         if (step == null) {
-            // 모든 WAITING 마일스톤을 REQUESTED로 변경
+            // 모든 DEPOSITED 마일스톤을 REQUESTED로 변경
             List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
             int count = 0;
             
             for (ContractMilestoneVO milestone : milestones) {
-                if (milestone.getStatus() == MilestoneStatus.WAITING) {
+                if (milestone.getStatus() == MilestoneStatus.DEPOSITED) {
                     contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), MilestoneStatus.REQUESTED.name());
                     count++;
                 }
@@ -846,7 +867,13 @@ public class ContractService {
             logger.info("모든 마일스톤 지급 요청: contractId={}, count={}", contractId, count);
             return count;
         } else {
-            // 특정 마일스톤만 REQUESTED로 변경
+            // 특정 마일스톤만 REQUESTED로 변경 (DEPOSITED 상태 확인)
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            ContractMilestoneVO targetMilestone = milestones.stream()
+                .filter(m -> m.getStep().equals(step) && m.getStatus() == MilestoneStatus.DEPOSITED)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("지급 요청 가능한 마일스톤이 아닙니다: step=" + step));
+            
             int updated = contractMilestoneMapper.updateMilestoneStatus(contractId, step, MilestoneStatus.REQUESTED.name());
             logger.info("마일스톤 지급 요청: contractId={}, step={}", contractId, step);
             return updated;
@@ -854,7 +881,7 @@ public class ContractService {
     }
     
     /**
-     * 클라이언트 지급 수락. 마일스톤: REQUESTED → DEPOSITED, 일시지급: PAID → COMPLETED.
+     * 클라이언트 지급 수락. 마일스톤: REQUESTED → PAID (바로 지급), 일시지급: PAID → COMPLETED.
      */
     @Transactional
     public int approvePayment(Integer contractId, Integer step) {
@@ -865,7 +892,7 @@ public class ContractService {
         }
         if (contract.getContractStatus() != ContractStatus.PAID 
                 && contract.getContractStatus() != ContractStatus.COMPLETED) {
-            throw new IllegalStateException("결제 완료 또는 정산 완료된 계약만 지급 수락할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+            throw new IllegalStateException("결제 완료된 계약만 지급 수락할 수 있습니다. 현재 상태: " + contract.getContractStatus());
         }
         
         // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
@@ -877,61 +904,84 @@ public class ContractService {
             return 1;
         }
         
-        // 마일스톤 상태 업데이트: REQUESTED → DEPOSITED
+        // 프리랜서 ID 추출
+        Integer freelancerId = extractFreelancerIdFromContract(contract);
+        
+        // 프리랜서 지갑 조회
+        FreelancerWalletVO wallet = walletMapper.selectWalletByUserId(freelancerId);
+        if (wallet == null) {
+            throw new IllegalArgumentException("프리랜서 지갑을 찾을 수 없습니다: userId=" + freelancerId);
+        }
+        
+        // 마일스톤 상태 업데이트: REQUESTED → PAID (바로 지급)
         if (step == null) {
-            // 모든 REQUESTED 마일스톤을 DEPOSITED로 변경
+            // 모든 REQUESTED 마일스톤을 PAID로 변경
             List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
             int count = 0;
             
             for (ContractMilestoneVO milestone : milestones) {
                 if (milestone.getStatus() == MilestoneStatus.REQUESTED) {
-                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), MilestoneStatus.DEPOSITED.name());
+                    // 1. 마일스톤 상태 변경: REQUESTED → PAID
+                    contractMilestoneMapper.updateMilestoneStatus(
+                        contractId, 
+                        milestone.getStep(), 
+                        MilestoneStatus.PAID.name()
+                    );
+                    
+                    // 2. 프리랜서 지갑에 입금 처리
+                    WalletHistoryVO history = WalletHistoryVO.builder()
+                        .walletId(wallet.getWalletId())
+                        .ioType(WalletIoType.PAYMENT)
+                        .amount(milestone.getAmount())
+                        .summary(String.format("마일스톤 %d단계 지급: %s", 
+                                milestone.getStep(), milestone.getTitle()))
+                        .build();
+                    walletMapper.insertWalletHistory(history);
+                    
                     count++;
                 }
             }
             
-            // 모든 마일스톤이 DEPOSITED 또는 PAID인지 확인
-            boolean allDepositedOrPaid = true;
-            for (ContractMilestoneVO milestone : milestones) {
-                MilestoneStatus status = milestone.getStatus();
-                if (status != MilestoneStatus.DEPOSITED && status != MilestoneStatus.PAID) {
-                    allDepositedOrPaid = false;
-                    break;
-                }
-            }
+            // 3. 모든 마일스톤이 PAID인지 확인하여 계약 완료 처리
+            checkAndCompleteContract(contractId);
             
-            // 모든 마일스톤이 DEPOSITED 또는 PAID면 COMPLETED로 변경
-            if (allDepositedOrPaid && !milestones.isEmpty()) {
-                contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
-            }
-            
+            logger.info("마일스톤 지급 수락 완료: contractId={}, count={}", contractId, count);
             return count;
         } else {
-            // 특정 마일스톤만 DEPOSITED로 변경
-            int updated = contractMilestoneMapper.updateMilestoneStatus(contractId, step, MilestoneStatus.DEPOSITED.name());
+            // 특정 마일스톤만 PAID로 변경
+            List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
+            ContractMilestoneVO targetMilestone = milestones.stream()
+                .filter(m -> m.getStep().equals(step) && m.getStatus() == MilestoneStatus.REQUESTED)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("지급 수락 가능한 마일스톤이 아닙니다: step=" + step));
             
-            // 모든 마일스톤이 DEPOSITED 또는 PAID인지 확인
-            List<ContractMilestoneVO> allMilestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
-            boolean allDepositedOrPaid = true;
-            for (ContractMilestoneVO milestone : allMilestones) {
-                MilestoneStatus status = milestone.getStatus();
-                if (status != MilestoneStatus.DEPOSITED && status != MilestoneStatus.PAID) {
-                    allDepositedOrPaid = false;
-                    break;
-                }
-            }
+            // 1. 마일스톤 상태 변경: REQUESTED → PAID
+            contractMilestoneMapper.updateMilestoneStatus(
+                contractId, 
+                step, 
+                MilestoneStatus.PAID.name()
+            );
             
-            // 모든 마일스톤이 DEPOSITED 또는 PAID면 COMPLETED로 변경
-            if (allDepositedOrPaid && !allMilestones.isEmpty()) {
-                contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
-            }
+            // 2. 프리랜서 지갑에 입금 처리
+            WalletHistoryVO history = WalletHistoryVO.builder()
+                .walletId(wallet.getWalletId())
+                .ioType(WalletIoType.PAYMENT)
+                .amount(targetMilestone.getAmount())
+                .summary(String.format("마일스톤 %d단계 지급: %s", 
+                        targetMilestone.getStep(), targetMilestone.getTitle()))
+                .build();
+            walletMapper.insertWalletHistory(history);
             
-            return updated;
+            // 3. 모든 마일스톤이 PAID인지 확인하여 계약 완료 처리
+            checkAndCompleteContract(contractId);
+            
+            logger.info("마일스톤 지급 수락 완료: contractId={}, step={}", contractId, step);
+            return 1;
         }
     }
     
     /**
-     * 클라이언트 지급 거부. 마일스톤: REQUESTED → WAITING, 일시지급: cancel_reason null로 초기화.
+     * 클라이언트 지급 거부. 마일스톤: REQUESTED → DEPOSITED (다시 에스크로 상태로), 일시지급: cancel_reason null로 초기화.
      */
     @Transactional
     public int rejectPayment(Integer contractId, Integer step) {
@@ -942,7 +992,7 @@ public class ContractService {
         }
         if (contract.getContractStatus() != ContractStatus.PAID 
                 && contract.getContractStatus() != ContractStatus.COMPLETED) {
-            throw new IllegalStateException("결제 완료 또는 정산 완료된 계약만 지급 거부할 수 있습니다. 현재 상태: " + contract.getContractStatus());
+            throw new IllegalStateException("결제 완료된 계약만 지급 거부할 수 있습니다. 현재 상태: " + contract.getContractStatus());
         }
         
         // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
@@ -953,23 +1003,34 @@ public class ContractService {
             return 1;
         }
         
-        // 마일스톤 상태 업데이트: REQUESTED → WAITING
+        // 마일스톤 상태 업데이트: REQUESTED → DEPOSITED (다시 에스크로 상태로)
         if (step == null) {
-            // 모든 REQUESTED 마일스톤을 WAITING으로 변경
+            // 모든 REQUESTED 마일스톤을 DEPOSITED로 변경
             List<ContractMilestoneVO> milestones = contractMilestoneMapper.selectMilestonesByContractId(contractId);
             int count = 0;
             
             for (ContractMilestoneVO milestone : milestones) {
                 if (milestone.getStatus() == MilestoneStatus.REQUESTED) {
-                    contractMilestoneMapper.updateMilestoneStatus(contractId, milestone.getStep(), MilestoneStatus.WAITING.name());
+                    contractMilestoneMapper.updateMilestoneStatus(
+                        contractId, 
+                        milestone.getStep(), 
+                        MilestoneStatus.DEPOSITED.name()
+                    );
                     count++;
                 }
             }
             
+            logger.info("마일스톤 지급 거부: contractId={}, count={} (다시 DEPOSITED 상태로)", contractId, count);
             return count;
         } else {
-            // 특정 마일스톤만 WAITING으로 변경
-            return contractMilestoneMapper.updateMilestoneStatus(contractId, step, MilestoneStatus.WAITING.name());
+            // 특정 마일스톤만 DEPOSITED로 변경
+            int updated = contractMilestoneMapper.updateMilestoneStatus(
+                contractId, 
+                step, 
+                MilestoneStatus.DEPOSITED.name()
+            );
+            logger.info("마일스톤 지급 거부: contractId={}, step={} (다시 DEPOSITED 상태로)", contractId, step);
+            return updated;
         }
     }
     
@@ -1121,6 +1182,11 @@ public class ContractService {
     /**
      * 계약 완료 여부 확인. 마일스톤: (paid + deposited) >= total, 일시지급: COMPLETED 상태.
      */
+    /**
+     * 계약이 완전히 완료되었는지 확인
+     * - 마일스톤 계약: 모든 마일스톤이 PAID 상태일 때만 완료
+     * - 일시지급 계약: COMPLETED 상태일 때 완료
+     */
     private boolean isFullyCompleted(ContractResponseDTO contract) {
         // 일시지급 계약인지 확인
         boolean isLumpSum = (contract.getTotalMilestones() == null || contract.getTotalMilestones() == 0)
@@ -1129,12 +1195,11 @@ public class ContractService {
                     || contract.getPaymentMethod() == null);
         
         if (contract.getTotalMilestones() != null && contract.getTotalMilestones() > 0) {
-            // 마일스톤 계약: 모든 마일스톤이 PAID 또는 DEPOSITED인지 확인
+            // 마일스톤 계약: 모든 마일스톤이 PAID여야 완료
             Integer paid = contract.getPaidMilestones() != null ? contract.getPaidMilestones() : 0;
-            Integer deposited = contract.getDepositedMilestones() != null ? contract.getDepositedMilestones() : 0;
-            return (paid + deposited) >= contract.getTotalMilestones();
+            return paid >= contract.getTotalMilestones();
         } else if (isLumpSum) {
-            // 일시지급 계약: COMPLETED 상태인지만 완료 내역
+            // 일시지급 계약: COMPLETED 상태일 때 완료
             return contract.getContractStatus() == ContractStatus.COMPLETED;
         } else {
             // 마일스톤도 아니고 일시지급도 아닌 경우 (기본 상태)
@@ -1349,5 +1414,63 @@ public class ContractService {
         public com.sanaiclub.user.model.vo.UserVO getFreelancerUser() { return freelancerUser; }
         public com.sanaiclub.user.model.vo.ClientProfileVO getClientProfile() { return clientProfile; }
         public com.sanaiclub.user.model.vo.CompanyVO getCompany() { return company; }
+    }
+    
+    // =========================================================
+    // Private Helper Methods
+    // =========================================================
+    
+    /**
+     * origin_contract_url에서 프리랜서 ID 추출
+     * 형식: contracts/{clientId}/{contractId}/freelancer/{freelancerId}/...
+     */
+    private Integer extractFreelancerIdFromContract(ContractVO contract) {
+        String url = contract.getOriginContractUrl();
+        if (url == null || url.isEmpty()) {
+            throw new IllegalArgumentException("계약 URL이 없습니다.");
+        }
+        
+        Pattern pattern = Pattern.compile("/freelancer/(\\d+)");
+        Matcher matcher = pattern.matcher(url);
+        
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        
+        throw new IllegalArgumentException("URL에서 프리랜서 ID를 추출할 수 없습니다: " + url);
+    }
+    
+    /**
+     * 계약 완료 여부 확인 (모든 마일스톤이 PAID일 때만 COMPLETED로 변경)
+     */
+    private void checkAndCompleteContract(Integer contractId) {
+        ContractVO contract = contractMapper.selectContractById(contractId);
+        if (contract == null || contract.getContractStatus() == ContractStatus.COMPLETED) {
+            return;
+        }
+        
+        // 일시지급인 경우는 이미 처리됨
+        if ("FIXED".equals(contract.getPaymentMethod()) 
+                || "FULL".equals(contract.getPaymentMethod()) 
+                || contract.getPaymentMethod() == null) {
+            return;
+        }
+        
+        // 마일스톤 계약인 경우: 모든 마일스톤이 PAID인지 확인
+        List<ContractMilestoneVO> milestones = 
+            contractMilestoneMapper.selectMilestonesByContractId(contractId);
+        
+        if (milestones == null || milestones.isEmpty()) {
+            return;
+        }
+        
+        // 모든 마일스톤이 PAID인지 확인
+        boolean allPaid = milestones.stream()
+            .allMatch(m -> MilestoneStatus.PAID.equals(m.getStatus()));
+        
+        if (allPaid) {
+            contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
+            logger.info("모든 마일스톤 지급 완료, 계약 완료: contractId={}", contractId);
+        }
     }
 }
