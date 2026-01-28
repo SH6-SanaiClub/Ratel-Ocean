@@ -636,6 +636,11 @@ public class ContractService {
         
         return contractsWithDetails.stream()
             .map(this::mapToResponseDTO)
+            .map(dto -> {
+                // 프리랜서 시점: 상대방은 클라이언트
+                dto.setCounterpartName(dto.getClientName());
+                return dto;
+            })
             .filter(dto -> {
                 if (dto.getContractStatus() == null) {
                     logger.warn("contractStatus가 null인 계약 필터링됨: contractId={}, originContractUrl={}", 
