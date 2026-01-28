@@ -121,13 +121,14 @@
                             <div class="sidebar-contract-item-header">
                                 <div class="sidebar-contract-title">
                                     <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
-                                    <c:if test="${contract.depositedMilestones > 0}">
-                                        <span class="sidebar-contract-badge urgent">작업가능</span>
+                                    <c:if test="${contract.requestedMilestones > 0}">
+                                        <span class="sidebar-contract-badge urgent">승인대기</span>
                                     </c:if>
                                 </div>
-                                <span class="sidebar-contract-badge ${contract.depositedMilestones > 0 ? 'urgent' : 'progress'}">
+                                <span class="sidebar-contract-badge ${contract.requestedMilestones > 0 ? 'urgent' : 'progress'}">
                                     <c:choose>
-                                        <c:when test="${contract.depositedMilestones > 0 and contract.totalMilestones > 0}">작업가능 ${contract.depositedMilestones}건</c:when>
+                                        <c:when test="${contract.requestedMilestones > 0}">승인대기 ${contract.requestedMilestones}건</c:when>
+                                        <c:when test="${contract.depositedMilestones > 0 and contract.totalMilestones > 0}">작업중 ${contract.depositedMilestones}건</c:when>
                                         <c:when test="${contract.paidMilestones > 0 and contract.totalMilestones > 0}">진행 ${contract.paidMilestones}/${contract.totalMilestones}</c:when>
                                         <c:otherwise>진행중</c:otherwise>
                                     </c:choose>
