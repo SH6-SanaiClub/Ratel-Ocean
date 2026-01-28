@@ -6,181 +6,170 @@ import com.sanaiclub.project.model.dto.ProjectCreateRequestDTO;
 import com.sanaiclub.project.model.dto.StackDTO;
 import com.sanaiclub.project.model.vo.ProjectStackVO;
 import com.sanaiclub.project.model.vo.ProjectsVO;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectCreateService {
-
     private static final String UPLOAD_DIR = "D:\\workspace\\Ratel-Ocean\\src\\main\\webapp\\resources\\upload\\project\\";
 
-    @Autowired
-    private ProjectCreateMapper projectCreateMapper;
+    private final ProjectCreateMapper projectCreateMapper;
+    private final StackMapper stackMapper;
 
-    @Autowired
-    private StackMapper stackMapper;
-
-    // 기술 스택을 가져오는 메서드
+    // 화면용 스택 목록 세팅
     public void setStackListToModel(Model model) {
-        // DB에서 모든 스택을 가져옴
-        List<StackDTO> allStack = stackMapper.findAll();
+        List<StackDTO> allStacks = stackMapper.findAll();
 
-        // 데이터를 담기 위한 리스트 생성
-        List<StackDTO> positionList = new ArrayList<>();
-        List<StackDTO> skillList = new ArrayList<>();
-
-        // 가져온 스택 분류
-        for (StackDTO stack : allStack) {
-            // 카테고리가 포지션이면 포지션 리스트에 저장
-            if ("POSITION".equals(stack.getCategory())) {
-                positionList.add(stack);
-                // 카테고리가 스킬이면 스킬 리스트에 저장
-            } else if ("SKILL".equals(stack.getCategory())) {
-                skillList.add(stack);
-            }
-        }
-
-        // 분류된 리스트 데이터를 모델에 저장
-        model.addAttribute("positionList", positionList);
-        model.addAttribute("skillList", skillList);
+        model.addAttribute("positionList", allStacks.stream()
+                .filter(s -> "POSITION".equals(s.getCategory())).collect(Collectors.toList()));
+        model.addAttribute("skillList", allStacks.stream()
+                .filter(s -> "SKILL".equals(s.getCategory())).collect(Collectors.toList()));
     }
 
-    // 프로젝트 등록 메서드
+    // 프로젝트 생성 (Create)
     @Transactional
-    public void createProject(ProjectCreateRequestDTO request, Integer clientId, MultipartFile planFile) throws IOException {
+    public void createProject(ProjectCreateRequestDTO request, Integer clientId, MultipartFile planFile) throws Exception {
+        sanitizeRequest(request); // NULL 방지 처리
 
-        ProjectsVO projectsVO = new ProjectsVO();
-
-
-        // 클라이언트 ID, 프로젝트 제목, 설명 저장
-        projectsVO.setClientId(clientId);
-        projectsVO.setTitle(request.getTitle());
-        projectsVO.setDescription(request.getDescription());
-
-        // 예산 처리
-        try {
-            // 콤마(,) 및 앞뒤 공백 제거
-            String budgetStr = request.getBudget().replace(",", "").trim();
-            // 형변환 후 저장
-            projectsVO.setBudget(Integer.parseInt(budgetStr));
-        } catch (Exception e) {
-            // 에러시 0 저장
-            projectsVO.setBudget(0);
-        }
-        // 예산 협의 가능 여부 처리
-        // 받아온 값이 null이 아니고 true인 경우에만 VO에 true 저장
-        projectsVO.setBudgetNegotiable(request.getBudgetNegotiable() != null && request.getBudgetNegotiable());
-
-        // 기간 처리
-        projectsVO.setEstDuration(request.getEstDuration());
-        // 기간 조율 가능여부도 예산과 동일한 방식으로 VO에 저장
-        projectsVO.setDurationNegotiable(request.getDurationNegotiable() != null && request.getDurationNegotiable());
-
-        // 시작일 처리
-        // ASAP(즉시 착수 가능) 선택 여부 확인
-        if ("ASAP".equals(request.getStartType())) {
-            // 오늘 날짜 저장
-            projectsVO.setStartDate(Date.valueOf(LocalDate.now()));
-        } else {
-            // 즉시 착수 가능 아닐 경우 사용자 선택 날짜 저장
-            // 에러 방지용 코드
-            if (request.getStartDate() == null || request.getStartDate().isEmpty()) {
-                projectsVO.setStartDate(Date.valueOf(LocalDate.now()));
-            } else {
-                // 정상 선택시 사용자 지정 날짜 저장
-                projectsVO.setStartDate(Date.valueOf(LocalDate.parse(request.getStartDate())));
-            }
-        }
-
-        // 마감일 계산 (시작일 기준 +30일)
-        // java.sql.Date를 계산하기 편한 LocalDate로 잠시 바꾼 뒤 다시 변환
-        LocalDate startLocalDate = projectsVO.getStartDate().toLocalDate();
-        projectsVO.setDeadlineDate(Date.valueOf(startLocalDate.plusDays(30)));
-
-        // 기타 정보 저장
-        projectsVO.setCommunicateMethod(request.getCommunicateMethod());
-        projectsVO.setPaymentMethod(request.getPaymentMethod());
-        projectsVO.setMaxRevisionCount(request.getMaxRevisionCount());
-        projectsVO.setChangePolicy(request.getChangePolicy());
-        projectsVO.setProjectStatus(request.getProjectStatus());
-        projectsVO.setIsPublic(request.getIsPublic());
-        projectsVO.setPlanUrl(request.getPlanUrl());
-        projectsVO.setFileSize(request.getFileSize());
-
-        // 파일 업로드 및 정보 저장 로직
         if (planFile != null && !planFile.isEmpty()) {
-            // 1. 디렉토리 확인 및 생성
-            File dir = new File(UPLOAD_DIR);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
+            request.setPlanUrl(uploadFile(planFile));
+            request.setFileSize(String.valueOf(planFile.getSize()));
+        }
 
-            // 2. 파일명 중복 방지 (UUID 사용)
-            String originalFileName = planFile.getOriginalFilename();
-            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+        request.setClientId(clientId);
+        projectCreateMapper.insertProject(request);
+        insertStacks(request);
+    }
 
-            // 3. 파일 저장 (지정된 로컬 경로)
-            File saveFile = new File(UPLOAD_DIR + savedFileName);
-            planFile.transferTo(saveFile);
+    // 수정용 상세 조회
+    public ProjectCreateRequestDTO getProjectDetailForEdit(Integer projectId) {
+        ProjectsVO vo = projectCreateMapper.selectProjectById(projectId);
+        if (vo == null) return null;
 
-            // 4. DB 저장용 정보 설정
-            // 웹 서버 접근 경로 (/resources/...)로 저장
-            projectsVO.setPlanUrl("/resources/upload/project/" + savedFileName);
+        ProjectCreateRequestDTO dto = new ProjectCreateRequestDTO();
+        dto.setProjectId(vo.getProjectId());
+        dto.setTitle(vo.getTitle());
+        dto.setDescription(vo.getDescription());
+        dto.setBudget(String.valueOf(vo.getBudget()));
+        dto.setBudgetNegotiable(vo.getBudgetNegotiable());
+        dto.setEstDuration(vo.getEstDuration());
+        dto.setDurationNegotiable(vo.getDurationNegotiable());
+        dto.setStartDate(vo.getStartDate() != null ? vo.getStartDate().toString() : "");
+        dto.setDeadlineDate(vo.getDeadlineDate() != null ? vo.getDeadlineDate().toString() : "");
+        dto.setCommunicateMethod(vo.getCommunicateMethod());
+        dto.setPaymentMethod(vo.getPaymentMethod());
+        dto.setMaxRevisionCount(vo.getMaxRevisionCount());
+        dto.setChangePolicy(vo.getChangePolicy());
+        dto.setPlanUrl(vo.getPlanUrl());
 
-            // 파일 크기 계산 (MB 단위)
-            double size = (double) planFile.getSize() / (1024 * 1024);
-            projectsVO.setFileSize(String.format("%.2f MB", size));
+        dto.setViewCount(vo.getViewCount() != null ? vo.getViewCount() : 0);
+        dto.setApplicantCount(vo.getApplicantCount() != null ? vo.getApplicantCount() : 0);
+
+        List<StackDTO> stacks = projectCreateMapper.selectStackListByProjectId(projectId);
+        dto.setStacks(stacks);
+
+        ProjectStackVO config = projectCreateMapper.selectProjectStackConfig(projectId);
+        if (config != null) {
+            dto.setMinLevel(config.getStackLevel());
+            dto.setMinYear(config.getStackYear());
+        }
+
+        return dto;
+    }
+
+    // 프로젝트 수정 (Update)
+    @Transactional
+    public void updateProject(ProjectCreateRequestDTO request, MultipartFile planFile) throws Exception {
+        sanitizeRequest(request);
+
+        if (planFile != null && !planFile.isEmpty()) {
+            request.setPlanUrl(uploadFile(planFile));
+            request.setFileSize(String.valueOf(planFile.getSize()));
         } else {
-            // 파일이 없을 경우 null 처리
-            projectsVO.setPlanUrl(null);
-            projectsVO.setFileSize(null);
+            request.setPlanUrl(request.getExistingPlanUrl());
         }
 
-        // 프로젝트 메인 정보 INSERT
-        projectCreateMapper.insertProject(projectsVO);
-        Integer projectId = projectsVO.getProjectId();
+        projectCreateMapper.updateProject(request);
 
-        // 스택 저장
-        Integer inputLevel = request.getMinLevel();
-        int inputYear = (request.getMinYear() != null) ? request.getMinYear() : 0;
+        projectCreateMapper.deleteProjectStacks(request.getProjectId());
+        insertStacks(request);
+    }
 
-        // 포지션(직군) 저장
-        if (request.getPositionIds() != null) { // getPositionId() -> getPositionIds()
-            for (Integer posId : request.getPositionIds()) {
-                ProjectStackVO positionVO = new ProjectStackVO(
-                        null,
-                        projectId,
-                        posId,
-                        inputLevel,
-                        inputYear
-                );
-                projectCreateMapper.insertProjectStack(positionVO);
+    // 프로젝트 삭제 (Delete)
+    @Transactional
+    public void deleteProject(Integer projectId) {
+        projectCreateMapper.deleteProjectStacks(projectId);
+        projectCreateMapper.deleteProject(projectId);
+    }
+
+    private void insertStacks(ProjectCreateRequestDTO request) {
+        Integer pId = request.getProjectId();
+
+        // minLevel과 minYear가 null인 경우 기본값 설정 (sanitizeRequest에서 처리했지만 이중 안전장치)
+        Integer stackLevel = (request.getMinLevel() != null) ? request.getMinLevel() : 1;
+        Integer stackYear = (request.getMinYear() != null) ? request.getMinYear() : 0;
+
+        if (request.getPositionIds() != null) {
+            for (Integer sId : request.getPositionIds()) {
+                projectCreateMapper.insertProjectStack(new ProjectStackVO(null, pId, sId, 1, 0));
+            }
+        }
+        if (request.getStackIds() != null) {
+            for (Integer sId : request.getStackIds()) {
+                projectCreateMapper.insertProjectStack(new ProjectStackVO(null, pId, sId, stackLevel, stackYear));
             }
         }
 
-        // 기술 스택 저장
-        if (request.getStackIdsUnknown() == null && request.getStackIds() != null) {
-            for (Integer stackId : request.getStackIds()) {
-                ProjectStackVO skillVO = new ProjectStackVO(
-                        null,
-                        projectId,
-                        stackId,
-                        inputLevel,
-                        inputYear
-                );
-                projectCreateMapper.insertProjectStack(skillVO);
-            }
+        // 스택 레벨 및 연차 기본값 설정 (체크 제약 조건 위반 방지)
+        if (request.getMinLevel() == null) {
+            request.setMinLevel(1); // 기본값: 1 (초급)
+        }
+        if (request.getMinYear() == null) {
+            request.setMinYear(0); // 기본값: 0년 (신입 가능)
+        }
+    }
+
+    private String uploadFile(MultipartFile file) throws Exception {
+        File dir = new File(UPLOAD_DIR);
+        if (!dir.exists()) dir.mkdirs();
+
+        String savedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        file.transferTo(new File(dir, savedName));
+        return "/resources/upload/project/" + savedName;
+    }
+
+    // 모든 필수값 NULL 방지 (체크박스, 라디오, 셀렉트)
+    private void sanitizeRequest(ProjectCreateRequestDTO request) {
+        // 1. 체크박스 (Boolean) - 해제 시 null -> false 변환
+        if (request.getBudgetNegotiable() == null) request.setBudgetNegotiable(false);
+        if (request.getDurationNegotiable() == null) request.setDurationNegotiable(false);
+        if (request.getStartNegotiable() == null) request.setStartNegotiable(false);
+        if (request.getStackIdsUnknown() == null) request.setStackIdsUnknown(false);
+
+        // 2. 라디오 버튼 / 셀렉트 (String) - 비어있을 경우 기본값 설정
+        if (request.getPaymentMethod() == null || request.getPaymentMethod().trim().isEmpty()) {
+            request.setPaymentMethod("FULL");
+        }
+        // 미팅 방식 (ONLINE / OFFLINE)
+        if (request.getCommunicateMethod() == null || request.getCommunicateMethod().trim().isEmpty()) {
+            request.setCommunicateMethod("ONLINE");
+        }
+        // 시작 방식 (ASAP / DATE)
+        if (request.getStartType() == null || request.getStartType().trim().isEmpty()) {
+            request.setStartType("ASAP");
+        }
+        // 예상 기간 (1개월 이하 등)
+        if (request.getEstDuration() == null || request.getEstDuration().trim().isEmpty()) {
+            request.setEstDuration("1개월 이하");
         }
     }
 }

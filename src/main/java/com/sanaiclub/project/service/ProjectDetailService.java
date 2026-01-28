@@ -5,6 +5,7 @@ import com.sanaiclub.project.dao.ProjectDashboardMapper;
 import com.sanaiclub.project.dao.ProjectDetailMapper;
 import com.sanaiclub.project.model.dto.ProjectDetailDTO;
 import com.sanaiclub.project.model.dto.RequiredStackDTO;
+import com.sanaiclub.project.model.vo.ApplicationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,15 +35,18 @@ public class ProjectDetailService {
 
         // 로그인 사용자 관련 정보 세팅
         if (userId != null) {
-            // 지원 여부 확인
-            boolean applied = projectDetailMapper.hasUserApplied(projectId, userId);
-            detail.setApplied(applied);
+            // [변경] 현재 상태 조회
+            String status = projectDetailMapper.selectApplicationStatus(projectId, userId);
 
-            // 북마크 여부 확인
+            // 상태가 존재하고, 'CANCELED'가 아니면 지원한 것으로 간주
+            boolean isApplied = (status != null && !ApplicationStatus.CANCELED.name().equals(status));
+
+            detail.setApplied(isApplied);
+            detail.setApplicationStatus(status); // DTO에 상세 상태도 담아둠
+
             int bookmarkCount = projectBookmarkMapper.isBookmarked(projectId, userId);
             detail.setWishlisted(bookmarkCount > 0);
         } else {
-            // 비로그인 시 기본값
             detail.setApplied(false);
             detail.setWishlisted(false);
         }
@@ -52,17 +56,24 @@ public class ProjectDetailService {
 
     @Transactional
     public String toggleApply(Integer projectId, Integer userId) {
-        // 이미 지원했는지 확인
-        boolean isApplied = projectDetailMapper.hasUserApplied(projectId, userId);
+        // 1. 현재 상태 조회
+        String currentStatus = projectDetailMapper.selectApplicationStatus(projectId, userId);
 
-        if (isApplied) {
-            // 이미 지원했으면 취소
-            projectDetailMapper.deleteApplication(projectId, userId);
-            return "CANCELED";
-        } else {
-            // 지원 안 했으면 지원
+        if (currentStatus == null) {
+            // 2-1. 기록이 아예 없음 -> 신규 지원 (INSERT)
             projectDetailMapper.insertApplication(projectId, userId);
+            return "APPLIED"; // Controller에서 처리할 응답값
+        }
+
+        // 2-2. 기록이 있음 -> 상태 판단
+        if (ApplicationStatus.CANCELED.name().equals(currentStatus)) {
+            // 취소했던 상태라면 -> 다시 지원 (PENDING으로 변경)
+            projectDetailMapper.updateApplicationStatus(projectId, userId, ApplicationStatus.PENDING.name());
             return "APPLIED";
+        } else {
+            // 이미 지원 중인 상태(PENDING, VIEWED 등)라면 -> 지원 취소 (CANCELED로 변경)
+            projectDetailMapper.updateApplicationStatus(projectId, userId, ApplicationStatus.CANCELED.name());
+            return "CANCELED";
         }
     }
 

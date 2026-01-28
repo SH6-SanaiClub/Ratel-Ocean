@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ClientReviewMapper">
+
+    <select id="selectReviewTargetInfo" resultType="com.sanaiclub.project.model.dto.ReviewWriteDTO">
+        SELECT
+            p.project_id                 AS projectId,
+            p.title                      AS projectTitle,
+            c.contract_id                AS contractId,
+            c.contract_start_date        AS startDate,
+            c.contract_end_date          AS endDate,
+            u.user_id                    AS freelancerId,
+            u.name                       AS freelancerName,
+            c.client_rating              AS rating,
+            c.client_experience          AS reviewContent,
+            c.client_is_renewal_intended AS renewalIntended
+
+        FROM projects p
+                 INNER JOIN project_applications pa ON p.project_id = pa.project_id
+                 INNER JOIN contracts c ON pa.application_id = c.contract_id
+                 INNER JOIN users u ON pa.freelancer_id = u.user_id
+
+        WHERE p.project_id = #{projectId}
+          AND p.project_status = 'CLOSED'
+            LIMIT 1
+    </select>
+
+    <update id="updateContractReview">
+        UPDATE contracts
+        SET client_rating = #{rating},
+            client_experience = #{reviewContent},
+            client_is_renewal_intended = #{renewalIntended}
+        WHERE contract_id = #{contractId}
+    </update>
+
+</mapper>

@@ -13,7 +13,7 @@
 
     <!-- Properties 파일 로드 -->
     <context:property-placeholder
-            location="classpath:db.properties,classpath:jwt.properties,classpath:bizno-api.properties"
+            location="classpath:db.properties,classpath:jwt.properties,classpath:bizno-api.properties,classpath:deepseek-api.properties,classpath:security.properties,classpath:portone-api.properties"
             ignore-unresolvable="true"
             order="1"/>
 
@@ -22,7 +22,6 @@
         <context:exclude-filter type="annotation"
                                 expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
-
     <!-- BCrypt 비밀번호 암호화 설정 -->
     <bean id="passwordEncoder"
           class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.project.dao.ClientApplicantMapper">
+
+    <select id="selectApplicantsByProjectId"
+            resultType="com.sanaiclub.project.model.dto.ClientApplicantDTO">
+        SELECT pa.application_id                                   AS applicationId,
+               pa.project_id                                       AS projectId,
+               pa.freelancer_id                                    AS freelancerId,
+               pa.application_status                               AS applicationStatus,
+               pa.applied_at                                       AS appliedAt,
+               u.name                                              AS freelancerName,
+               u.profile_image_url                                 AS profileImageUrl,
+
+               -- 평점 계산
+               IFNULL((SELECT ROUND(AVG(c.client_rating), 1)
+                       FROM contracts c
+                                JOIN project_applications pa2 ON c.contract_id = pa2.application_id
+                       WHERE pa2.freelancer_id = pa.freelancer_id
+                         AND c.client_rating IS NOT NULL), 0.0)    AS rating,
+
+               -- 대표 기술 스택 1개
+               IFNULL((SELECT s.stack_name
+                       FROM freelancer_skills fs
+                                JOIN stacks s ON fs.stack_id = s.stack_id
+                       WHERE fs.freelancer_id = pa.freelancer_id
+                       ORDER BY fs.stack_level DESC, fs.stack_year DESC
+                   LIMIT 1), '미등록')                                AS mainSkill,
+
+               -- 경력 연차
+               IFNULL((SELECT MAX(stack_year)
+                       FROM freelancer_skills
+                       WHERE freelancer_id = pa.freelancer_id), 0) AS careerYear
+
+        FROM project_applications pa
+                 JOIN users u ON pa.freelancer_id = u.user_id
+        WHERE pa.project_id = #{projectId}
+        ORDER BY pa.applied_at DESC
+    </select>
+
+    <select id="selectApplicantDetail"
+            resultType="com.sanaiclub.project.model.dto.ClientApplicantDTO">
+        SELECT pa.application_id     AS applicationId,
+               pa.freelancer_id      AS freelancerId,
+               pa.application_status AS applicationStatus,
+               u.name                AS freelancerName,
+               u.email               AS email,
+               u.profile_image_url   AS profileImageUrl,
+
+               fp.introduction       AS introduction,
+               fp.github_url         AS githubUrl,
+               fp.website_url        AS websiteUrl,
+               fp.school_name        AS schoolName,
+               fp.major              AS major,
+               fp.grad_status        AS graduationStatus,
+
+               -- 평점 계산
+               IFNULL((SELECT ROUND(AVG(c.client_rating), 1)
+                       FROM contracts c
+                                JOIN project_applications pa2 ON c.contract_id = pa2.application_id
+                       WHERE pa2.freelancer_id = pa.freelancer_id
+                         AND c.client_rating IS NOT NULL), 0.0)    AS rating,
+
+               (SELECT portfolio_url
+                FROM freelancer_portfolios
+                WHERE freelancer_id = pa.freelancer_id
+                ORDER BY created_at DESC
+                   LIMIT 1)             AS portfolioUrl
+
+        FROM project_applications pa
+            JOIN users u ON pa.freelancer_id = u.user_id
+            LEFT JOIN freelancer_profiles fp ON pa.freelancer_id = fp.freelancer_id
+
+        WHERE pa.application_id = #{applicationId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE project_applications
+        SET application_status = #{status}
+        WHERE application_id = #{applicationId}
+    </update>
+
+    <select id="selectFreelancerSkills" resultType="string">
+        SELECT s.stack_name
+        FROM freelancer_skills fs
+                 JOIN stacks s ON fs.stack_id = s.stack_id
+        WHERE fs.freelancer_id = #{freelancerId}
+        ORDER BY fs.stack_level DESC
+    </select>
+
+    <select id="selectFreelancerCareers" resultType="com.sanaiclub.project.model.dto.ClientApplicantDTO$CareerDTO">
+        SELECT company_name AS companyName,
+               role         AS role,
+               start_date   AS startDate,
+               end_date     AS endDate,
+               description  AS description
+        FROM freelancer_careers
+        WHERE freelancer_id = #{freelancerId}
+        ORDER BY start_date DESC
+    </select>
+
+    <select id="selectFreelancerProjectExps"
+            resultType="com.sanaiclub.project.model.dto.ClientApplicantDTO$ProjectExpDTO">
+        SELECT title       AS title,
+               client_name AS clientName,
+               start_date  AS startDate,
+               end_date    AS endDate,
+               description AS description
+        FROM freelancer_project_experiences
+        WHERE freelancer_id = #{freelancerId}
+        ORDER BY start_date DESC
+    </select>
+
+</mapper>
