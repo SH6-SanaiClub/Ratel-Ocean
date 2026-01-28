@@ -271,17 +271,6 @@
                         </c:forEach>
                         <c:set var="kpiRemaining" value="${kpiTotal - kpiPaid}"/>
 
-                        <!-- KPI 스코어카드 -->
-                        <div class="kpi-grid">
-                            <div class="kpi-card kpi-wide">
-                                <div style="display:flex; flex-direction:column; gap:6px;">
-                                    <div class="kpi-title">지급 예정 금액 (승인 대기)</div>
-                                    <div class="kpi-money">&#8361; <fmt:formatNumber value="${kpiRequestedAmount}" pattern="#,###"/></div>
-                                </div>
-                                <div class="kpi-icon">₩</div>
-                            </div>
-                        </div>
-
                         <!-- 프로젝트 오버뷰 (중복된 텍스트 통합 헤더) -->
                         <div class="project-overview">
                             <div class="project-overview-header">
@@ -293,9 +282,9 @@
                                         <c:out value="${selectedContract.projectTitle != null ? selectedContract.projectTitle : '프로젝트 정보 없음'}"/>
                                     </h2>
                                     <div class="project-overview-meta">
-                                        <span>클라이언트: <strong><c:out value="${selectedContract.counterpartName != null ? selectedContract.counterpartName : '정보 없음'}"/></strong></span>
+                                        <span>클라이언트: <strong><c:out value="${selectedContract.clientName != null ? selectedContract.clientName : '정보 없음'}"/></strong></span>
                                         <span>|</span>
-                                        <span>프리랜서: <strong><c:out value="${selectedContract.freelancerName != null ? selectedContract.freelancerName : '정보 없음'}"/></strong></span>
+                                        <span>프리랜서: <strong><c:out value="${selectedContract.freelancerName != null ? selectedContract.freelancerName : (selectedContract.counterpartName != null ? selectedContract.counterpartName : '정보 없음')}"/></strong></span>
                                     </div>
                                 </div>
                                 <div class="project-overview-budget">
@@ -520,9 +509,12 @@
                             
                             <div class="milestone-list milestone-timeline">
                                 <c:forEach var="m" items="${milestones}" varStatus="status">
-                                    <div class="milestone-card milestone-${fn:toLowerCase(m.status.name())} ${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested') ? 'is-current' : ''}">
+                                    <div class="milestone-card milestone-${fn:toLowerCase(m.status.name())} ${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested') ? 'is-current' : ''} compact" 
+                                         onclick="toggleMilestoneCard(this, event)" 
+                                         data-step="${m.step}">
                                         <div class="milestone-card-header">
                                             <div class="milestone-step-badge">${m.step}단계</div>
+                                            <h4 class="milestone-title"><c:out value="${m.title}" default="마일스톤 ${m.step}"/></h4>
                                             <div class="milestone-status-badge status-${fn:toLowerCase(m.status.name())}">
                                                 <c:choose>
                                                     <c:when test="${m.status != null and (m.status.name() eq 'WAITING' or m.status.name() eq 'waiting')}">
@@ -546,16 +538,15 @@
                                         </div>
                                         
                                         <div class="milestone-card-content">
-                                            <h4 class="milestone-title"><c:out value="${m.title}" default="마일스톤 ${m.step}"/></h4>
                                             <p class="milestone-description"><c:out value="${m.description}" default="작업 내용 없음"/></p>
-                                            <div class="milestone-amount">
-                                                <fmt:formatNumber value="${m.amount != null ? m.amount : 0}" pattern="#,###"/>원
-                                            </div>
+                                        </div>
+                                        <div class="milestone-amount">
+                                            <fmt:formatNumber value="${m.amount != null ? m.amount : 0}" pattern="#,###"/>원
                                         </div>
                                         
                                         <!-- 클라이언트 액션 버튼 -->
                                         <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid' or selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed')}">
-                                            <div class="milestone-actions">
+                                            <div class="milestone-actions" onclick="event.stopPropagation()">
                                                 <c:choose>
                                                     <c:when test="${m.status != null and (m.status.name() eq 'REQUESTED' or m.status.name() eq 'requested')}">
                                                         <!-- 작업 확인 및 수락/거부 -->
@@ -899,6 +890,14 @@
             
             // PDF 다운로드 링크 설정
             setupPdfDownloadLink();
+            
+            // 모든 마일스톤 카드를 compact 모드로 초기화
+            document.querySelectorAll('.milestone-list.milestone-timeline .milestone-card').forEach(card => {
+                if (!card.classList.contains('expanded')) {
+                    card.classList.add('compact');
+                    card.classList.remove('expanded');
+                }
+            });
         });
         
         // 계약 카운트 업데이트
@@ -918,10 +917,12 @@
                 const base = '${pageContext.request.contextPath}/client/contract/file/';
                 const pdfUrl = base + dir + encodeURIComponent(file);
                 
-                // 다운로드 링크 설정
+                // 다운로드 링크 설정 (다운로드 전용 엔드포인트 사용)
+                const downloadBase = '${pageContext.request.contextPath}/client/contract/download/';
+                const downloadUrl = downloadBase + dir + encodeURIComponent(file);
                 const link = document.getElementById('pdfDownloadLink');
                 if (link) {
-                    link.href = pdfUrl;
+                    link.href = downloadUrl;
                 }
                 
                 // 우측 패널 미리보기 iframe 설정
@@ -987,6 +988,33 @@
         function toggleContractMeta(card) {
             if (card && card.classList) {
                 card.classList.toggle('collapsed');
+            }
+        }
+        
+        // 마일스톤 카드 확대/축소 토글
+        function toggleMilestoneCard(card, event) {
+            // 버튼 클릭은 이벤트 전파 방지
+            if (event && event.target && (event.target.tagName === 'BUTTON' || event.target.closest('form'))) {
+                return;
+            }
+            
+            const isExpanded = card.classList.contains('expanded');
+            
+            // 모든 마일스톤 카드를 축소
+            document.querySelectorAll('.milestone-list.milestone-timeline .milestone-card').forEach(c => {
+                c.classList.remove('expanded');
+                c.classList.add('compact');
+            });
+            
+            // 클릭한 카드만 확대
+            if (!isExpanded) {
+                card.classList.remove('compact');
+                card.classList.add('expanded');
+                
+                // 확대된 카드로 스크롤
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
             }
         }
         

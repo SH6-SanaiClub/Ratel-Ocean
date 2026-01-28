@@ -105,12 +105,21 @@ public class ContractService {
      * 계약 단건 조회
      */
     public ContractResponseDTO getContractById(Integer contractId) {
-        ContractVO contract = contractMapper.selectContractById(contractId);
-        if (contract == null) {
-            return null;
-        }
+        // JOIN을 포함한 상세 정보 조회 시도
+        java.util.Map<String, Object> contractMap = contractMapper.selectContractWithDetailsById(contractId);
         
-        ContractResponseDTO dto = toResponseDTO(contract);
+        ContractResponseDTO dto;
+        if (contractMap != null && !contractMap.isEmpty()) {
+            // JOIN된 데이터가 있으면 Map에서 DTO로 변환
+            dto = mapToResponseDTO(contractMap);
+        } else {
+            // JOIN된 데이터가 없으면 기본 조회
+            ContractVO contract = contractMapper.selectContractById(contractId);
+            if (contract == null) {
+                return null;
+            }
+            dto = toResponseDTO(contract);
+        }
         
         List<ContractMilestoneVO> milestoneVOs = contractMilestoneMapper.selectMilestonesByContractId(contractId);
         if (milestoneVOs != null && !milestoneVOs.isEmpty()) {
@@ -1124,8 +1133,12 @@ public class ContractService {
         dto.setFreelancerName((String) map.get("freelancerName"));
         dto.setClientName((String) map.get("clientName"));
         
-        // 클라이언트 시점: 상대방은 프리랜서
-        dto.setCounterpartName((String) map.get("freelancerName"));
+        // counterpartName 설정: 클라이언트 시점에서는 프리랜서, 프리랜서 시점에서는 클라이언트
+        // 둘 다 설정 가능하도록 둘 다 시도 (사용하는 쪽에서 적절히 선택)
+        String freelancerName = (String) map.get("freelancerName");
+        String clientName = (String) map.get("clientName");
+        // 기본값은 프리랜서 이름 (클라이언트 시점)
+        dto.setCounterpartName(freelancerName != null ? freelancerName : clientName);
         
         // 마일스톤 상태 집계 정보 설정
         dto.setTotalMilestones(getIntegerValue.apply(map.get("totalMilestones")));

@@ -1068,6 +1068,11 @@ body {
     transition: all 0.3s ease;
 }
 
+/* 타임라인 내 마일스톤 카드는 기본적으로 compact */
+.milestone-list.milestone-timeline .milestone-card {
+    padding: 12px 16px !important;
+}
+
 .milestone-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -1916,6 +1921,168 @@ body {
 .milestone-list.milestone-timeline .milestone-card.is-current::before {
     border-color: var(--primary-color) !important;
     box-shadow: 0 0 0 10px rgba(31, 122, 140, 0.12), 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* 마일스톤 카드 컴팩트 모드 (기본) - 타임라인 내 카드는 기본적으로 compact */
+.milestone-list.milestone-timeline .milestone-card {
+    cursor: pointer;
+    padding: 12px 16px !important;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px;
+    flex-direction: row;
+}
+
+/* 기본적으로 compact 모드 적용 (expanded가 아닌 경우) */
+.milestone-list.milestone-timeline .milestone-card:not(.expanded),
+.milestone-list.milestone-timeline .milestone-card.compact {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px;
+    flex-direction: row;
+}
+
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-card-content,
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-card-content {
+    display: none !important;
+}
+
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-actions,
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-actions {
+    display: none !important;
+}
+
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-card-header,
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-card-header {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+    flex: 1;
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-card-content {
+    display: none;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-actions {
+    display: none;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-card-header {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact,
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-card-header,
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-card-header {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-step-badge,
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-step-badge {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    flex-shrink: 0;
+    order: 1;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-title,
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-title {
+    font-size: 15px;
+    margin: 0;
+    flex: 1;
+    order: 2;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-status-badge,
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-status-badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    order: 3;
+    margin-left: auto;
+}
+
+.milestone-list.milestone-timeline .milestone-card.compact .milestone-amount,
+.milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-amount {
+    margin-left: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    order: 4;
+}
+
+/* 확대 모드 (expanded) */
+.milestone-list.milestone-timeline .milestone-card.expanded {
+    padding: 20px;
+    margin-bottom: 20px;
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: block !important;
+    min-height: auto;
+}
+
+.milestone-list.milestone-timeline .milestone-card.expanded .milestone-card-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.milestone-list.milestone-timeline .milestone-card.expanded .milestone-title {
+    order: 0;
+    margin: 0;
+    font-size: 18px;
+}
+
+.milestone-list.milestone-timeline .milestone-card.expanded .milestone-card-content {
+    display: block;
+}
+
+.milestone-list.milestone-timeline .milestone-card.expanded .milestone-actions {
+    display: block;
+}
+
+/* 확대 아이콘 표시 */
+.milestone-list.milestone-timeline .milestone-card:not(.expanded)::after {
+    content: '▶';
+    color: #9ca3af;
+    font-size: 12px;
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+    order: 5;
+}
+
+.milestone-list.milestone-timeline .milestone-card.expanded::after {
+    content: '▼';
+    color: var(--primary-color);
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
 
 /* 반응형: 타임라인 좌측 여백 축소 */
