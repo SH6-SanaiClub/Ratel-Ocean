@@ -626,45 +626,7 @@
                             </c:otherwise>
                         </c:choose>
 
-                        <!-- 일시지급 요청 버튼 (마일스톤이 없고 일시지급인 경우, 아직 요청하지 않은 경우, COMPLETED가 아닌 경우) -->
-                        <c:if test="${(empty milestones or milestones.size() eq 0) 
-                            and (selectedContract.paymentMethod eq 'FIXED' or selectedContract.paymentMethod eq 'FULL') 
-                            and selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid')
-                            and selectedContract.cancelReason ne '[지급요청]'}">
-                            <div class="section-title">💰 일시지급 요청</div>
-                            <div class="payment-request-section">
-                                <p class="payment-request-text-freelancer">작업이 완료되었습니다. 지급을 요청해주세요.</p>
-                                <form method="post" action="${pageContext.request.contextPath}/freelancer/contract/request-payment" class="form-inline">
-                                    <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
-                                    <button type="submit" class="btn btn-success" onclick="return confirm('일시지급을 요청하시겠습니까?')">
-                                        💰 일시지급 요청
-                                    </button>
-                                </form>
-                            </div>
-                        </c:if>
-                        
-                        <!-- 일시지급 요청 대기 중 (cancel_reason이 "[지급요청]"인 경우, COMPLETED가 아닌 경우) -->
-                        <c:if test="${(empty milestones or milestones.size() eq 0) 
-                            and (selectedContract.paymentMethod eq 'FIXED' or selectedContract.paymentMethod eq 'FULL') 
-                            and selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid')
-                            and selectedContract.cancelReason eq '[지급요청]'}">
-                            <div class="section-title">💰 일시지급 요청</div>
-                            <div class="payment-warning-section">
-                                <p class="payment-warning-text">📤 클라이언트의 지급 수락을 기다리는 중입니다.</p>
-                            </div>
-                        </c:if>
-                        
-                        <!-- 일시지급 완료 (COMPLETED 상태인 경우) -->
-                        <c:if test="${(empty milestones or milestones.size() eq 0) 
-                            and (selectedContract.paymentMethod eq 'FIXED' or selectedContract.paymentMethod eq 'FULL') 
-                            and selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed')}">
-                            <div class="section-title">💰 일시지급 완료</div>
-                            <div class="payment-completed-section">
-                                <p class="payment-completed-text">✅ 일시지급이 완료되었습니다.</p>
-                            </div>
-                        </c:if>
-
-                        <!-- 마일스톤 (마일스톤이 있는 경우 표시) -->
+                        <!-- 마일스톤 (일시지급도 마일스톤 1개가 생성되므로 여기서 처리) -->
                         <c:if test="${not empty milestones}">
                             <div class="section-title">🎯 마일스톤 진행 현황</div>
                             

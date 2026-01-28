@@ -6,7 +6,7 @@
 
     <resultMap id="WalletResultMap" type="com.sanaiclub.payment.model.vo.FreelancerWalletVO">
         <id property="walletId" column="wallet_id"/>
-        <result property="userId" column="user_id"/>
+        <result property="userId" column="freelancer_id"/>
         <result property="balance" column="balance"/>
         <result property="totalEarned" column="total_earned"/>
         <result property="version" column="version"/>
@@ -26,16 +26,16 @@
     </resultMap>
 
     <!-- 프리랜서 지갑 생성 -->
-    <insert id="insertWallet" parameterType="com.sanaiclub.payment.model.vo.FreelancerWalletVO"
-            useGeneratedKeys="true" keyProperty="walletId">
-        INSERT INTO freelancer_wallets (user_id, balance, total_earned, version)
-        VALUES (#{userId}, 0, 0, 0)
+    <insert id="insertWallet" parameterType="map"
+            useGeneratedKeys="true" keyProperty="wallet.walletId">
+        INSERT INTO freelancer_wallets (freelancer_id, account_id, wallet_pw, balance, total_earned, version)
+        VALUES (#{wallet.userId}, #{accountId}, #{walletPw}, 0, 0, 0)
     </insert>
 
-    <!-- user_id로 지갑 조회 -->
+    <!-- freelancer_id로 지갑 조회 -->
     <select id="selectWalletByUserId" resultMap="WalletResultMap">
         SELECT * FROM freelancer_wallets
-        WHERE user_id = #{userId}
+        WHERE freelancer_id = #{userId}
     </select>
 
     <!-- wallet_id로 지갑 조회 -->

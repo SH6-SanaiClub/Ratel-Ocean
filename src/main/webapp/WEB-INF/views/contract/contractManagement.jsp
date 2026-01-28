@@ -644,28 +644,7 @@
                             </div>
                         </c:if>
                         
-                        <!-- 일시지급 요청 대기 중 (아직 요청하지 않은 경우, COMPLETED가 아닌 경우) -->
-                        <c:if test="${(empty milestones or milestones.size() eq 0) 
-                            and (selectedContract.paymentMethod eq 'FIXED' or selectedContract.paymentMethod eq 'FULL') 
-                            and selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid')
-                            and selectedContract.cancelReason ne '[지급요청]'}">
-                            <div class="section-title">💰 일시지급 요청</div>
-                            <div class="payment-request-section">
-                                <p class="payment-waiting-text">⏳ 프리랜서의 지급 요청을 기다리는 중입니다.</p>
-                            </div>
-                        </c:if>
-                        
-                        <!-- 일시지급 완료 (COMPLETED 상태인 경우) -->
-                        <c:if test="${(empty milestones or milestones.size() eq 0) 
-                            and (selectedContract.paymentMethod eq 'FIXED' or selectedContract.paymentMethod eq 'FULL') 
-                            and selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed')}">
-                            <div class="section-title">💰 일시지급 완료</div>
-                            <div class="payment-completed-section">
-                                <p class="payment-completed-text">✅ 일시지급이 완료되었습니다.</p>
-                            </div>
-                        </c:if>
-
-                        <!-- 마일스톤 (마일스톤이 있는 경우 표시) -->
+                        <!-- 마일스톤 (일시지급도 마일스톤 1개가 생성되므로 여기서 처리) -->
                         <c:if test="${not empty milestones}">
                             <div class="section-title">🎯 마일스톤 관리</div>
                             

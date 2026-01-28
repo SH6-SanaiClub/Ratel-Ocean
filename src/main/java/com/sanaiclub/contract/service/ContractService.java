@@ -10,7 +10,10 @@ import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.user.dao.UserMapper;
 import com.sanaiclub.user.dao.ClientProfileMapper;
 import com.sanaiclub.user.dao.CompanyMapper;
+import com.sanaiclub.user.dao.AccountMapper;
+import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.payment.dao.WalletMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.sanaiclub.payment.model.vo.WalletIoType;
 import com.sanaiclub.payment.model.vo.FreelancerWalletVO;
 import com.sanaiclub.payment.model.vo.WalletHistoryVO;
@@ -41,7 +44,9 @@ public class ContractService {
     private final UserMapper userMapper;
     private final ClientProfileMapper clientProfileMapper;
     private final CompanyMapper companyMapper;
+    private final AccountMapper accountMapper;
     private final WalletMapper walletMapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 계약 생성 (INSERT)
@@ -842,15 +847,7 @@ public class ContractService {
             throw new IllegalStateException("결제 완료된 계약만 지급 요청할 수 있습니다. 현재 상태: " + contract.getContractStatus());
         }
         
-        // 일시지급인 경우 (FIXED, FULL, 또는 paymentMethod가 null)
-        if ("FIXED".equals(contract.getPaymentMethod()) 
-                || "FULL".equals(contract.getPaymentMethod()) 
-                || contract.getPaymentMethod() == null) {
-            contractMapper.updateCancelReason(contractId, "[지급요청]");
-            logger.info("일시지급 요청: contractId={}", contractId);
-            return 1;
-        }
-        
+        // 일시지급인 경우도 마일스톤이 1개 생성되므로 마일스톤 상태를 변경해야 함
         // 마일스톤 상태 업데이트: DEPOSITED → REQUESTED
         if (step == null) {
             // 모든 DEPOSITED 마일스톤을 REQUESTED로 변경
@@ -895,24 +892,52 @@ public class ContractService {
             throw new IllegalStateException("결제 완료된 계약만 지급 수락할 수 있습니다. 현재 상태: " + contract.getContractStatus());
         }
         
-        // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
-        if (("FIXED".equals(contract.getPaymentMethod()) || "FULL".equals(contract.getPaymentMethod()) || contract.getPaymentMethod() == null)
-                && "[지급요청]".equals(contract.getCancelReason())) {
-            contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
-            contractMapper.updateCancelReason(contractId, null);
-            logger.info("일시지급 수락: contractId={}", contractId);
-            return 1;
-        }
-        
         // 프리랜서 ID 추출
         Integer freelancerId = extractFreelancerIdFromContract(contract);
         
-        // 프리랜서 지갑 조회
+        // 프리랜서 지갑 조회 또는 생성
         FreelancerWalletVO wallet = walletMapper.selectWalletByUserId(freelancerId);
         if (wallet == null) {
-            throw new IllegalArgumentException("프리랜서 지갑을 찾을 수 없습니다: userId=" + freelancerId);
+            // 프리랜서 계좌 조회 (지갑 생성에 필요)
+            AccountVO account = accountMapper.findByUserId(freelancerId);
+            Integer accountId = null;
+            
+            if (account == null) {
+                // 계좌가 없으면 임시 계좌 생성
+                account = AccountVO.builder()
+                    .userId(freelancerId)
+                    .bankName("임시은행")
+                    .accountHolder("임시계좌")
+                    .accountNumber("000000000000")
+                    .build();
+                accountMapper.insertAccount(account);
+                logger.info("프리랜서 임시 계좌 자동 생성: freelancerId={}, accountId={}", freelancerId, account.getAccountId());
+            }
+            
+            accountId = account.getAccountId();
+            
+            // 임시 지갑 비밀번호 생성 (암호화)
+            String tempWalletPw = passwordEncoder.encode("0000"); // 기본 비밀번호: 0000
+            
+            // 지갑 생성 (account_id, wallet_pw 포함)
+            wallet = FreelancerWalletVO.builder()
+                .userId(freelancerId)
+                .balance(0L)
+                .totalEarned(0L)
+                .version(0)
+                .build();
+            walletMapper.insertWallet(wallet, accountId, tempWalletPw);
+            logger.info("프리랜서 지갑 자동 생성: freelancerId={}, accountId={}, walletId={}", 
+                    freelancerId, accountId, wallet.getWalletId());
+            
+            // 생성 후 다시 조회 (walletId를 얻기 위해)
+            wallet = walletMapper.selectWalletByUserId(freelancerId);
+            if (wallet == null) {
+                throw new IllegalStateException("지갑 생성 후 조회 실패: freelancerId=" + freelancerId);
+            }
         }
         
+        // 일시지급도 마일스톤이 있으므로 마일스톤 상태를 변경해야 함
         // 마일스톤 상태 업데이트: REQUESTED → PAID (바로 지급)
         if (step == null) {
             // 모든 REQUESTED 마일스톤을 PAID로 변경
@@ -995,14 +1020,7 @@ public class ContractService {
             throw new IllegalStateException("결제 완료된 계약만 지급 거부할 수 있습니다. 현재 상태: " + contract.getContractStatus());
         }
         
-        // 일시지급이고 cancel_reason이 "[지급요청]"인 경우
-        if (("FIXED".equals(contract.getPaymentMethod()) || "FULL".equals(contract.getPaymentMethod()) || contract.getPaymentMethod() == null)
-                && "[지급요청]".equals(contract.getCancelReason())) {
-            contractMapper.updateCancelReason(contractId, null);
-            logger.info("일시지급 거부: contractId={}, cancel_reason을 null로 설정", contractId);
-            return 1;
-        }
-        
+        // 일시지급도 마일스톤이 있으므로 마일스톤 상태를 변경해야 함
         // 마일스톤 상태 업데이트: REQUESTED → DEPOSITED (다시 에스크로 상태로)
         if (step == null) {
             // 모든 REQUESTED 마일스톤을 DEPOSITED로 변경
@@ -1422,7 +1440,7 @@ public class ContractService {
     
     /**
      * origin_contract_url에서 프리랜서 ID 추출
-     * 형식: contracts/{clientId}/{contractId}/freelancer/{freelancerId}/...
+     * 형식: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
      */
     private Integer extractFreelancerIdFromContract(ContractVO contract) {
         String url = contract.getOriginContractUrl();
@@ -1430,6 +1448,23 @@ public class ContractService {
             throw new IllegalArgumentException("계약 URL이 없습니다.");
         }
         
+        // 형식: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
+        if (url.startsWith("contracts/")) {
+            String[] pathParts = url.split("/");
+            if (pathParts.length >= 4) {
+                try {
+                    // pathParts[0] = "contracts"
+                    // pathParts[1] = clientId
+                    // pathParts[2] = projectId
+                    // pathParts[3] = freelancerId
+                    return Integer.parseInt(pathParts[3]);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("URL에서 프리랜서 ID를 파싱할 수 없습니다: " + url);
+                }
+            }
+        }
+        
+        // 레거시 형식 지원: /freelancer/{freelancerId}
         Pattern pattern = Pattern.compile("/freelancer/(\\d+)");
         Matcher matcher = pattern.matcher(url);
         
