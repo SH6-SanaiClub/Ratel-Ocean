@@ -15,8 +15,17 @@
 <body>
     <div class="container">
         <div class="page-header">
-            <h1>📋 계약 관리</h1>
-            <p>받은 계약서를 확인하고 관리하세요</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h1>📋 계약 관리</h1>
+                    <p>받은 계약서를 확인하고 관리하세요</p>
+                </div>
+                <a href="${pageContext.request.contextPath}/freelancer/dashboard" 
+                   class="btn btn-secondary" 
+                   style="text-decoration: none; white-space: nowrap;">
+                    🏠 메인으로
+                </a>
+            </div>
         </div>
 
         <div class="main-layout">
