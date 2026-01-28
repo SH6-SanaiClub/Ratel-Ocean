@@ -200,34 +200,18 @@
         let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
         if (room.lastMessageDeleted === 1) lastMsg = "메시지가 삭제되었습니다.";
         const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
-        // loginUserType이 'FREELANCER'인 경우 프로젝트 타이틀을 이름 옆이나 아래에 추가
         let nameHtml = "";
+        let underAvatarHtml = '';
         if (loginUserType === 'FREELANCER') {
-            // 1. 부모(.avatar-box)를 기준으로 이름을 아래로 내리기 위해 스타일 적용
-            // 2. 프로젝트명은 원래 위치에 남겨둠
-            nameHtml =
-                // 프로젝트명 (상단 유지)
-                '<span class="room-project-tag" style="font-size: 13px; font-weight: bold; color: #333;">[' + room.title + ']</span>' +
-                // 사용자 이름 (CSS를 이용해 프로필 사진 아래로 강제 이동)
-                '<span class="room-name-main" style="' +
-                'position: absolute; ' +    // 절대 위치 지정
-                'left: 12px; ' +            // 아바타 박스 안에서의 왼쪽 여백 (조절 필요)
-                'top: 58px; ' +             // 아바타 이미지 아래로 내려오는 높이 (조절 필요)
-                'width: 50px; ' +           // 이름 영역 너비
-                'font-size: 9px; ' +       // 이름은 작게
-                'color: #666; ' +
-                'text-align: center; ' +
-                'white-space: nowrap; ' +
-                'overflow: hidden; ' +
-                'text-overflow: ellipsis; ' +
-                '">' + room.name + '</span>';
+            nameHtml = '<span class="room-project-tag" style="font-size: 13px; font-weight: bold; color: #333;">[' + room.title + ']</span>';
+            underAvatarHtml = '<span class="name-under-avatar">' + room.name + '</span>';
         } else {
-            // 클라이언트: 기존 유지
             nameHtml = '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>';
         }
         return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
             '<div class="avatar-box">' +
             '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
+            underAvatarHtml+
             '</div>' +
             '<div class="room-info" style="flex: 1; min-width: 0;">' +
             '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +

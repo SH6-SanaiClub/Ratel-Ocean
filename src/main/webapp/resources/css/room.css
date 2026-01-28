@@ -225,7 +225,27 @@ body {
     margin-bottom: 10px;
     color: #444;
 }
+.avatar-box {
+    position: relative;
+    width: 48px;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
 
+/* 프리랜서용 사진 밑 이름 스타일 */
+.name-under-avatar {
+    position: absolute;
+    top: 52px;       /* 사진 높이(48px) 바로 아래 */
+    left: 50%;
+    transform: translateX(-50%); /* 정확히 중앙 정렬 */
+    width: 60px;     /* 사진보다 살짝 넓게 */
+    font-size: 10px;
+    color: #777;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 /* 파일 리스트 */
 .file-item {
     font-size: 13px;
