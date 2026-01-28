@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 계약 마일스톤(Milestone) 관련 SQL 쿼리 매퍼 -->
+<mapper namespace="com.sanaiclub.contract.dao.ContractMilestoneMapper">
+
+    <!-- 마일스톤 등록 -->
+    <insert id="insertMilestone" parameterType="map">
+        INSERT INTO contract_milestones (
+            contract_id, 
+            step_order, 
+            milestone_name, 
+            work_scope, 
+            amount,
+            status
+        )
+        VALUES (
+            #{contractId}, 
+            #{step}, 
+            #{title}, 
+            #{description}, 
+            #{amount},
+            'WAITING'
+        )
+    </insert>
+
+    <!-- 계약 ID로 마일스톤 목록 조회 (step 오름차순) -->
+    <select id="selectMilestonesByContractId" parameterType="int" resultType="com.sanaiclub.contract.model.vo.ContractMilestoneVO">
+        SELECT 
+            milestone_id as milestoneId,
+            contract_id as contractId,
+            step_order as step, 
+            milestone_name as title, 
+            work_scope as description, 
+            amount,
+            due_date as dueDate,
+            CAST(status AS CHAR) as status
+        FROM contract_milestones 
+        WHERE contract_id = #{contractId} 
+        ORDER BY step_order
+    </select>
+
+    <!-- 계약의 모든 마일스톤 삭제 -->
+    <delete id="deleteMilestonesByContractId" parameterType="int">
+        DELETE FROM contract_milestones 
+        WHERE contract_id = #{contractId}
+    </delete>
+
+    <!-- 마일스톤 상태 업데이트 (WAITING → REQUESTED → DEPOSITED → PAID) -->
+    <update id="updateMilestoneStatus" parameterType="map">
+        UPDATE contract_milestones
+        SET status = #{status}
+        WHERE contract_id = #{contractId}
+        <if test="step != null">
+            AND step_order = #{step}
+        </if>
+        <if test="step == null and status == 'REQUESTED'">
+            AND status = 'WAITING'
+        </if>
+        <if test="step == null and status == 'DEPOSITED'">
+            AND status = 'REQUESTED'
+        </if>
+        <if test="step == null and status == 'PAID'">
+            AND status = 'DEPOSITED'
+        </if>
+    </update>
+
+    <!-- 마일스톤 ID로 마일스톤 조회 -->
+    <select id="selectMilestoneById" parameterType="int" resultType="com.sanaiclub.contract.model.vo.ContractMilestoneVO">
+        SELECT 
+            milestone_id as milestoneId,
+            contract_id as contractId,
+            step_order as step, 
+            milestone_name as title, 
+            work_scope as description, 
+            amount,
+            due_date as dueDate,
+            CAST(status AS CHAR) as status
+        FROM contract_milestones 
+        WHERE milestone_id = #{milestoneId}
+    </select>
+
+    <!-- 마일스톤 ID로 마일스톤 상태 업데이트 -->
+    <update id="updateMilestoneStatusById" parameterType="map">
+        UPDATE contract_milestones
+        SET status = #{status}
+        WHERE milestone_id = #{milestoneId}
+    </update>
+
+</mapper>
