@@ -49,9 +49,228 @@
 
         <div class="main-layout">
             <div class="sidebar">
+                <!-- 1. 진행 중인 계약 (우선순위) -->
+                <div class="sidebar-section-header">
+                    <h3>📊 진행 중인 계약</h3>
+                </div>
+                
+                <!-- 1-1. 결제 대기 중 (SIGNED) -->
+                <c:if test="${not empty contractsByStatus['SIGNED']}">
+                    <div class="status-section priority-high">
+                        <div class="status-title" onclick="toggleSection(this)">
+                            <span class="toggle-icon">▼</span>
+                            <span class="status-icon">💳</span>
+                            <span class="status-text">결제 대기</span>
+                            <span class="status-badge signed">${fn:length(contractsByStatus['SIGNED'])}</span>
+                        </div>
+                        <ul class="contract-list">
+                            <c:forEach var="contract" items="${contractsByStatus['SIGNED']}">
+                                <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
+                                    onclick="location.href='?contractId=${contract.contractId}'">
+                                    <div class="contract-item-header">
+                                        <div class="contract-item-title">
+                                            <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                        </div>
+                                        <div class="contract-item-status-badge status-signed-mini">대기</div>
+                                    </div>
+                                    <div class="contract-item-subtitle">
+                                        <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
+                                    </div>
+                                    <div class="contract-item-meta">
+                                        <span class="contract-amount">
+                                            <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                        </span>
+                                        <c:if test="${not empty contract.contractedAt}">
+                                            <span class="contract-date">${contract.contractedAt}</span>
+                                        </c:if>
+                                    </div>
+                                </li>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
+                
+                <!-- 1-2. 작업 진행 중 (PAID + SETTLEMENT_PENDING) -->
+                <c:set var="activePaidContracts" value="${contractsByStatus['PAID']}"/>
+                <c:set var="settlementPendingContracts" value="${contractsByStatus['SETTLEMENT_PENDING']}"/>
+                <c:if test="${not empty activePaidContracts or not empty settlementPendingContracts}">
+                    <div class="status-section priority-high">
+                        <div class="status-title" onclick="toggleSection(this)">
+                            <span class="toggle-icon">▼</span>
+                            <span class="status-icon">🚀</span>
+                            <span class="status-text">작업 진행 중</span>
+                            <span class="status-badge paid">
+                                <c:set var="activeCount" value="0"/>
+                                <c:if test="${not empty activePaidContracts}">
+                                    <c:set var="activeCount" value="${activeCount + fn:length(activePaidContracts)}"/>
+                                </c:if>
+                                <c:if test="${not empty settlementPendingContracts}">
+                                    <c:set var="activeCount" value="${activeCount + fn:length(settlementPendingContracts)}"/>
+                                </c:if>
+                                ${activeCount}
+                            </span>
+                        </div>
+                        <ul class="contract-list">
+                            <!-- PAID 상태 계약 -->
+                            <c:forEach var="contract" items="${activePaidContracts}">
+                                <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
+                                    onclick="location.href='?contractId=${contract.contractId}'">
+                                    <div class="contract-item-header">
+                                        <div class="contract-item-title">
+                                            <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                        </div>
+                                        <div class="contract-item-status-badge status-paid-mini">
+                                            <c:choose>
+                                                <c:when test="${contract.requestedMilestones > 0}">
+                                                    승인대기 ${contract.requestedMilestones}건
+                                                </c:when>
+                                                <c:when test="${contract.depositedMilestones > 0}">
+                                                    입금완료 ${contract.depositedMilestones}건
+                                                </c:when>
+                                                <c:when test="${contract.paidMilestones > 0 and contract.totalMilestones > 0}">
+                                                    진행 ${contract.paidMilestones}/${contract.totalMilestones}
+                                                </c:when>
+                                                <c:otherwise>진행중</c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </div>
+                                    <div class="contract-item-subtitle">
+                                        <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
+                                    </div>
+                                    <div class="contract-item-meta">
+                                        <span class="contract-amount">
+                                            <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                        </span>
+                                        <c:if test="${contract.totalMilestones > 0}">
+                                            <span class="milestone-info">
+                                                마일스톤 ${contract.totalMilestones}개
+                                            </span>
+                                        </c:if>
+                                    </div>
+                                </li>
+                            </c:forEach>
+                            
+                            <!-- SETTLEMENT_PENDING 상태 계약 -->
+                            <c:forEach var="contract" items="${settlementPendingContracts}">
+                                <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
+                                    onclick="location.href='?contractId=${contract.contractId}'">
+                                    <div class="contract-item-header">
+                                        <div class="contract-item-title">
+                                            <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                        </div>
+                                        <div class="contract-item-status-badge status-settlement-mini">
+                                            정산대기
+                                        </div>
+                                    </div>
+                                    <div class="contract-item-subtitle">
+                                        <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
+                                    </div>
+                                    <div class="contract-item-meta">
+                                        <span class="contract-amount">
+                                            <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                        </span>
+                                        <c:if test="${contract.totalMilestones > 0}">
+                                            <span class="milestone-info">
+                                                ${contract.paidMilestones}/${contract.totalMilestones} 완료
+                                            </span>
+                                        </c:if>
+                                    </div>
+                                </li>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
+                
+                <!-- 2. 검토 대기 중 -->
+                <div class="sidebar-section-header">
+                    <h3>⏳ 검토 대기</h3>
+                </div>
+                
+                <!-- 2-1. 전송됨 (WAITING) - 프리랜서 수락 대기 -->
+                <c:if test="${not empty contractsByStatus['WAITING']}">
+                    <div class="status-section priority-medium">
+                        <div class="status-title" onclick="toggleSection(this)">
+                            <span class="toggle-icon">▼</span>
+                            <span class="status-icon">📤</span>
+                            <span class="status-text">프리랜서 승인 대기</span>
+                            <span class="status-badge waiting">${fn:length(contractsByStatus['WAITING'])}</span>
+                        </div>
+                        <ul class="contract-list">
+                            <c:forEach var="contract" items="${contractsByStatus['WAITING']}">
+                                <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
+                                    onclick="location.href='?contractId=${contract.contractId}'">
+                                    <div class="contract-item-header">
+                                        <div class="contract-item-title">
+                                            <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                        </div>
+                                        <div class="contract-item-status-badge status-waiting-mini">검토중</div>
+                                    </div>
+                                    <div class="contract-item-subtitle">
+                                        <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
+                                    </div>
+                                    <div class="contract-item-meta">
+                                        <span class="contract-amount">
+                                            <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                        </span>
+                                        <c:if test="${not empty contract.contractedAt}">
+                                            <span class="contract-date">${contract.contractedAt}</span>
+                                        </c:if>
+                                    </div>
+                                </li>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
+                
+                <!-- 3. 완료된 계약 -->
+                <div class="sidebar-section-header">
+                    <h3>✅ 완료 내역</h3>
+                </div>
+                
+                <!-- 3-1. 완료 내역 (COMPLETED_HISTORY) -->
+                <c:if test="${not empty contractsByStatus['COMPLETED_HISTORY']}">
+                    <div class="status-section priority-low">
+                        <div class="status-title" onclick="toggleSection(this)">
+                            <span class="toggle-icon">▼</span>
+                            <span class="status-icon">✅</span>
+                            <span class="status-text">완료된 계약</span>
+                            <span class="status-badge completed">${fn:length(contractsByStatus['COMPLETED_HISTORY'])}</span>
+                        </div>
+                        <ul class="contract-list">
+                            <c:forEach var="contract" items="${contractsByStatus['COMPLETED_HISTORY']}">
+                                <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
+                                    onclick="location.href='?contractId=${contract.contractId}'">
+                                    <div class="contract-item-header">
+                                        <div class="contract-item-title">
+                                            <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                        </div>
+                                        <div class="contract-item-status-badge status-completed-mini">완료</div>
+                                    </div>
+                                    <div class="contract-item-subtitle">
+                                        <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
+                                    </div>
+                                    <div class="contract-item-meta">
+                                        <span class="contract-amount">
+                                            <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                        </span>
+                                        <c:if test="${not empty contract.completedAt}">
+                                            <span class="contract-date">${contract.completedAt}</span>
+                                        </c:if>
+                                    </div>
+                                </li>
+                            </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
+                
+                <!-- 4. 종료된 계약 -->
+                <div class="sidebar-section-header">
+                    <h3>❌ 종료된 계약</h3>
+                </div>
+                
+                <!-- TERMINATED 상태 처리 -->
                 <c:forEach var="statusEntry" items="${contractsByStatus}">
-                    <c:choose>
-                        <c:when test="${statusEntry.key eq 'TERMINATED'}">
+                    <c:if test="${statusEntry.key eq 'TERMINATED'}">
                             <c:set var="hasRejected" value="false"/>
                             <c:forEach var="contract" items="${statusEntry.value}">
                                 <c:if test="${fn:startsWith(contract.cancelReason, '[거절]')}">
@@ -62,7 +281,8 @@
                                 <div class="status-section">
                                     <div class="status-title" onclick="toggleSection(this)">
                                         <span class="toggle-icon">▼</span>
-                                        🚫 프리랜서가 거절함
+                                        <span class="status-icon">🚫</span>
+                                        <span class="status-text">프리랜서가 거절함</span>
                                         <span class="status-badge rejected">
                                             <c:set var="rejectedCount" value="0"/>
                                             <c:forEach var="contract" items="${statusEntry.value}">
@@ -78,26 +298,20 @@
                                             <c:if test="${fn:startsWith(contract.cancelReason, '[거절]')}">
                                             <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
                                                 onclick="location.href='?contractId=${contract.contractId}'">
-                                                <div class="contract-item-title">
-                                                    <c:choose>
-                                                        <c:when test="${not empty contract.projectTitle}">
-                                                            <c:out value="${contract.projectTitle}"/>
-                                                        </c:when>
-                                                        <c:otherwise>프로젝트 정보 없음</c:otherwise>
-                                                    </c:choose>
+                                                <div class="contract-item-header">
+                                                    <div class="contract-item-title">
+                                                        <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                                    </div>
                                                 </div>
                                                 <div class="contract-item-subtitle">
-                                                    <c:choose>
-                                                        <c:when test="${not empty contract.counterpartName}">
-                                                            <c:out value="${contract.counterpartName}"/>
-                                                        </c:when>
-                                                        <c:otherwise>프리랜서 정보 없음</c:otherwise>
-                                                    </c:choose>
+                                                    <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
                                                 </div>
                                                 <div class="contract-item-meta">
-                                                    <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                                    <span class="contract-amount">
+                                                        <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                                    </span>
                                                     <c:if test="${not empty contract.contractedAt}">
-                                                        · ${contract.contractedAt}
+                                                        <span class="contract-date">${contract.contractedAt}</span>
                                                     </c:if>
                                                 </div>
                                             </li>
@@ -118,7 +332,8 @@
                                 <div class="status-section">
                                     <div class="status-title" onclick="toggleSection(this)">
                                         <span class="toggle-icon">▼</span>
-                                        ❌ 내가 취소함
+                                        <span class="status-icon">❌</span>
+                                        <span class="status-text">내가 취소함</span>
                                         <span class="status-badge cancelled">
                                             <c:set var="cancelledCount" value="0"/>
                                             <c:forEach var="contract" items="${statusEntry.value}">
@@ -134,26 +349,20 @@
                                             <c:if test="${fn:startsWith(contract.cancelReason, '[취소]')}">
                                             <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
                                                 onclick="location.href='?contractId=${contract.contractId}'">
-                                                <div class="contract-item-title">
-                                                    <c:choose>
-                                                        <c:when test="${not empty contract.projectTitle}">
-                                                            <c:out value="${contract.projectTitle}"/>
-                                                        </c:when>
-                                                        <c:otherwise>프로젝트 정보 없음</c:otherwise>
-                                                    </c:choose>
+                                                <div class="contract-item-header">
+                                                    <div class="contract-item-title">
+                                                        <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                                    </div>
                                                 </div>
                                                 <div class="contract-item-subtitle">
-                                                    <c:choose>
-                                                        <c:when test="${not empty contract.counterpartName}">
-                                                            <c:out value="${contract.counterpartName}"/>
-                                                        </c:when>
-                                                        <c:otherwise>프리랜서 정보 없음</c:otherwise>
-                                                    </c:choose>
+                                                    <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
                                                 </div>
                                                 <div class="contract-item-meta">
-                                                    <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                                    <span class="contract-amount">
+                                                        <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                                    </span>
                                                     <c:if test="${not empty contract.contractedAt}">
-                                                        · ${contract.contractedAt}
+                                                        <span class="contract-date">${contract.contractedAt}</span>
                                                     </c:if>
                                                 </div>
                                             </li>
@@ -174,7 +383,8 @@
                                 <div class="status-section">
                                     <div class="status-title" onclick="toggleSection(this)">
                                         <span class="toggle-icon">▼</span>
-                                        ⚠️ 중도 종료
+                                        <span class="status-icon">⚠️</span>
+                                        <span class="status-text">중도 종료</span>
                                         <span class="status-badge terminated">
                                             <c:set var="otherTerminatedCount" value="0"/>
                                             <c:forEach var="contract" items="${statusEntry.value}">
@@ -190,26 +400,20 @@
                                             <c:if test="${!fn:startsWith(contract.cancelReason, '[거절]') && !fn:startsWith(contract.cancelReason, '[취소]')}">
                                             <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
                                                 onclick="location.href='?contractId=${contract.contractId}'">
-                                                <div class="contract-item-title">
-                                                    <c:choose>
-                                                        <c:when test="${not empty contract.projectTitle}">
-                                                            <c:out value="${contract.projectTitle}"/>
-                                                        </c:when>
-                                                        <c:otherwise>프로젝트 정보 없음</c:otherwise>
-                                                    </c:choose>
+                                                <div class="contract-item-header">
+                                                    <div class="contract-item-title">
+                                                        <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
+                                                    </div>
                                                 </div>
                                                 <div class="contract-item-subtitle">
-                                                    <c:choose>
-                                                        <c:when test="${not empty contract.counterpartName}">
-                                                            <c:out value="${contract.counterpartName}"/>
-                                                        </c:when>
-                                                        <c:otherwise>프리랜서 정보 없음</c:otherwise>
-                                                    </c:choose>
+                                                    <c:out value="${contract.counterpartName != null ? contract.counterpartName : '프리랜서 정보 없음'}"/>
                                                 </div>
                                                 <div class="contract-item-meta">
-                                                    <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                                    <span class="contract-amount">
+                                                        <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
+                                                    </span>
                                                     <c:if test="${not empty contract.contractedAt}">
-                                                        · ${contract.contractedAt}
+                                                        <span class="contract-date">${contract.contractedAt}</span>
                                                     </c:if>
                                                 </div>
                                             </li>
@@ -218,89 +422,8 @@
                                     </ul>
                                 </div>
                             </c:if>
-                        </c:when>
-                        <c:otherwise>
-                            <!-- 일반 상태 (WAITING, SIGNED, PAID, COMPLETED) -->
-                            <div class="status-section">
-                                <div class="status-title" onclick="toggleSection(this)">
-                                    <span class="toggle-icon">▼</span>
-                                    <c:choose>
-                                        <c:when test="${statusEntry.key eq 'WAITING'}">⏳ 전송됨</c:when>
-                                        <c:when test="${statusEntry.key eq 'SIGNED'}">✅ 프리랜서 승인 완료 (지급 대기 중)</c:when>
-                                        <c:when test="${statusEntry.key eq 'PAID'}">
-                                            <jsp:include page="includes/statusTitlePaid.jsp"/>
-                                        </c:when>
-                                        <%-- PAYMENT_PENDING 제거: SETTLEMENT_PENDING으로 통합 --%>
-                                        <c:when test="${statusEntry.key eq 'SETTLEMENT_PENDING'}">
-                                            <jsp:include page="includes/statusTitleSettlementPending.jsp"/>
-                                        </c:when>
-                                        <c:when test="${statusEntry.key eq 'COMPLETED_HISTORY'}">
-                                            ✅ 완료 내역
-                                        </c:when>
-                                        <c:when test="${statusEntry.key eq 'COMPLETED'}">
-                                            <%-- 기존 COMPLETED도 처리 (하위 호환성) --%>
-                                            <c:set var="firstContract" value="${statusEntry.value[0]}"/>
-                                            <c:choose>
-                                                <c:when test="${firstContract.totalMilestones == null || firstContract.totalMilestones == 0}">
-                                                    ✅ 완료 내역
-                                                </c:when>
-                                                <c:when test="${firstContract.paidMilestones == firstContract.totalMilestones}">
-                                                    ✅ 완료 내역
-                                                </c:when>
-                                                <c:otherwise>
-                                                    🎉 정산 대기
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <c:choose>
-                                                <c:when test="${statusEntry.key eq 'UNKNOWN'}">
-                                                    ⚠️ 상태 불명
-                                                </c:when>
-                                                <c:when test="${empty statusEntry.key}">
-                                                    ⚠️ 상태 불명 (빈 값)
-                                                </c:when>
-                                                <c:otherwise>
-                                                    ⚠️ 상태 불명 (<c:out value="${statusEntry.key}"/>)
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </c:otherwise>
-                                    </c:choose>
-                                    <span class="status-badge ${statusEntry.key.toLowerCase()}">${fn:length(statusEntry.value)}</span>
-                                </div>
-                                <ul class="contract-list">
-                                    <c:forEach var="contract" items="${statusEntry.value}">
-                                        <li class="contract-item ${selectedContract.contractId eq contract.contractId ? 'active' : ''}"
-                                            onclick="location.href='?contractId=${contract.contractId}'">
-                                            <div class="contract-item-title">
-                                                <c:choose>
-                                                    <c:when test="${not empty contract.projectTitle}">
-                                                        <c:out value="${contract.projectTitle}"/>
-                                                    </c:when>
-                                                    <c:otherwise>프로젝트 정보 없음</c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="contract-item-subtitle">
-                                                <c:choose>
-                                                    <c:when test="${not empty contract.counterpartName}">
-                                                        <c:out value="${contract.counterpartName}"/>
-                                                    </c:when>
-                                                    <c:otherwise>프리랜서 정보 없음</c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="contract-item-meta">
-                                                <fmt:formatNumber value="${contract.totalBudget}" pattern="#,###"/>원
-                                                <c:if test="${not empty contract.contractedAt}">
-                                                    · ${contract.contractedAt}
-                                                </c:if>
-                                            </div>
-                                        </li>
-                                    </c:forEach>
-                                </ul>
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
-                </c:forEach>
+                        </c:if>
+                    </c:forEach>
             </div>
 
             <!-- 오른쪽: 선택한 계약 상세 정보 -->
