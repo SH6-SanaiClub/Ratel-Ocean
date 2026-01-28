@@ -124,16 +124,11 @@
             .then(res => res.json())
             .then(list => {
                 const container = document.getElementById("roomList");
-                let finalHtml = ""; // 모든 HTML을 합쳐서 담을 변수
-                const filteredList = list.filter(room => {
-                    if (loginUserId === room.freelancerId) return room.freelancerExited === 0;
-                    if (loginUserId === room.clientId) return room.clientExited === 0;
-                    return true;
-                });
+                let finalHtml = ""; // 모든 HTML을 합쳐서 담을 변수D
                 if (loginUserType === 'CLIENT') {
                     const projectGroups = {};
                     const projectOrder = [];
-                    filteredList.forEach(room => {
+                    list.forEach(room => {
                         if (!projectGroups[room.title]) {
                             projectGroups[room.title] = [];
                             projectOrder.push(room.title); // 처음 발견된 순서(정렬된 순서)대로 프로젝트 저장
@@ -175,7 +170,7 @@
                     });
                 } else {
                     // 프리랜서: 기존 방식
-                    filteredList.forEach(room => {
+                    list.forEach(room => {
                         finalHtml += renderSingleRoom(room);
                     });
                 }

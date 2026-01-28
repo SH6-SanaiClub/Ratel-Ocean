@@ -26,21 +26,24 @@
             rooms.freelancer_id,
             rooms.project_id,
             rooms.is_active,
-            rooms.last_message_at,
-            rooms.created_at,
             rooms.freelancer_exited,
             rooms.client_exited,
+            p.title,
+            /* 상대방 정보 추출 (내가 프리랜서면 클라이언트 정보, 내가 클라이언트면 프리랜서 정보) */
+            u.name,
+            u.profile_image_url,
+            u.user_id AS opponent_id,
 
+            /* 마지막 메시지 처리 (삭제 여부 및 파일 여부) */
             CASE
                 WHEN m.is_deleted = 1 THEN '삭제된 메시지입니다.'
                 WHEN m.file_name IS NOT NULL THEN CONCAT('📎 ', m.file_name)
                 ELSE m.content
-                END AS last_message_content,            m.sender_id   AS last_message_sender_id,
-            m.created_at  AS last_message_at,
-            p.title,
-            u.name,
-            u.profile_image_url,
+                END AS last_message_content,
+            m.sender_id AS last_message_sender_id,
+            m.created_at AS last_message_at,
 
+            /* 안 읽은 메시지 수 */
             (
                 SELECT COUNT(*)
                 FROM messages m3
@@ -50,17 +53,16 @@
             ) AS unread_count
 
         FROM chat_rooms rooms
-            LEFT JOIN projects p
-        ON p.project_id = rooms.project_id
-            LEFT JOIN users u
-            ON u.user_id =
+            JOIN projects p ON p.project_id = rooms.project_id
+            /* 상대방 유저 정보를 Join */
+            JOIN users u ON u.user_id = (
             CASE
-            WHEN rooms.freelancer_id = #{loginUserId}
-            THEN p.client_id
+            WHEN rooms.freelancer_id = #{loginUserId} THEN p.client_id
             ELSE rooms.freelancer_id
-        END
-        LEFT JOIN messages m
-            ON m.message_id = (
+            END
+            )
+            /* 마지막 메시지 성능 최적화를 위한 서브쿼리 Join */
+            LEFT JOIN messages m ON m.message_id = (
             SELECT m2.message_id
             FROM messages m2
             WHERE m2.room_id = rooms.room_id
@@ -68,20 +70,13 @@
             LIMIT 1
             )
         WHERE
-(
-    rooms.freelancer_id = #{loginUserId}
-        AND rooms.freelancer_exited = 0
-        )
-        OR
-        (
-        rooms.freelancer_id != #{loginUserId}
-        AND rooms.client_exited = 0
-        AND p.client_id = #{loginUserId}
-        )
+            /* 리팩토링: 나가지 않은 방만 조회 */
+            (rooms.freelancer_id = #{loginUserId} AND rooms.freelancer_exited = 0)
+           OR
+            (p.client_id = #{loginUserId} AND rooms.client_exited = 0)
 
-
-        ORDER BY
-    m.created_at DESC
+        /* 최신 메시지 순으로 정렬 (메시지가 없으면 방 생성 시간 순) */
+        ORDER BY COALESCE(m.created_at, rooms.created_at) DESC
     </select>
     <resultMap id="chatMessageMap" type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
         <id property="messageId" column="message_id"/>

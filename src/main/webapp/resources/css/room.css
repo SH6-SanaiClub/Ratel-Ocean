@@ -435,6 +435,7 @@ body {
     height: 1px;
     background: #ddd;
 }
+
 /* 프로젝트 통합 안 읽은 배지 (동그라미 버전) */
 .total-unread-badge {
     display: inline-flex;
