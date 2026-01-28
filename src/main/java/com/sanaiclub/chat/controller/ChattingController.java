@@ -35,7 +35,6 @@ public class ChattingController {
 
     private final ChatService chatService;
     private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
-    private final ChatMessageMapper chatMessageMapper;
 
     // 채팅 아이콘 → 목록 화면
     @GetMapping
@@ -142,7 +141,7 @@ public class ChattingController {
     ) throws Exception {
 
         // 1️⃣ DB에서 파일 정보 조회
-        ChatMessageDTO msg = chatMessageMapper.findFileByMessageId(messageId);
+        ChatMessageDTO msg = chatService.findFileByMessageId(messageId);
 
         if (msg == null || msg.getFileUrl() == null) {
             return ResponseEntity.notFound().build();

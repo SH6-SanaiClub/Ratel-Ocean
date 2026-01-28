@@ -17,7 +17,6 @@ public interface ChatRoomMapper {
     void exitRoom(Map<String, Object> param);
     // 채팅방 정보 조회
     ChatRoomDTO findRoomInfo(@Param("roomId") Integer roomId, @Param("loginUserId") Integer loginUserId);
-    String getUserTypeById(Integer userId);
     // 마지막 메시지 업데이트 (update_last_message -> updateLastMessage)
     void updateLastMessage(@Param("roomId") Integer roomId);
 }

@@ -7,14 +7,10 @@ import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +36,11 @@ public class ChatService {
         chatRoomMapper.updateLastMessage(roomId);
         return newMessage;
     }
+
+    public ChatMessageDTO findFileByMessageId(Integer messageId){
+        return chatMessageMapper.findFileByMessageId(messageId);
+    }
+
     // =========================================
     // 2. 단일 채팅방 조회
     // =========================================
