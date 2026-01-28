@@ -1,6 +1,6 @@
 package com.sanaiclub.wallet.service;
 
-import com.sanaiclub.contracts.model.vo.MilestoneStatus;
+import com.sanaiclub.contract.model.vo.MilestoneStatus;
 import com.sanaiclub.wallet.dao.ClientProgressMapper;
 import com.sanaiclub.project.model.dto.ClientProjectProgressDTO; // [수정] import 변경
 import lombok.RequiredArgsConstructor;

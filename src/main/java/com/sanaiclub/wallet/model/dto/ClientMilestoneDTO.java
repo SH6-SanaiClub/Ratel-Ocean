@@ -1,6 +1,6 @@
 package com.sanaiclub.wallet.model.dto;
 
-import com.sanaiclub.contracts.model.vo.MilestoneStatus;
+import com.sanaiclub.contract.model.vo.MilestoneStatus;
 import lombok.Data;
 import java.util.Date;
 

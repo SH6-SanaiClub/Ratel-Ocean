@@ -505,10 +505,7 @@
                                 <c:forEach var="pf" items="${p.publicPortfolios}">
                                     <div class="item">
                                         <div class="itemTop">
-                                            <div class="itemTitle"><c:out value="${pf.title}"/></div>
-                                            <c:if test="${not empty pf.createdAt}">
-                                                <div class="itemSub"><c:out value="${pf.createdAt}"/></div>
-                                            </c:if>
+<%--                                            <div class="itemTitle"><c:out value="${pf.title}"/></div>--%>
                                         </div>
 
                                         <c:if test="${not empty pf.portfolioUrl}">
@@ -554,7 +551,6 @@
                         </div>
                     </c:if>
 
-                    <!-- (선택) 연락처 카드: email이 위에서 이미 보이지만, PDF 느낌 내려고 좌측에도 배치 -->
                     <c:if test="${not empty p.email}">
                         <div class="panel">
                             <h3>연락처 <span class="badge">Contact</span></h3>
@@ -565,15 +561,7 @@
                         </div>
                     </c:if>
 
-                    <!-- 모바일에서만 상단 액션이 아래로 내려올 때를 위한 보조 버튼 -->
-                    <div class="panel noprint" style="background:#fff;">
-                        <div class="cta">
-                            <button class="mini" type="button" onclick="downloadPdf()">PDF로 다운</button>
-                            <c:if test="${p.owner}">
-                                <a class="mini" href="${pageContext.request.contextPath}/freelancer/profile/edit?tab=settings">프로필 수정하기</a>
-                            </c:if>
-                        </div>
-                    </div>
+
 
                 </div>
 
@@ -704,20 +692,72 @@
                     </c:if>
 
                     <!-- Ratel Ocean 프로젝트 (placeholder) -->
+                    <!-- Ratel Ocean 프로젝트 (Completed on Platform) -->
                     <div class="section">
                         <h2>Ratel Ocean 프로젝트 <span class="hint">Completed on Platform</span></h2>
-                        <div class="item" style="background: linear-gradient(180deg, #fff 0%, #fbfaff 100%);">
-                            <div class="itemTop">
-                                <div>
-                                    <div class="itemTitle">프로젝트 제목 예시</div>
-                                    <div class="itemSub">클라이언트명 · 완료일 2026-01-01</div>
-                                </div>
-                                <div class="stars">
-                                    ★★★★☆ <span class="score">(4.0)</span>
+
+                        <c:if test="${empty p.completedProjects}">
+                            <div class="item">
+                                <div class="itemDesc" style="margin-top:0; color: var(--muted); font-weight:850;">
+                                    완료된 프로젝트가 아직 없습니다.
                                 </div>
                             </div>
-                            <div class="itemDesc">프로젝트 요약/역할/성과 요약이 들어갈 자리입니다. (추후 연동)</div>
-                        </div>
+                        </c:if>
+
+                        <c:if test="${not empty p.completedProjects}">
+                            <div class="list">
+                                <c:forEach var="cp" items="${p.completedProjects}">
+                                    <div class="item" style="background: linear-gradient(180deg, #fff 0%, #fbfaff 100%);">
+                                        <div class="itemTop">
+                                            <div>
+                                                <div class="itemTitle"><c:out value="${cp.projectTitle}"/></div>
+                                                <div class="itemSub">
+                                                    <c:out value="${cp.clientName}"/> · 완료일 <c:out value="${cp.completedDate}"/>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="stars">
+                                                <c:choose>
+                                                    <c:when test="${cp.clientRating ne null}">
+                                                        <c:forEach var="i" begin="1" end="5">
+                                                            <c:choose>
+                                                                <c:when test="${i <= cp.clientRating}">★</c:when>
+                                                                <c:otherwise>☆</c:otherwise>
+                                                            </c:choose>
+                                                        </c:forEach>
+                                                        <span class="score">(<c:out value="${cp.clientRating}"/>.0)</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        ☆☆☆☆☆ <span class="score">(미평가)</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+
+                                        <c:if test="${not empty cp.clientExperience}">
+                                            <div class="itemDesc">클라이언트 평가 : <c:out value="${cp.clientExperience}"/></div>
+                                        </c:if>
+
+                                        <c:if test="${not empty cp.stacks}">
+                                            <div style="margin-top:10px;">
+                                                <div class="chips">
+                                                    <c:forEach var="st" items="${cp.stacks}">
+                                    <span class="chip">
+                                        <c:out value="${st.stackName}"/>
+                                        <c:if test="${st.isPrimary}">
+                                            <span class="lvl">· primary</span>
+                                        </c:if>
+                                    </span>
+                                                    </c:forEach>
+                                                </div>
+                                            </div>
+                                        </c:if>
+
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </c:if>
                     </div>
 
                 </div>

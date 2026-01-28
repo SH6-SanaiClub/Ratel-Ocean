@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.portfolio.dao.FreelancerCompletedProjectMapper">
+
+    <resultMap id="CompletedPlatformProjectMap"
+               type="com.sanaiclub.portfolio.model.dto.CompletedPlatformProjectDTO">
+
+        <id property="contractId" column="contract_id"/>
+        <result property="applicationId" column="application_id"/>
+        <result property="projectId" column="project_id"/>
+
+        <result property="projectTitle" column="project_title"/>
+        <result property="clientName" column="client_name"/>
+
+        <result property="completedDate" column="completed_date"/>
+        <result property="totalBudget" column="total_budget"/>
+
+        <result property="clientRating" column="client_rating"/>
+        <result property="clientExperience" column="client_experience"/>
+
+        <!-- application_id 별 스택 리스트 -->
+        <collection property="stacks"
+                    ofType="com.sanaiclub.portfolio.model.dto.CompletedProjectStackDTO"
+                    column="application_id"
+                    select="selectStacksByApplicationId"/>
+    </resultMap>
+
+    <!-- 완료된 계약(파기 제외) -->
+    <select id="selectCompletedProjects" resultMap="CompletedPlatformProjectMap">
+        SELECT
+            c.contract_id,
+            pa.application_id,
+            p.project_id,
+
+            p.title AS project_title,
+            cu.name AS client_name,
+
+            DATE_FORMAT(COALESCE(c.completed_at, c.contract_end_date), '%Y-%m-%d') AS completed_date,
+
+            c.total_budget,
+            c.client_rating,
+            c.client_experience
+
+        FROM contracts c
+                 JOIN project_applications pa ON pa.application_id = c.contract_id
+                 JOIN projects p ON p.project_id = pa.project_id
+                 JOIN users cu ON cu.user_id = p.client_id
+
+        WHERE pa.freelancer_id = #{freelancerId}
+          AND c.contract_status = 'COMPLETED'
+
+        ORDER BY COALESCE(c.completed_at, c.contract_end_date) DESC
+    </select>
+
+    <!-- 지원 시 선택한 스택 -->
+    <select id="selectStacksByApplicationId"
+            resultType="com.sanaiclub.portfolio.model.dto.CompletedProjectStackDTO">
+        SELECT
+            s.stack_id   AS stackId,
+            s.stack_name AS stackName,
+            pfs.is_primary AS isPrimary
+        FROM project_freelancer_stacks pfs
+                 JOIN stacks s ON s.stack_id = pfs.stack_id
+        WHERE pfs.application_id = #{applicationId}
+        ORDER BY pfs.is_primary DESC, s.stack_name ASC
+    </select>
+
+</mapper>
