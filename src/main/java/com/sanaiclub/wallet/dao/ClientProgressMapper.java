@@ -1,6 +1,6 @@
 package com.sanaiclub.wallet.dao;
 
-import com.sanaiclub.contracts.model.vo.MilestoneStatus;
+import com.sanaiclub.contract.model.vo.MilestoneStatus;
 import com.sanaiclub.project.model.dto.ClientProjectProgressDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
