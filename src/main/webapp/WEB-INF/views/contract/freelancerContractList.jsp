@@ -771,7 +771,7 @@
                                          onclick="toggleMilestoneCard(this, event)" 
                                          data-step="${m.step}">
                                         <div class="milestone-card-header">
-                                            <div class="milestone-step-badge">${m.step}단계</div>
+                                            <div class="milestone-step-badge">${m.step}</div>
                                             <h4 class="milestone-title"><c:out value="${m.title}" default="마일스톤 ${m.step}"/></h4>
                                             <div class="milestone-status-badge status-${fn:toLowerCase(m.status.name())}">
                                                 <c:choose>

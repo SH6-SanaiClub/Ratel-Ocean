@@ -1136,6 +1136,10 @@ body {
     border-radius: 50%;
     font-weight: 700;
     font-size: 16px;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .milestone-status-badge {
@@ -1934,6 +1938,7 @@ body {
     align-items: center;
     min-height: 60px;
     flex-direction: row;
+    min-width: 0;
 }
 
 /* 기본적으로 compact 모드 적용 (expanded가 아닌 경우) */
@@ -1944,6 +1949,7 @@ body {
     align-items: center;
     min-height: 60px;
     flex-direction: row;
+    min-width: 0;
 }
 
 .milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-card-content,
@@ -1966,6 +1972,8 @@ body {
     align-items: center;
     gap: 12px;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .milestone-list.milestone-timeline .milestone-card.compact .milestone-card-content {
@@ -1997,15 +2005,26 @@ body {
     align-items: center;
     gap: 12px;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .milestone-list.milestone-timeline .milestone-card.compact .milestone-step-badge,
 .milestone-list.milestone-timeline .milestone-card:not(.expanded) .milestone-step-badge {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+    width: auto !important;
+    min-width: 50px !important;
+    max-width: none !important;
+    height: 36px !important;
+    font-size: 13px !important;
     flex-shrink: 0;
     order: 1;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    padding: 0 10px !important;
+    border-radius: 18px !important;
+    line-height: 36px !important;
 }
 
 .milestone-list.milestone-timeline .milestone-card.compact .milestone-title,
@@ -2014,6 +2033,10 @@ body {
     margin: 0;
     flex: 1;
     order: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .milestone-list.milestone-timeline .milestone-card.compact .milestone-status-badge,
