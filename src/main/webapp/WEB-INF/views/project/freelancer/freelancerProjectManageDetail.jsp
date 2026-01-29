@@ -200,6 +200,46 @@
             font-weight:900;
         }
 
+        /* 마일스톤 상태별 뱃지 */
+        .badge.deposited {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        .badge.requested {
+            background: #FFF3E0;
+            color: #E65100;
+            animation: pulse-badge 1.5s infinite;
+        }
+        .badge.paid {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 지급 완료된 마일스톤 */
+        .milestone.paid-milestone {
+            opacity: 0.7;
+            background: #f9f9f9;
+        }
+
+        .paid-label {
+            color: #2E7D32;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .waiting-label {
+            color: #9e9e9e;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .milestone.requested-milestone {
+            border-left: 3px solid #E65100;
+        }
+
     </style>
 </head>
 <body>
@@ -330,7 +370,23 @@
                                         <div>
                                             <div class="row" style="gap:10px;justify-content:flex-start;">
                                                 <span class="badge primary">${m.stepOrder}단계</span>
-                                                <span class="badge">${m.status}</span>
+                                                <c:choose>
+                                                    <c:when test="${m.status == 'WAITING'}">
+                                                        <span class="badge">⏳ 결제 대기</span>
+                                                    </c:when>
+                                                    <c:when test="${m.status == 'DEPOSITED'}">
+                                                        <span class="badge deposited">💳 에스크로 보관</span>
+                                                    </c:when>
+                                                    <c:when test="${m.status == 'REQUESTED'}">
+                                                        <span class="badge requested">📤 지급 요청됨</span>
+                                                    </c:when>
+                                                    <c:when test="${m.status == 'PAID'}">
+                                                        <span class="badge paid">✅ 지급 완료</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge">${m.status}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                             <div class="mname" style="margin-top:8px;">${fn:escapeXml(m.milestoneName)}</div>
                                             <div class="mmeta">
@@ -344,6 +400,12 @@
 
                                         <div style="min-width:150px;display:flex;justify-content:flex-end;">
                                             <c:choose>
+                                                <c:when test="${m.status == 'PAID'}">
+                                                    <span class="paid-label">✅ 입금 완료</span>
+                                                </c:when>
+                                                <c:when test="${m.status == 'WAITING'}">
+                                                    <span class="waiting-label">결제 대기 중</span>
+                                                </c:when>
                                                 <c:when test="${m.actionable}">
                                                     <button class="btn js-toggle-request"
                                                             data-milestone-id="${m.milestoneId}"
@@ -449,7 +511,7 @@
 
                                 <c:otherwise>
                                     <div style="font-weight:900;margin-bottom:8px;">내가 남긴 리뷰</div>
-                                    <div class="milestone">
+                                    <div class="milestone ${m.status == 'PAID' ? 'paid-milestone' : ''} ${m.status == 'REQUESTED' ? 'requested-milestone' : ''}">
                                         <div class="row" style="justify-content:flex-start;gap:10px;">
                                             <span class="badge primary">평점</span>
                                             <span><b><c:out value="${empty reviewView.freelancerRating ? '-' : reviewView.freelancerRating}"/></b></span>
@@ -460,7 +522,7 @@
                                     </div>
 
                                     <div style="font-weight:900;margin:18px 0 8px;">클라이언트가 남긴 리뷰</div>
-                                    <div class="milestone">
+                                    <div class="milestone ${m.status == 'PAID' ? 'paid-milestone' : ''} ${m.status == 'REQUESTED' ? 'requested-milestone' : ''}">
                                         <div class="row" style="justify-content:flex-start;gap:10px;">
                                             <span class="badge primary">평점</span>
                                             <span><b><c:out value="${empty reviewView.clientRating ? '-' : reviewView.clientRating}"/></b></span>
