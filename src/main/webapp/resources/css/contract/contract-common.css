@@ -9,19 +9,19 @@
     --primary-hover: #176271;        /* Hover 상태 */
     --secondary-color: #A9D9DB;      /* Mint Blue - 보조 브랜드 (클라이언트 대시보드와 일치) */
     --secondary-hover: #7FC5BE;      /* Hover 상태 */
-
+    
     /* Neutral Colors */
     --dark-color: #2B2B2B;           /* 주요 텍스트 (클라이언트 대시보드와 일치) */
     --gray-color: #6F7272;           /* 보조 텍스트 (클라이언트 대시보드와 일치) */
     --white-color: #FFFFFF;          /* 순백 */
     --accent-color: #F1F6EE;         /* 배경 (클라이언트 대시보드와 일치) */
     --light-gray: #E8F4F5;           /* 섹션 배경 */
-
+    
     /* Semantic Colors */
     --success: #27C93F;
     --warning: #FFBD2E;
     --error: #FF5F56;
-
+    
     /* Legacy 변수 (하위 호환성) */
     --dark: var(--dark-color);
     --gray: var(--gray-color);
@@ -1727,20 +1727,20 @@ body {
     .main-layout.layout-3col {
         grid-template-columns: 1fr;
     }
-
+    
     .sidebar {
         position: static;
         top: auto;
     }
-
+    
     .summary-panel {
         grid-template-columns: 1fr;
     }
-
+    
     .project-overview-header {
         flex-direction: column;
     }
-
+    
     .project-overview-budget {
         text-align: left;
         width: 100%;
@@ -1753,11 +1753,11 @@ body {
         height: 100vh;
         border-radius: 0;
     }
-
+    
     .project-overview {
         padding: 16px;
     }
-
+    
     .summary-card {
         padding: 16px;
     }

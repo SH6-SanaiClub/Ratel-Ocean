@@ -42,6 +42,64 @@ public class FreelancerContractController {
         return contractFileService.servePdfResource(requestURI);
     }
 
+    /**
+     * 프리랜서용 PDF 파일 다운로드 (Content-Disposition: attachment)
+     * 
+     * [기능]
+     * - 저장된 PDF 파일을 다운로드
+     * - 브라우저에서 바로 열리지 않고 다운로드됨
+     * 
+     * [경로 형식]
+     * - GET /freelancer/contract/download/{encodedPath}
+     * - 경로: contracts/{clientId}/{projectId}/{freelancerId}/{fileName}
+     * 
+     * [응답]
+     * - Content-Type: application/pdf
+     * - Content-Disposition: attachment; filename="{fileName}"
+     * - 파일이 없으면 404 Not Found
+     * 
+     * @param request HTTP 요청 (URI에서 경로 추출)
+     * @return PDF 파일 리소스 (다운로드용)
+     */
+    @GetMapping("/download/**")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadPdf(
+            javax.servlet.http.HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        log.debug("downloadPdf - requestURI: {}", requestURI);
+        
+        // /download/를 /file/로 변경하여 servePdfResource 호출
+        String fileRequestURI = requestURI.replace("/download/", "/file/");
+        ResponseEntity<org.springframework.core.io.Resource> response = contractFileService.servePdfResource(fileRequestURI);
+        
+        // 다운로드 헤더 추가
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            try {
+                // 파일명 추출
+                String filePathStr = fileRequestURI.substring(fileRequestURI.indexOf("/file/") + "/file/".length());
+                String[] segments = filePathStr.split("/");
+                String fileName = segments.length > 0 ? segments[segments.length - 1] : "contract.pdf";
+                
+                // URL 디코딩
+                try {
+                    fileName = java.net.URLDecoder.decode(fileName, "UTF-8");
+                } catch (java.io.UnsupportedEncodingException e) {
+                    // 디코딩 실패 시 원본 사용
+                }
+                
+                return ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, 
+                        "attachment; filename=\"" + fileName + "\"")
+                    .body(response.getBody());
+            } catch (Exception e) {
+                log.error("PDF 다운로드 헤더 설정 중 오류: {}", e.getMessage(), e);
+                return response;
+            }
+        }
+        
+        return response;
+    }
+
     /** 프리랜서 계약 목록 조회 및 상태별 분류 */
     @GetMapping("/list")
     public String freelancerContractList(
@@ -49,10 +107,15 @@ public class FreelancerContractController {
             Model model) {
         // 로그인 프리랜서 ID 조회
         Integer freelancerId = com.sanaiclub.common.util.AuthContext.getCurrentUserId();
+        String loginId = com.sanaiclub.common.util.AuthContext.getCurrentLoginId();
         if (freelancerId == null) {
             model.addAttribute("errorMessage", "로그인이 필요합니다.");
             return "contract/freelancerContractList";
         }
+        
+        // 헤더용 loginId 추가
+        model.addAttribute("loginId", loginId);
+        model.addAttribute("userId", freelancerId);
         
         // 프리랜서의 계약 목록 조회 (쿼리에서 필터링)
         List<ContractResponseDTO> allContracts = contractService.getContractsByFreelancerId(freelancerId);
