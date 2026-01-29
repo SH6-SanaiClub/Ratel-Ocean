@@ -569,7 +569,7 @@ public class OpenHtmlToPdfService implements ContractPdfService {
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;")
                    .replace("'", "&#39;")
-                   .replace("\n", "<br>")
+                    .replace("\n", "<br />")
                    .replace("\r", "");
     }
 }
