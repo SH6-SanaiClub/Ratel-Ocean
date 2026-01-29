@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -285,19 +286,76 @@ async function logout(e) {
         </div>
     </c:if>
 
-    <!-- 통계 카드 -->
-    <div class="stats-grid">
+    <%-- 클라이언트 관점 핵심 지표 계산 --%>
+    <c:set var="totalWorkingMilestones" value="0"/>
+    <c:set var="totalPaymentRequestMilestones" value="0"/>
+    <c:set var="totalPaymentWaiting" value="0"/>
+    <c:set var="totalReviewWaiting" value="0"/>
+    
+    <c:forEach var="contract" items="${recentContracts}">
+        <%-- 작업중 마일스톤: requestedMilestones == 0 AND depositedMilestones > 0 AND totalMilestones > 0 --%>
+        <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
+            <c:set var="totalWorkingMilestones" value="${totalWorkingMilestones + contract.depositedMilestones}"/>
+        </c:if>
+        <%-- 지급 요청 마일스톤 --%>
+        <c:if test="${contract.requestedMilestones != null and contract.requestedMilestones > 0}">
+            <c:set var="totalPaymentRequestMilestones" value="${totalPaymentRequestMilestones + contract.requestedMilestones}"/>
+        </c:if>
+        <%-- 결제 대기 (SIGNED 상태) --%>
+        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
+            <c:set var="totalPaymentWaiting" value="${totalPaymentWaiting + 1}"/>
+        </c:if>
+        <%-- 검토 대기 (WAITING 상태) --%>
+        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
+            <c:set var="totalReviewWaiting" value="${totalReviewWaiting + 1}"/>
+        </c:if>
+    </c:forEach>
+
+    <!-- 핵심 지표 카드 (클라이언트 관점) -->
+    <div class="stats-grid compact">
+        <div class="stat-card priority clickable" onclick="scrollToSection('payment-request')">
+            <div class="stat-header">
+                <span class="stat-title">지급 요청</span>
+                <div class="stat-icon">📤</div>
+            </div>
+            <div class="stat-value">${totalPaymentRequestMilestones}</div>
+            <div class="stat-label">마일스톤</div>
+            <c:if test="${totalPaymentRequestMilestones > 0}">
+                <div class="stat-badge urgent">즉시 확인 필요</div>
+            </c:if>
+        </div>
+
+        <div class="stat-card clickable" onclick="scrollToSection('working')">
+            <div class="stat-header">
+                <span class="stat-title">작업중</span>
+                <div class="stat-icon">💼</div>
+            </div>
+            <div class="stat-value">${totalWorkingMilestones}</div>
+            <div class="stat-label">마일스톤</div>
+        </div>
+
+        <div class="stat-card clickable" onclick="scrollToSection('payment-waiting')">
+            <div class="stat-header">
+                <span class="stat-title">결제 대기</span>
+                <div class="stat-icon">⏳</div>
+            </div>
+            <div class="stat-value">${totalPaymentWaiting}</div>
+            <div class="stat-label">건</div>
+        </div>
+
+        <div class="stat-card clickable" onclick="scrollToSection('review-waiting')">
+            <div class="stat-header">
+                <span class="stat-title">검토 대기</span>
+                <div class="stat-icon">👀</div>
+            </div>
+            <div class="stat-value">${totalReviewWaiting}</div>
+            <div class="stat-label">건</div>
+        </div>
+
         <div class="stat-card">
             <div class="stat-header">
-                <span class="stat-title">진행중인 계약</span>
-                <div class="stat-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                    </svg>
-                </div>
+                <span class="stat-title">진행중 계약</span>
+                <div class="stat-icon">📋</div>
             </div>
             <div class="stat-value">${activeContracts}</div>
             <div class="stat-label">건</div>
@@ -306,103 +364,107 @@ async function logout(e) {
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">완료된 계약</span>
-                <div class="stat-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                </div>
+                <div class="stat-icon">✅</div>
             </div>
             <div class="stat-value">${completedContracts}</div>
             <div class="stat-label">건</div>
         </div>
+    </div>
 
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-title">총 지출금</span>
-                <div class="stat-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
+    <!-- 지표 설명 카드 -->
+    <div class="info-cards">
+        <div class="info-card">
+            <div class="info-card-title">
+                <span class="info-icon">📤</span>
+                <span>지급 요청</span>
+            </div>
+            <div class="info-card-description">
+                프리랜서가 작업 완료 후 지급을 요청한 마일스톤 수입니다. 즉시 확인하여 승인 또는 거부 처리해주세요.
+            </div>
                 </div>
+
+        <div class="info-card">
+            <div class="info-card-title">
+                <span class="info-icon">💼</span>
+                <span>작업중</span>
             </div>
-            <div class="stat-value">
-                <fmt:formatNumber value="${totalExpenditure}" pattern="#,###" />
+            <div class="info-card-description">
+                현재 프리랜서가 작업을 진행 중인 마일스톤 수입니다. 입금이 완료되어 작업이 진행되고 있는 상태입니다.
             </div>
-            <div class="stat-label">원 (완료된 계약 기준)</div>
         </div>
 
-        <div class="stat-card clickable" onclick="scrollToPaymentPending()">
-            <div class="stat-header">
-                <span class="stat-title">지급 대기</span>
-                <div class="stat-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <c:if test="${settlementPending > 0}">
-                        <span class="badge">${settlementPending}</span>
-                    </c:if>
+        <div class="info-card">
+            <div class="info-card-title">
+                <span class="info-icon">⏳</span>
+                <span>결제 대기</span>
                 </div>
+            <div class="info-card-description">
+                계약서 서명이 완료되어 결제를 진행해야 하는 계약 건수입니다. 결제를 완료하면 작업이 시작됩니다.
             </div>
-            <div class="stat-value">${settlementPending}</div>
-            <div class="stat-label">건</div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-title">
+                <span class="info-icon">👀</span>
+                <span>검토 대기</span>
+            </div>
+            <div class="info-card-description">
+                프리랜서가 계약서를 검토 중인 계약 건수입니다. 프리랜서의 수락 또는 거절을 기다리는 상태입니다.
         </div>
     </div>
 
-    <!-- 차트 섹션 -->
-    <div class="chart-section">
-        <div class="chart-card">
-            <div class="chart-header">
-                <h2 class="chart-title">월별 지출 현황</h2>
-                <p class="chart-subtitle">최근 6개월 지출 추이</p>
+        <div class="info-card">
+            <div class="info-card-title">
+                <span class="info-icon">📋</span>
+                <span>진행중 계약</span>
             </div>
-            <canvas id="expenditureChart"></canvas>
+            <div class="info-card-description">
+                현재 진행 중인 전체 계약 건수입니다. 대기중, 서명완료, 결제완료 상태의 계약을 포함합니다.
+            </div>
         </div>
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <h2 class="chart-title">계약 상태 분포</h2>
-                <p class="chart-subtitle">전체 계약 대비</p>
+        <div class="info-card">
+            <div class="info-card-title">
+                <span class="info-icon">✅</span>
+                <span>완료된 계약</span>
             </div>
-            <canvas id="statusChart"></canvas>
+            <div class="info-card-description">
+                모든 마일스톤이 완료되어 정산이 완료된 계약 건수입니다. 프로젝트가 성공적으로 마무리된 계약입니다.
+            </div>
         </div>
     </div>
 
-    <!-- 지급 대기 계약 목록 -->
+    <!-- 지급 요청 계약 목록 -->
     <c:if test="${not empty paymentPendingContracts}">
-    <div class="section-card alert-section" id="paymentPendingSection">
+    <div class="section-card alert-section priority-section" id="payment-request">
         <div class="section-header">
             <h2 class="section-title">
-                <span class="alert-icon">⚠️</span>
-                지급 대기 계약
+                <span class="alert-icon">📤</span>
+                지급 요청 <span class="badge-count">${settlementPending}건</span>
             </h2>
             <a href="${pageContext.request.contextPath}/client/contract/management" class="view-all-link">전체 보기 →</a>
         </div>
-        <ul class="contract-list">
+        <ul class="contract-list compact">
             <c:forEach var="contract" items="${paymentPendingContracts}">
                 <li class="contract-item alert-item" 
                     onclick="location.href='${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}'">
                     <div class="contract-header">
                         <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
-                        <span class="contract-badge status-paid">지급 요청됨</span>
+                        <span class="contract-badge status-paid">
+                            <c:choose>
+                                <c:when test="${contract.requestedMilestones != null && contract.requestedMilestones > 0}">
+                                    마일스톤 ${contract.requestedMilestones}개 지급 요청
+                                </c:when>
+                                <c:otherwise>지급 요청됨</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                     <div class="contract-meta">
                         <span class="contract-freelancer">${contract.freelancerName != null ? contract.freelancerName : '프리랜서 정보 없음'}</span>
                         <span>•</span>
-                        <c:choose>
-                            <c:when test="${contract.requestedMilestones != null && contract.requestedMilestones > 0}">
-                                <span class="amount-highlight">
-                                    마일스톤 ${contract.requestedMilestones}개 지급 요청
-                                </span>
-                            </c:when>
-                            <c:otherwise>
                                 <span class="amount-highlight">
                                     <fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원
                                 </span>
-                            </c:otherwise>
-                        </c:choose>
                         <c:if test="${contract.contractedAt != null}">
                             <span>•</span>
                             <span>${contract.contractedAt}</span>
@@ -414,10 +476,107 @@ async function logout(e) {
     </div>
     </c:if>
 
-    <!-- 최근 계약 목록 -->
+    <!-- 작업중 계약 목록 -->
+    <c:set var="hasWorkingContracts" value="false"/>
+    <c:forEach var="contract" items="${recentContracts}">
+        <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
+            <c:set var="hasWorkingContracts" value="true"/>
+        </c:if>
+    </c:forEach>
+    
+    <c:if test="${hasWorkingContracts}">
+    <div class="section-card" id="working">
+        <div class="section-header">
+            <h2 class="section-title">💼 작업중 계약</h2>
+            <a href="${pageContext.request.contextPath}/client/contract/management" class="view-all-link">전체 보기 →</a>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${recentContracts}">
+                <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
+                    <li class="contract-item" 
+                        onclick="location.href='${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}'">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-progress">작업중 ${contract.depositedMilestones}건</span>
+                        </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.freelancerName != null ? contract.freelancerName : '프리랜서 정보 없음'}</span>
+                            <span>•</span>
+                            <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
+                        </div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
+
+    <!-- 결제 대기 계약 목록 (SIGNED 상태) -->
+    <c:if test="${totalPaymentWaiting > 0}">
+    <div class="section-card" id="payment-waiting">
+        <div class="section-header">
+            <h2 class="section-title">⏳ 결제 대기</h2>
+            <a href="${pageContext.request.contextPath}/client/contract/management" class="view-all-link">전체 보기 →</a>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${recentContracts}">
+                <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
+                    <li class="contract-item" 
+                        onclick="location.href='${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}'">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-signed">결제 대기</span>
+                        </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.freelancerName != null ? contract.freelancerName : '프리랜서 정보 없음'}</span>
+                            <span>•</span>
+                            <span class="amount-highlight">
+                                <fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원
+                            </span>
+                        </div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
+
+    <!-- 검토 대기 계약 목록 (WAITING 상태) -->
+    <c:if test="${totalReviewWaiting > 0}">
+    <div class="section-card" id="review-waiting">
+        <div class="section-header">
+            <h2 class="section-title">👀 프리랜서 검토 중</h2>
+            <a href="${pageContext.request.contextPath}/client/contract/management" class="view-all-link">전체 보기 →</a>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${recentContracts}">
+                <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
+                    <li class="contract-item" 
+                        onclick="location.href='${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}'">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-waiting">검토중</span>
+                        </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.freelancerName != null ? contract.freelancerName : '프리랜서 정보 없음'}</span>
+                            <span>•</span>
+                            <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
+                            <c:if test="${contract.contractedAt != null}">
+                                <span>•</span>
+                                <span>${contract.contractedAt}</span>
+                            </c:if>
+                        </div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
+
+    <!-- 최근 계약 목록 (전체) -->
     <div class="section-card">
         <div class="section-header">
-            <h2 class="section-title">최근 계약</h2>
+            <h2 class="section-title">📋 최근 계약</h2>
             <a href="${pageContext.request.contextPath}/client/contract/management" class="view-all-link">전체 보기 →</a>
         </div>
         <c:choose>
@@ -428,23 +587,23 @@ async function logout(e) {
                             <div class="contract-header">
                                 <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
                                 <c:choose>
-                                    <c:when test="${contract.contractStatus == 'WAITING'}">
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
                                         <span class="contract-badge status-waiting">대기중</span>
                                     </c:when>
-                                    <c:when test="${contract.contractStatus == 'SIGNED'}">
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
                                         <span class="contract-badge status-signed">서명완료</span>
                                     </c:when>
-                                    <c:when test="${contract.contractStatus == 'PAID'}">
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'PAID' or contract.contractStatus.name() eq 'paid')}">
                                         <span class="contract-badge status-paid">결제완료</span>
                                     </c:when>
-                                    <c:when test="${contract.contractStatus == 'COMPLETED'}">
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'COMPLETED' or contract.contractStatus.name() eq 'completed')}">
                                         <span class="contract-badge status-completed">완료</span>
                                     </c:when>
-                                    <c:when test="${contract.contractStatus == 'TERMINATED'}">
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'TERMINATED' or contract.contractStatus.name() eq 'terminated')}">
                                         <span class="contract-badge status-terminated">종료</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="contract-badge">${contract.contractStatus}</span>
+                                        <span class="contract-badge">${contract.contractStatus != null ? contract.contractStatus.name() : '-'}</span>
                                     </c:otherwise>
                                 </c:choose>
                             </div>
@@ -468,22 +627,51 @@ async function logout(e) {
             </c:otherwise>
         </c:choose>
     </div>
+
+    <!-- 차트 섹션 (하단으로 이동, 기본적으로 숨김) -->
+    <c:if test="${not empty monthlyExpenditure or not empty statusDistribution}">
+    <div class="chart-section" id="chartSection" style="display: none;">
+        <c:if test="${not empty monthlyExpenditure}">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">월별 지출 현황</h2>
+                <p class="chart-subtitle">최근 6개월 지출 추이</p>
+            </div>
+            <canvas id="expenditureChart"></canvas>
+        </div>
+        </c:if>
+
+        <c:if test="${not empty statusDistribution}">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">계약 상태 분포</h2>
+                <p class="chart-subtitle">전체 계약 대비</p>
+            </div>
+            <canvas id="statusChart"></canvas>
+        </div>
+        </c:if>
+    </div>
+    </c:if>
 </main>
 
 <!-- JavaScript -->
 <script>
 
-    // 지급 대기 섹션으로 스크롤
-    function scrollToPaymentPending() {
-        const section = document.getElementById('paymentPendingSection');
+    // 섹션으로 스크롤
+    function scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId);
         if (section) {
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // 시각적 강조를 위한 애니메이션
             section.style.animation = 'pulse 0.5s ease-in-out';
             setTimeout(() => {
                 section.style.animation = '';
             }, 500);
         }
+    }
+
+    // 하위 호환성을 위한 함수
+    function scrollToPaymentPending() {
+        scrollToSection('payment-request');
     }
 
     // 월별 지출 차트
@@ -615,6 +803,30 @@ async function logout(e) {
         }
     });
     </c:if>
+
+    // 차트 섹션 토글
+    function toggleChartSection() {
+        const chartSection = document.getElementById('chartSection');
+        const btn = document.querySelector('.floating-chart-btn');
+        
+        if (chartSection) {
+            if (chartSection.style.display === 'none') {
+                chartSection.style.display = 'grid';
+                chartSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (btn) btn.textContent = '✕';
+            } else {
+                chartSection.style.display = 'none';
+                if (btn) btn.textContent = '📊';
+            }
+        }
+    }
 </script>
+
+<!-- 플로팅 차트 버튼 -->
+<c:if test="${not empty monthlyExpenditure or not empty statusDistribution}">
+<button class="floating-chart-btn" onclick="toggleChartSection()" title="통계 차트 보기">
+    📊
+</button>
+</c:if>
 </body>
 </html>
