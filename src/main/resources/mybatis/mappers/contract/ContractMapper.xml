@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.sanaiclub.contract.dao.ContractMapper">
 
     <!-- 원본 계약서 파일 경로 업데이트 -->
     <update id="updateOriginContractUrl" parameterType="map">
-        UPDATE contracts 
-        SET origin_contract_url = #{originContractUrl} 
+        UPDATE contracts
+        SET origin_contract_url = #{originContractUrl}
         WHERE contract_id = #{contractId}
     </update>
 
     <!-- 계약 상태 변경 (WAITING → SIGNED → COMPLETED / TERMINATED) -->
     <update id="updateContractStatus" parameterType="map">
-        UPDATE contracts 
+        UPDATE contracts
         SET contract_status = #{contractStatus}
         <if test="rejectReason != null">
             , cancel_reason = #{rejectReason}
@@ -24,7 +24,7 @@
 
     <!-- 계약 취소 사유만 업데이트 (일시지급 지급 요청 상태 관리용) -->
     <update id="updateCancelReason" parameterType="map">
-        UPDATE contracts 
+        UPDATE contracts
         SET cancel_reason = #{cancelReason}
         WHERE contract_id = #{contractId}
     </update>
@@ -32,43 +32,45 @@
     <!-- 새 계약 생성 (INSERT 후 contract_id 반환) -->
     <insert id="insertContract" parameterType="map">
         INSERT INTO contracts (
-            contract_start_date,
-            contract_end_date,
-            total_budget,
-            payment_method,
-            contract_status,
-            origin_contract_url,
-            platform_contract_url,
-            ai_report_url,
-            contracted_at,
-            completed_at,
-            cancel_reason,
-            client_rating,
-            client_experience,
-            client_is_renewal_intended,
-            freelancer_rating,
-            freelancer_experience
+        contract_id,
+        contract_start_date,
+        contract_end_date,
+        total_budget,
+        payment_method,
+        contract_status,
+        origin_contract_url,
+        platform_contract_url,
+        ai_report_url,
+        contracted_at,
+        completed_at,
+        cancel_reason,
+        client_rating,
+        client_experience,
+        client_is_renewal_intended,
+        freelancer_rating,
+        freelancer_experience
         )
         VALUES (
-            #{contract.contractStartDate},
-            #{contract.contractEndDate},
-            #{contract.totalBudget},
-            #{contract.paymentMethod},
-            #{contract.contractStatus},
-            #{contract.originContractUrl},
-            #{contract.platformContractUrl},
-            #{contract.aiReportUrl},
-            #{contract.contractedAt},
-            #{contract.completedAt},
-            #{contract.cancelReason},
-            #{contract.clientRating},
-            #{contract.clientExperience},
-            #{contract.clientIsRenewalIntended},
-            #{contract.freelancerRating},
-            #{contract.freelancerExperience}
+        #{contractId},
+        #{contract.contractStartDate},
+        #{contract.contractEndDate},
+        #{contract.totalBudget},
+        #{contract.paymentMethod},
+        #{contract.contractStatus},
+        #{contract.originContractUrl},
+        #{contract.platformContractUrl},
+        #{contract.aiReportUrl},
+        #{contract.contractedAt},
+        #{contract.completedAt},
+        #{contract.cancelReason},
+        #{contract.clientRating},
+        #{contract.clientExperience},
+        #{contract.clientIsRenewalIntended},
+        #{contract.freelancerRating},
+        #{contract.freelancerExperience}
         )
         <selectKey keyProperty="resultMap.contractId" resultType="int" order="AFTER">
-            SELECT LAST_INSERT_ID()
+            SELECT #{contractId}
         </selectKey>
     </insert>
 
@@ -92,20 +94,20 @@
             client_is_renewal_intended as clientIsRenewalIntended,
             freelancer_rating as freelancerRating,
             freelancer_experience as freelancerExperience
-        FROM contracts 
+        FROM contracts
         WHERE contract_id = #{contractId}
     </select>
-    
+
     <!-- 경로 패턴으로 계약서 파일 경로 목록 조회 (TERMINATED 포함) -->
     <select id="selectOriginContractUrlsByPathPattern" parameterType="string" resultType="string">
         SELECT origin_contract_url
         FROM contracts
         WHERE origin_contract_url LIKE #{pathPattern}
-          AND origin_contract_url IS NOT NULL
-          AND origin_contract_url != ''
+        AND origin_contract_url IS NOT NULL
+        AND origin_contract_url != ''
         <!-- TERMINATED 상태 제외 조건 제거: 종료된 계약의 PDF도 보존 -->
     </select>
-    
+
     <!-- 경로 패턴으로 기존 계약 조회 (프로젝트 조인, 최신 1개만) -->
     <select id="selectContractByPathPattern" parameterType="map" resultType="com.sanaiclub.contract.model.vo.ContractVO">
         SELECT
@@ -127,40 +129,40 @@
             c.freelancer_rating as freelancerRating,
             c.freelancer_experience as freelancerExperience
         FROM contracts c
-        -- origin_contract_url에서 projectId 추출하여 projects 테이블과 조인
-        -- 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
-        -- SUBSTRING_INDEX로 경로의 3번째 부분(projectId) 추출
-        INNER JOIN projects p ON
+                 -- origin_contract_url에서 projectId 추출하여 projects 테이블과 조인
+                 -- 경로 형식: contracts/{clientId}/{projectId}/{freelancerId}/...
+                 -- SUBSTRING_INDEX로 경로의 3번째 부분(projectId) 추출
+                 INNER JOIN projects p ON
             CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
         WHERE p.client_id = #{clientId}
           AND p.project_id = #{projectId}
           AND c.contract_status != 'TERMINATED'
           -- 경로 패턴 일치 확인: contracts/{clientId}/{projectId}/{freelancerId}/...
           AND c.origin_contract_url LIKE CONCAT('contracts/', #{clientId}, '/', #{projectId}, '/', #{freelancerId}, '/%')
-          -- 경로의 4번째 부분(freelancerId) 추출하여 비교
+      -- 경로의 4번째 부분(freelancerId) 추출하여 비교
           AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = #{freelancerId}
         ORDER BY c.contract_id DESC
-        LIMIT 1
+            LIMIT 1
     </select>
-    
+
     <!-- 계약 정보 전체 업데이트 -->
     <update id="updateContract" parameterType="map">
         UPDATE contracts SET
-            contract_start_date = #{contract.contractStartDate},
-            contract_end_date = #{contract.contractEndDate},
-            total_budget = #{contract.totalBudget},
-            payment_method = #{contract.paymentMethod},
-            contract_status = #{contract.contractStatus},
-            origin_contract_url = #{contract.originContractUrl},
-            platform_contract_url = #{contract.platformContractUrl},
-            ai_report_url = #{contract.aiReportUrl},
-            completed_at = #{contract.completedAt},
-            cancel_reason = #{contract.cancelReason},
-            client_rating = #{contract.clientRating},
-            client_experience = #{contract.clientExperience},
-            client_is_renewal_intended = #{contract.clientIsRenewalIntended},
-            freelancer_rating = #{contract.freelancerRating},
-            freelancer_experience = #{contract.freelancerExperience}
+                             contract_start_date = #{contract.contractStartDate},
+                             contract_end_date = #{contract.contractEndDate},
+                             total_budget = #{contract.totalBudget},
+                             payment_method = #{contract.paymentMethod},
+                             contract_status = #{contract.contractStatus},
+                             origin_contract_url = #{contract.originContractUrl},
+                             platform_contract_url = #{contract.platformContractUrl},
+                             ai_report_url = #{contract.aiReportUrl},
+                             completed_at = #{contract.completedAt},
+                             cancel_reason = #{contract.cancelReason},
+                             client_rating = #{contract.clientRating},
+                             client_experience = #{contract.clientExperience},
+                             client_is_renewal_intended = #{contract.clientIsRenewalIntended},
+                             freelancer_rating = #{contract.freelancerRating},
+                             freelancer_experience = #{contract.freelancerExperience}
         WHERE contract_id = #{contract.contractId}
     </update>
 
@@ -188,7 +190,7 @@
         WHERE origin_contract_url LIKE #{pathPattern}
         ORDER BY contract_id DESC
     </select>
-    
+
     <!-- 모든 계약 목록 조회 (최신순) -->
     <select id="selectAllContracts" resultType="com.sanaiclub.contract.model.vo.ContractVO">
         SELECT
@@ -212,7 +214,7 @@
         FROM contracts
         ORDER BY contract_id DESC
     </select>
-    
+
     <!-- 계약 상세 정보 조회 (프로젝트, 클라이언트, 프리랜서, 회사 정보 포함) -->
     <select id="selectContractDetailWithJoin" parameterType="int" resultType="com.sanaiclub.contract.model.dto.ContractDetailDTO">
         SELECT
@@ -256,26 +258,26 @@
             -- Company 정보 (필요한 필드만)
             co.company_name as companyName
         FROM contracts c
-        -- 프로젝트 정보 조인
-        LEFT JOIN projects p ON 
+                 -- 프로젝트 정보 조인
+                 LEFT JOIN projects p ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
-        -- 프리랜서 사용자 정보 조인
-        LEFT JOIN users fu ON 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+            -- 프리랜서 사용자 정보 조인
+                 LEFT JOIN users fu ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
-            AND fu.user_type = 'FREELANCER'
-        -- 클라이언트 사용자 정보 조인
-        LEFT JOIN users cu ON p.client_id = cu.user_id AND cu.user_type = 'CLIENT'
-        -- 클라이언트 프로필 정보 조인
-        LEFT JOIN client_profiles cp ON cu.user_id = cp.client_id
-        -- 회사 정보 조인
-        LEFT JOIN companies co ON cp.company_id = co.company_id
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+                AND fu.user_type = 'FREELANCER'
+            -- 클라이언트 사용자 정보 조인
+                 LEFT JOIN users cu ON p.client_id = cu.user_id AND cu.user_type = 'CLIENT'
+            -- 클라이언트 프로필 정보 조인
+                 LEFT JOIN client_profiles cp ON cu.user_id = cp.client_id
+            -- 회사 정보 조인
+                 LEFT JOIN companies co ON cp.company_id = co.company_id
         WHERE c.contract_id = #{contractId}
     </select>
-    
+
     <!-- 계약 목록 조회 (프로젝트, 상대방 정보, 마일스톤 집계 포함) -->
     <select id="selectAllContractsWithDetails" resultType="java.util.HashMap">
         SELECT
@@ -310,24 +312,24 @@
             COALESCE(ms.deposited_milestones, 0) as depositedMilestones,
             COALESCE(ms.waiting_milestones, 0) as waitingMilestones
         FROM contracts c
-        -- 프로젝트 정보 조인
-        LEFT JOIN projects p ON 
+                 -- 프로젝트 정보 조인
+                 LEFT JOIN projects p ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
-        -- 프리랜서 정보 조인
-        LEFT JOIN users fu ON 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+            -- 프리랜서 정보 조인
+                 LEFT JOIN users fu ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
-            AND fu.user_type = 'FREELANCER'
-        -- 클라이언트 정보 조인
-        LEFT JOIN users cu ON 
-            p.client_id = cu.user_id 
-            AND cu.user_type = 'CLIENT'
-        -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
-        LEFT JOIN (
-            SELECT 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+                AND fu.user_type = 'FREELANCER'
+            -- 클라이언트 정보 조인
+                 LEFT JOIN users cu ON
+            p.client_id = cu.user_id
+                AND cu.user_type = 'CLIENT'
+            -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
+                 LEFT JOIN (
+            SELECT
                 contract_id,
                 COUNT(*) as total_milestones,
                 SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_milestones,
@@ -339,7 +341,7 @@
         ) ms ON c.contract_id = ms.contract_id
         ORDER BY c.contract_id DESC
     </select>
-    
+
     <!-- 계약 단건 조회 (프로젝트 및 상대방 정보 포함) -->
     <select id="selectContractWithDetailsById" parameterType="int" resultType="java.util.HashMap">
         SELECT
@@ -368,24 +370,24 @@
             -- Client 정보
             cu.name as clientName
         FROM contracts c
-        -- 프로젝트 정보 조인
-        LEFT JOIN projects p ON 
+                 -- 프로젝트 정보 조인
+                 LEFT JOIN projects p ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
-        -- 프리랜서 정보 조인
-        LEFT JOIN users fu ON 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+            -- 프리랜서 정보 조인
+                 LEFT JOIN users fu ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
-            AND fu.user_type = 'FREELANCER'
-        -- 클라이언트 정보 조인
-        LEFT JOIN users cu ON 
-            p.client_id = cu.user_id 
-            AND cu.user_type = 'CLIENT'
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+                AND fu.user_type = 'FREELANCER'
+            -- 클라이언트 정보 조인
+                 LEFT JOIN users cu ON
+            p.client_id = cu.user_id
+                AND cu.user_type = 'CLIENT'
         WHERE c.contract_id = #{contractId}
     </select>
-    
+
     <!-- 클라이언트의 계약 목록 조회 (프로젝트, 상대방 정보, 마일스톤 집계 포함) -->
     <select id="selectContractsByClientIdWithDetails" parameterType="int" resultType="java.util.HashMap">
         SELECT
@@ -420,24 +422,24 @@
             COALESCE(ms.deposited_milestones, 0) as depositedMilestones,
             COALESCE(ms.waiting_milestones, 0) as waitingMilestones
         FROM contracts c
-        -- 프로젝트 정보 조인
-        LEFT JOIN projects p ON 
+                 -- 프로젝트 정보 조인
+                 LEFT JOIN projects p ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
-        -- 프리랜서 정보 조인
-        LEFT JOIN users fu ON 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+            -- 프리랜서 정보 조인
+                 LEFT JOIN users fu ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
-            AND fu.user_type = 'FREELANCER'
-        -- 클라이언트 정보 조인
-        LEFT JOIN users cu ON 
-            p.client_id = cu.user_id 
-            AND cu.user_type = 'CLIENT'
-        -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
-        LEFT JOIN (
-            SELECT 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+                AND fu.user_type = 'FREELANCER'
+            -- 클라이언트 정보 조인
+                 LEFT JOIN users cu ON
+            p.client_id = cu.user_id
+                AND cu.user_type = 'CLIENT'
+            -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
+                 LEFT JOIN (
+            SELECT
                 contract_id,
                 COUNT(*) as total_milestones,
                 SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_milestones,
@@ -449,6 +451,15 @@
         ) ms ON c.contract_id = ms.contract_id
         WHERE c.origin_contract_url LIKE CONCAT('contracts/', #{clientId}, '/%')
         ORDER BY c.contract_id DESC
+    </select>
+
+    <!-- projectId와 freelancerId로 application_id 조회 -->
+    <select id="selectApplicationIdByProjectAndFreelancer" parameterType="map" resultType="int">
+        SELECT application_id
+        FROM project_applications
+        WHERE project_id = #{projectId}
+          AND freelancer_id = #{freelancerId}
+            LIMIT 1
     </select>
 
     <!-- 프리랜서의 계약 목록 조회 (프로젝트, 상대방 정보, 마일스톤 집계 포함) -->
@@ -485,24 +496,24 @@
             COALESCE(ms.deposited_milestones, 0) as depositedMilestones,
             COALESCE(ms.waiting_milestones, 0) as waitingMilestones
         FROM contracts c
-        -- 프로젝트 정보 조인
-        LEFT JOIN projects p ON 
+                 -- 프로젝트 정보 조인
+                 LEFT JOIN projects p ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
-        -- 프리랜서 정보 조인
-        LEFT JOIN users fu ON 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 3), '/', -1) AS UNSIGNED) = p.project_id
+            -- 프리랜서 정보 조인
+                 LEFT JOIN users fu ON
             c.origin_contract_url IS NOT NULL
-            AND c.origin_contract_url LIKE 'contracts/%/%/%'
-            AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
-            AND fu.user_type = 'FREELANCER'
-        -- 클라이언트 정보 조인
-        LEFT JOIN users cu ON 
-            p.client_id = cu.user_id 
-            AND cu.user_type = 'CLIENT'
-        -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
-        LEFT JOIN (
-            SELECT 
+                AND c.origin_contract_url LIKE 'contracts/%/%/%'
+                AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = fu.user_id
+                AND fu.user_type = 'FREELANCER'
+            -- 클라이언트 정보 조인
+                 LEFT JOIN users cu ON
+            p.client_id = cu.user_id
+                AND cu.user_type = 'CLIENT'
+            -- 마일스톤 상태 집계 서브쿼리 (LEFT JOIN)
+                 LEFT JOIN (
+            SELECT
                 contract_id,
                 COUNT(*) as total_milestones,
                 SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_milestones,

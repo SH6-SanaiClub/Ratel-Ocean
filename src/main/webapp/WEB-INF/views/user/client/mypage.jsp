@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/clientMypage.css">
 </head>
 <body>
-
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="mp-container">
 
     <div class="header-card">

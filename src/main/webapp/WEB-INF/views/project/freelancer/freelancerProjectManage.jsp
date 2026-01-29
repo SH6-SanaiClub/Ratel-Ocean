@@ -267,6 +267,7 @@
 </head>
 
 <body>
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="wrap">
 
   <div class="pageTitle">

@@ -563,13 +563,13 @@ public class OpenHtmlToPdfService implements ContractPdfService {
         if (text == null || text.trim().isEmpty()) {
             return "";
         }
-        // 개행 문자를 <br>로 변환하고 HTML 특수문자 이스케이프
+        // 개행 문자를 <br />로 변환하고 HTML 특수문자 이스케이프 (XHTML 형식)
         return text.replace("&", "&amp;")
                    .replace("<", "&lt;")
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;")
                    .replace("'", "&#39;")
-                    .replace("\n", "<br />")
+                   .replace("\n", "<br />")
                    .replace("\r", "");
     }
 }

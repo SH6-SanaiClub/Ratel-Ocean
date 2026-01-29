@@ -243,6 +243,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="wrap">
     <div class="top">
         <h1>프리랜서 프로젝트 관리</h1>

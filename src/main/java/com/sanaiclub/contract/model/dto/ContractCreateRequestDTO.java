@@ -12,6 +12,7 @@ import java.util.List;
 public class ContractCreateRequestDTO {
     private Integer projectId;
     private Integer freelancerId;
+    private Integer applicationId;
     private String contractStartDate;
     private String contractEndDate;
     private Long totalBudget;

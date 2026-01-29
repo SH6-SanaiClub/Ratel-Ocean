@@ -401,62 +401,7 @@
   </style>
 </head>
 <body>
-<!-- 헤더 네비게이션 -->
-<header class="header">
-  <div class="header-inner">
-    <a href="${pageContext.request.contextPath}/freelancer/dashboard" class="logo">
-      <div class="logo-icon">R</div>
-      <span>Ratel-Ocean</span>
-    </a>
-
-    <nav class="nav-menu">
-      <a href="${pageContext.request.contextPath}/project/dashboard" class="nav-link">프로젝트 찾기</a>
-      <a href="${pageContext.request.contextPath}/freelancer/finance" class="nav-link">내 계약 관리</a>
-      <a href="${pageContext.request.contextPath}/freelancer/project/manage" class="nav-link">내 프로젝트 관리</a>
-      <a href="${pageContext.request.contextPath}/profile/${userId}" class="nav-link">내 프로필</a>
-    </nav>
-
-    <div class="nav-icons">
-      <!-- 알림 -->
-      <button class="icon-btn" title="알림">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="badge"></span>
-      </button>
-
-      <!-- 채팅 -->
-      <button class="icon-btn" title="채팅">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-      </button>
-
-      <!-- 프로필 드롭다운 -->
-      <div class="profile-dropdown">
-        <button class="profile-btn" onclick="toggleDropdown()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <span>${loginId}</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-
-        <div id="dropdownMenu" class="dropdown-menu">
-          <a href="${pageContext.request.contextPath}/freelancer/profile/edit" class="dropdown-item">마이페이지</a>
-          <a href="${pageContext.request.contextPath}/freelancer/wallet" class="dropdown-item">지갑</a>
-          <a href="${pageContext.request.contextPath}/freelancer/earnings" class="dropdown-item">수익 관리</a>
-          <div class="dropdown-divider"></div>
-          <a href="#" onclick="logout(event)" class="dropdown-item">로그아웃</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 
 <!-- 메인 콘텐츠 -->
 <main class="main-content">
