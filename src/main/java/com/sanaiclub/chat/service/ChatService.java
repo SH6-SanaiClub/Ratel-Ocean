@@ -81,7 +81,20 @@ public class ChatService {
         chatRoomMapper.updateLastMessage(roomId);
         return newMessage;
     }
+    @Transactional
+    public Integer createNewRoom(Integer projectId, Integer freelancerId) {
+        // 1. 방 정보를 담을 객체 생성
+        ChatRoomDTO newRoom = new ChatRoomDTO();
+        newRoom.setProjectId(projectId);
+        newRoom.setFreelancerId(freelancerId);
+        // client_id 컬럼이 필수라면 프로젝트 정보에서 가져오는 로직이 추가될 수 있습니다.
 
+        // 2. DB에 삽입 (Mapper 호출)
+        chatRoomMapper.insertChatRoom(newRoom);
+
+        // 3. MyBatis useGeneratedKeys에 의해 newRoom 객체에 자동으로 담긴 roomId 반환
+        return newRoom.getRoomId();
+    }
     public ChatMessageDTO findFileByMessageId(Integer messageId){
         return chatMessageMapper.findFileByMessageId(messageId);
     }
