@@ -315,17 +315,6 @@ public class ContractService {
         dto.setStatus(vo.getStatus());
         return dto;
     }
-
-    /**
-     * 계약 결제 상태 변경
-     * Note: PaymentStatus는 contract 테이블에 별도 컬럼이 없으므로, 
-     * 실제로는 마일스톤 상태나 계약 상태로 관리됩니다.
-     * 이 메서드는 향후 확장을 위해 유지하되, 현재는 구현하지 않습니다.
-     */
-    public void updatePaymentStatus(Integer contractId, PaymentStatus paymentStatus) {
-        // TODO: PaymentStatus를 contract 테이블에 추가하거나, 마일스톤 상태로 관리
-        logger.debug("updatePaymentStatus 호출됨: contractId={}, paymentStatus={}", contractId, paymentStatus);
-    }
     
     // =========================================================
     // View Data 메서드들 (Controller에서 사용)
