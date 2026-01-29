@@ -503,17 +503,19 @@ async function logout(e) {
 						</table>
 						<button type="button" class="btn btn-primary milestone-add-btn" onclick="addMilestone()">+ 마일스톤 추가</button>
 						<div id="milestoneSummary" class="milestone-summary">
-							<div class="milestone-summary-row">
-								<span class="milestone-summary-label">마일스톤 금액 합계:</span>
-								<span id="milestoneTotal" class="milestone-summary-value">0원</span>
-							</div>
-							<div class="milestone-summary-row">
-								<span class="milestone-summary-label">총 계약금액:</span>
-								<span id="totalBudgetDisplay" class="milestone-summary-value-dark">0원</span>
-							</div>
-							<div class="milestone-summary-row milestone-summary-divider">
-								<span class="milestone-summary-label">차이:</span>
-								<span id="amountDifference" style="font-size: 18px; font-weight: 700;">0원</span>
+							<div class="milestone-summary-row milestone-summary-single-row">
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="milestone-summary-label">마일스톤 금액 합계:</span>
+									<span id="milestoneTotal" class="milestone-summary-value">0원</span>
+								</div>
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="milestone-summary-label">총 계약금액:</span>
+									<span id="totalBudgetDisplay" class="milestone-summary-value-dark">0원</span>
+								</div>
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="milestone-summary-label">차이:</span>
+									<span id="amountDifference" class="milestone-summary-value-difference">0원</span>
+								</div>
 							</div>
 						</div>
 						<div id="milestoneWarning" class="warning" style="display:none; margin-top: 12px;">
@@ -729,13 +731,16 @@ function checkMilestoneBudget() {
 	$('#totalBudgetDisplay').text(budget.toLocaleString('ko-KR') + '원');
 	
 	// 차이 표시
-	var differenceText = difference.toLocaleString('ko-KR') + '원';
+	var differenceText;
 	if (difference > 0) {
-		$('#amountDifference').text('+' + differenceText).css('color', '#dc3545');
+		differenceText = '+' + Math.abs(difference).toLocaleString('ko-KR') + '원';
+		$('#amountDifference').text(differenceText).css('color', '#dc3545');
 	} else if (difference < 0) {
+		differenceText = '-' + Math.abs(difference).toLocaleString('ko-KR') + '원';
 		$('#amountDifference').text(differenceText).css('color', '#dc3545');
 	} else {
-		$('#amountDifference').text('0원').css('color', '#28a745');
+		differenceText = '0원';
+		$('#amountDifference').text(differenceText).css('color', '#28a745');
 	}
 	
 	// 마일스톤 금액 합계가 총 계약금액과 일치하지 않으면 경고 표시 및 버튼 비활성화
