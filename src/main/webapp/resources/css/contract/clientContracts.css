@@ -213,6 +213,7 @@ body {
 .stats-grid.compact .stat-card {
     padding: 0.875rem;
     min-height: 100px;
+    position: relative;
 }
 
 .stat-card.priority {
@@ -554,23 +555,58 @@ body {
     }
 }
 
-/* 설명 카드 */
-.info-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
+/* 물음표 아이콘 */
+.help-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light);
+    color: var(--primary);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: help;
+    transition: all 0.2s;
+    border: 1px solid var(--secondary);
 }
 
-.info-card {
+.help-icon:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+
+.tooltip {
+    position: absolute;
     background: white;
-    padding: 1.25rem;
+    padding: 1rem;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
     border-left: 4px solid var(--primary);
+    min-width: 280px;
+    max-width: 320px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    transform: translateY(-10px);
+    pointer-events: none;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
 }
 
-.info-card-title {
+.stat-card:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.tooltip-title {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--dark);
@@ -580,11 +616,11 @@ body {
     gap: 0.5rem;
 }
 
-.info-card-title .info-icon {
+.tooltip-icon {
     font-size: 1.1rem;
 }
 
-.info-card-description {
+.tooltip-description {
     color: var(--muted);
     font-size: 0.85rem;
     line-height: 1.6;

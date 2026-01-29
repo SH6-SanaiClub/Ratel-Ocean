@@ -316,123 +316,133 @@ async function logout(e) {
         <div class="stat-card priority clickable" onclick="scrollToSection('payment-request')">
             <div class="stat-header">
                 <span class="stat-title">지급 요청</span>
-                <div class="stat-icon">📤</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">📤</div>
+                    <span class="help-icon">?</span>
+                </div>
             </div>
             <div class="stat-value">${totalPaymentRequestMilestones}</div>
             <div class="stat-label">마일스톤</div>
             <c:if test="${totalPaymentRequestMilestones > 0}">
                 <div class="stat-badge urgent">즉시 확인 필요</div>
             </c:if>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">📤</span>
+                    <span>지급 요청</span>
+                </div>
+                <div class="tooltip-description">
+                    프리랜서가 작업 완료 후 지급을 요청한 마일스톤 수입니다. 즉시 확인하여 승인 또는 거부 처리해주세요.
+                </div>
+            </div>
         </div>
 
         <div class="stat-card clickable" onclick="scrollToSection('working')">
             <div class="stat-header">
                 <span class="stat-title">작업중</span>
-                <div class="stat-icon">💼</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">💼</div>
+                    <span class="help-icon">?</span>
+                </div>
             </div>
             <div class="stat-value">${totalWorkingMilestones}</div>
             <div class="stat-label">마일스톤</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">💼</span>
+                    <span>작업중</span>
+                </div>
+                <div class="tooltip-description">
+                    현재 프리랜서가 작업을 진행 중인 마일스톤 수입니다. 입금이 완료되어 작업이 진행되고 있는 상태입니다.
+                </div>
+            </div>
         </div>
 
         <div class="stat-card clickable" onclick="scrollToSection('payment-waiting')">
             <div class="stat-header">
                 <span class="stat-title">결제 대기</span>
-                <div class="stat-icon">⏳</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">⏳</div>
+                    <span class="help-icon">?</span>
+                </div>
             </div>
             <div class="stat-value">${totalPaymentWaiting}</div>
             <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">⏳</span>
+                    <span>결제 대기</span>
+                </div>
+                <div class="tooltip-description">
+                    계약서 서명이 완료되어 결제를 진행해야 하는 계약 건수입니다. 결제를 완료하면 작업이 시작됩니다.
+                </div>
+            </div>
         </div>
 
         <div class="stat-card clickable" onclick="scrollToSection('review-waiting')">
             <div class="stat-header">
                 <span class="stat-title">검토 대기</span>
-                <div class="stat-icon">👀</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">👀</div>
+                    <span class="help-icon">?</span>
+                </div>
             </div>
             <div class="stat-value">${totalReviewWaiting}</div>
             <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">👀</span>
+                    <span>검토 대기</span>
+                </div>
+                <div class="tooltip-description">
+                    프리랜서가 계약서를 검토 중인 계약 건수입니다. 프리랜서의 수락 또는 거절을 기다리는 상태입니다.
+                </div>
+            </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">진행중 계약</span>
-                <div class="stat-icon">📋</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">📋</div>
+                    <span class="help-icon">?</span>
+                </div>
             </div>
             <div class="stat-value">${activeContracts}</div>
             <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">📋</span>
+                    <span>진행중 계약</span>
+                </div>
+                <div class="tooltip-description">
+                    현재 진행 중인 전체 계약 건수입니다. 대기중, 서명완료, 결제완료 상태의 계약을 포함합니다.
+                </div>
+            </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">완료된 계약</span>
-                <div class="stat-icon">✅</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">✅</div>
+                    <span class="help-icon">?</span>
+                </div>
             </div>
             <div class="stat-value">${completedContracts}</div>
             <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">✅</span>
+                    <span>완료된 계약</span>
         </div>
+                <div class="tooltip-description">
+                    모든 마일스톤이 완료되어 정산이 완료된 계약 건수입니다. 프로젝트가 성공적으로 마무리된 계약입니다.
     </div>
-
-    <!-- 지표 설명 카드 -->
-    <div class="info-cards">
-        <div class="info-card">
-            <div class="info-card-title">
-                <span class="info-icon">📤</span>
-                <span>지급 요청</span>
-            </div>
-            <div class="info-card-description">
-                프리랜서가 작업 완료 후 지급을 요청한 마일스톤 수입니다. 즉시 확인하여 승인 또는 거부 처리해주세요.
-            </div>
-                </div>
-
-        <div class="info-card">
-            <div class="info-card-title">
-                <span class="info-icon">💼</span>
-                <span>작업중</span>
-            </div>
-            <div class="info-card-description">
-                현재 프리랜서가 작업을 진행 중인 마일스톤 수입니다. 입금이 완료되어 작업이 진행되고 있는 상태입니다.
             </div>
         </div>
-
-        <div class="info-card">
-            <div class="info-card-title">
-                <span class="info-icon">⏳</span>
-                <span>결제 대기</span>
-                </div>
-            <div class="info-card-description">
-                계약서 서명이 완료되어 결제를 진행해야 하는 계약 건수입니다. 결제를 완료하면 작업이 시작됩니다.
-            </div>
         </div>
 
-        <div class="info-card">
-            <div class="info-card-title">
-                <span class="info-icon">👀</span>
-                <span>검토 대기</span>
-            </div>
-            <div class="info-card-description">
-                프리랜서가 계약서를 검토 중인 계약 건수입니다. 프리랜서의 수락 또는 거절을 기다리는 상태입니다.
-        </div>
-    </div>
-
-        <div class="info-card">
-            <div class="info-card-title">
-                <span class="info-icon">📋</span>
-                <span>진행중 계약</span>
-            </div>
-            <div class="info-card-description">
-                현재 진행 중인 전체 계약 건수입니다. 대기중, 서명완료, 결제완료 상태의 계약을 포함합니다.
-            </div>
-        </div>
-
-        <div class="info-card">
-            <div class="info-card-title">
-                <span class="info-icon">✅</span>
-                <span>완료된 계약</span>
-            </div>
-            <div class="info-card-description">
-                모든 마일스톤이 완료되어 정산이 완료된 계약 건수입니다. 프로젝트가 성공적으로 마무리된 계약입니다.
-            </div>
-        </div>
-    </div>
 
     <!-- 지급 요청 계약 목록 -->
     <c:if test="${not empty paymentPendingContracts}">
