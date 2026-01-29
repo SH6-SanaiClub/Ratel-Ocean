@@ -81,6 +81,8 @@ public interface ContractMapper {
      */
     Integer selectClientIdByContractId(@Param("contractId") Integer contractId);
 
+    /** contract_id로 프리랜서 ID 조회 */
+    Integer selectFreelancerIdByContractId(@Param("contractId") Integer contractId);
 
     /** projectId와 freelancerId로 application_id 조회 */
     Integer selectApplicationIdByProjectAndFreelancer(

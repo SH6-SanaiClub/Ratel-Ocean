@@ -536,4 +536,11 @@
         WHERE c.contract_id = #{contractId}
             LIMIT 1
     </select>
+
+    <!-- contract_id로 프리랜서 ID 조회 -->
+    <select id="selectFreelancerIdByContractId" parameterType="int" resultType="int">
+        SELECT pa.freelancer_id
+        FROM project_applications pa
+        WHERE pa.application_id = #{contractId}
+    </select>
 </mapper>
