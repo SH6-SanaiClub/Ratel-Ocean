@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.wallet.dao.FreelancerWalletMapper">
+
+    <!-- 지갑 조회 -->
+    <select id="selectWalletByFreelancerId"
+            parameterType="int"
+            resultType="com.sanaiclub.wallet.model.dto.FreelancerWalletDTO">
+        SELECT
+            wallet_id     AS walletId,
+            freelancer_id AS freelancerId,
+            account_id    AS accountId,
+            balance,
+            total_earned  AS totalEarned
+        FROM freelancer_wallets
+        WHERE freelancer_id = #{freelancerId}
+    </select>
+
+    <!-- 거래 내역 조회: 최신순 + 10개씩 -->
+    <select id="selectHistories"
+            resultType="com.sanaiclub.wallet.model.dto.WalletHistoryDTO">
+        SELECT
+            wallet_history_id AS walletHistoryId,
+            wallet_id         AS walletId,
+            io_type           AS ioType,
+            amount            AS amount,
+            balance           AS balance,
+            summary           AS summary,
+            DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS createdAt
+        FROM wallet_histories
+        WHERE wallet_id = #{walletId}
+        ORDER BY created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+</mapper>

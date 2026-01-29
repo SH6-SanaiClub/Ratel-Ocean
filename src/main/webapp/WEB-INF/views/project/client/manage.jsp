@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/project/manage.css">
 </head>
 <body>
-
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="container">
 
     <div class="page-header">
