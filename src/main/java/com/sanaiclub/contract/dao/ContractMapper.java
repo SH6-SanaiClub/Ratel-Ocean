@@ -12,7 +12,7 @@ import java.util.List;
 public interface ContractMapper {
 
     /** 새 계약 생성. INSERT 후 생성된 contract_id를 resultMap에 반환. */
-    int insertContract(@Param("contract") ContractVO contract, @Param("resultMap") java.util.Map<String, Object> resultMap);
+    int insertContract(@Param("contract") ContractVO contract, @Param("resultMap") java.util.Map<String, Object> resultMap, @Param("contractId") Integer contractId);
 
     /** 계약 ID로 계약 정보 조회. */
     ContractVO selectContractById(
@@ -75,4 +75,10 @@ public interface ContractMapper {
     
     /** 프리랜서의 계약 목록 조회. 프로젝트, 상대방 정보, 마일스톤 집계 포함. */
     List<java.util.Map<String, Object>> selectContractsByFreelancerIdWithDetails(@Param("freelancerId") Integer freelancerId);
+    
+    /** projectId와 freelancerId로 application_id 조회 */
+    Integer selectApplicationIdByProjectAndFreelancer(
+        @Param("projectId") Integer projectId,
+        @Param("freelancerId") Integer freelancerId
+    );
 }
