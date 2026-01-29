@@ -590,7 +590,7 @@
 </head>
 
 <body>
-
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="dashboard-wrap">
     <c:if test="${isClient}">
         <div class="register-area">

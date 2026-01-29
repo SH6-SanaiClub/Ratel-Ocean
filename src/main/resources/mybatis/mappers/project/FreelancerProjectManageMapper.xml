@@ -12,7 +12,7 @@
              FROM contracts c
                       JOIN project_applications pa ON pa.application_id = c.contract_id
              WHERE pa.freelancer_id = #{freelancerId}
-               AND c.contract_status = 'SIGNED') AS inProgressCount,
+               AND c.contract_status IN ('SIGNED', 'PAID')) AS inProgressCount,
 
             /* 지원중: PENDING/VIEWED/CHATTING/OFFERED */
             (SELECT COUNT(*)
@@ -32,7 +32,7 @@
              FROM contracts c
                       JOIN project_applications pa ON pa.application_id = c.contract_id
              WHERE pa.freelancer_id = #{freelancerId}
-               AND c.contract_status = 'SIGNED') AS expectedRevenue
+               AND c.contract_status IN ('SIGNED', 'PAID')) AS expectedRevenue
     </select>
 
     <!-- 공통 카드 베이스: 진행률 + 다음 마일스톤 -->
@@ -98,7 +98,7 @@
     <select id="selectInProgressProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
         <include refid="projectCardBaseSelect"/>
         WHERE pa.freelancer_id = #{freelancerId}
-        AND c.contract_status = 'SIGNED'
+        AND c.contract_status IN ('SIGNED', 'PAID')
         ORDER BY c.contracted_at DESC
     </select>
 
@@ -156,7 +156,7 @@
             JOIN project_applications pa ON pa.application_id = c.contract_id
             JOIN projects p ON p.project_id = pa.project_id
         WHERE pa.freelancer_id = #{freelancerId}
-          AND c.contract_status = 'SIGNED'
+          AND c.contract_status IN ('SIGNED', 'PAID')
           AND m.due_date IS NOT NULL
           AND m.due_date BETWEEN #{start} AND #{end}
 
@@ -175,7 +175,7 @@
             JOIN project_applications pa ON pa.application_id = c.contract_id
             JOIN projects p ON p.project_id = pa.project_id
         WHERE pa.freelancer_id = #{freelancerId}
-          AND c.contract_status = 'SIGNED'
+          AND c.contract_status IN ('SIGNED', 'PAID')
           AND c.contract_start_date BETWEEN #{start} AND #{end}
 
         UNION ALL
@@ -193,7 +193,7 @@
             JOIN project_applications pa ON pa.application_id = c.contract_id
             JOIN projects p ON p.project_id = pa.project_id
         WHERE pa.freelancer_id = #{freelancerId}
-          AND c.contract_status = 'SIGNED'
+          AND c.contract_status IN ('SIGNED', 'PAID')
           AND c.contract_end_date BETWEEN #{start} AND #{end}
 
         ORDER BY date ASC
