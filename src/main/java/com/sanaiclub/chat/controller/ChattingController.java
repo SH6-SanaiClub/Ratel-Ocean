@@ -69,13 +69,28 @@ public class ChattingController {
     }
     @PostMapping("/create-or-get-room")
     @ResponseBody
-    public Integer createOrGetRoom(@RequestParam Integer projectId) {
-        // 1. 현재 로그인한 유저(프리랜서) ID 가져오기
-        Integer freelancerId = AuthContext.getCurrentUserId();
+    public Integer createOrGetRoom(
+            @RequestParam Integer projectId,
+            @RequestParam(required = false) Integer freelancerId
+    ) {
+        Integer loginUserId = AuthContext.getCurrentUserId();
+        UserType userType = AuthContext.getCurrentUserType();
 
-        // 2. 채팅방 생성 서비스 호출
-        Integer roomId = chatService.createOrGetRoom(projectId, freelancerId);
-        return roomId;
+        Integer targetFreelancerId;
+
+        if (UserType.CLIENT.equals(userType)) {
+            // 클라이언트라면 전달받은 프리랜서 ID 사용
+            if (freelancerId == null) {
+                throw new IllegalArgumentException("프리랜서 ID가 필요합니다.");
+            }
+            targetFreelancerId = freelancerId;
+        } else {
+            // 프리랜서라면 본인 ID 사용
+            targetFreelancerId = loginUserId;
+        }
+
+        // 서비스 호출 (기존 로직 활용)
+        return chatService.createOrGetRoom(projectId, targetFreelancerId);
     }
     // 채팅방 목록 데이터 (AJAX)
     @GetMapping("/rooms")
