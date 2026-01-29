@@ -59,6 +59,19 @@ public class ContractService {
             .substring(0, 19)
             .replace('T', ' ');
         
+        // applicationId가 없으면 projectId와 freelancerId로 조회
+        Integer applicationId = dto.getApplicationId();
+        if (applicationId == null && dto.getProjectId() != null && dto.getFreelancerId() != null) {
+            applicationId = contractMapper.selectApplicationIdByProjectAndFreelancer(
+                dto.getProjectId(), 
+                dto.getFreelancerId()
+            );
+        }
+        
+        if (applicationId == null) {
+            throw new IllegalStateException("프로젝트 지원 ID를 찾을 수 없습니다. projectId: " + dto.getProjectId() + ", freelancerId: " + dto.getFreelancerId());
+        }
+        
         ContractVO contract = ContractVO.builder()
             .contractStartDate(dto.getContractStartDate())
             .contractEndDate(dto.getContractEndDate())
@@ -70,9 +83,9 @@ public class ContractService {
             .build();
 
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
-        contractMapper.insertContract(contract, resultMap);
+        contractMapper.insertContract(contract, resultMap, applicationId);
         
-        Integer contractId = (Integer) resultMap.get("contractId");
+        Integer contractId = applicationId; // applicationId를 contractId로 사용
 
         if (dto.getMilestones() != null && !dto.getMilestones().isEmpty() && contractId != null) {
             for (ContractMilestoneRequestDTO milestoneDto : dto.getMilestones()) {
@@ -94,6 +107,7 @@ public class ContractService {
             );
         }
         
+        resultMap.put("contractId", contractId);
         return contractId;
     }
 

@@ -32,6 +32,7 @@
     <!-- 새 계약 생성 (INSERT 후 contract_id 반환) -->
     <insert id="insertContract" parameterType="map">
         INSERT INTO contracts (
+            contract_id,
             contract_start_date,
             contract_end_date,
             total_budget,
@@ -50,6 +51,7 @@
             freelancer_experience
         )
         VALUES (
+            #{contractId},
             #{contract.contractStartDate},
             #{contract.contractEndDate},
             #{contract.totalBudget},
@@ -68,7 +70,7 @@
             #{contract.freelancerExperience}
         )
         <selectKey keyProperty="resultMap.contractId" resultType="int" order="AFTER">
-            SELECT LAST_INSERT_ID()
+            SELECT #{contractId}
         </selectKey>
     </insert>
 
@@ -451,6 +453,15 @@
         ORDER BY c.contract_id DESC
     </select>
 
+    <!-- projectId와 freelancerId로 application_id 조회 -->
+    <select id="selectApplicationIdByProjectAndFreelancer" parameterType="map" resultType="int">
+        SELECT application_id
+        FROM project_applications
+        WHERE project_id = #{projectId}
+          AND freelancer_id = #{freelancerId}
+        LIMIT 1
+    </select>
+    
     <!-- 프리랜서의 계약 목록 조회 (프로젝트, 상대방 정보, 마일스톤 집계 포함) -->
     <select id="selectContractsByFreelancerIdWithDetails" parameterType="int" resultType="java.util.HashMap">
         SELECT
