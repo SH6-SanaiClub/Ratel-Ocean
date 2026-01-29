@@ -15,46 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 </head>
 <body>
-<!-- 헤더 네비게이션 -->
-<header class="header">
-    <div class="header-inner">
-        <a href="${pageContext.request.contextPath}/" class="logo">
-            <div class="logo-icon">R</div>
-            <span>Ratel-Ocean</span>
-        </a>
-
-        <nav class="nav-menu">
-            <a href="${pageContext.request.contextPath}/client/dashboard" class="nav-link">대시보드</a>
-            <a href="${pageContext.request.contextPath}/project/create" class="nav-link">프로젝트 등록</a>
-            <a href="${pageContext.request.contextPath}/client/projects" class="nav-link">내 프로젝트</a>
-            <a href="${pageContext.request.contextPath}/client/applicants" class="nav-link">지원자 관리</a>
-            <a href="${pageContext.request.contextPath}/client/contracts" class="nav-link active">계약 관리</a>
-        </nav>
-
-        <div class="nav-icons">
-            <!-- 프로필 드롭다운 -->
-            <div class="profile-dropdown">
-                <button class="profile-btn" onclick="toggleDropdown()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span>${loginId}</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </button>
-
-                <div id="dropdownMenu" class="dropdown-menu">
-                    <a href="${pageContext.request.contextPath}/client/mypage" class="dropdown-item">마이페이지</a>
-                    <a href="${pageContext.request.contextPath}/client/company" class="dropdown-item">회사 정보</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" onclick="logout(event)" class="dropdown-item">로그아웃</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
+<c:set var="activeMenu" value="contracts" scope="request"/>
+<%@ include file="/WEB-INF/views/includes/clientHeader.jsp" %>
 
 <!-- 메인 콘텐츠 -->
 <main class="main-content">
@@ -257,37 +219,6 @@
 
 <!-- JavaScript -->
 <script>
-    // 드롭다운 토글
-    function toggleDropdown() {
-        const dropdown = document.getElementById('dropdownMenu');
-        dropdown.classList.toggle('show');
-    }
-
-    // 외부 클릭 시 드롭다운 닫기
-    document.addEventListener('click', function(e) {
-        const profileDropdown = document.querySelector('.profile-dropdown');
-        if (!profileDropdown.contains(e.target)) {
-            document.getElementById('dropdownMenu').classList.remove('show');
-        }
-    });
-
-    // 로그아웃
-    async function logout(e) {
-        e.preventDefault();
-
-        try {
-            const response = await fetch('${pageContext.request.contextPath}/logout', {
-                method: 'POST'
-            });
-
-            if (response.ok) {
-                window.location.href = '${pageContext.request.contextPath}/login';
-            }
-        } catch (error) {
-            console.error('로그아웃 오류:', error);
-            alert('로그아웃에 실패했습니다.');
-        }
-    }
 
     // 지급 대기 섹션으로 스크롤
     function scrollToPaymentPending() {

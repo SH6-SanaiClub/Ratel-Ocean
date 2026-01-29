@@ -12,6 +12,8 @@
 </head>
 
 <body>
+<c:set var="activeMenu" value="contracts" scope="request"/>
+<%@ include file="/WEB-INF/views/includes/clientHeader.jsp" %>
 
 <div class="page-wrapper">
     <!-- STEP 1: 프로젝트 선택 -->

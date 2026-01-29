@@ -9,6 +9,8 @@
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-form.css" />
 </head>
 <body>
+<c:set var="activeMenu" value="contracts" scope="request"/>
+<%@ include file="/WEB-INF/views/includes/clientHeader.jsp" %>
 <div class="page-wrapper">
 	<c:if test="${empty sessionScope.contractCheckAlertShown}">
 		<div class="alert-box">
