@@ -557,32 +557,6 @@
         body.scrollTop = body.scrollHeight;
     }
 
-
-    // ================== 우측 방 정보 로드 ==================
-    function loadRoomInfo(roomId) {
-
-        fetch(`/ratelocean/chat/room/\${selectedRoomId}/info`)
-            .then(res => res.json())
-            .then(room => {
-                document.getElementById("headerName").innerText = room.name;
-                document.getElementById("headerProject").innerText = room.title;
-                const info = document.getElementById("roomInfo");
-                info.innerHTML =
-                    '<div class="profile-card">' +
-                    '<img src="' + (room.profileImageUrl || '/assets/img/default-profile.png') + '">' +
-                    '<h3>' + room.name + '</h3>' +
-                    '<div class="action-buttons">' +
-                    '<a href="/user/profile/' + room.senderId + '">프로필</a>' +
-                    '<a href="/project/' + room.projectId+ '" class="secondary">프로젝트</a>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="info-section">' +
-                    '<h4>공유 파일</h4>' +
-                    '<div class="file-list"></div>' +
-                    '</div>';
-            })
-            .catch(err => console.error("방 정보 로드 실패:", err));
-    }
     function updateSharedFilesFromMessages(messages) {
        let fileContainer = document.querySelector("#roomInfo .file-list");
         if (!fileContainer) {
@@ -633,8 +607,9 @@
                     <img src="\${room.profileImageUrl || '/assets/img/default-profile.png'}">
                     <h3>\${room.name}</h3>
                     <div class="action-buttons">
-                        <a href="/user/profile/\${room.userId}">프로필</a>
-                        <a href="/project/\${room.projectId}" class="secondary">프로젝트</a>
+                        <a href="/ratelocean/profile/\${room.opponentId}">프로필</a>
+                       <a href="/ratelocean/project/detail?projectId=\${room.projectId}&page=1&size=10&onlyActive=false&keyword="
+       class="secondary">프로젝트</a>
                     </div>
                 </div>
                 <div class="info-section">
