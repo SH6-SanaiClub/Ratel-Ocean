@@ -75,6 +75,8 @@
 </div>
 
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoRoomId = Number(urlParams.get("roomId"));
     const messageInput = document.getElementById("messageInput");
     const loginUserType = '${userType}';
     function escapeHtml(text) {
@@ -165,19 +167,31 @@
                             finalHtml += renderSingleRoom(room);
                         });
 
-                        // 4. 영역 닫기
                         finalHtml += '</div>';
                     });
                 } else {
-                    // 프리랜서: 기존 방식
                     list.forEach(room => {
                         finalHtml += renderSingleRoom(room);
                     });
                 }
-
-                // [중요] 모든 작업이 끝난 후 한꺼번에 화면에 반영
                 container.innerHTML = finalHtml;
-            });
+                if (!isNaN(autoRoomId)) {
+                    setTimeout(() => {
+                        const target = document.querySelector(
+                            `.chat-room[data-room-id="\${autoRoomId}"]`
+                        );
+                        console.log(target);
+                        if (target) {
+                            target.click();
+                            target.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            });
+                        }
+                    }, 50);
+                }
+            })
+            .catch(err => console.error("로드 에러:", err));
 
         if (typeof connectStomp === "function") connectStomp();
     }
@@ -655,6 +669,7 @@
 
     function selectRoom( roomId) {
         // 기존 방 구독 해제 (다른 방으로 이동 시)
+        console.log(roomId);
         if (stompClient !== null) {
             stompClient.disconnect();
         }
@@ -868,8 +883,28 @@
             document.getElementById("filePreview").style.display = "flex";
             document.getElementById("fileNameText").innerText = file.name;
         }
-    });
-    initEmptyRoom();
+    });/*
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. 주소창에서 파라미터 읽기 (?roomId=5&mode=view)
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomIdParam = urlParams.get('roomId');
+        const modeParam = urlParams.get('mode');
+
+        // 2. mode가 view면 양옆을 숨기는 CSS 클래스 추가
+        if (modeParam === 'view') {
+            const appElement = document.querySelector(".app");
+            if (appElement) appElement.classList.add("full-chat");
+        }
+
+        // 3. roomId가 있으면 해당 채팅방을 즉시 클릭한 것처럼 로드
+        if (roomIdParam) {
+            const roomId = parseInt(roomIdParam);
+            selectRoom(roomId);
+        }
+    });*/
+    if (!autoRoomId) {
+        initEmptyRoom();
+    }
     loadChatRooms();
 </script>
 </body>

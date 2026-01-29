@@ -246,6 +246,15 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.app.full-chat .chat-list,
+.app.full-chat .info {
+    display: none !important; /* 왼쪽 목록과 오른쪽 정보를 숨김  */
+}
+
+.app.full-chat .chat-area {
+    flex: 1; /* 중앙 영역이 전체를 차지하게 함  */
+}
+
 /* 파일 리스트 */
 .file-item {
     font-size: 13px;

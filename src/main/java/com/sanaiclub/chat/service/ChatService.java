@@ -83,7 +83,12 @@ public class ChatService {
     }
     @Transactional
     public Integer createNewRoom(Integer projectId, Integer freelancerId) {
-        // 1. 방 정보를 담을 객체 생성
+        Integer existingRoomId = chatRoomMapper.findExistRoom(projectId, freelancerId);
+
+        if (existingRoomId != null) {
+            // 이미 방이 있다면 기존 ID 반환
+            return existingRoomId;
+        }
         ChatRoomDTO newRoom = new ChatRoomDTO();
         newRoom.setProjectId(projectId);
         newRoom.setFreelancerId(freelancerId);

@@ -19,7 +19,5 @@ public interface ChatRoomMapper {
     ChatRoomDTO findRoomInfo(@Param("roomId") Integer roomId, @Param("loginUserId") Integer loginUserId);
     // 마지막 메시지 업데이트 (update_last_message -> updateLastMessage)
     void updateLastMessage(@Param("roomId") Integer roomId);
-
-    //프로젝트 ID와 사용자 ID를 통해 기존 채팅방 ID 조g회
-    Integer findRoomIdByProjectAndUser(@Param("projectId") Integer projectId, @Param("userId") Integer userId);
+    Integer findExistRoom(@Param("projectId") Integer projectId, @Param("freelancerId") Integer freelancerId);
 }

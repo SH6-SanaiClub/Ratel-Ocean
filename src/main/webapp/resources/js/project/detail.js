@@ -148,7 +148,20 @@ function moveToChat() {
         alert("프로젝트 정보를 찾을 수 없습니다.");
         return;
     }
+    $.ajax({
+        url: '/ratelocean/chat/createRoom',
+        type: 'POST',
+        data: { projectId: projectId },
+        success: function (roomId) {
 
-    // 컨트롤러의 join 엔드포인트로 이동
-    location.href = "/ratelocean/chat/join?projectId=" + projectId;
+            if (!roomId) {
+                alert("채팅방 생성에 실패했습니다.");
+                return;
+            }
+            location.href = '/ratelocean/chat?roomId=' + roomId;
+        },
+        error: function () {
+            alert("채팅방 생성 중 오류가 발생했습니다.");
+        }
+    });
 }

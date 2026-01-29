@@ -19,7 +19,13 @@
         <result property="name" column="name"/>
         <result property="opponentId" column="opponent_id"/>
     </resultMap>
-
+    <select id="findExistRoom" resultType="Integer">
+        SELECT room_id
+        FROM chat_rooms
+        WHERE project_id = #{projectId}
+          AND freelancer_id = #{freelancerId}
+            LIMIT 1
+    </select>
     <select id="findMyRooms" parameterType="int" resultMap="chatRoomMap">
         SELECT
             rooms.room_id,

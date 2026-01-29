@@ -94,12 +94,13 @@ public class ChattingController {
     }
     @PostMapping("/createRoom")
     @ResponseBody
-    public void createRoom(@RequestParam Integer projectId) {
+    public Integer createRoom(@RequestParam Integer projectId) {
         // 1. 현재 로그인한 유저(프리랜서) ID 가져오기
         Integer freelancerId = AuthContext.getCurrentUserId();
 
         // 2. 채팅방 생성 서비스 호출
         Integer roomId = chatService.createNewRoom(projectId, freelancerId);
+        return roomId;
     }
     // 채팅방 목록 데이터 (AJAX)
     @GetMapping("/rooms")

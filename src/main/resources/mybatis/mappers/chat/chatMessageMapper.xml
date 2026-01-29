@@ -41,7 +41,6 @@
         ORDER BY m.created_at ASC
 
     </select>
-
     <insert id="insertMessage">
         INSERT INTO messages (
             room_id,
