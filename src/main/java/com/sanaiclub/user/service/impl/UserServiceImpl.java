@@ -8,6 +8,7 @@ import com.sanaiclub.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 사용자 ID로 정보 조회
@@ -55,5 +57,32 @@ public class UserServiceImpl implements UserService {
         }
 
         return UserInfoDTO.fromVO(user);
+    }
+
+    /**
+     * 비밀번호 검증 (추가)
+     */
+    @Override
+    public boolean verifyPassword(Integer userId, String password) {
+        logger.debug("비밀번호 검증: userId={}", userId);
+
+        // 1. 사용자 조회
+        UserVO user = userMapper.findByUserId(userId);
+
+        if (user == null) {
+            logger.warn("비밀번호 검증 실패 - 사용자 없음: userId={}", userId);
+            return false;
+        }
+
+        // 2. 비밀번호 검증
+        boolean matches = passwordEncoder.matches(password, user.getPassword());
+
+        if (!matches) {
+            logger.warn("비밀번호 검증 실패: userId={}", userId);
+        } else {
+            logger.debug("비밀번호 검증 성공: userId={}", userId);
+        }
+
+        return matches;
     }
 }
