@@ -208,7 +208,7 @@
             <a href="${pageContext.request.contextPath}/project/create" class="nav-link">프로젝트 등록</a>
             <a href="${pageContext.request.contextPath}/client/manage" class="nav-link">내 프로젝트</a>
             <a href="${pageContext.request.contextPath}/client/applicants" class="nav-link">지원자 관리</a>
-            <a href="${pageContext.request.contextPath}/client/contract/management" class="nav-link active">계약 관리</a>
+            <a href="${pageContext.request.contextPath}/client/contracts" class="nav-link active">계약 관리</a>
         </nav>
 
         <div class="nav-icons">
@@ -258,10 +258,10 @@
                     <h1>📋 계약 관리</h1>
                     <p>제안한 계약서를 확인하고 관리하세요</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/client/dashboard" 
-                   class="btn btn-secondary" 
+                <a href="${pageContext.request.contextPath}/client/contract/form" 
+                   class="btn btn-primary" 
                    style="text-decoration: none; white-space: nowrap;">
-                    🏠 메인으로
+                    ✏️ 계약서 작성하기
                 </a>
             </div>
         </div>

@@ -197,7 +197,7 @@
 
         <nav class="nav-menu">
             <a href="${pageContext.request.contextPath}/project/dashboard" class="nav-link">프로젝트 찾기</a>
-            <a href="${pageContext.request.contextPath}/freelancer/contract/list" class="nav-link active">내 계약 관리</a>
+            <a href="${pageContext.request.contextPath}/freelancer/finance" class="nav-link active">내 계약 관리</a>
             <a href="${pageContext.request.contextPath}/freelancer/project/manage" class="nav-link">내 프로젝트 관리</a>
             <a href="${pageContext.request.contextPath}/profile/${userId != null ? userId : ''}" class="nav-link">내 프로필</a>
         </nav>
@@ -250,11 +250,6 @@
                     <h1>📋 계약 관리</h1>
                     <p>받은 계약서를 확인하고 관리하세요</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/freelancer/dashboard" 
-                   class="btn btn-secondary" 
-                   style="text-decoration: none; white-space: nowrap;">
-                    🏠 메인으로
-                </a>
             </div>
         </div>
 
