@@ -25,10 +25,6 @@ public class ChatService {
     private final ChatRoomMapper chatRoomMapper;
     private final ChatMessageMapper chatMessageMapper;
 
-    public Integer getRoomIdByProject(Integer projectId, Integer userId) {
-        return chatRoomMapper.findRoomIdByProjectAndUser(projectId, userId);
-    }
-
     // =========================================
     // 1. 내 채팅방 목록 조회 (AJAX용)
     // =========================================
@@ -82,7 +78,7 @@ public class ChatService {
         return newMessage;
     }
     @Transactional
-    public Integer createNewRoom(Integer projectId, Integer freelancerId) {
+    public Integer createOrGetRoom(Integer projectId, Integer freelancerId) {
         Integer existingRoomId = chatRoomMapper.findExistRoom(projectId, freelancerId);
 
         if (existingRoomId != null) {

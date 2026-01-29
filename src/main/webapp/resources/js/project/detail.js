@@ -149,7 +149,7 @@ function moveToChat() {
         return;
     }
     $.ajax({
-        url: '/ratelocean/chat/createRoom',
+        url: '/ratelocean/chat/create-or-get-room',
         type: 'POST',
         data: { projectId: projectId },
         success: function (roomId) {

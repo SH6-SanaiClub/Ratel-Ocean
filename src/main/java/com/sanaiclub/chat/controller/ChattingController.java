@@ -1,6 +1,5 @@
 package com.sanaiclub.chat.controller;
 
-import com.sanaiclub.chat.dao.ChatMessageMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import com.sanaiclub.chat.service.ChatService;
@@ -26,7 +25,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/chat")
@@ -36,29 +34,6 @@ public class ChattingController {
     private final ChatService chatService;
     private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
 
-    /**
-     * 프로젝트 상세페이지에서 채팅하기 클릭 시 처리
-     */
-    @GetMapping("/join")
-    public String joinChat(@RequestParam("projectId") Integer projectId) {
-        // 현재 로그인 유저 정보 획득
-        Integer loginUserId = AuthContext.getCurrentUserId();
-
-        if (loginUserId == null) {
-            return "redirect:/login";
-        }
-
-        // 기존에 생성된 채팅방 ID 조회
-        Integer roomId = chatService.getRoomIdByProject(projectId, loginUserId);
-
-        // 방이 존재한다면 해당 방으로 이동 (없을 경우에 대한 예외처리는 요구사항에 따라 생략)
-        if (roomId != null) {
-            return "redirect:/chat";
-        }
-
-        // 방이 없을 경우 목록으로 이동시키거나 에러 처리를 할 수 있습니다.
-        return "redirect:/login";
-    }
 
     // 채팅 아이콘 → 목록 화면
     @GetMapping
@@ -92,14 +67,14 @@ public class ChattingController {
     public void markAsRead(@PathVariable Integer roomId) {
         chatService.markRoomAsRead(roomId, AuthContext.getCurrentUserId());
     }
-    @PostMapping("/createRoom")
+    @PostMapping("/create-or-get-room")
     @ResponseBody
-    public Integer createRoom(@RequestParam Integer projectId) {
+    public Integer createOrGetRoom(@RequestParam Integer projectId) {
         // 1. 현재 로그인한 유저(프리랜서) ID 가져오기
         Integer freelancerId = AuthContext.getCurrentUserId();
 
         // 2. 채팅방 생성 서비스 호출
-        Integer roomId = chatService.createNewRoom(projectId, freelancerId);
+        Integer roomId = chatService.createOrGetRoom(projectId, freelancerId);
         return roomId;
     }
     // 채팅방 목록 데이터 (AJAX)
