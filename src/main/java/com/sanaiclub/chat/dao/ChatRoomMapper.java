@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Mapper
 public interface ChatRoomMapper {
-
+    void insertChatRoom(ChatRoomDTO chatRoom);
     // 내 채팅방 목록 조회 (find_my_rooms -> findMyRooms)
     List<ChatRoomDTO> findMyRooms(@Param("loginUserId") Integer loginUserId);
     // 채팅방 나가기

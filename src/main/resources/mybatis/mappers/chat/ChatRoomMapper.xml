@@ -130,6 +130,11 @@
         WHERE r.room_id = #{roomId}
     </select>
 
+    <insert id="insertChatRoom" useGeneratedKeys="true" keyProperty="roomId">
+        INSERT INTO chat_rooms (freelancer_id,project_id)
+        VALUES (#{freelancerId},#{projectId})
+    </insert>
+
     <update id="updateLastMessage" parameterType="int">
         UPDATE chat_rooms
         SET last_message_at = CURRENT_TIMESTAMP

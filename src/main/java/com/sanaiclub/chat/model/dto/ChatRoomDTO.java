@@ -12,6 +12,7 @@ import java.util.Date;
 public class ChatRoomDTO {
 
     private Integer roomId;
+    private Integer freelancerId;
     private Integer projectId;
     private String title;
     private Integer senderId;
