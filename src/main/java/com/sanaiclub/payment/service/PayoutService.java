@@ -21,7 +21,17 @@ public interface PayoutService {
     PayoutResponseDTO approvePayout(Integer milestoneId, Integer userId);
 
     /**
-     * FIXED 방식 전액 지급
+     * FULL 방식 전액 지급
      */
     PayoutResponseDTO releaseFullAmount(Integer contractId, Integer userId);
+
+    /**
+     * 마일스톤 지급 요청 거부 (클라이언트가 거부)
+     */
+    PayoutResponseDTO rejectPayout(Integer milestoneId, Integer userId);
+
+    /**
+     * 계약의 현재 활성화된 마일스톤 step 조회
+     */
+    Integer getActionableMilestoneStep(Integer contractId);
 }

@@ -66,6 +66,9 @@ public class PayoutServiceImpl implements PayoutService {
             throw new IllegalStateException("지급 가능한 마일스톤 상태가 아닙니다: " + milestone.getStatus());
         }
 
+        // 4-1. 순차 진행 검증 추가
+        validateSequentialProgress(contractId, milestone.getStep());
+
         // 5. 프리랜서 ID 추출 (origin_contract_url에서)
         Integer freelancerId = extractFreelancerIdFromContract(contract);
 
@@ -138,6 +141,9 @@ public class PayoutServiceImpl implements PayoutService {
             throw new IllegalStateException("요청 가능한 마일스톤 상태가 아닙니다: " + milestone.getStatus());
         }
 
+        // 2-1. 순차 진행 검증 추가
+        validateSequentialProgress(milestone.getContractId(), milestone.getStep());
+
         // 3. 마일스톤 상태 업데이트 (DEPOSITED → REQUESTED)
         milestoneMapper.updateMilestoneStatusById(request.getMilestoneId(), MilestoneStatus.REQUESTED.name());
 
@@ -205,6 +211,74 @@ public class PayoutServiceImpl implements PayoutService {
         return releaseMilestone(contractId, milestone.getMilestoneId(), userId);
     }
 
+    /**
+     * 마일스톤 지급 요청 거부 (클라이언트가 거부)
+     */
+    @Override
+    @Transactional
+    public PayoutResponseDTO rejectPayout(Integer milestoneId, Integer userId) {
+        logger.info("마일스톤 지급 요청 거부: milestoneId={}, userId={}", milestoneId, userId);
+
+        // 1. 마일스톤 정보 조회
+        ContractMilestoneVO milestone = milestoneMapper.selectMilestoneById(milestoneId);
+        if (milestone == null) {
+            throw new IllegalArgumentException("마일스톤을 찾을 수 없습니다: " + milestoneId);
+        }
+
+        // 2. 마일스톤 상태 검증 (REQUESTED 상태여야 함)
+        if (!MilestoneStatus.REQUESTED.equals(milestone.getStatus())) {
+            throw new IllegalStateException("거부 가능한 마일스톤 상태가 아닙니다: " + milestone.getStatus());
+        }
+
+        // 3. 계약 정보 조회 및 클라이언트 권한 검증
+        ContractVO contract = contractMapper.selectContractById(milestone.getContractId());
+        if (contract == null) {
+            throw new IllegalArgumentException("계약을 찾을 수 없습니다: " + milestone.getContractId());
+        }
+
+        // 4. 클라이언트 ID 추출 및 권한 검증
+        Integer clientId = extractClientIdFromContract(contract);
+        if (!clientId.equals(userId)) {
+            throw new IllegalStateException("권한이 없습니다. 클라이언트만 거부할 수 있습니다.");
+        }
+
+        // 5. 마일스톤 상태 업데이트 (REQUESTED → DEPOSITED)
+        milestoneMapper.updateMilestoneStatusById(milestoneId, MilestoneStatus.DEPOSITED.name());
+
+        logger.info("마일스톤 지급 요청 거부 완료: milestoneId={}", milestoneId);
+
+        // TODO: 프리랜서에게 거부 알림 전송
+
+        // 6. 응답 DTO 생성
+        return PayoutResponseDTO.builder()
+                .milestoneId(milestoneId)
+                .contractId(milestone.getContractId())
+                .amount(milestone.getAmount())
+                .milestoneStatus(MilestoneStatus.DEPOSITED)
+                .success(true)
+                .message("지급 요청이 거부되었습니다.")
+                .build();
+    }
+
+    /**
+     * 계약의 현재 활성화된 마일스톤 step 조회
+     */
+    @Override
+    public Integer getActionableMilestoneStep(Integer contractId) {
+        logger.info("현재 활성화된 마일스톤 조회: contractId={}", contractId);
+
+        // 계약의 모든 마일스톤 조회
+        List<ContractMilestoneVO> milestones = milestoneMapper.selectMilestonesByContractId(contractId);
+
+        // 가장 작은 step의 DEPOSITED 또는 REQUESTED 마일스톤 반환
+        return milestones.stream()
+                .filter(m -> MilestoneStatus.DEPOSITED.equals(m.getStatus())
+                        || MilestoneStatus.REQUESTED.equals(m.getStatus()))
+                .map(ContractMilestoneVO::getStep)
+                .min(Integer::compareTo)
+                .orElse(null);
+    }
+
     // ========================================================================
     // Private Helper Methods
     // ========================================================================
@@ -227,5 +301,41 @@ public class PayoutServiceImpl implements PayoutService {
         }
 
         throw new IllegalArgumentException("URL에서 프리랜서 ID를 추출할 수 없습니다: " + url);
+    }
+
+    /**
+     * origin_contract_url에서 클라이언트 ID 추출
+     * 형식: /project/{projectId}/freelancer/{freelancerId}
+     * ContractMapper를 통해 프로젝트 소유자(클라이언트) ID 조회
+     */
+    private Integer extractClientIdFromContract(ContractVO contract) {
+
+        Integer clientId = contractMapper.selectClientIdByContractId(contract.getContractId());
+
+        if (clientId == null) {
+            throw new IllegalArgumentException("클라이언트 ID를 찾을 수 없습니다: contractId=" + contract.getContractId());
+        }
+
+        return clientId;
+    }
+
+    /**
+     * 순차 진행 검증 헬퍼 메서드
+     */
+    private void validateSequentialProgress(Integer contractId, Integer currentStep) {
+        if (currentStep == 1) {
+            return; // 첫 번째 마일스톤은 검증 불필요
+        }
+
+        List<ContractMilestoneVO> milestones = milestoneMapper.selectMilestonesByContractId(contractId);
+
+        // 이전 마일스톤이 모두 PAID인지 확인
+        boolean allPreviousPaid = milestones.stream()
+                .filter(m -> m.getStep() < currentStep)
+                .allMatch(m -> MilestoneStatus.PAID.equals(m.getStatus()));
+
+        if (!allPreviousPaid) {
+            throw new IllegalStateException("이전 마일스톤이 완료되지 않았습니다. 순차적으로 진행해주세요.");
+        }
     }
 }
