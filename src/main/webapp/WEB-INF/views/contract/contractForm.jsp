@@ -417,13 +417,16 @@ async function logout(e) {
                 </div>
             </div>
         </div>
+        <!-- 최종 완성 버튼 영역 (직접작성용) -->
+        <div class="action-area" id="directFormActionArea">
+            <button type="button" class="btn-primary hidden" id="finalSubmitBtn" onclick="handleFinalSubmit(event); return false;" title="필수 조항을 모두 입력해야 완성할 수 있습니다">계약 요청하기</button>
+        </div>
     </section>
 
-    <!-- 최종 완성 버튼 영역 (PDF/직접작성 공통) -->
+    <!-- 최종 완성 버튼 영역 (PDF용) -->
     <section class="card step-card" id="stepFinalAction">
         <div class="action-area">
             <button type="button" class="btn-primary hidden" id="pdfFinalSubmitBtn" onclick="handlePdfFinalSubmit(event); return false;" title="PDF를 업로드해야 완성할 수 있습니다">계약 요청하기</button>
-            <button type="button" class="btn-primary hidden" id="finalSubmitBtn" onclick="handleFinalSubmit(event); return false;" title="필수 조항을 모두 입력해야 완성할 수 있습니다">계약 요청하기</button>
         </div>
     </section>
 
@@ -955,6 +958,7 @@ $(function () {
         
         $('#stepPdfUpload, #stepDirectForm, #stepFinalAction').removeClass('visible');
         $('#pdfFinalSubmitBtn, #finalSubmitBtn').addClass('hidden').hide();
+        $('#directFormActionArea').hide();
         $('#pdfUploadStatus').empty();
         $('#pdfFileInput').val(''); // 파일 선택 초기화
         
@@ -964,7 +968,7 @@ $(function () {
             scrollToCard($('#stepPdfUpload'));
         } else {
             $('#stepDirectForm').addClass('visible');
-            $('#stepFinalAction').addClass('visible').css('display', 'block');
+            $('#directFormActionArea').css('display', 'flex').show();
             const finalBtn = document.getElementById('finalSubmitBtn');
             if (finalBtn) {
                 $(finalBtn).removeClass('hidden').show();
@@ -1079,7 +1083,7 @@ $(function () {
                     
                     // 알림 표시
                     setTimeout(function() {
-                        alert('PDF 업로드가 완료되었습니다.\n이제 "AI와 계약서 완성하기" 버튼을 클릭하세요.');
+                        alert('PDF 업로드가 완료되었습니다.\n이제 "계약 요청하기" 버튼을 클릭하세요.');
                         scrollToCard($('#stepFinalAction'));
                     }, 300);
                 } else {
@@ -1408,7 +1412,6 @@ $(function () {
             }, 100);
         } else {
             // 마지막까지 저장한 경우: 완성 버튼 표시
-            $('#stepFinalAction').addClass('visible').css('display', 'block');
             const finalBtn = document.getElementById('finalSubmitBtn');
             if (finalBtn) {
                 $(finalBtn).removeClass('hidden').show();
@@ -1429,14 +1432,19 @@ $(function () {
                 $('#clauseEditor').prepend(
                     '<div class="completion-message">' +
                     '<strong>✓ 모든 조항 입력이 완료되었습니다!</strong><br/>' +
-                    '<span>아래 "AI와 계약서 완성하기" 버튼을 클릭하세요.</span>' +
+                    '<span>아래 "계약 요청하기" 버튼을 클릭하세요.</span>' +
                     '</div>'
                 );
             }
             
             // 완성 버튼으로 스크롤
             setTimeout(function() {
-                scrollToCard($('#stepFinalAction'));
+                const actionArea = document.getElementById('directFormActionArea');
+                if (actionArea) {
+                    $('html, body').animate({
+                        scrollTop: $(actionArea).offset().top - 40
+                    }, 400);
+                }
             }, 300);
         }
     });

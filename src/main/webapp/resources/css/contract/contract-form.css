@@ -216,9 +216,30 @@ textarea:focus {
 .action-area {
     width: 100%;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+}
+
+#stepDirectForm .action-area {
+    margin-top: 0;
+}
+
+#directFormActionArea {
+    display: none;
+    justify-content: flex-end !important;
+}
+
+#directFormActionArea.action-area {
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+#stepDirectForm #directFormActionArea {
+    display: flex !important;
+    justify-content: flex-end !important;
 }
 
 /* page-wrapper와 contract-form-layout에서만 적용 */
@@ -297,6 +318,7 @@ textarea:focus {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     margin-top: 24px;
+    margin-bottom: 32px;
     align-items: start;
 }
 
@@ -1106,6 +1128,19 @@ body .contract-check-layout .main-content {
     padding: 32px;
 }
 
+/* contract-form-card 내부의 모든 입력 필드 일관성 확보 */
+.contract-form-card .form-group {
+    margin-bottom: 24px;
+}
+
+.contract-form-card .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
 .contract-header {
     text-align: center;
     margin-bottom: 32px;
@@ -1142,20 +1177,45 @@ body .contract-check-layout .main-content {
     font-size: 15px;
 }
 
+/* contract-form-card 내부의 textarea - 전체 너비 사용 */
+.contract-form-card .contract-textarea {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* contract-check-layout 내부의 일반 input 필드 - 전체 너비 사용 */
 .contract-check-layout .form-group input[type="date"],
 .contract-check-layout .form-group input[type="number"],
-.contract-check-layout .form-group select,
+.contract-check-layout .form-group select {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px 16px !important;
+    border: 2px solid rgba(31, 122, 140, 0.2) !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    transition: all 0.3s ease !important;
+    font-family: inherit !important;
+    line-height: 1.6 !important;
+    background: var(--white-color) !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
 .contract-check-layout .form-group textarea {
-    width: 100%;
-    padding: 14px 16px;
-    border: 2px solid rgba(31, 122, 140, 0.2);
-    border-radius: 12px; /* 10px → 12px */
-    font-size: 15px;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    min-height: 120px;
-    line-height: 1.6;
-    background: var(--white-color);
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px 16px !important;
+    border: 2px solid rgba(31, 122, 140, 0.2) !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    transition: all 0.3s ease !important;
+    font-family: inherit !important;
+    line-height: 1.6 !important;
+    background: var(--white-color) !important;
+    box-sizing: border-box !important;
+    min-height: 120px !important;
+    resize: vertical !important;
 }
 
 .contract-check-layout .form-group input[type="date"]:focus,
@@ -1196,14 +1256,16 @@ body .contract-check-layout .main-content {
 }
 
 .contract-check-layout .milestone-table {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     border-collapse: separate;
     border-spacing: 0;
-    margin-top: 20px; /* 16px → 20px */
-    border-radius: 16px; /* 12px → 16px */
+    margin-top: 12px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(31, 122, 140, 0.1);
+    box-sizing: border-box;
 }
 
 .contract-check-layout .milestone-table tbody tr {
@@ -1213,7 +1275,7 @@ body .contract-check-layout .main-content {
 .contract-check-layout .milestone-table th,
 .contract-check-layout .milestone-table td {
     border: 1px solid #e9ecef;
-    padding: 14px 12px;
+    padding: 10px 8px;
     text-align: left;
 }
 
@@ -1236,19 +1298,115 @@ body .contract-check-layout .main-content {
 }
 
 .contract-check-layout .milestone-table input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.2s;
-    background: var(--white-color);
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 8px 10px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    transition: all 0.2s !important;
+    background: var(--white-color) !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
 }
 
 .contract-check-layout .milestone-table input:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.1);
     outline: none;
+}
+
+/* 마일스톤 섹션 전체 너비 보장 */
+.contract-check-layout #milestoneSection {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 마일스톤 테이블 칸 비율 개선 - 모든 칸을 완전히 동일한 크기로 */
+.contract-check-layout .milestone-table {
+    table-layout: fixed !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: separate !important;
+}
+
+/* 모든 th와 td에 기본 스타일 적용 */
+.contract-check-layout .milestone-table th,
+.contract-check-layout .milestone-table td {
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+/* 단계 칸 - 10% */
+.contract-check-layout .milestone-table thead th:first-child,
+.contract-check-layout .milestone-table tbody td:first-child {
+    width: 10% !important;
+    min-width: 10% !important;
+    max-width: 10% !important;
+}
+
+/* 마일스톤명 칸 - 26.67% */
+.contract-check-layout .milestone-table thead th:nth-child(2),
+.contract-check-layout .milestone-table tbody td:nth-child(2) {
+    width: 26.67% !important;
+    min-width: 26.67% !important;
+    max-width: 26.67% !important;
+}
+
+/* 지급금액 칸 - 26.67% (다른 칸과 완전히 동일) - 모든 가능한 선택자 */
+.contract-check-layout #milestoneSection .milestone-table thead th:nth-child(3),
+.contract-check-layout #milestoneSection .milestone-table thead th.width-150,
+.contract-check-layout #milestoneSection .milestone-table tbody td:nth-child(3),
+.contract-check-layout .milestone-table thead th:nth-child(3),
+.contract-check-layout .milestone-table thead th.width-150,
+.contract-check-layout .milestone-table tbody td:nth-child(3),
+.contract-check-layout .milestone-table th.width-150,
+.contract-check-layout .milestone-table td:nth-child(3),
+.contract-check-layout .milestone-table th[class*="width-150"],
+.contract-check-layout .milestone-table th[class*="width-150"]:nth-child(3),
+table.milestone-table th:nth-child(3),
+table.milestone-table td:nth-child(3),
+table.milestone-table th.width-150 {
+    width: 26.67% !important;
+    min-width: 26.67% !important;
+    max-width: 26.67% !important;
+    flex: 0 0 26.67% !important;
+}
+
+/* width-150 클래스 자체를 오버라이드 */
+.contract-check-layout .milestone-table th.width-150,
+.contract-check-layout .milestone-table .width-150 {
+    width: 26.67% !important;
+    min-width: 26.67% !important;
+    max-width: 26.67% !important;
+}
+
+/* 지급금액 칸의 input 필드도 셀 크기에 맞춤 - 절대적으로 제한 */
+.contract-check-layout .milestone-table td:nth-child(3) input,
+.contract-check-layout .milestone-table td:nth-child(3) .milestone-amount,
+.contract-check-layout .milestone-table td:nth-child(3) input.milestone-amount-input,
+.contract-check-layout .milestone-table tbody tr td:nth-child(3) input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    display: block !important;
+}
+
+/* 작업 내용 칸 - 26.67% */
+.contract-check-layout .milestone-table thead th:nth-child(4),
+.contract-check-layout .milestone-table tbody td:nth-child(4) {
+    width: 26.67% !important;
+    min-width: 26.67% !important;
+    max-width: 26.67% !important;
+}
+
+/* 삭제 칸 - 10% */
+.contract-check-layout .milestone-table thead th:last-child,
+.contract-check-layout .milestone-table tbody td:last-child {
+    width: 10% !important;
+    min-width: 10% !important;
+    max-width: 10% !important;
 }
 
 .contract-check-layout .warning {
@@ -1360,6 +1518,32 @@ body .contract-check-layout .main-content {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     border: 2px solid rgba(31, 122, 140, 0.1);
     transition: all 0.3s ease;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* contract-info-section 내부의 input 필드 - 전체 너비 사용 */
+.contract-info-section .form-group input[type="date"],
+.contract-info-section .form-group input[type="number"],
+.contract-info-section .form-group input[type="text"].readonly-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    min-height: auto !important;
+    border: 2px solid rgba(31, 122, 140, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.contract-info-section .form-group input[type="date"]:focus,
+.contract-info-section .form-group input[type="number"]:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 4px rgba(31, 122, 140, 0.1) !important;
+    outline: none !important;
 }
 
 .contract-info-section:hover {
@@ -1431,14 +1615,24 @@ body .contract-check-layout .main-content {
 }
 
 .contract-textarea {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 15px;
-    resize: vertical;
-    min-height: 150px;
-    line-height: 1.6;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px 16px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    resize: vertical !important;
+    min-height: 150px !important;
+    line-height: 1.6 !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+    background: var(--white-color) !important;
+}
+
+.contract-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(31, 122, 140, 0.1);
 }
 
 .contract-textarea-small {
@@ -1450,6 +1644,12 @@ body .contract-check-layout .main-content {
     border: 2px solid rgba(31, 122, 140, 0.15);
     color: var(--gray-color);
     cursor: not-allowed;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    box-sizing: border-box !important;
 }
 
 .hint-text {
@@ -1461,11 +1661,11 @@ body .contract-check-layout .main-content {
 }
 
 .milestone-section-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--primary-color);
-    margin-bottom: 16px;
-    padding-bottom: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 2px solid var(--primary-color);
     display: flex;
     align-items: center;
@@ -1474,26 +1674,22 @@ body .contract-check-layout .main-content {
 
 .milestone-section-title::before {
     content: '📊';
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .milestone-description {
     color: #666;
-    margin-bottom: 16px;
-    line-height: 1.6;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    font-size: 14px;
 }
 
-.milestone-table th.width-80 {
-    width: 80px;
-}
-
-.milestone-table th.width-150 {
-    width: 150px;
-    text-align: right;
-}
-
-.milestone-table th.text-center {
-    text-align: center;
+/* 마일스톤 테이블 지급금액 칸 input 정렬 - 크기는 다른 칸과 동일 */
+.contract-check-layout .milestone-table td:nth-child(3) input {
+    text-align: right !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .milestone-step-cell {
@@ -1526,16 +1722,16 @@ body .contract-check-layout .main-content {
 }
 
 .milestone-add-btn {
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .milestone-summary {
-    margin-top: 20px;
-    padding: 20px;
+    margin-top: 14px;
+    padding: 16px;
     background: linear-gradient(135deg, var(--accent-color) 0%, var(--light-gray) 100%);
-    border-radius: 12px;
+    border-radius: 10px;
     border: 2px solid var(--primary-color);
-    box-shadow: 0 2px 8px rgba(31, 122, 140, 0.1);
+    box-shadow: 0 2px 6px rgba(31, 122, 140, 0.1);
 }
 
 .milestone-summary-row {

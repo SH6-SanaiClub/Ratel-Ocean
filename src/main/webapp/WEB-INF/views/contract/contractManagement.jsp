@@ -253,14 +253,12 @@
 </header>
     <div class="container">
         <div class="page-header">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <h1>📋 계약 관리</h1>
-                    <p>제안한 계약서를 확인하고 관리하세요</p>
-                </div>
+            <div style="text-align: center;">
+                <h1>📋 계약 관리</h1>
+                <p>제안한 계약서를 확인하고 관리하세요</p>
                 <a href="${pageContext.request.contextPath}/client/contract/form" 
                    class="btn btn-primary" 
-                   style="text-decoration: none; white-space: nowrap;">
+                   style="text-decoration: none; white-space: nowrap; margin-top: 18px;">
                     ✏️ 계약서 작성하기
                 </a>
             </div>
