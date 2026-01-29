@@ -224,6 +224,28 @@
     </div>
 </div>
 
+<!-- 지급 비밀번호 인증 모달 -->
+<div id="payoutModal" class="payout-modal" style="display:none;">
+    <div class="payout-modal-content">
+        <div class="payout-modal-header">
+            <h3 id="payoutModalTitle">💰 지급 승인</h3>
+            <button type="button" class="payout-modal-close" onclick="closePayoutModal()">&times;</button>
+        </div>
+        <div class="payout-modal-body">
+            <p id="payoutModalDesc">프리랜서에게 금액을 지급합니다.</p>
+            <div class="payout-input-group">
+                <label for="payoutPassword">비밀번호 확인</label>
+                <input type="password" id="payoutPassword" placeholder="계정 비밀번호를 입력하세요" autocomplete="off">
+                <small class="payout-help-text">본인 확인을 위해 로그인 비밀번호를 입력해주세요.</small>
+            </div>
+        </div>
+        <div class="payout-modal-footer">
+            <button type="button" class="btn-cancel" onclick="closePayoutModal()">취소</button>
+            <button type="button" id="payoutConfirmBtn" class="btn-confirm" onclick="confirmPayout()">확인</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     const contextPath = "${pageContext.request.contextPath}";
