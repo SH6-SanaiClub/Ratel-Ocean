@@ -13,7 +13,7 @@ public interface WalletMapper {
     /**
      * 프리랜서 지갑 생성
      */
-    int insertWallet(@Param("wallet") FreelancerWalletVO wallet, @Param("accountId") Integer accountId, @Param("walletPw") String walletPw);
+    int insertWallet(FreelancerWalletVO wallet);
 
     /**
      * user_id로 지갑 조회

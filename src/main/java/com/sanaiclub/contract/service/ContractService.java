@@ -10,10 +10,7 @@ import com.sanaiclub.project.model.vo.ProjectsVO;
 import com.sanaiclub.user.dao.UserMapper;
 import com.sanaiclub.user.dao.ClientProfileMapper;
 import com.sanaiclub.user.dao.CompanyMapper;
-import com.sanaiclub.user.dao.AccountMapper;
-import com.sanaiclub.user.model.vo.AccountVO;
 import com.sanaiclub.payment.dao.WalletMapper;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import com.sanaiclub.payment.model.vo.WalletIoType;
 import com.sanaiclub.payment.model.vo.FreelancerWalletVO;
 import com.sanaiclub.payment.model.vo.WalletHistoryVO;
@@ -44,9 +41,7 @@ public class ContractService {
     private final UserMapper userMapper;
     private final ClientProfileMapper clientProfileMapper;
     private final CompanyMapper companyMapper;
-    private final AccountMapper accountMapper;
     private final WalletMapper walletMapper;
-    private final PasswordEncoder passwordEncoder;
 
     /**
      * 계약 생성 (INSERT)
@@ -909,46 +904,10 @@ public class ContractService {
         // 프리랜서 ID 추출
         Integer freelancerId = extractFreelancerIdFromContract(contract);
         
-        // 프리랜서 지갑 조회 또는 생성
+        // 프리랜서 지갑 조회 (회원가입 시 필수로 생성되므로 없으면 예외)
         FreelancerWalletVO wallet = walletMapper.selectWalletByUserId(freelancerId);
         if (wallet == null) {
-            // 프리랜서 계좌 조회 (지갑 생성에 필요)
-            AccountVO account = accountMapper.findByUserId(freelancerId);
-            Integer accountId = null;
-            
-            if (account == null) {
-                // 계좌가 없으면 임시 계좌 생성
-                account = AccountVO.builder()
-                    .userId(freelancerId)
-                    .bankName("임시은행")
-                    .accountHolder("임시계좌")
-                    .accountNumber("000000000000")
-                    .build();
-                accountMapper.insertAccount(account);
-                logger.info("프리랜서 임시 계좌 자동 생성: freelancerId={}, accountId={}", freelancerId, account.getAccountId());
-            }
-            
-            accountId = account.getAccountId();
-            
-            // 임시 지갑 비밀번호 생성 (암호화)
-            String tempWalletPw = passwordEncoder.encode("0000"); // 기본 비밀번호: 0000
-            
-            // 지갑 생성 (account_id, wallet_pw 포함)
-            wallet = FreelancerWalletVO.builder()
-                .userId(freelancerId)
-                .balance(0L)
-                .totalEarned(0L)
-                .version(0)
-                .build();
-            walletMapper.insertWallet(wallet, accountId, tempWalletPw);
-            logger.info("프리랜서 지갑 자동 생성: freelancerId={}, accountId={}, walletId={}", 
-                    freelancerId, accountId, wallet.getWalletId());
-            
-            // 생성 후 다시 조회 (walletId를 얻기 위해)
-            wallet = walletMapper.selectWalletByUserId(freelancerId);
-            if (wallet == null) {
-                throw new IllegalStateException("지갑 생성 후 조회 실패: freelancerId=" + freelancerId);
-            }
+            throw new IllegalStateException("프리랜서 지갑이 없습니다. 지갑을 먼저 생성해주세요: freelancerId=" + freelancerId);
         }
         
         // 일시지급도 마일스톤이 있으므로 마일스톤 상태를 변경해야 함
