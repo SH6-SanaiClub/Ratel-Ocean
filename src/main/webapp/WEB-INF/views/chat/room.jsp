@@ -572,8 +572,10 @@
                     '<img src="' + (room.profileImageUrl || '/assets/img/default-profile.png') + '">' +
                     '<h3>' + room.name + '</h3>' +
                     '<div class="action-buttons">' +
-                    '<a href="/user/profile/' + room.senderId + '">프로필</a>' +
-                    '<a href="/project/' + room.projectId+ '" class="secondary">프로젝트</a>' +
+                    '<a href="${pageContext.request.contextPath}/user/profile/' + room.senderId + '">프로필</a>' +
+                    '<a href="${pageContext.request.contextPath}/project/detail?projectId='
+                    + room.projectId
+                    + '&page=1&size=10&onlyActive=false&keyword=" class="secondary">프로젝트</a>'+
                     '</div>' +
                     '</div>' +
                     '<div class="info-section">' +
@@ -633,8 +635,9 @@
                     <img src="\${room.profileImageUrl || '/assets/img/default-profile.png'}">
                     <h3>\${room.name}</h3>
                     <div class="action-buttons">
-                        <a href="/user/profile/\${room.userId}">프로필</a>
-                        <a href="/project/\${room.projectId}" class="secondary">프로젝트</a>
+                        <a href="/ratelocean/user/profile/\${room.userId}">프로필</a>
+                       <a href="/ratelocean/project/detail?projectId=\${room.projectId}&page=1&size=10&onlyActive=false&keyword="
+       class="secondary">프로젝트</a>
                     </div>
                 </div>
                 <div class="info-section">
