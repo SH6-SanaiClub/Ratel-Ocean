@@ -8,181 +8,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>계약 목록 - Ratel-Ocean</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-common.css"/>
     
-    <style>
-        :root {
-            --primary: #1F7A8C;
-            --secondary: #A9D9DB;
-            --dark: #2B2B2B;
-            --muted: #6F7272;
-            --light: #F1F6EE;
-        }
-
-        body {
-            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--light);
-            color: var(--dark);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .page-subtitle {
-            color: var(--muted);
-            font-size: 1rem;
-        }
-
-        .contract-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .contract-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .contract-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-            border-color: var(--primary);
-        }
-
-        .contract-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-
-        .contract-card-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--dark);
-            margin: 0;
-            flex: 1;
-        }
-
-        .contract-card-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .badge-waiting {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-signed {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-paid {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .badge-completed {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-
-        .badge-terminated {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .contract-card-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .contract-card-info-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-        }
-
-        .contract-card-info-label {
-            color: var(--muted);
-        }
-
-        .contract-card-info-value {
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: white;
-            border-radius: 12px;
-            margin-top: 2rem;
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state-text {
-            font-size: 1.125rem;
-            color: var(--muted);
-        }
-
-        .go-to-detail-btn {
-            display: inline-block;
-            margin-top: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .go-to-detail-btn:hover {
-            background: #1a6b7a;
-        }
-    </style>
+    <!-- CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-common.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/clientContracts.css">
 </head>
 <body>
 <c:set var="userType" value="FREELANCER" scope="request"/>
 <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 
-<div class="container">
-    <div class="page-header">
-        <h1 class="page-title">📋 계약 목록</h1>
-        <p class="page-subtitle">계약을 클릭하면 상세 페이지로 이동합니다</p>
+<!-- 메인 콘텐츠 -->
+<main class="main-content">
+    <!-- 페이지 헤더 -->
+    <div class="page-header" style="background: var(--primary); color: #fff; border-radius: 16px; padding: 32px 0 24px 32px; margin-bottom: 32px; display: flex; align-items: center; min-height: 80px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+            <span style="font-size: 2.5rem; background: rgba(255,255,255,0.13); border-radius: 12px; padding: 12px 18px 12px 14px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='none' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='white' fill-opacity='0.13'/><path d='M7.5 4.75A2.25 2.25 0 0 0 5.25 7v10A2.25 2.25 0 0 0 7.5 19.25h9A2.25 2.25 0 0 0 18.75 17V7A2.25 2.25 0 0 0 16.5 4.75h-9Zm0 1.5h9c.414 0 .75.336.75.75v10a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V7c0-.414.336-.75.75-.75Zm1.25 2.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm-.75 3.25c0-.414.336-.75.75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm.75 2.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-4.5Z' fill='white'/></svg>
+            </span>
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">계약 목록</h1>
+                <p style="font-size: 1.1rem; color: #eaf7fa; font-weight: 400; margin: 0;">계약 현황과 통계를 한눈에 확인하세요</p>
+            </div>
+        </div>
     </div>
 
     <c:if test="${not empty errorMessage}">
@@ -191,85 +38,382 @@
         </div>
     </c:if>
 
-    <c:choose>
-        <c:when test="${not empty allContracts and fn:length(allContracts) > 0}">
-            <div class="contract-grid">
-                <c:forEach var="contract" items="${allContracts}">
-                    <div class="contract-card" onclick="goToContractDetail(${contract.contractId})">
-                        <div class="contract-card-header">
-                            <h3 class="contract-card-title">
-                                <c:out value="${contract.projectTitle != null ? contract.projectTitle : '프로젝트 정보 없음'}"/>
-                            </h3>
-                            <c:choose>
-                                <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
-                                    <span class="contract-card-badge badge-waiting">검토 대기</span>
-                                </c:when>
-                                <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
-                                    <span class="contract-card-badge badge-signed">결제 대기</span>
-                                </c:when>
-                                <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'PAID' or contract.contractStatus.name() eq 'paid')}">
-                                    <span class="contract-card-badge badge-paid">진행 중</span>
-                                </c:when>
-                                <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'COMPLETED' or contract.contractStatus.name() eq 'completed')}">
-                                    <span class="contract-card-badge badge-completed">완료</span>
-                                </c:when>
-                                <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'TERMINATED' or contract.contractStatus.name() eq 'terminated')}">
-                                    <span class="contract-card-badge badge-terminated">종료</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="contract-card-badge badge-waiting">${contract.contractStatus != null ? contract.contractStatus.name() : '-'}</span>
-                                </c:otherwise>
-                            </c:choose>
+    <%-- 프리랜서 관점 핵심 지표 계산 --%>
+    <c:set var="totalWaiting" value="0"/>
+    <c:set var="totalSigned" value="0"/>
+    <c:set var="totalPaid" value="0"/>
+    <c:set var="totalCompleted" value="0"/>
+    <c:set var="totalRequestedMilestones" value="0"/>
+    <c:set var="totalDepositedMilestones" value="0"/>
+    
+    <c:forEach var="contract" items="${allContracts}">
+        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
+            <c:set var="totalWaiting" value="${totalWaiting + 1}"/>
+        </c:if>
+        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
+            <c:set var="totalSigned" value="${totalSigned + 1}"/>
+        </c:if>
+        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'PAID' or contract.contractStatus.name() eq 'paid')}">
+            <c:set var="totalPaid" value="${totalPaid + 1}"/>
+        </c:if>
+        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'COMPLETED' or contract.contractStatus.name() eq 'completed')}">
+            <c:set var="totalCompleted" value="${totalCompleted + 1}"/>
+        </c:if>
+        <c:if test="${contract.requestedMilestones != null and contract.requestedMilestones > 0}">
+            <c:set var="totalRequestedMilestones" value="${totalRequestedMilestones + contract.requestedMilestones}"/>
+        </c:if>
+        <c:if test="${contract.depositedMilestones != null and contract.depositedMilestones > 0}">
+            <c:set var="totalDepositedMilestones" value="${totalDepositedMilestones + contract.depositedMilestones}"/>
+        </c:if>
+    </c:forEach>
+
+    <!-- 핵심 지표 카드 (프리랜서 관점) -->
+    <div class="stats-grid compact">
+        <c:if test="${totalRequestedMilestones > 0}">
+        <div class="stat-card priority clickable" onclick="scrollToSection('requested')">
+            <div class="stat-header">
+                <span class="stat-title">지급 요청</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">💰</div>
+                    <span class="help-icon">?</span>
+                </div>
+            </div>
+            <div class="stat-value">${totalRequestedMilestones}</div>
+            <div class="stat-label">마일스톤</div>
+            <div class="stat-badge urgent">승인 대기</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">💰</span>
+                    <span>지급 요청</span>
+                </div>
+                <div class="tooltip-description">
+                    작업 완료 후 지급을 요청한 마일스톤 수입니다. 클라이언트의 승인을 기다리는 상태입니다.
+                </div>
+            </div>
+        </div>
+        </c:if>
+
+        <div class="stat-card clickable" onclick="scrollToSection('working')">
+            <div class="stat-header">
+                <span class="stat-title">작업중</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">💼</div>
+                    <span class="help-icon">?</span>
+                </div>
+            </div>
+            <div class="stat-value">${totalDepositedMilestones}</div>
+            <div class="stat-label">마일스톤</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">💼</span>
+                    <span>작업중</span>
+                </div>
+                <div class="tooltip-description">
+                    현재 작업을 진행 중인 마일스톤 수입니다. 입금이 완료되어 작업이 진행되고 있는 상태입니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card clickable" onclick="scrollToSection('signed')">
+            <div class="stat-header">
+                <span class="stat-title">결제 대기</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">⏳</div>
+                    <span class="help-icon">?</span>
+                </div>
+            </div>
+            <div class="stat-value">${totalSigned}</div>
+            <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">⏳</span>
+                    <span>결제 대기</span>
+                </div>
+                <div class="tooltip-description">
+                    계약서 서명이 완료되어 클라이언트의 결제를 기다리는 계약 건수입니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card clickable" onclick="scrollToSection('waiting')">
+            <div class="stat-header">
+                <span class="stat-title">검토 대기</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">👀</div>
+                    <span class="help-icon">?</span>
+                </div>
+            </div>
+            <div class="stat-value">${totalWaiting}</div>
+            <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">👀</span>
+                    <span>검토 대기</span>
+                </div>
+                <div class="tooltip-description">
+                    계약서를 검토 중인 계약 건수입니다. 수락 또는 거절을 결정해야 합니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">진행중 계약</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">📋</div>
+                    <span class="help-icon">?</span>
+                </div>
+            </div>
+            <div class="stat-value">${totalPaid}</div>
+            <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">📋</span>
+                    <span>진행중 계약</span>
+                </div>
+                <div class="tooltip-description">
+                    현재 진행 중인 전체 계약 건수입니다. 결제가 완료되어 작업이 진행되고 있는 계약입니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">완료된 계약</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="stat-icon">✅</div>
+                    <span class="help-icon">?</span>
+                </div>
+            </div>
+            <div class="stat-value">${totalCompleted}</div>
+            <div class="stat-label">건</div>
+            <div class="tooltip">
+                <div class="tooltip-title">
+                    <span class="tooltip-icon">✅</span>
+                    <span>완료된 계약</span>
+                </div>
+                <div class="tooltip-description">
+                    모든 마일스톤이 완료되어 정산이 완료된 계약 건수입니다.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 지급 요청 계약 목록 -->
+    <c:set var="hasRequestedContracts" value="false"/>
+    <c:forEach var="contract" items="${allContracts}">
+        <c:if test="${contract.requestedMilestones != null and contract.requestedMilestones > 0}">
+            <c:set var="hasRequestedContracts" value="true"/>
+        </c:if>
+    </c:forEach>
+    
+    <c:if test="${hasRequestedContracts}">
+    <div class="section-card alert-section priority-section" id="requested">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="alert-icon">💰</span>
+                지급 요청 <span class="badge-count">${totalRequestedMilestones}건</span>
+            </h2>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${allContracts}">
+                <c:if test="${contract.requestedMilestones != null and contract.requestedMilestones > 0}">
+                    <li class="contract-item alert-item" 
+                        onclick="goToContractDetail(${contract.contractId})">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-paid">
+                                마일스톤 ${contract.requestedMilestones}개 지급 요청
+                            </span>
                         </div>
-                        <div class="contract-card-info">
-                            <div class="contract-card-info-item">
-                                <span class="contract-card-info-label">클라이언트</span>
-                                <span class="contract-card-info-value">
-                                    <c:out value="${contract.clientName != null ? contract.clientName : (contract.counterpartName != null ? contract.counterpartName : '-')}"/>
-                                </span>
-                            </div>
-                            <div class="contract-card-info-item">
-                                <span class="contract-card-info-label">계약 금액</span>
-                                <span class="contract-card-info-value">
-                                    <fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###"/>원
-                                </span>
-                            </div>
-                            <div class="contract-card-info-item">
-                                <span class="contract-card-info-label">계약일</span>
-                                <span class="contract-card-info-value">
-                                    <c:out value="${contract.contractedAt != null ? contract.contractedAt : '-'}"/>
-                                </span>
-                            </div>
-                            <c:if test="${contract.totalMilestones != null and contract.totalMilestones > 0}">
-                                <div class="contract-card-info-item">
-                                    <span class="contract-card-info-label">마일스톤</span>
-                                    <span class="contract-card-info-value">
-                                        ${contract.paidMilestones != null ? contract.paidMilestones : 0}/${contract.totalMilestones} 완료
-                                    </span>
-                                </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.clientName != null ? contract.clientName : '클라이언트 정보 없음'}</span>
+                            <span>•</span>
+                            <span class="amount-highlight">
+                                <fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원
+                            </span>
+                            <c:if test="${contract.contractedAt != null}">
+                                <span>•</span>
+                                <span>${contract.contractedAt}</span>
                             </c:if>
                         </div>
-                    </div>
-                </c:forEach>
-            </div>
-        </c:when>
-        <c:otherwise>
-            <div class="empty-state">
-                <div class="empty-state-icon">📋</div>
-                <div class="empty-state-text">등록된 계약이 없습니다.</div>
-            </div>
-        </c:otherwise>
-    </c:choose>
-</div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
 
+    <!-- 작업중 계약 목록 -->
+    <c:set var="hasWorkingContracts" value="false"/>
+    <c:forEach var="contract" items="${allContracts}">
+        <c:if test="${contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.requestedMilestones == 0}">
+            <c:set var="hasWorkingContracts" value="true"/>
+        </c:if>
+    </c:forEach>
+    
+    <c:if test="${hasWorkingContracts}">
+    <div class="section-card" id="working">
+        <div class="section-header">
+            <h2 class="section-title">💼 작업중 계약</h2>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${allContracts}">
+                <c:if test="${contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.requestedMilestones == 0}">
+                    <li class="contract-item" 
+                        onclick="goToContractDetail(${contract.contractId})">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-progress">작업중 ${contract.depositedMilestones}건</span>
+                        </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.clientName != null ? contract.clientName : '클라이언트 정보 없음'}</span>
+                            <span>•</span>
+                            <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
+                        </div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
+
+    <!-- 결제 대기 계약 목록 (SIGNED 상태) -->
+    <c:if test="${totalSigned > 0}">
+    <div class="section-card" id="signed">
+        <div class="section-header">
+            <h2 class="section-title">⏳ 결제 대기</h2>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${allContracts}">
+                <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
+                    <li class="contract-item" 
+                        onclick="goToContractDetail(${contract.contractId})">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-signed">결제 대기</span>
+                        </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.clientName != null ? contract.clientName : '클라이언트 정보 없음'}</span>
+                            <span>•</span>
+                            <span class="amount-highlight">
+                                <fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원
+                            </span>
+                        </div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
+
+    <!-- 검토 대기 계약 목록 (WAITING 상태) -->
+    <c:if test="${totalWaiting > 0}">
+    <div class="section-card" id="waiting">
+        <div class="section-header">
+            <h2 class="section-title">👀 검토 대기</h2>
+        </div>
+        <ul class="contract-list compact">
+            <c:forEach var="contract" items="${allContracts}">
+                <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
+                    <li class="contract-item" 
+                        onclick="goToContractDetail(${contract.contractId})">
+                        <div class="contract-header">
+                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                            <span class="contract-badge status-waiting">검토중</span>
+                        </div>
+                        <div class="contract-meta">
+                            <span class="contract-freelancer">${contract.clientName != null ? contract.clientName : '클라이언트 정보 없음'}</span>
+                            <span>•</span>
+                            <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
+                            <c:if test="${contract.contractedAt != null}">
+                                <span>•</span>
+                                <span>${contract.contractedAt}</span>
+                            </c:if>
+                        </div>
+                    </li>
+                </c:if>
+            </c:forEach>
+        </ul>
+    </div>
+    </c:if>
+
+    <!-- 최근 계약 목록 (전체) -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">📋 전체 계약</h2>
+        </div>
+        <c:choose>
+            <c:when test="${not empty allContracts and fn:length(allContracts) > 0}">
+                <ul class="contract-list">
+                    <c:forEach var="contract" items="${allContracts}">
+                        <li class="contract-item" onclick="goToContractDetail(${contract.contractId})">
+                            <div class="contract-header">
+                                <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                                <c:choose>
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
+                                        <span class="contract-badge status-waiting">대기중</span>
+                                    </c:when>
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
+                                        <span class="contract-badge status-signed">서명완료</span>
+                                    </c:when>
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'PAID' or contract.contractStatus.name() eq 'paid')}">
+                                        <span class="contract-badge status-paid">결제완료</span>
+                                    </c:when>
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'COMPLETED' or contract.contractStatus.name() eq 'completed')}">
+                                        <span class="contract-badge status-completed">완료</span>
+                                    </c:when>
+                                    <c:when test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'TERMINATED' or contract.contractStatus.name() eq 'terminated')}">
+                                        <span class="contract-badge status-terminated">종료</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="contract-badge">${contract.contractStatus != null ? contract.contractStatus.name() : '-'}</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="contract-meta">
+                                <span class="contract-freelancer">${contract.clientName != null ? contract.clientName : '클라이언트 정보 없음'}</span>
+                                <span>•</span>
+                                <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
+                                <c:if test="${contract.contractedAt != null}">
+                                    <span>•</span>
+                                    <span>${contract.contractedAt}</span>
+                                </c:if>
+                            </div>
+                        </li>
+                    </c:forEach>
+                </ul>
+            </c:when>
+            <c:otherwise>
+                <div style="padding: 2rem; text-align: center; color: var(--muted);">
+                    등록된 계약이 없습니다.
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</main>
+
+<!-- JavaScript -->
 <script>
-function goToContractDetail(contractId) {
-    if (contractId) {
-        window.location.href = '${pageContext.request.contextPath}/freelancer/contract/list?contractId=' + contractId;
-    } else {
-        window.location.href = '${pageContext.request.contextPath}/freelancer/contract/list';
+    // 섹션으로 스크롤
+    function scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            section.style.animation = 'pulse 0.5s ease-in-out';
+            setTimeout(() => {
+                section.style.animation = '';
+            }, 500);
+        }
     }
-}
+
+    function goToContractDetail(contractId) {
+        if (contractId) {
+            window.location.href = '${pageContext.request.contextPath}/freelancer/contract/list?contractId=' + contractId;
+        } else {
+            window.location.href = '${pageContext.request.contextPath}/freelancer/contract/list';
+        }
+    }
 </script>
 </body>
 </html>

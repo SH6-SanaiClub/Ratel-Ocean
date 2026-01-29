@@ -1,26 +1,34 @@
 @charset "UTF-8";
 
 /* =========================
-   브랜드 컬러 (공통)
+   브랜드 컬러 (공통) - 프리랜서 프로젝트 관리 페이지 톤 적용
    ========================= */
 :root {
-    /* Primary Colors */
-    --primary-color: #1F7A8C;        /* Deep Teal - 메인 브랜드 */
-    --primary-hover: #176271;        /* Hover 상태 */
-    --secondary-color: #A9D9DB;      /* Mint Blue - 보조 브랜드 (클라이언트 대시보드와 일치) */
+    /* Primary Colors - 프리랜서 프로젝트 관리 페이지와 동일 */
+    --primary-color: #1a9aa6;        /* 청록색 - 메인 브랜드 */
+    --primary-hover: #158a94;        /* Hover 상태 */
+    --primary-weak: rgba(26,154,166,.12);  /* 약한 primary 배경 */
+    --secondary-color: #A9D9DB;      /* Mint Blue - 보조 브랜드 */
     --secondary-hover: #7FC5BE;      /* Hover 상태 */
     
-    /* Neutral Colors */
-    --dark-color: #2B2B2B;           /* 주요 텍스트 (클라이언트 대시보드와 일치) */
-    --gray-color: #6F7272;           /* 보조 텍스트 (클라이언트 대시보드와 일치) */
+    /* Neutral Colors - 프리랜서 프로젝트 관리 페이지와 동일 */
+    --bg: #f6f7fb;                   /* 배경 */
+    --card: #fff;                    /* 카드 배경 */
+    --dark-color: #111827;           /* 주요 텍스트 */
+    --gray-color: #6b7280;           /* 보조 텍스트 */
     --white-color: #FFFFFF;          /* 순백 */
-    --accent-color: #F1F6EE;         /* 배경 (클라이언트 대시보드와 일치) */
-    --light-gray: #E8F4F5;           /* 섹션 배경 */
+    --accent-color: #f6f7fb;         /* 배경 (프리랜서 프로젝트 관리 페이지와 일치) */
+    --light-gray: #e5e7eb;           /* 섹션 배경/라인 */
+    
+    /* Shadow & Radius - 프리랜서 프로젝트 관리 페이지와 동일 */
+    --shadow: 0 20px 60px rgba(17,24,39,.08);
+    --radius: 18px;
     
     /* Semantic Colors */
-    --success: #27C93F;
-    --warning: #FFBD2E;
-    --error: #FF5F56;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
     
     /* Legacy 변수 (하위 호환성) */
     --dark: var(--dark-color);
@@ -413,8 +421,8 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--accent-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
     color: var(--dark-color);
 }
 
@@ -425,12 +433,13 @@ body {
 }
 
 .page-header {
-    background: var(--primary-color);
-    color: var(--white-color);
+    background: var(--card);
+    color: var(--dark-color);
     padding: 32px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     margin-bottom: 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229,231,235,.75);
 }
 
 .page-header h1 {
@@ -466,10 +475,11 @@ body {
 }
 
 .sidebar {
-    background: var(--white-color);
-    border-radius: 12px;
+    background: var(--card);
+    border-radius: var(--radius);
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229,231,235,.75);
     height: fit-content;
     position: sticky;
     top: 24px;
@@ -570,10 +580,11 @@ body {
 }
 
 .content-area {
-    background: var(--white-color);
-    border-radius: 12px;
+    background: var(--card);
+    border-radius: var(--radius);
     padding: 32px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229,231,235,.75);
     min-height: 600px;
     align-self: start;
 }
@@ -998,9 +1009,10 @@ body {
 .milestone-progress-section {
     margin-bottom: 32px;
     padding: 20px;
-    background: #f9fafb;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid rgba(229,231,235,.75);
+    box-shadow: var(--shadow);
 }
 
 .milestone-progress-bar {
@@ -1018,7 +1030,7 @@ body {
     top: 0;
     left: 0;
     height: 100%;
-    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     transition: width 0.3s ease;
     border-radius: 16px;
 }
@@ -1076,11 +1088,12 @@ body {
 
 /* 마일스톤 카드 */
 .milestone-card {
-    background: white;
-    border-radius: 12px;
-    border: 2px solid #e5e7eb;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid rgba(229,231,235,.75);
     padding: 20px;
     transition: all 0.3s ease;
+    box-shadow: var(--shadow);
 }
 
 /* 타임라인 내 마일스톤 카드는 기본적으로 compact */
@@ -1095,13 +1108,13 @@ body {
 
 /* 상태별 카드 스타일 */
 .milestone-card.milestone-deposited {
-    border-color: #3b82f6;
-    background: linear-gradient(to right, #eff6ff 0%, white 10%);
+    border-color: var(--info);
+    background: linear-gradient(to right, rgba(59,130,246,.12) 0%, var(--card) 10%);
 }
 
 .milestone-card.milestone-requested {
-    border-color: #f59e0b;
-    background: linear-gradient(to right, #fffbeb 0%, white 10%);
+    border-color: var(--warn);
+    background: linear-gradient(to right, rgba(245,158,11,.12) 0%, var(--card) 10%);
     animation: pulse-border 2s infinite;
 }
 
@@ -1115,18 +1128,18 @@ body {
 }
 
 .milestone-card.milestone-paid {
-    border-color: #10b981;
-    background: linear-gradient(to right, #f0fdf4 0%, white 10%);
+    border-color: var(--ok);
+    background: linear-gradient(to right, rgba(34,197,94,.12) 0%, var(--card) 10%);
 }
 
 .milestone-card.milestone-waiting {
-    border-color: #9ca3af;
-    background: #f9fafb;
+    border-color: var(--muted);
+    background: var(--bg);
 }
 
 .milestone-card.milestone-canceled {
-    border-color: #ef4444;
-    background: #fef2f2;
+    border-color: var(--danger);
+    background: rgba(239,68,68,.08);
     opacity: 0.7;
 }
 
@@ -1212,7 +1225,7 @@ body {
 .milestone-amount {
     font-size: 20px;
     font-weight: 700;
-    color: #059669;
+    color: var(--primary-color);
 }
 
 /* 마일스톤 액션 */
@@ -1429,11 +1442,11 @@ body {
 
 
 .summary-card {
-    background: var(--white-color);
-    border-radius: 12px;
+    background: var(--card);
+    border-radius: var(--radius);
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid #eef2f7;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229,231,235,.75);
 }
 
 .summary-title {
@@ -1642,11 +1655,12 @@ body {
    프로젝트 오버뷰 섹션 (중앙 메인 영역 개선)
    ========================= */
 .project-overview {
-    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
-    border-radius: 12px;
+    background: var(--card);
+    border-radius: var(--radius);
     padding: 24px;
     margin-bottom: 24px;
-    border: 1px solid #eef2f7;
+    border: 1px solid rgba(229,231,235,.75);
+    box-shadow: var(--shadow);
 }
 
 .project-overview-header {
@@ -1691,6 +1705,7 @@ body {
     font-size: 24px;
     font-weight: 800;
     color: var(--primary-color);
+    letter-spacing: -0.3px;
 }
 
 .overall-progress-section {
@@ -1718,7 +1733,7 @@ body {
 
 .overall-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-color) 0%, #10b981 100%);
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     transition: width 0.5s ease;
     border-radius: 999px;
 }
@@ -2215,10 +2230,10 @@ body {
 }
 
 .sidebar-filter-btn.active {
-    background: #1F7A8C;
+    background: var(--primary-color);
     color: #fff;
-    border-color: #1F7A8C;
-    box-shadow: 0 2px 4px rgba(31, 122, 140, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(26, 154, 166, 0.2);
 }
 
 .sidebar-filter-btn .count {
@@ -2250,11 +2265,11 @@ body {
 }
 
 .sidebar-contract-item.active {
-    background: #1F7A8C;
+    background: var(--primary-color);
     color: #fff;
-    border-color: #1F7A8C;
+    border-color: var(--primary-color);
     border-width: 2px;
-    box-shadow: 0 2px 8px rgba(31, 122, 140, 0.3);
+    box-shadow: 0 2px 8px rgba(26, 154, 166, 0.3);
 }
 
 .sidebar-contract-item.active .sidebar-contract-title {
@@ -2336,9 +2351,10 @@ body {
    ========================= */
 .contract-meta-card {
     margin-bottom: 20px;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-radius: var(--radius);
+    border: 1px solid rgba(229,231,235,.75);
+    background: var(--card);
+    box-shadow: var(--shadow);
 }
 
 .contract-meta-header {

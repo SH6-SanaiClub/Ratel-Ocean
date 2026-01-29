@@ -10,31 +10,44 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-form.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <style>
-        /* 인라인 스타일로 강제 적용 */
+        /* 인라인 스타일로 강제 적용 - 프리랜서 프로젝트 관리 페이지 톤 적용 */
+        :root {
+            --bg: #f6f7fb;
+            --card: #fff;
+            --text: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #1a9aa6;
+            --primary-weak: rgba(26, 154, 166, 0.12);
+            --shadow: 0 20px 60px rgba(17, 24, 39, 0.08);
+            --radius: 18px;
+        }
+        
         body {
-            background: #F1F6EE !important;
+            background: var(--bg) !important;
         }
         
         #projectInfo.summary-box,
         #freelancerInfo.summary-box,
         .page-wrapper .summary-box:not(.contract-preview-box) {
-            background-color: #f8f9fa !important;
-            background: #f8f9fa !important;
-            border: 1px solid #e9ecef !important;
-            border-radius: 12px !important;
+            background-color: var(--card) !important;
+            background: var(--card) !important;
+            border: 1px solid rgba(229, 231, 235, 0.75) !important;
+            border-radius: 22px !important;
             padding: 20px !important;
             margin-top: 16px !important;
+            box-shadow: var(--shadow) !important;
         }
         
         .choice-card.selected {
-            border-color: #1F7A8C !important;
-            background-color: rgba(31, 122, 140, 0.05) !important;
-            background: rgba(31, 122, 140, 0.05) !important;
+            border-color: var(--primary) !important;
+            background-color: var(--primary-weak) !important;
+            background: var(--primary-weak) !important;
         }
         
         .choice-card.selected::after {
-            background: #1F7A8C !important;
-            border-color: #1F7A8C !important;
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E") !important;
             background-size: 12px 12px !important;
             background-position: center !important;
@@ -42,17 +55,78 @@
         }
         
         .pdf-upload-area {
-            border: 2px dashed #d0d0d0 !important;
-            border-radius: 12px !important;
+            border: 2px dashed rgba(229, 231, 235, 0.85) !important;
+            border-radius: 22px !important;
             padding: 60px 40px !important;
             text-align: center !important;
-            background: white !important;
+            background: var(--card) !important;
             margin-top: 16px !important;
             min-height: 200px !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        /* 카드 스타일 개선 */
+        .page-wrapper .card,
+        .contract-form-layout .card {
+            border: 1px solid rgba(229, 231, 235, 0.75) !important;
+            border-radius: 22px !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        /* 버튼 스타일 개선 */
+        .btn-primary {
+            background: var(--primary) !important;
+            color: #fff !important;
+            box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important;
+            border-radius: 14px !important;
+        }
+        
+        .btn-primary:hover {
+            filter: brightness(0.985) !important;
+        }
+        
+        /* 계약 요청하기 버튼 중앙 정렬 강제 - 최우선 적용 */
+        #directFormActionArea,
+        #directFormActionArea.action-area,
+        #stepDirectForm #directFormActionArea,
+        #stepFinalAction,
+        #stepFinalAction .action-area,
+        .page-wrapper #directFormActionArea,
+        .page-wrapper #stepFinalAction .action-area {
+            justify-content: center !important;
+            align-items: center !important;
+            display: flex !important;
+            text-align: center !important;
+            width: 100% !important;
+        }
+        
+        /* 인라인 스타일이 있어도 중앙 정렬 유지 */
+        #directFormActionArea[style],
+        #stepFinalAction .action-area[style] {
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+        
+        /* 버튼 자체를 중앙에 배치 */
+        #directFormActionArea .btn-primary,
+        #directFormActionArea #finalSubmitBtn,
+        #stepFinalAction .action-area .btn-primary,
+        #stepFinalAction .action-area #pdfFinalSubmitBtn,
+        .page-wrapper #directFormActionArea .btn-primary,
+        .page-wrapper #stepFinalAction .action-area .btn-primary {
+            margin: 0 auto !important;
+            display: block !important;
+        }
+        
+        /* 카드 내부도 중앙 정렬 */
+        #stepFinalAction.card,
+        #stepDirectForm .card {
+            text-align: center !important;
         }
     </style>
 </head>
@@ -166,15 +240,15 @@
             </div>
         </div>
         <!-- 최종 완성 버튼 영역 (직접작성용) -->
-        <div class="action-area" id="directFormActionArea">
-            <button type="button" class="btn-primary hidden" id="finalSubmitBtn" onclick="handleFinalSubmit(event); return false;" title="필수 조항을 모두 입력해야 완성할 수 있습니다">계약 요청하기</button>
+        <div class="action-area" id="directFormActionArea" style="justify-content: center !important; align-items: center !important; display: flex !important; text-align: center !important;">
+            <button type="button" class="btn-primary hidden" id="finalSubmitBtn" onclick="handleFinalSubmit(event); return false;" title="필수 조항을 모두 입력해야 완성할 수 있습니다" style="margin: 0 auto !important;">계약 요청하기</button>
         </div>
     </section>
 
     <!-- 최종 완성 버튼 영역 (PDF용) -->
-    <section class="card step-card" id="stepFinalAction">
-        <div class="action-area">
-            <button type="button" class="btn-primary hidden" id="pdfFinalSubmitBtn" onclick="handlePdfFinalSubmit(event); return false;" title="PDF를 업로드해야 완성할 수 있습니다">계약 요청하기</button>
+    <section class="card step-card" id="stepFinalAction" style="text-align: center;">
+        <div class="action-area" style="justify-content: center !important; align-items: center !important; display: flex !important;">
+            <button type="button" class="btn-primary hidden" id="pdfFinalSubmitBtn" onclick="handlePdfFinalSubmit(event); return false;" title="PDF를 업로드해야 완성할 수 있습니다" style="margin: 0 auto !important;">계약 요청하기</button>
         </div>
     </section>
 
@@ -716,7 +790,13 @@ $(function () {
             scrollToCard($('#stepPdfUpload'));
         } else {
             $('#stepDirectForm').addClass('visible');
-            $('#directFormActionArea').css('display', 'flex').show();
+            $('#directFormActionArea').css({
+                'display': 'flex',
+                'justify-content': 'center',
+                'align-items': 'center',
+                'text-align': 'center'
+            }).show();
+            $('#finalSubmitBtn').css('margin', '0 auto');
             const finalBtn = document.getElementById('finalSubmitBtn');
             if (finalBtn) {
                 $(finalBtn).removeClass('hidden').show();
@@ -813,10 +893,13 @@ $(function () {
                     $btn.prop('disabled', false).text('다시 업로드');
                     
                     // 완성 버튼 표시 및 활성화
-                    $('#stepFinalAction').addClass('visible').css('display', 'block');
+                    $('#stepFinalAction').addClass('visible').css({
+                        'display': 'block',
+                        'text-align': 'center'
+                    });
                     const pdfBtn = document.getElementById('pdfFinalSubmitBtn');
                     if (pdfBtn) {
-                        $(pdfBtn).removeClass('hidden').show();
+                        $(pdfBtn).removeClass('hidden').show().css('margin', '0 auto');
                         // onclick 속성 확실하게 설정
                         pdfBtn.setAttribute('onclick', 'handlePdfFinalSubmit(event); return false;');
                         pdfBtn.onclick = function(e) {
@@ -828,6 +911,12 @@ $(function () {
                         pdfBtn.title = '';
                         console.log('[DEBUG] PDF button displayed with onclick handler');
                     }
+                    // action-area도 중앙 정렬 유지
+                    $('#stepFinalAction .action-area').css({
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                        'display': 'flex'
+                    });
                     
                     // 알림 표시
                     setTimeout(function() {
@@ -1162,7 +1251,7 @@ $(function () {
             // 마지막까지 저장한 경우: 완성 버튼 표시
             const finalBtn = document.getElementById('finalSubmitBtn');
             if (finalBtn) {
-                $(finalBtn).removeClass('hidden').show();
+                $(finalBtn).removeClass('hidden').show().css('margin', '0 auto');
                 // onclick 속성 확실하게 설정
                 finalBtn.setAttribute('onclick', 'handleFinalSubmit(event); return false;');
                 finalBtn.onclick = function(e) {
@@ -1173,6 +1262,13 @@ $(function () {
                 };
                 console.log('[DEBUG] All clauses saved, finalSubmitBtn displayed with onclick handler');
             }
+            // action-area도 중앙 정렬 유지
+            $('#directFormActionArea').css({
+                'justify-content': 'center',
+                'align-items': 'center',
+                'display': 'flex',
+                'text-align': 'center'
+            });
             validateDirectReady();
             
             // 완료 안내 메시지 (한 번만 표시)

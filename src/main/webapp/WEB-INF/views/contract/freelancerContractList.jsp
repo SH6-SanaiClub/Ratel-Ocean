@@ -15,17 +15,31 @@
     
     <style>
         :root {
-            --primary: #1F7A8C;
+            --bg: #f6f7fb;
+            --card: #fff;
+            --text: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #1a9aa6;
+            --primary-weak: rgba(26,154,166,.12);
+            --primary-hover: #158a94;
+            --shadow: 0 20px 60px rgba(17,24,39,.08);
+            --radius: 18px;
+            --ok: #22c55e;
+            --warn: #f59e0b;
+            --info: #3b82f6;
+            --danger: #ef4444;
+            
+            /* 하위 호환성 */
             --secondary: #A9D9DB;
-            --dark: #2B2B2B;
-            --muted: #6F7272;
-            --light: #F1F6EE;
+            --dark: var(--text);
+            --light: var(--bg);
         }
 
         body {
-            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--light);
-            color: var(--dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
         }
 
     </style>
@@ -33,12 +47,16 @@
 <body>
 <c:set var="userType" value="FREELANCER" scope="request"/>
 <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
+
     <div class="container">
-        <div class="page-header">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div class="page-header" style="background: var(--primary); color: #fff; border-radius: 16px; padding: 32px 0 24px 32px; margin-bottom: 32px; display: flex; align-items: center; min-height: 80px;">
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <span style="font-size: 2.5rem; background: rgba(255,255,255,0.13); border-radius: 12px; padding: 12px 18px 12px 14px; display: flex; align-items: center; justify-content: center;">
+                    <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='none' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='white' fill-opacity='0.13'/><path d='M7.5 4.75A2.25 2.25 0 0 0 5.25 7v10A2.25 2.25 0 0 0 7.5 19.25h9A2.25 2.25 0 0 0 18.75 17V7A2.25 2.25 0 0 0 16.5 4.75h-9Zm0 1.5h9c.414 0 .75.336.75.75v10a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V7c0-.414.336-.75.75-.75Zm1.25 2.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm-.75 3.25c0-.414.336-.75.75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm.75 2.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-4.5Z' fill='white'/></svg>
+                </span>
                 <div>
-                    <h1>📋 계약 관리</h1>
-                    <p>받은 계약서를 확인하고 관리하세요</p>
+                    <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">계약 관리</h1>
+                    <p style="font-size: 1.1rem; color: #eaf7fa; font-weight: 400; margin: 0;">제안받은 계약서를 확인하고 관리하세요</p>
                 </div>
             </div>
         </div>
@@ -105,7 +123,7 @@
                         전체<span class="count">${totalAll}</span>
                     </button>
                     <button class="sidebar-filter-btn" data-filter="progress" onclick="setFilter('progress', true)">
-                        진행 중<span class="count">${totalInProgress}</span>
+                        진행<span class="count">${totalInProgress}</span>
                     </button>
                     <button class="sidebar-filter-btn" data-filter="waiting" onclick="setFilter('waiting', true)">
                         검토 대기<span class="count">${totalWaiting}</span>
@@ -147,7 +165,7 @@
                                         <c:when test="${contract.requestedMilestones > 0}">승인대기 ${contract.requestedMilestones}건</c:when>
                                         <c:when test="${contract.depositedMilestones > 0 and contract.totalMilestones > 0}">작업중 ${contract.depositedMilestones}건</c:when>
                                         <c:when test="${contract.paidMilestones > 0 and contract.totalMilestones > 0}">진행 ${contract.paidMilestones}/${contract.totalMilestones}</c:when>
-                                        <c:otherwise>진행중</c:otherwise>
+                                        <c:otherwise>진행</c:otherwise>
                                     </c:choose>
                                 </span>
                             </div>
@@ -340,7 +358,7 @@
                                                         💰 결제 완료 (입금 완료: ${selectedContract.depositedMilestones}건)
                                                     </c:when>
                                                     <c:when test="${selectedContract.paidMilestones > 0}">
-                                                        💰 결제 완료 (수령 진행 중: ${selectedContract.paidMilestones}/${selectedContract.totalMilestones})
+                                                        💰 결제 완료 (수령 진행: ${selectedContract.paidMilestones}/${selectedContract.totalMilestones})
                                                     </c:when>
                                                     <c:otherwise>
                                                         💰 결제 완료 (수령 대기 중)
@@ -822,7 +840,7 @@
                     // 대체 방법: 텍스트 내용으로 찾기
                     const filterTextMap = {
                         'all': '전체',
-                        'progress': '진행 중',
+                        'progress': '진행',
                         'waiting': '검토 대기',
                         'completed': '완료',
                         'terminated': '종료'

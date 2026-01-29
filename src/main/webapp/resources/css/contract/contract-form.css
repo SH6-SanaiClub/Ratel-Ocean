@@ -4,12 +4,25 @@
 @import url('./contract-common.css');
 
 /* =========================
-   페이지 전체
+   페이지 전체 - 프리랜서 프로젝트 관리 페이지 톤 적용
    ========================= */
+:root {
+    --bg: #f6f7fb;
+    --card: #fff;
+    --text: #111827;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --primary: #1a9aa6;
+    --primary-weak: rgba(26, 154, 166, 0.12);
+    --shadow: 0 20px 60px rgba(17, 24, 39, 0.08);
+    --radius: 18px;
+}
+
 body {
     margin: 0;
-    background: #F1F6EE;
-    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
 }
 
 /* =========================
@@ -50,15 +63,16 @@ body .page-wrapper .contract-check-layout {
 }
 
 /* =========================
-   카드 공통 (contract-form 전용)
+   카드 공통 (contract-form 전용) - 프리랜서 프로젝트 관리 페이지 톤 적용
    ========================= */
 /* contract-common.css의 .card 스타일을 오버라이드 */
 .page-wrapper .card,
 .contract-form-layout .card {
     width: 680px;
-    background: var(--white);
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: var(--card);
+    border: 1px solid rgba(229, 231, 235, 0.75);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
     padding: 40px;
     box-sizing: border-box;
     margin-bottom: 32px;
@@ -69,7 +83,7 @@ body .page-wrapper .contract-check-layout {
 .page-wrapper .card:hover,
 .contract-form-layout .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 20px 60px rgba(17, 24, 39, 0.12);
 }
 
 /* =========================
@@ -93,13 +107,13 @@ body .page-wrapper .contract-check-layout {
 input,
 textarea {
     width: 100%;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid rgba(229, 231, 235, 0.85);
+    border-radius: 14px;
     font-size: 16px;
     padding: 12px 16px;
     margin-bottom: 20px;
     box-sizing: border-box;
-    background: var(--white);
+    background: var(--card);
     transition: border-color 0.2s ease;
 }
 
@@ -111,8 +125,8 @@ textarea {
 input:focus,
 textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-weak);
 }
 
 /* =========================
@@ -122,14 +136,15 @@ textarea:focus {
 .contract-form-layout .summary-box,
 #projectInfo.summary-box,
 #freelancerInfo.summary-box {
-    background: #f8f9fa !important;
-    border: 1px solid #e9ecef !important;
-    border-radius: 12px !important;
+    background: var(--card) !important;
+    border: 1px solid rgba(229, 231, 235, 0.75) !important;
+    border-radius: 22px !important;
     padding: 20px !important;
     margin-top: 16px !important;
     font-size: 15px !important;
-    color: var(--dark) !important;
+    color: var(--text) !important;
     line-height: 1.6 !important;
+    box-shadow: var(--shadow) !important;
 }
 
 .summary-box.hidden {
@@ -148,17 +163,18 @@ textarea:focus {
 .choice-card {
     flex: 1;
     position: relative;
-    border: 2px solid #e0e0e0 !important;
-    border-radius: 12px !important;
+    border: 1px solid rgba(229, 231, 235, 0.85) !important;
+    border-radius: 18px !important;
     padding: 24px !important;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: var(--white) !important;
+    background: var(--card) !important;
+    box-shadow: var(--shadow) !important;
 }
 
 .choice-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 1px var(--primary-color);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
 }
 
 .choice-card input {
@@ -168,9 +184,9 @@ textarea:focus {
 /* 선택된 카드 스타일 */
 .choice-card:has(input:checked),
 .choice-card.selected {
-    border-color: var(--primary-color) !important;
-    background: rgba(31, 122, 140, 0.05) !important;
-    box-shadow: 0 0 0 2px var(--primary-color) !important;
+    border-color: var(--primary) !important;
+    background: var(--primary-weak) !important;
+    box-shadow: 0 0 0 2px rgba(26, 154, 166, 0.25) !important;
 }
 
 /* 체크마크 아이콘 */
@@ -189,8 +205,8 @@ textarea:focus {
 
 .choice-card:has(input:checked)::after,
 .choice-card.selected::after {
-    background: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E") !important;
     background-size: 12px 12px !important;
     background-position: center !important;
@@ -229,41 +245,85 @@ textarea:focus {
 
 #directFormActionArea {
     display: none;
-    justify-content: flex-end !important;
+    justify-content: center !important;
 }
 
 #directFormActionArea.action-area {
     display: flex !important;
-    justify-content: flex-end !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
 #stepDirectForm #directFormActionArea {
     display: flex !important;
-    justify-content: flex-end !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
-/* page-wrapper와 contract-form-layout에서만 적용 */
+/* JavaScript로 인라인 스타일이 적용되어도 중앙 정렬 유지 */
+#directFormActionArea[style*="display"],
+#directFormActionArea[style*="flex"],
+.page-wrapper #directFormActionArea[style*="display"],
+.page-wrapper #directFormActionArea[style*="flex"] {
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+/* PDF용 버튼 영역도 중앙 정렬 - 최우선 적용 */
+#stepFinalAction .action-area,
+#stepFinalAction .action-area[style],
+.page-wrapper #stepFinalAction .action-area,
+.page-wrapper #stepFinalAction .action-area[style] {
+    justify-content: center !important;
+    align-items: center !important;
+    display: flex !important;
+    text-align: center !important;
+}
+
+#stepFinalAction .action-area .btn-primary,
+#stepFinalAction .action-area #pdfFinalSubmitBtn,
+.page-wrapper #stepFinalAction .action-area .btn-primary,
+.page-wrapper #stepFinalAction .action-area #pdfFinalSubmitBtn {
+    margin: 0 auto !important;
+    display: block !important;
+}
+
+/* 직접 작성용 버튼도 동일하게 */
+#directFormActionArea .btn-primary,
+#directFormActionArea #finalSubmitBtn,
+.page-wrapper #directFormActionArea .btn-primary,
+.page-wrapper #directFormActionArea #finalSubmitBtn {
+    margin: 0 auto !important;
+    display: block !important;
+}
+
+/* page-wrapper와 contract-form-layout에서만 적용 - 프리랜서 프로젝트 관리 페이지 톤 적용 */
 .page-wrapper .action-area .btn-primary,
 .contract-form-layout .action-area .btn-primary {
     width: auto;
     min-width: 160px;
     height: 48px;
-    border-radius: 8px;
+    border-radius: 14px;
     border: none;
-    background: var(--primary-color);
-    color: var(--white-color);
-    font-size: 16px;
-    font-weight: 700;
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 950;
     cursor: pointer;
     transition: all 0.25s ease;
-    padding: 0 32px;
+    padding: 12px 14px;
+    box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
 }
 
 .page-wrapper .action-area .btn-primary:hover,
 .contract-form-layout .action-area .btn-primary:hover {
-    background: var(--primary-hover);
+    filter: brightness(0.985);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 122, 140, 0.3);
 }
 
 .page-wrapper .action-area .btn-secondary,
@@ -271,21 +331,24 @@ textarea:focus {
     width: auto;
     min-width: 100px;
     height: 48px;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    background: var(--white);
-    color: var(--gray);
-    font-size: 16px;
-    font-weight: 600;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 950;
     cursor: pointer;
     transition: all 0.25s ease;
-    padding: 0 24px;
+    padding: 12px 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
 }
 
 .page-wrapper .action-area .btn-secondary:hover,
 .contract-form-layout .action-area .btn-secondary:hover {
-    background: #f8f9fa;
-    border-color: #d0d0d0;
+    filter: brightness(0.985);
 }
 
 /* 버튼 disabled 상태 */
@@ -571,11 +634,11 @@ textarea:focus {
    PDF 업로드 영역
    ========================= */
 .pdf-upload-area {
-    border: 2px dashed #d0d0d0 !important;
-    border-radius: 12px !important;
+    border: 2px dashed rgba(229, 231, 235, 0.85) !important;
+    border-radius: 22px !important;
     padding: 60px 40px !important;
     text-align: center !important;
-    background: var(--white) !important;
+    background: var(--card) !important;
     transition: all 0.2s ease;
     margin-top: 16px !important;
     min-height: 200px !important;
@@ -583,30 +646,34 @@ textarea:focus {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+    box-shadow: var(--shadow) !important;
 }
 
 .pdf-upload-area:hover {
-    border-color: var(--primary-color);
-    background: rgba(31, 122, 140, 0.02);
+    border-color: var(--primary);
+    background: var(--primary-weak);
 }
 
 .pdf-upload-btn {
-    background: var(--primary-color) !important;
-    color: var(--white) !important;
+    background: var(--primary) !important;
+    color: #fff !important;
     border: none !important;
-    border-radius: 8px !important;
-    padding: 14px 32px !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
+    border-radius: 14px !important;
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 122, 140, 0.2) !important;
+    box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
 }
 
 .pdf-upload-btn:hover {
-    background: var(--primary-hover);
+    filter: brightness(0.985);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 122, 140, 0.3);
 }
 
 .pdf-upload-btn:disabled {
@@ -621,7 +688,7 @@ textarea:focus {
 }
 
 .pdf-upload-status .status-info {
-    color: var(--gray);
+    color: var(--muted);
 }
 
 .pdf-upload-status .status-success {
@@ -639,7 +706,7 @@ textarea:focus {
     display: block;
     margin-top: 16px;
     font-size: 13px;
-    color: var(--gray);
+    color: var(--muted);
     text-align: center;
 }
 
@@ -1001,17 +1068,17 @@ body .contract-check-layout .sidebar::-webkit-scrollbar {
 }
 
 body .contract-check-layout .sidebar::-webkit-scrollbar-track {
-    background: var(--accent-color);
+    background: var(--bg);
     border-radius: 4px;
 }
 
 body .contract-check-layout .sidebar::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
+    background: var(--primary);
     border-radius: 4px;
 }
 
 body .contract-check-layout .sidebar::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-hover);
+    background: #0b6e76;
 }
 
 body .contract-check-layout .main-content {
@@ -1060,28 +1127,28 @@ body .contract-check-layout .main-content {
 }
 
 .ai-requirements-box {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--light-gray) 100%);
-    border: 2px solid var(--primary-color);
-    border-radius: 20px; /* 16px → 20px */
-    padding: 28px; /* 24px → 28px */
-    box-shadow: 0 6px 20px rgba(31, 122, 140, 0.2);
-    margin-bottom: 24px; /* 20px → 24px */
+    background: var(--card);
+    border: 1px solid rgba(229, 231, 235, 0.75);
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
     transition: all 0.3s ease;
 }
 
 .ai-requirements-box:hover {
-    box-shadow: 0 8px 24px rgba(31, 122, 140, 0.25);
+    box-shadow: 0 20px 60px rgba(17, 24, 39, 0.12);
     transform: translateY(-2px);
 }
 
 .ai-requirements-box .section-title {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
+    color: var(--text);
+    border-bottom-color: rgba(229, 231, 235, 0.85);
     display: flex;
     align-items: center;
     gap: 10px;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 950;
     margin-bottom: 16px;
     padding-bottom: 12px;
 }
@@ -1099,12 +1166,13 @@ body .contract-check-layout .main-content {
 .ai-requirements-list li {
     padding: 14px 18px;
     margin-bottom: 10px;
-    background: var(--white-color);
-    border-radius: 10px;
-    border-left: 4px solid var(--primary-color);
-    box-shadow: 0 2px 8px rgba(31, 122, 140, 0.1);
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid rgba(229, 231, 235, 0.85);
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
     line-height: 1.7;
-    color: var(--dark-color);
+    color: var(--text);
     transition: all 0.3s ease;
     font-size: 14px;
     font-weight: 500;
@@ -1112,9 +1180,9 @@ body .contract-check-layout .main-content {
 
 .ai-requirements-list li:hover {
     transform: translateX(6px);
-    box-shadow: 0 4px 12px rgba(31, 122, 140, 0.2);
+    box-shadow: 0 4px 12px rgba(26, 154, 166, 0.15);
     border-left-width: 6px;
-    background: var(--white-color);
+    background: var(--primary-weak);
 }
 
 .ai-requirements-list li:last-child {
@@ -1451,27 +1519,26 @@ table.milestone-table th.width-150 {
 }
 
 .sidebar-card {
-    background: var(--white-color);
-    border-radius: 20px; /* 16px → 20px */
-    padding: 28px; /* 24px → 28px */
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    border: 2px solid rgba(31, 122, 140, 0.1);
+    background: var(--card);
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(229, 231, 235, 0.75);
     transition: all 0.3s ease;
 }
 
 .sidebar-card:hover {
-    box-shadow: 0 8px 24px rgba(31, 122, 140, 0.15);
-    border-color: var(--primary-color);
-    transform: translateY(-3px); /* -2px → -3px */
+    box-shadow: 0 20px 60px rgba(17, 24, 39, 0.12);
+    transform: translateY(-2px);
 }
 
 .sidebar-card-title {
     font-size: 18px;
-    font-weight: 700;
-    color: var(--primary-color);
+    font-weight: 950;
+    color: var(--text);
     margin: 0 0 20px;
     padding-bottom: 14px;
-    border-bottom: 2px solid var(--primary-color);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.85);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1483,15 +1550,15 @@ table.milestone-table th.width-150 {
 
 .sidebar-info-item {
     padding: 14px 0;
-    border-bottom: 1px solid rgba(31, 122, 140, 0.1);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.85);
     transition: all 0.2s ease;
 }
 
 .sidebar-info-item:hover {
-    background: var(--accent-color);
+    background: var(--primary-weak);
     margin: 0 -24px;
     padding: 14px 24px;
-    border-radius: 8px;
+    border-radius: 14px;
 }
 
 .sidebar-info-item:last-child {
@@ -1500,17 +1567,17 @@ table.milestone-table th.width-150 {
 
 .sidebar-info-label {
     font-size: 12px;
-    color: var(--gray-color);
+    color: var(--muted);
     margin-bottom: 6px;
-    font-weight: 600;
+    font-weight: 950;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .sidebar-info-value {
     font-size: 15px;
-    font-weight: 700;
-    color: var(--dark-color);
+    font-weight: 950;
+    color: var(--text);
     line-height: 1.6;
     word-break: break-word;
 }
@@ -1826,26 +1893,27 @@ table.milestone-table th.width-150 {
 }
 
 .contract-check-layout .action-buttons-container .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-    color: var(--white-color);
+    background: var(--primary);
+    color: #fff;
     border: none;
+    box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22);
+    border-radius: 14px;
 }
 
 .contract-check-layout .action-buttons-container .btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
-    box-shadow: 0 4px 16px rgba(31, 122, 140, 0.4);
+    filter: brightness(0.985);
+    transform: translateY(-1px);
 }
 
 .contract-check-layout .action-buttons-container .btn-secondary {
-    background: var(--white-color);
-    color: var(--gray-color);
-    border: 2px solid var(--gray-color);
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 14px;
 }
 
 .contract-check-layout .action-buttons-container .btn-secondary:hover {
-    background: var(--gray-color);
-    color: var(--white-color);
-    border-color: var(--gray-color);
+    filter: brightness(0.985);
 }
 
 /* contract-check-layout 내부의 버튼은 원래 스타일 유지 */
@@ -1861,25 +1929,27 @@ table.milestone-table th.width-150 {
 }
 
 .contract-check-layout .btn-primary {
-    background: var(--primary-color);
-    color: var(--white-color);
+    background: var(--primary);
+    color: #fff;
     border: none;
+    box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22);
+    border-radius: 14px;
 }
 
 .contract-check-layout .btn-primary:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(31, 122, 140, 0.3);
+    filter: brightness(0.985);
+    transform: translateY(-1px);
 }
 
 .contract-check-layout .btn-secondary {
-    background: var(--gray-color);
-    color: var(--white-color);
-    border: none;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 14px;
 }
 
 .contract-check-layout .btn-secondary:hover {
-    background: #5a6060;
+    filter: brightness(0.985);
 }
 
 .ai-description-text {
@@ -1959,23 +2029,23 @@ table.milestone-table th.width-150 {
 }
 
 .payment-method-btn:hover {
-    border-color: var(--primary-color);
-    background: var(--accent-color);
+    border-color: var(--primary);
+    background: var(--primary-weak);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(31, 122, 140, 0.15);
+    box-shadow: 0 4px 12px rgba(26, 154, 166, 0.15);
 }
 
 .payment-method-btn.active {
-    border-color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-    color: var(--white-color);
-    box-shadow: 0 4px 16px rgba(31, 122, 140, 0.3);
+    border-color: rgba(26, 154, 166, 0.25);
+    background: var(--primary-weak);
+    color: #0b6e76;
+    box-shadow: 0 4px 16px rgba(26, 154, 166, 0.2);
 }
 
 .payment-method-btn.active .payment-method-icon,
 .payment-method-btn.active .payment-method-label,
 .payment-method-btn.active .payment-method-desc {
-    color: var(--white-color);
+    color: #0b6e76;
 }
 
 .payment-method-icon {
@@ -1986,15 +2056,15 @@ table.milestone-table th.width-150 {
 
 .payment-method-label {
     font-size: 18px;
-    font-weight: 700;
-    color: var(--dark-color);
+    font-weight: 950;
+    color: var(--text);
     margin-bottom: 6px;
     display: block;
 }
 
 .payment-method-desc {
     font-size: 13px;
-    color: var(--gray-color);
+    color: var(--muted);
     line-height: 1.4;
     display: block;
 }

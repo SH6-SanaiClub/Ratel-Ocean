@@ -8,8 +8,96 @@
 	<title>계약서 확인 및 수정</title>
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-form.css" />
 	<style>
+		:root {
+			--bg: #f6f7fb;
+			--card: #fff;
+			--text: #111827;
+			--muted: #6b7280;
+			--line: #e5e7eb;
+			--primary: #1a9aa6;
+			--primary-weak: rgba(26, 154, 166, 0.12);
+			--shadow: 0 20px 60px rgba(17, 24, 39, 0.08);
+			--radius: 18px;
+		}
+		
 		body {
-			background: #F1F6EE !important;
+			background: var(--bg) !important;
+		}
+		
+		/* 카드 스타일 개선 */
+		.card {
+			background: var(--card) !important;
+			border: 1px solid rgba(229, 231, 235, 0.75) !important;
+			border-radius: 22px !important;
+			box-shadow: var(--shadow) !important;
+		}
+		
+		/* 버튼 스타일 개선 */
+		.btn-primary {
+			background: var(--primary) !important;
+			color: #fff !important;
+			box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important;
+			border-radius: 14px !important;
+		}
+		
+		.btn-primary:hover {
+			filter: brightness(0.985) !important;
+		}
+		
+		.btn-secondary {
+			background: var(--card) !important;
+			border: 1px solid var(--line) !important;
+			color: var(--text) !important;
+			border-radius: 14px !important;
+		}
+		
+		.btn-secondary:hover {
+			filter: brightness(0.985) !important;
+		}
+		
+		/* 입력 필드 스타일 개선 */
+		input[type="text"],
+		input[type="date"],
+		input[type="number"],
+		textarea {
+			border: 1px solid rgba(229, 231, 235, 0.85) !important;
+			border-radius: 14px !important;
+		}
+		
+		input[type="text"]:focus,
+		input[type="date"]:focus,
+		input[type="number"]:focus,
+		textarea:focus {
+			border-color: var(--primary) !important;
+			box-shadow: 0 0 0 3px var(--primary-weak) !important;
+		}
+		
+		/* 사이드바 카드 스타일 */
+		.sidebar-card,
+		.ai-requirements-box,
+		.ai-guide-box {
+			background: var(--card) !important;
+			border: 1px solid rgba(229, 231, 235, 0.75) !important;
+			border-radius: 22px !important;
+			box-shadow: var(--shadow) !important;
+		}
+		
+		/* 지급 방식 버튼 스타일 */
+		.payment-method-btn.active {
+			background: var(--primary-weak) !important;
+			border-color: rgba(26, 154, 166, 0.25) !important;
+			color: #0b6e76 !important;
+		}
+		
+		/* 마일스톤 테이블 스타일 */
+		.milestone-table {
+			border: 1px solid rgba(229, 231, 235, 0.75) !important;
+			border-radius: 14px !important;
+		}
+		
+		.milestone-table th,
+		.milestone-table td {
+			border-color: rgba(229, 231, 235, 0.85) !important;
 		}
 	</style>
 </head>

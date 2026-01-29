@@ -9,34 +9,54 @@
     --secondary: #A9D9DB;
     --dark: #2B2B2B;
     --muted: #6F7272;
-    --light: #F1F6EE;
-}
-
-body {
-    font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--light);
+/* contract-common.css의 컬러 변수와 통일 */
+:root {
+    --primary-color: #1a9aa6;
+    --primary-hover: #158a94;
+    --primary-weak: rgba(26,154,166,.12);
+    --secondary-color: #A9D9DB;
+    --secondary-hover: #7FC5BE;
+    --bg: #f6f7fb;
+    --card: #fff;
+    --dark-color: #111827;
+    --gray-color: #6b7280;
+    --white-color: #FFFFFF;
+    --accent-color: #f6f7fb;
+    --light-gray: #e5e7eb;
+        --bg: #f6f7fb; /* This line is unchanged */
+    --radius: 18px;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+    --dark: var(--dark-color);
+    --gray: var(--gray-color);
+    --off-white: var(--accent-color);
+    --deep-teal: var(--primary-color);
+    --white: var(--white-color);
     color: var(--dark);
 }
 
-/* 헤더 네비게이션 */
-.header {
-    background: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--dark-color);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
-.header-inner {
+        background: #f6f7fb; /* Updated background color */
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.logo {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: all 0.3s;
     font-size: 1.25rem;
     font-weight: bold;
     color: var(--primary);
@@ -166,10 +186,31 @@ body {
 }
 
 /* 메인 콘텐츠 */
+
 .main-content {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
+    background: var(--bg);
+}
+
+.section-card,
+.alert-section,
+.priority-section {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+.stats-grid.compact .stat-card {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+    padding: 0.875rem;
+    min-height: 100px;
+    position: relative;
 }
 
 .page-header {
