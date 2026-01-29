@@ -36,6 +36,30 @@ public class ChattingController {
     private final ChatService chatService;
     private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
 
+    /**
+     * 프로젝트 상세페이지에서 채팅하기 클릭 시 처리
+     */
+    @GetMapping("/join")
+    public String joinChat(@RequestParam("projectId") Integer projectId) {
+        // 현재 로그인 유저 정보 획득
+        Integer loginUserId = AuthContext.getCurrentUserId();
+
+        if (loginUserId == null) {
+            return "redirect:/login";
+        }
+
+        // 기존에 생성된 채팅방 ID 조회
+        Integer roomId = chatService.getRoomIdByProject(projectId, loginUserId);
+
+        // 방이 존재한다면 해당 방으로 이동 (없을 경우에 대한 예외처리는 요구사항에 따라 생략)
+        if (roomId != null) {
+            return "redirect:/chat";
+        }
+
+        // 방이 없을 경우 목록으로 이동시키거나 에러 처리를 할 수 있습니다.
+        return "redirect:/login";
+    }
+
     // 채팅 아이콘 → 목록 화면
     @GetMapping
     public String chatMain(Model model) {
@@ -142,25 +166,6 @@ public class ChattingController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(file.length())
                 .body(resource);
-    }
-
-    /**
-     * 특정 채팅방 바로 진입 (예: 프로젝트 공고에서 '문의하기' 눌렀을 때)
-     */
-    @GetMapping("/room/{roomId}")
-    public String roomPage(@PathVariable Integer roomId, Model model) {
-        Integer loginUserId = AuthContext.getCurrentUserId();
-        UserType userType = AuthContext.getCurrentUserType();
-
-        if (loginUserId == null) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("roomId", roomId);
-        model.addAttribute("loginUserId", loginUserId);
-        model.addAttribute("userType", userType != null ? userType.name() : "");
-
-        return "chat/room";
     }
 
     @PostMapping("/message/{messageId}/delete")

@@ -139,11 +139,16 @@ function toggleWish(btn) {
 /**
  * 3. 채팅방 연결
  */
-function openChat(clientId) {
-    if (!clientId) {
-        alert("클라이언트 정보를 불러올 수 없습니다.");
+function moveToChat() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('projectId');
+
+    if (!projectId) {
+        alert("프로젝트 정보를 찾을 수 없습니다.");
         return;
     }
-    alert("클라이언트(ID: " + clientId + ")와 1:1 채팅을 시작합니다.");
-    // window.open('/chat/room/' + clientId, ...);
+
+    // 컨트롤러의 join 엔드포인트로 이동
+    location.href = "/ratelocean/chat/join?projectId=" + projectId;
 }

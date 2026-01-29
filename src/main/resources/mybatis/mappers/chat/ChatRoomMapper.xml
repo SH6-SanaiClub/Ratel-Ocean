@@ -141,4 +141,13 @@
         FROM users
         WHERE user_id = #{userId}
     </select>
+
+    <select id="findRoomIdByProjectAndUser" resultType="int">
+        SELECT room_id
+        FROM chat_rooms
+        WHERE project_id = #{projectId}
+          AND (sender_id = #{userId} OR opponent_id = #{userId})
+            LIMIT 1
+    </select>
+
 </mapper>

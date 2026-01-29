@@ -25,6 +25,10 @@ public class ChatService {
     private final ChatRoomMapper chatRoomMapper;
     private final ChatMessageMapper chatMessageMapper;
 
+    public Integer getRoomIdByProject(Integer projectId, Integer userId) {
+        return chatRoomMapper.findRoomIdByProjectAndUser(projectId, userId);
+    }
+
     // =========================================
     // 1. 내 채팅방 목록 조회 (AJAX용)
     // =========================================
