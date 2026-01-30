@@ -38,6 +38,8 @@ function loadProjectProgress(projectId, element) {
             currentProjectData = data;
             currentProjectData.projectId = projectId;
             renderMilestones(data);
+
+            $('#ongoingFreelancerDisplay').text("담당자 : " + data.freelancerName);
         },
         error: function () {
             $('#milestoneListArea').html('<div style="text-align:center; padding:40px; color:#ccc;">정보를 불러오지 못했습니다.</div>');
