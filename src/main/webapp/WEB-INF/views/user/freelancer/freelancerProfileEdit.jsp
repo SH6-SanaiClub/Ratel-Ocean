@@ -10,11 +10,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>마이페이지</title>
+  <title>내 프로필 수정</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
-      --bg:#f5f6f8;
+      --bg:#f6f6f8;
       --paper:#ffffff;
 
       --sb-bg:#ffffff;
@@ -528,7 +528,7 @@
       gap: 16px 18px;
     }
 
-    /* 포트폴리오 드롭 영역 */
+
     .fileBar{
       border:1px dashed var(--line2);
       background: #fafbfc;
@@ -652,7 +652,6 @@
       <!-- Main -->
       <main class="main">
 
-        <!-- ===================== 프로필 기본 정보 수정 ===================== -->
         <section class="panel <%= "settings".equals(tab) ? "active" : "" %>" id="panel-settings">
           <div class="card-head">
             <div>
@@ -671,7 +670,7 @@
 
               <div class="settingsGrid">
 
-                <!-- (좌) 프로필 사진 -->
+
                 <div class="setBox setPhoto">
                   <div class="setLabel">프로필 사진</div>
 
@@ -699,7 +698,6 @@
                   <input type="hidden" name="deleteProfileImage" id="deleteProfileImage" value="false"/>
                 </div>
 
-                <!-- (우) 닉네임 + 자기소개 -->
                 <div class="setBox setInfo">
                   <div class="setLabel">닉네임</div>
                   <input class="setInput" name="nickname"
@@ -712,7 +710,6 @@
                             placeholder="자기소개를 입력하세요.">${fn:escapeXml(profile.introduction)}</textarea>
                 </div>
 
-                <!-- Git/Blog -->
                 <div class="urlRow">
                   <div class="setBox">
                     <div class="setLabel">Git URL</div>
@@ -784,7 +781,7 @@
             </form>
           </div>
         </section>
-        <!-- ===================== 포지션 ===================== -->
+
         <section class="panel <%= "position".equals(tab) ? "active" : "" %>" id="panel-position">
           <div class="card-head">
             <div>
@@ -858,7 +855,7 @@
           </form>
         </section>
 
-        <!-- ===================== 스킬 ===================== -->
+
         <section class="panel <%= "skill".equals(tab) ? "active" : "" %>" id="panel-skill">
           <div class="card-head">
             <div>
@@ -931,7 +928,7 @@
           </form>
         </section>
 
-        <!-- ===================== 경력 ===================== -->
+
         <section class="panel <%= "career".equals(tab) ? "active" : "" %>" id="panel-career">
           <div class="card-head">
             <div>
@@ -1059,7 +1056,7 @@
           </div>
         </section>
 
-        <!-- ===================== 외부 프로젝트 ===================== -->
+
         <section class="panel <%= "external".equals(tab) ? "active" : "" %>" id="panel-external">
           <div class="card-head">
             <div>
@@ -1084,7 +1081,7 @@
                   <input name="title" type="text" required placeholder="예) 외주 쇼핑몰 개발" />
                 </div>
                 <div class="row">
-                  <label>클라이언트명(선택)</label>
+                  <label>클라이언트명</label>
                   <input name="clientName" type="text" placeholder="예) ○○회사" />
                 </div>
                 <div class="row">
@@ -1092,7 +1089,7 @@
                   <input name="startDate" type="date" required />
                 </div>
                 <div class="row">
-                  <label>종료일(선택)</label>
+                  <label>종료일</label>
                   <input name="endDate" type="date" />
                 </div>
                 <div class="row">
@@ -1154,7 +1151,7 @@
                         <input name="title" type="text" required value="${fn:escapeXml(e.title)}"/>
                       </div>
                       <div class="row">
-                        <label>클라이언트명(선택)</label>
+                        <label>클라이언트명</label>
                         <input name="clientName" type="text" value="${fn:escapeXml(e.clientName)}"/>
                       </div>
                       <div class="row">
@@ -1162,7 +1159,7 @@
                         <input name="startDate" type="date" required value="${e.startDate}"/>
                       </div>
                       <div class="row">
-                        <label>종료일(선택)</label>
+                        <label>종료일</label>
                         <input name="endDate" type="date" value="${e.endDate}"/>
                       </div>
                       <div class="row">
@@ -1170,7 +1167,7 @@
                         <input name="role" type="text" required value="${fn:escapeXml(e.role)}"/>
                       </div>
                       <div class="row full">
-                        <label>설명(선택)</label>
+                        <label>설명</label>
                         <textarea name="description">${fn:escapeXml(e.description)}</textarea>
                       </div>
                     </div>
@@ -1193,7 +1190,7 @@
 </div>
 
 <script>
-  // ================== 탭 전환 (리로드 없이) ==================
+
   (function(){
     const menu = document.getElementById('menu');
     if(!menu) return;
@@ -1218,7 +1215,7 @@
     });
   })();
 
-  // ================== Stack (Skill/Position) ==================
+
   function esc(str){
     if(str === null || str === undefined) return "";
     return String(str)

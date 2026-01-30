@@ -9,39 +9,52 @@
     <meta charset="UTF-8">
     <title>북마크한 프로젝트</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root{
-            --bm-bg:#f6f7fb;
-            --bm-card:#ffffff;
-            --bm-text:#111827;
-            --bm-muted:#6b7280;
-            --bm-line:#e5e7eb;
 
-            --bm-primary:#6d4dfd;
-            --bm-primary-weak: rgba(109,77,253,.12);
+            --primary:#173160;
+            --text:#0f172a;
+            --bg:#f6f6f8;
 
-            --bm-danger:#dc2626;
-            --bm-shadow: 0 18px 55px rgba(17,24,39,.10);
-            --bm-shadow2: 0 10px 22px rgba(17,24,39,.08);
-            --bm-radius: 18px;
+            --card:#ffffff;
+            --muted:#64748b;
+            --line:#d7dee8;
+            --line-soft:#e6ebf2;
+            --danger:#dc2626;
+
+            --accent-bd: rgba(59,111,220,.22);
+            --accent-bg: rgba(59,111,220,.10);
+
+            --ghost-bg:#e5e7eb;
+            --ghost-fg:#111827;
+            --ghost-bd:#cbd5e1;
+
+            --shadow: 0 10px 26px rgba(15,23,42,.08);
+            --shadow2: 0 12px 30px rgba(15,23,42,.10);
+
+            --r-lg: 12px;
+            --r-md: 10px;
+            --r-sm: 8px;
+            --pill: 999px;
         }
 
         *{ box-sizing:border-box; }
+        html, body{ height:100%; }
         body{
             margin:0;
-            background: var(--bm-bg);
-            color: var(--bm-text);
-            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
-            Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ===== Page ===== */
+
         .bm-wrap{
             max-width: 1200px;
-            margin: 26px auto 70px;
+            margin: 28px auto 70px;
             padding: 0 16px;
         }
 
@@ -68,12 +81,12 @@
         }
         .bm-sub{
             margin:0;
-            color: var(--bm-muted);
+            color: var(--muted);
             font-size: 13px;
             font-weight: 800;
         }
 
-        /* ===== Search ===== */
+
         .bm-search{
             display:flex;
             align-items:center;
@@ -86,32 +99,38 @@
             width: 420px;
             max-width: 100%;
             padding: 11px 12px;
-            border-radius: 14px;
-            border:1px solid rgba(229,231,235,.95);
+            border-radius: var(--r-md);
+            border: 1px solid var(--line);
             background:#fff;
             outline:none;
-            font-weight: 850;
-            box-shadow: 0 8px 22px rgba(17,24,39,.06);
+            font-weight: 800;
+            box-shadow: var(--shadow);
+        }
+        .bm-search .bm-input::placeholder{
+            color:#94a3b8;
+            font-weight:800;
         }
         .bm-search .bm-input:focus{
-            border-color: rgba(109,77,253,.45);
-            box-shadow: 0 0 0 4px rgba(109,77,253,.12), 0 8px 22px rgba(17,24,39,.06);
+            border-color: rgba(23,49,96,.35);
+            box-shadow: 0 0 0 4px rgba(23,49,96,.12), var(--shadow);
         }
         .bm-search .bm-btn{
-            padding: 11px 14px;
-            border:none;
-            border-radius: 14px;
-            background: var(--bm-primary);
+            height: 42px;
+            padding: 0 16px;
+            border: 1px solid rgba(15,23,42,.08);
+            border-radius: var(--r-md);
+            background: var(--primary);
             color:#fff;
             font-weight: 950;
             cursor:pointer;
-            box-shadow: 0 14px 28px rgba(109,77,253,.22);
+            box-shadow: 0 10px 20px rgba(23,49,96,.18);
             transition: transform .08s ease, filter .12s ease;
+            white-space:nowrap;
         }
-        .bm-search .bm-btn:active{ transform: translateY(1px); }
         .bm-search .bm-btn:hover{ filter: brightness(.98); }
+        .bm-search .bm-btn:active{ transform: translateY(1px); }
 
-        /* ===== List grid ===== */
+
         .bm-grid{
             display:grid;
             grid-template-columns: repeat(2, minmax(0,1fr));
@@ -119,12 +138,11 @@
             margin-top: 10px;
         }
 
-        /* ===== Card ===== */
         .bm-card{
-            background: var(--bm-card);
-            border-radius: var(--bm-radius);
-            box-shadow: var(--bm-shadow2);
-            border: 1px solid rgba(229,231,235,.8);
+            background: var(--card);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line-soft);
             padding: 16px 16px 14px;
             cursor:pointer;
             position:relative;
@@ -134,17 +152,16 @@
         }
         .bm-card:hover{
             transform: translateY(-2px);
-            box-shadow: var(--bm-shadow);
-            border-color: rgba(109,77,253,.22);
+            box-shadow: var(--shadow2);
+            border-color: var(--accent-bd);
         }
 
-        /* subtle accent */
         .bm-card::before{
             content:"";
             position:absolute;
             left:0; top:0;
             width:100%; height:3px;
-            background: linear-gradient(90deg, rgba(109,77,253,.55), rgba(34,211,238,.45), rgba(16,185,129,.35));
+            background: #0f172a;
             opacity:.9;
         }
 
@@ -168,33 +185,33 @@
             align-items:center;
             gap:6px;
             padding: 6px 10px;
-            border-radius: 999px;
+            border-radius: var(--pill);
             font-size:12px;
             font-weight: 950;
-            border:1px solid rgba(229,231,235,.9);
-            background: #f9fafb;
+            border:1px solid var(--line);
+            background: #fff;
+            color: var(--text);
             white-space:nowrap;
             max-width: 320px;
             overflow:hidden;
             text-overflow:ellipsis;
         }
         .bm-owner-badge.company{
-            background: rgba(109,77,253,.10);
-            border-color: rgba(109,77,253,.22);
-            color: #3b2bd8;
+            border-color: var(--accent-bd);
+            /*background: var(--accent-bg);*/
+            color: rgba(17,24,39,.92);
         }
         .bm-owner-badge.personal{
-            background: rgba(16,185,129,.10);
-            border-color: rgba(16,185,129,.20);
-            color: #0f766e;
+            border-color: rgba(23,49,96,.14);
+            /*background: rgba(23,49,96,.06);*/
+            color: rgba(23,49,96,.92);
         }
 
-        /* Bookmark button */
         .bm-bookmark-btn{
             width: 38px;
             height: 38px;
-            border-radius: 14px;
-            border: 1px solid rgba(229,231,235,.95);
+            border-radius: var(--r-sm);
+            border: 1px solid var(--line);
             background:#fff;
             display:inline-flex;
             align-items:center;
@@ -204,27 +221,26 @@
             flex:0 0 auto;
         }
         .bm-bookmark-btn:hover{
-            border-color: rgba(109,77,253,.35);
-            box-shadow: 0 10px 20px rgba(17,24,39,.10);
+            border-color: rgba(23,49,96,.25);
+            background: rgba(23,49,96,.06);
             transform: translateY(-1px);
         }
         .bm-bookmark-btn svg{
             width: 18px;
             height: 18px;
             fill: none;
-            stroke: #6b7280;
+            stroke: #64748b;
             stroke-width: 2;
         }
         .bm-bookmark-btn.is-active{
-            background: rgba(109,77,253,.10);
-            border-color: rgba(109,77,253,.25);
+            border-color: rgba(23,49,96,.28);
+            background: rgba(23,49,96,.10);
         }
         .bm-bookmark-btn.is-active svg{
-            fill: #6d4dfd;
-            stroke: #6d4dfd;
+            fill: var(--primary);
+            stroke: var(--primary);
         }
 
-        /* Title */
         .bm-project-title{
             margin: 6px 0 10px;
             font-size: 18px;
@@ -236,9 +252,9 @@
             -webkit-box-orient: vertical;
             overflow:hidden;
             min-height: 44px;
+            color: var(--text);
         }
 
-        /* chips rows */
         .bm-chips{
             display:flex;
             flex-wrap:wrap;
@@ -247,31 +263,31 @@
         }
         .bm-chip{
             padding: 6px 10px;
-            border-radius: 999px;
+            border-radius: var(--pill);
             font-size: 12px;
-            font-weight: 950;
-            background: rgba(109,77,253,.10);
-            border: 1px solid rgba(109,77,253,.18);
-            color: #2f22c9;
+            font-weight: 900;
+            background: rgba(59,111,220,.10);
+            border: 1px solid rgba(59,111,220,.22);
+            color: rgba(17,24,39,.92);
+            white-space:nowrap;
         }
         .bm-chip.pos{
-            background: rgba(34,211,238,.10);
-            border: 1px solid rgba(34,211,238,.20);
-            color: #0f766e;
+            background: rgba(23,49,96,.06);
+            border-color: rgba(23,49,96,.14);
+            color: rgba(23,49,96,.92);
         }
         .bm-chip.skill{
-            background: rgba(99,102,241,.10);
-            border: 1px solid rgba(99,102,241,.18);
-            color: #3730a3;
+            background: rgba(59,111,220,.10);
+            border-color: rgba(59,111,220,.22);
+            color: rgba(17,24,39,.92);
         }
 
-        /* Bottom stats */
         .bm-bottom{
             display:flex;
             align-items:flex-end;
             justify-content:space-between;
             gap:10px;
-            border-top: 1px dashed rgba(229,231,235,.95);
+            border-top: 1px dashed var(--line-soft);
             padding-top: 12px;
             margin-top: 8px;
         }
@@ -285,20 +301,20 @@
         .bm-dday{
             font-weight: 950;
             font-size: 13px;
-            color: var(--bm-danger);
+            color: var(--danger);
             display:inline-flex;
             align-items:center;
             gap:8px;
         }
         .bm-applicants{
-            font-weight: 850;
+            font-weight: 900;
             font-size: 12px;
-            color: var(--bm-muted);
+            color: var(--muted);
         }
         .bm-duration{
-            font-weight: 850;
+            font-weight: 900;
             font-size: 12px;
-            color: var(--bm-muted);
+            color: var(--muted);
             line-height: 1.2;
             white-space:nowrap;
         }
@@ -313,7 +329,7 @@
         .bm-budget .label{
             font-size: 11px;
             font-weight: 950;
-            color: var(--bm-muted);
+            color: var(--muted);
             letter-spacing: .15px;
         }
         .bm-budget .value{
@@ -321,17 +337,17 @@
             font-weight: 950;
             letter-spacing: -0.3px;
             white-space:nowrap;
+            color: var(--text);
         }
 
-        /* Empty state */
         .bm-empty{
             background:#fff;
             padding: 28px 18px;
-            border-radius: var(--bm-radius);
-            box-shadow: var(--bm-shadow2);
-            border: 1px solid rgba(229,231,235,.9);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line-soft);
             font-weight: 950;
-            color:#6b7280;
+            color: var(--muted);
             text-align:center;
         }
         .bm-empty .mini{
@@ -386,10 +402,10 @@
                     <div class="bm-owner">
                         <c:choose>
                             <c:when test="${not empty p.companyName}">
-                                <span class="bm-owner-badge company">🏢 ${p.companyName}</span>
+                                <span class="bm-owner-badge company">🏢 ${fn:escapeXml(p.companyName)}</span>
                             </c:when>
                             <c:when test="${not empty p.clientName}">
-                                <span class="bm-owner-badge personal">👤 ${p.clientName}</span>
+                                <span class="bm-owner-badge personal">👤 ${fn:escapeXml(p.clientName)}</span>
                             </c:when>
                             <c:otherwise>
                                 <span class="bm-owner-badge">👤 클라이언트</span>
@@ -414,13 +430,13 @@
                     <c:if test="${not empty p.stacks}">
                         <c:forEach var="s" items="${p.stacks}">
                             <c:if test="${not empty s.category and s.category eq 'POSITION'}">
-                                <span class="bm-chip pos">${s.stackName}</span>
+                                <span class="bm-chip pos">${fn:escapeXml(s.stackName)}</span>
                             </c:if>
                         </c:forEach>
                     </c:if>
                 </div>
 
-                <div class="bm-project-title">${p.title}</div>
+                <div class="bm-project-title">${fn:escapeXml(p.title)}</div>
 
                 <!-- 스킬 -->
                 <div class="bm-chips">
@@ -428,7 +444,7 @@
                         <c:forEach var="s" items="${p.stacks}">
                             <c:if test="${not empty s.category and s.category eq 'SKILL'}">
                 <span class="bm-chip skill">
-                  ${s.stackName}
+                  ${fn:escapeXml(s.stackName)}
                   <c:if test="${s.stackLevel != null}">
                       Lv.${s.stackLevel}
                   </c:if>
@@ -448,7 +464,7 @@
                         </div>
 
                         <div class="bm-applicants">지원자 ${p.applicantCount}명</div>
-                        <div class="bm-duration">예상 기간 · ${p.estDuration}</div>
+                        <div class="bm-duration">예상 기간 · ${fn:escapeXml(p.estDuration)}</div>
                     </div>
 
                     <div class="bm-budget">
@@ -466,22 +482,24 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".bm-bookmark-btn").forEach((btn) => {
-            btn.addEventListener("click", async (e) => {
+    document.addEventListener("DOMContentLoaded", function(){
+        var ctx = "${pageContext.request.contextPath}";
+
+        document.querySelectorAll(".bm-bookmark-btn").forEach(function(btn){
+            btn.addEventListener("click", async function(e){
                 e.preventDefault();
                 e.stopPropagation();
 
-                const projectId = btn.dataset.projectId;
+                var projectId = btn.getAttribute("data-project-id");
 
                 try {
-                    const res = await fetch("${pageContext.request.contextPath}/project/bookmark/toggle", {
+                    var res = await fetch(ctx + "/project/bookmark/toggle", {
                         method: "POST",
                         headers: {"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"},
-                        body: new URLSearchParams({ projectId })
+                        body: new URLSearchParams({ projectId: projectId })
                     });
 
-                    const data = await res.json();
+                    var data = await res.json();
                     if (!data.ok) {
                         alert(data.message === "LOGIN_REQUIRED" ? "로그인이 필요합니다." : "실패");
                         return;
@@ -489,19 +507,24 @@
 
                     // 북마크 페이지에서는 해제되면 카드 제거
                     if (!data.bookmarked) {
-                        const card = btn.closest(".bm-card");
+                        var card = btn.closest(".bm-card");
                         if (card) card.remove();
 
                         // 다 지워졌으면 empty 메시지 표시
                         if (document.querySelectorAll(".bm-card").length === 0) {
-                            const grid = document.querySelector(".bm-grid");
-                            grid.innerHTML =
-                                '<div class="bm-empty" style="grid-column: 1 / -1;">북마크한 프로젝트가 없습니다.<div class="mini">관심 있는 프로젝트를 북마크해두면 여기서 모아볼 수 있어요.</div></div>';
+                            var grid = document.querySelector(".bm-grid");
+                            if(grid){
+                                grid.innerHTML =
+                                    '<div class="bm-empty" style="grid-column: 1 / -1;">' +
+                                    '북마크한 프로젝트가 없습니다.' +
+                                    '<div class="mini">관심 있는 프로젝트를 북마크해두면 여기서 모아볼 수 있어요.</div>' +
+                                    '</div>';
+                            }
                         }
                         return;
                     }
 
-                    btn.classList.toggle("is-active", data.bookmarked);
+                    btn.classList.toggle("is-active", !!data.bookmarked);
                 } catch (err) {
                     console.error(err);
                     alert("북마크 처리 중 오류");

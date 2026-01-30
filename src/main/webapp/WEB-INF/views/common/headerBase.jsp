@@ -208,7 +208,7 @@
   <div class="header-inner">
 
     <div class="logo">
-      <a href="${pageContext.request.contextPath}/">RateLOcean</a>
+      <a href="${pageContext.request.contextPath}/">RatelOcean</a>
     </div>
 
     <nav class="nav">
@@ -339,7 +339,6 @@
     const items = Array.from(document.querySelectorAll('.actions .icon-item'));
     const toggles = Array.from(document.querySelectorAll('.actions .js-dd-toggle'));
 
-    // 디버그: 이 숫자가 3이 아니면 HTML 클래스 적용이 안된거임
     console.log('[header] toggles:', toggles.length);
 
     function closeAll(except) {

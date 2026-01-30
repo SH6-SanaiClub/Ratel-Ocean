@@ -11,46 +11,39 @@
 
     <style>
         :root{
-            /* =========================
-               KRDS 톤다운(뉴트럴 기반)
-               - 화면은 회색 기저
-               - 블루는 '포인트'로만
-               ========================= */
 
-            /* Neutral */
-            --bg:    #f4f5f7;   /* 전체 바탕: 톤다운 회색 */
-            --paper: #ffffff;   /* 카드/컨텐츠 */
-            --text:  #111827;   /* 본문 */
-            --muted: #6b7280;   /* 보조텍스트 */
+            --bg:    #f6f6f8;
+            --paper: #ffffff;
+            --text:  #111827;
+            --muted: #6b7280;
             --muted2:#8b95a1;
 
-            --line:  #d6dae1;   /* 구분선 */
-            --line2: #c7ccd6;   /* 강조 구분선 */
+            --line:  #d6dae1;
+            --line2: #c7ccd6;
 
-            /* Primary (Muted Blue) */
+
             --p50:   #eff4ff;
             --p100:  #dbe7ff;
             --p200:  #bcd3ff;
-            --p500:  #3b6fdc;   /* 과하지 않은 블루 */
+            --p500:  #3b6fdc;
             --p600: #173160;
             --p700:  #264fa8;
 
-            /* Elevation (KRDS처럼 "낮고 얇게") */
             --shadow: 0 2px 10px rgba(17,24,39,.06);
             --shadow2: 0 1px 6px rgba(17,24,39,.05);
 
-            /* Radius */
+
             --R0: 0px;
             --Rtab: 6px;
             --Rcard: 14px;
             --Rchip: 999px;
             --Rbtn: 10px;
 
-            /* Focus */
+
             --focus: 0 0 0 3px rgba(59,111,220,.22);
         }
 
-        /* ===== base ===== */
+
         *{ box-sizing:border-box; }
         html, body{ height:100%; }
         body{
@@ -72,7 +65,7 @@
             padding: 18px 18px 70px;
         }
 
-        /* ===== frame/top ===== */
+
         .frame{
             border: 1px solid var(--line);
             background: var(--paper);
@@ -81,14 +74,14 @@
             overflow:hidden;
         }
 
-        .topbar{
+        .topbar {
             padding: 16px 18px;
-            border-bottom:1px solid var(--line);
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 14px;
-            background: #fafafa; /* KRDS 톤: 헤더가 완전 흰색이 아니라 살짝 다운 */
+            background: #fafafa;
         }
 
         .who{ display:flex; align-items:center; gap: 12px; min-width: 0; }
@@ -97,7 +90,7 @@
             width:58px; height:58px;
             border-radius: var(--Rcard);
             overflow:hidden;
-            background: #f1f3f6; /* 파랑 제거 */
+            background: #f1f3f6;
             border:1px solid var(--line);
             flex: 0 0 auto;
             display:flex; align-items:center; justify-content:center;
@@ -119,7 +112,6 @@
 
         .actions{ display:flex; gap:10px; flex:0 0 auto; align-items:center; }
 
-        /* ===== buttons (톤다운) ===== */
         .btn{
             border:1px solid transparent;
             border-radius: var(--Rbtn);
@@ -154,13 +146,13 @@
         }
         .btn-primary:hover{ background: var(--p700); }
 
-        /* ===== layout ===== */
+
         .grid{
             display:grid;
             grid-template-columns: 340px 1fr;
             gap: 14px;
             padding: 14px;
-            background: #fff; /* 내부 바탕도 흰색 말고 살짝 다운 */
+            background: #fff;
         }
 
         @media (max-width: 980px){
@@ -180,7 +172,6 @@
             align-self:start;
         }
 
-        /* ===== cards ===== */
         .card{
             background:#fff;
             border:1px solid var(--line);
@@ -195,7 +186,7 @@
             align-items:flex-end;
             justify-content:space-between;
             gap:10px;
-            background:#fafafa; /* 헤더 톤다운 */
+            background:#fafafa;
         }
         .card-title{
             margin:0;
@@ -238,7 +229,6 @@
             font-size:13px;
         }
 
-        /* ===== tabs (KRDS처럼 "채움" 줄이고 라인 중심) ===== */
         .tabs{
             background:#fff;
             border:1px solid var(--line);
@@ -270,9 +260,9 @@
         .tab:last-child{ border-right:0; }
         .tab:hover{ background: #f2f3f5; }
         .tab.is-active{
-            background: #fff;                 /* ✅ 활성 탭 채움 제거 */
+            background: #fff;
             color: rgba(17,24,39,.95);
-            box-shadow: inset 0 -3px 0 var(--text); /* ✅ 라인으로만 강조 */
+            box-shadow: inset 0 -3px 0 var(--text);
         }
         .tab:focus{ outline:none; box-shadow: var(--focus); z-index:1; }
 
@@ -280,7 +270,6 @@
         .pane{ display:none; }
         .pane.is-active{ display:block; }
 
-        /* ===== KPI ===== */
         .kpis{
             display:grid;
             grid-template-columns: 1fr 1fr;
@@ -387,22 +376,20 @@
             font-weight: 800;
             line-height:1;
         }
-        /* POSITION - light */
+
         .chips-pos .chip{
             background: rgba(23,49,96,.06);
             border-color: rgba(23,49,96,.14);
             color: rgba(23,49,96,.92);
         }
 
-        /* SKILL - 기존보다 살짝 다른 톤(예시) */
+
         .chips-skill .chip{
             background: rgba(59,111,220,.10);
             border-color: rgba(59,111,220,.22);
             color: rgba(17,24,39,.92);
         }
 
-
-        /* 레벨 부분만 살짝 블루 포인트 */
         .lvl{ display:inline-flex; gap:8px; align-items:center; color: rgba(17,24,39,.65); font-weight: 700; }
         .bars{ display:inline-flex; gap:2px; }
         .bar{
@@ -412,7 +399,6 @@
         }
         .bar.on{ background: rgba(23, 49, 96,.92); }
 
-        /* ===== item cards ===== */
         .item-list{ display:flex; flex-direction:column; gap: 10px; }
         .item-card{
             border:1px solid var(--line);
@@ -460,7 +446,6 @@
             line-height:1.45;
         }
 
-        /* 별점도 톤다운 */
         .rating{
             display:inline-flex;
             align-items:center;
@@ -497,7 +482,7 @@
             a.link{ border:none; text-decoration: underline; }
             .card, .section-box, .item-card{ break-inside: avoid; page-break-inside: avoid; }
         }
-        /* 라벨 옵션 */
+
         .stack-block{ margin-top:10px; }
         .stack-label{
             font-size:11px;
