@@ -7,8 +7,104 @@
 <head>
 	<title>계약서 확인 및 수정</title>
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-form.css" />
+	<style>
+		:root {
+			--bg: #f6f7fb;
+			--card: #fff;
+			--text: #111827;
+			--muted: #6b7280;
+			--line: #e5e7eb;
+			--primary: #1a9aa6;
+			--primary-weak: rgba(26, 154, 166, 0.12);
+			--shadow: 0 20px 60px rgba(17, 24, 39, 0.08);
+			--radius: 18px;
+		}
+		
+		body {
+			background: var(--bg) !important;
+		}
+		
+		/* 카드 스타일 개선 */
+		.card {
+			background: var(--card) !important;
+			border: 1px solid rgba(229, 231, 235, 0.75) !important;
+			border-radius: 22px !important;
+			box-shadow: var(--shadow) !important;
+		}
+		
+		/* 버튼 스타일 개선 */
+		.btn-primary {
+			background: var(--primary) !important;
+			color: #fff !important;
+			box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important;
+			border-radius: 14px !important;
+		}
+		
+		.btn-primary:hover {
+			filter: brightness(0.985) !important;
+		}
+		
+		.btn-secondary {
+			background: var(--card) !important;
+			border: 1px solid var(--line) !important;
+			color: var(--text) !important;
+			border-radius: 14px !important;
+		}
+		
+		.btn-secondary:hover {
+			filter: brightness(0.985) !important;
+		}
+		
+		/* 입력 필드 스타일 개선 */
+		input[type="text"],
+		input[type="date"],
+		input[type="number"],
+		textarea {
+			border: 1px solid rgba(229, 231, 235, 0.85) !important;
+			border-radius: 14px !important;
+		}
+		
+		input[type="text"]:focus,
+		input[type="date"]:focus,
+		input[type="number"]:focus,
+		textarea:focus {
+			border-color: var(--primary) !important;
+			box-shadow: 0 0 0 3px var(--primary-weak) !important;
+		}
+		
+		/* 사이드바 카드 스타일 */
+		.sidebar-card,
+		.ai-requirements-box,
+		.ai-guide-box {
+			background: var(--card) !important;
+			border: 1px solid rgba(229, 231, 235, 0.75) !important;
+			border-radius: 22px !important;
+			box-shadow: var(--shadow) !important;
+		}
+		
+		/* 지급 방식 버튼 스타일 */
+		.payment-method-btn.active {
+			background: var(--primary-weak) !important;
+			border-color: rgba(26, 154, 166, 0.25) !important;
+			color: #0b6e76 !important;
+		}
+		
+		/* 마일스톤 테이블 스타일 */
+		.milestone-table {
+			border: 1px solid rgba(229, 231, 235, 0.75) !important;
+			border-radius: 14px !important;
+		}
+		
+		.milestone-table th,
+		.milestone-table td {
+			border-color: rgba(229, 231, 235, 0.85) !important;
+		}
+	</style>
 </head>
 <body>
+<c:set var="activeMenu" value="contracts" scope="request"/>
+<c:set var="userType" value="CLIENT" scope="request"/>
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="page-wrapper">
 	<c:if test="${empty sessionScope.contractCheckAlertShown}">
 		<div class="alert-box">
@@ -166,17 +262,17 @@
 					
 					<div class="form-group">
 						<label>② 계약 시작일 <span class="required-mark">*</span></label>
-						<input type="date" name="contractStartDate" value="${contract.contractStartDate}" required />
+						<input type="date" class="readonly-input" name="contractStartDate" value="${contract.contractStartDate}" required />
 					</div>
 					
 					<div class="form-group">
 						<label>③ 계약 종료일 <span class="required-mark">*</span></label>
-						<input type="date" name="contractEndDate" value="${contract.contractEndDate}" required />
+						<input type="date" class="readonly-input" name="contractEndDate" value="${contract.contractEndDate}" required />
 					</div>
 					
 					<div class="form-group">
 						<label>④ 총 계약금액 <span class="required-mark">*</span></label>
-						<input type="number" name="totalBudget" value="${contract.totalBudget}" required min="0" step="1" />
+						<input type="number" class="readonly-input" name="totalBudget" value="${contract.totalBudget}" required min="0" step="1" />
 						<p class="hint-text">※ 위 금액은 부가세를 포함하지 않습니다.</p>
 					</div>
 
@@ -243,17 +339,19 @@
 						</table>
 						<button type="button" class="btn btn-primary milestone-add-btn" onclick="addMilestone()">+ 마일스톤 추가</button>
 						<div id="milestoneSummary" class="milestone-summary">
-							<div class="milestone-summary-row">
-								<span class="milestone-summary-label">마일스톤 금액 합계:</span>
-								<span id="milestoneTotal" class="milestone-summary-value">0원</span>
-							</div>
-							<div class="milestone-summary-row">
-								<span class="milestone-summary-label">총 계약금액:</span>
-								<span id="totalBudgetDisplay" class="milestone-summary-value-dark">0원</span>
-							</div>
-							<div class="milestone-summary-row milestone-summary-divider">
-								<span class="milestone-summary-label">차이:</span>
-								<span id="amountDifference" style="font-size: 18px; font-weight: 700;">0원</span>
+							<div class="milestone-summary-row milestone-summary-single-row">
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="milestone-summary-label">마일스톤 금액 합계:</span>
+									<span id="milestoneTotal" class="milestone-summary-value">0원</span>
+								</div>
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="milestone-summary-label">총 계약금액:</span>
+									<span id="totalBudgetDisplay" class="milestone-summary-value-dark">0원</span>
+								</div>
+								<div style="display: flex; align-items: center; gap: 8px;">
+									<span class="milestone-summary-label">차이:</span>
+									<span id="amountDifference" class="milestone-summary-value-difference">0원</span>
+								</div>
 							</div>
 						</div>
 						<div id="milestoneWarning" class="warning" style="display:none; margin-top: 12px;">
@@ -469,13 +567,16 @@ function checkMilestoneBudget() {
 	$('#totalBudgetDisplay').text(budget.toLocaleString('ko-KR') + '원');
 	
 	// 차이 표시
-	var differenceText = difference.toLocaleString('ko-KR') + '원';
+	var differenceText;
 	if (difference > 0) {
-		$('#amountDifference').text('+' + differenceText).css('color', '#dc3545');
+		differenceText = '+' + Math.abs(difference).toLocaleString('ko-KR') + '원';
+		$('#amountDifference').text(differenceText).css('color', '#dc3545');
 	} else if (difference < 0) {
+		differenceText = '-' + Math.abs(difference).toLocaleString('ko-KR') + '원';
 		$('#amountDifference').text(differenceText).css('color', '#dc3545');
 	} else {
-		$('#amountDifference').text('0원').css('color', '#28a745');
+		differenceText = '0원';
+		$('#amountDifference').text(differenceText).css('color', '#28a745');
 	}
 	
 	// 마일스톤 금액 합계가 총 계약금액과 일치하지 않으면 경고 표시 및 버튼 비활성화

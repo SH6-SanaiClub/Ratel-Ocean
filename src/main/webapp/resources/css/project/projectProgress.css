@@ -105,3 +105,238 @@
         opacity: 1;
     }
 }
+
+/* ========================================
+   마일스톤 상태별 스타일 추가
+   ======================================== */
+
+/* DEPOSITED 상태 */
+.st-DEPOSITED {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+/* 요청된 마일스톤 카드 강조 */
+.milestone-card.requested {
+    border: 2px solid #D32F2F;
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);
+}
+
+/* 마일스톤 액션 버튼 영역 */
+.ms-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+/* 버튼 그룹 (승인/거부) */
+.btn-group-payout {
+    display: flex;
+    gap: 8px;
+}
+
+/* 직접 지급 버튼 */
+.btn-pay-direct {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #1565C0;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.btn-pay-direct:hover {
+    background: #0D47A1;
+}
+
+/* 승인 버튼 */
+.btn-pay-approve {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #1F7A8C;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.btn-pay-approve:hover {
+    background: #166678;
+}
+
+/* 거부 버튼 */
+.btn-pay-reject {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #f5f5f5;
+    color: #D32F2F;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #D32F2F;
+    transition: all 0.2s;
+}
+
+.btn-pay-reject:hover {
+    background: #FFEBEE;
+}
+
+/* ========================================
+   비밀번호 인증 모달 스타일
+   ======================================== */
+
+.payout-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.payout-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.payout-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.payout-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.payout-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.payout-modal-close:hover {
+    color: #333;
+}
+
+.payout-modal-body {
+    padding: 20px;
+}
+
+.payout-modal-body p {
+    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.payout-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.payout-input-group label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.payout-input-group input {
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.payout-input-group input:focus {
+    outline: none;
+    border-color: #1F7A8C;
+}
+
+.payout-help-text {
+    color: #999;
+    font-size: 12px;
+}
+
+.payout-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    background: #fafafa;
+}
+
+.payout-modal-footer .btn-cancel {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.payout-modal-footer .btn-cancel:hover {
+    background: #f5f5f5;
+}
+
+.payout-modal-footer .btn-confirm {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #1F7A8C;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.payout-modal-footer .btn-confirm:hover {
+    background: #166678;
+}
+
+.payout-modal-footer .btn-confirm:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

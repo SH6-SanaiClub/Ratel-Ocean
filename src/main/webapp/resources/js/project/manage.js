@@ -266,7 +266,7 @@ function renderDetail(data) {
                 1:1 채팅하기
             </button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="updateStatus(${data.applicationId}, 'OFFERED')">
+                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="goToContractForm(${currentProjectId}, ${data.freelancerId})">
                     계약 제안
                 </button>
                 <button class="btn-action ${rejectStyle}" ${rejectDisabled} onclick="updateStatus(${data.applicationId}, 'REJECTED')">
@@ -366,4 +366,13 @@ function deleteProject() {
             }
         });
     }
+}
+
+function goToContractForm(projectId, freelancerId) {
+    if (!projectId || !freelancerId) {
+        alert('프로젝트와 프리랜서를 선택해주세요.');
+        return;
+    }
+    const url = contextPath + '/client/contract/form?projectId=' + projectId + '&freelancerId=' + freelancerId;
+    window.location.href = url;
 }

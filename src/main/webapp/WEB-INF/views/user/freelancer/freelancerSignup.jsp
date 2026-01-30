@@ -10,6 +10,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         :root { --brand-main: #2C1A52; --brand-accent: #00F0FF; --brand-purple: #8A2BE2; --bg-light: #F8F9FD; --text-dark: #2D2D2D; --border-color: #E2E8F0; }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         .container { width: 100%; max-width: 580px; background: #FFFFFF; border-radius: 20px; padding: 50px 45px; box-shadow: 0 10px 30px rgba(44, 26, 82, 0.08); border: 1px solid var(--border-color); }
         .header { text-align: center; margin-bottom: 35px; }
         .header h1 { font-size: 1.6rem; font-weight: 700; color: var(--brand-main); margin: 0; }
@@ -21,6 +31,10 @@
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1); }
         textarea { resize: vertical; min-height: 100px; font-family: inherit; }
         .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-group { display: flex; gap: 12px; margin-top: 10px; }
+        .btn { flex: 1; padding: 18px; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 8px; border: none; }
+        .btn-secondary { background: #6c757d; color: #FFFFFF; }
+        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3); }
         .btn-primary { background: linear-gradient(135deg, var(--brand-main) 0%, var(--brand-purple) 100%); color: #FFFFFF; border: none; padding: 18px; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .btn-primary:hover { background: var(--brand-purple); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(44, 26, 82, 0.2); }
         .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
@@ -77,8 +91,12 @@
             </div>
         </div>
 
-        <div class="submit-area">
-            <button type="button" id="submitBtn" class="btn-primary">
+        <!-- 이전/다음 버튼 -->
+        <div class="btn-group">
+            <button type="button" id="prevBtn" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 이전
+            </button>
+            <button type="button" id="submitBtn" class="btn btn-primary">
                 프로필 저장 후 다음 단계 <i class="fas fa-arrow-right"></i>
             </button>
         </div>
@@ -121,6 +139,20 @@
                     $('#submitBtn').prop('disabled', false).html('프로필 저장 후 다음 단계 <i class="fas fa-arrow-right"></i>');
                 }
             });
+        });
+    });
+
+    $(document).ready(function() {
+        // 이전 버튼
+        $('#prevBtn').click(function() {
+            window.history.back();
+        });
+
+        // 기존 submitBtn 코드...
+        $('#submitBtn').click(function() {
+            // ... 기존 코드 유지
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
+            // ...
         });
     });
 </script>

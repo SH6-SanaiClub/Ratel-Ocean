@@ -9,9 +9,132 @@
     <title>계약서 작성</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/contract/contract-form.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        /* 인라인 스타일로 강제 적용 - 프리랜서 프로젝트 관리 페이지 톤 적용 */
+        :root {
+            --bg: #f6f7fb;
+            --card: #fff;
+            --text: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #1a9aa6;
+            --primary-weak: rgba(26, 154, 166, 0.12);
+            --shadow: 0 20px 60px rgba(17, 24, 39, 0.08);
+            --radius: 18px;
+        }
+        
+        body {
+            background: var(--bg) !important;
+        }
+        
+        #projectInfo.summary-box,
+        #freelancerInfo.summary-box,
+        .page-wrapper .summary-box:not(.contract-preview-box) {
+            background-color: var(--card) !important;
+            background: var(--card) !important;
+            border: 1px solid rgba(229, 231, 235, 0.75) !important;
+            border-radius: 22px !important;
+            padding: 20px !important;
+            margin-top: 16px !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        .choice-card.selected {
+            border-color: var(--primary) !important;
+            background-color: var(--primary-weak) !important;
+            background: var(--primary-weak) !important;
+        }
+        
+        .choice-card.selected::after {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E") !important;
+            background-size: 12px 12px !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+        }
+        
+        .pdf-upload-area {
+            border: 2px dashed rgba(229, 231, 235, 0.85) !important;
+            border-radius: 22px !important;
+            padding: 60px 40px !important;
+            text-align: center !important;
+            background: var(--card) !important;
+            margin-top: 16px !important;
+            min-height: 200px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        /* 카드 스타일 개선 */
+        .page-wrapper .card,
+        .contract-form-layout .card {
+            border: 1px solid rgba(229, 231, 235, 0.75) !important;
+            border-radius: 22px !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        /* 버튼 스타일 개선 */
+        .btn-primary {
+            background: var(--primary) !important;
+            color: #fff !important;
+            box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important;
+            border-radius: 14px !important;
+        }
+        
+        .btn-primary:hover {
+            filter: brightness(0.985) !important;
+        }
+        
+        /* 계약 요청하기 버튼 중앙 정렬 강제 - 최우선 적용 */
+        #directFormActionArea,
+        #directFormActionArea.action-area,
+        #stepDirectForm #directFormActionArea,
+        #stepFinalAction,
+        #stepFinalAction .action-area,
+        .page-wrapper #directFormActionArea,
+        .page-wrapper #stepFinalAction .action-area {
+            justify-content: center !important;
+            align-items: center !important;
+            display: flex !important;
+            text-align: center !important;
+            width: 100% !important;
+        }
+        
+        /* 인라인 스타일이 있어도 중앙 정렬 유지 */
+        #directFormActionArea[style],
+        #stepFinalAction .action-area[style] {
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+        
+        /* 버튼 자체를 중앙에 배치 */
+        #directFormActionArea .btn-primary,
+        #directFormActionArea #finalSubmitBtn,
+        #stepFinalAction .action-area .btn-primary,
+        #stepFinalAction .action-area #pdfFinalSubmitBtn,
+        .page-wrapper #directFormActionArea .btn-primary,
+        .page-wrapper #stepFinalAction .action-area .btn-primary {
+            margin: 0 auto !important;
+            display: block !important;
+        }
+        
+        /* 카드 내부도 중앙 정렬 */
+        #stepFinalAction.card,
+        #stepDirectForm .card {
+            text-align: center !important;
+        }
+    </style>
 </head>
 
 <body>
+<c:set var="activeMenu" value="contracts" scope="request"/>
+<c:set var="userType" value="CLIENT" scope="request"/>
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 
 <div class="page-wrapper">
     <!-- STEP 1: 프로젝트 선택 -->
@@ -81,12 +204,13 @@
     <section class="card step-card" id="stepPdfUpload">
         <h2 class="section-title">4. 계약서 PDF 업로드</h2>
         <form id="pdfUploadForm" enctype="multipart/form-data" onsubmit="return false;">
-            <input type="file" name="contractPdf" accept="application/pdf" id="pdfFileInput" class="hidden" />
+            <input type="file" name="contractPdf" accept="application/pdf" id="pdfFileInput" style="display: none !important; position: absolute !important; width: 0 !important; height: 0 !important; opacity: 0 !important; pointer-events: none !important;" />
             <input type="hidden" name="projectId" />
             <input type="hidden" name="freelancerId" />
             <input type="hidden" id="uploadedPdfFileName" />
             <div class="pdf-upload-area">
                 <button type="button" class="btn-primary pdf-upload-btn" id="pdfUploadBtn">PDF 파일 선택 및 업로드</button>
+                <div class="pdf-upload-hint">최대 파일 용량: 20MB (.pdf 만 가능)</div>
                 <div id="pdfUploadStatus" class="pdf-upload-status"></div>
             </div>
         </form>
@@ -115,13 +239,16 @@
                 </div>
             </div>
         </div>
+        <!-- 최종 완성 버튼 영역 (직접작성용) -->
+        <div class="action-area" id="directFormActionArea" style="justify-content: center !important; align-items: center !important; display: flex !important; text-align: center !important;">
+            <button type="button" class="btn-primary hidden" id="finalSubmitBtn" onclick="handleFinalSubmit(event); return false;" title="필수 조항을 모두 입력해야 완성할 수 있습니다" style="margin: 0 auto !important;">계약 요청하기</button>
+        </div>
     </section>
 
-    <!-- 최종 완성 버튼 영역 (PDF/직접작성 공통) -->
-    <section class="card step-card" id="stepFinalAction">
-        <div class="action-area">
-            <button type="button" class="btn-primary hidden" id="pdfFinalSubmitBtn" onclick="handlePdfFinalSubmit(event); return false;" title="PDF를 업로드해야 완성할 수 있습니다">AI와 계약서 완성하기</button>
-            <button type="button" class="btn-primary hidden" id="finalSubmitBtn" onclick="handleFinalSubmit(event); return false;" title="필수 조항을 모두 입력해야 완성할 수 있습니다">AI와 계약서 완성하기</button>
+    <!-- 최종 완성 버튼 영역 (PDF용) -->
+    <section class="card step-card" id="stepFinalAction" style="text-align: center;">
+        <div class="action-area" style="justify-content: center !important; align-items: center !important; display: flex !important;">
+            <button type="button" class="btn-primary hidden" id="pdfFinalSubmitBtn" onclick="handlePdfFinalSubmit(event); return false;" title="PDF를 업로드해야 완성할 수 있습니다" style="margin: 0 auto !important;">계약 요청하기</button>
         </div>
     </section>
 
@@ -250,8 +377,21 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
         return;
     }
     
-    // 모달 즉시 표시
+    // body의 마지막 자식으로 이동하여 다른 요소의 영향을 받지 않도록
+    document.body.appendChild(modalEl);
+    
+    // 모달 화면 중앙에 표시 - 모든 스타일 명시적으로 설정
+    modalEl.removeAttribute('style');
+    modalEl.className = 'modal-overlay';
+    // 배경을 더 진하게 (0.7 -> 0.9), backdrop-filter 추가
+    modalEl.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important; margin: 0 !important; padding: 0 !important;';
     modalEl.classList.add('show');
+    
+    // 모달 콘텐츠 스타일 강제 적용 (글자 깨짐 방지)
+    const modalContent = modalEl.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.style.cssText = 'background: #ffffff !important; border-radius: 20px !important; padding: 40px !important; max-width: 500px !important; width: 90% !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; text-align: center !important; position: relative !important; margin: auto !important; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; text-rendering: optimizeLegibility !important; font-smooth: always !important;';
+    }
     
     // 모달 내부 확인 버튼 이벤트 설정
     const confirmBtn = document.getElementById('confirmAiAnalysisBtn');
@@ -261,9 +401,15 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
         return;
     }
     
+    // 버튼 스타일을 "계약 요청하기" 버튼과 유사하게 강제 적용
+    confirmBtn.style.cssText = 'width: auto !important; min-width: 160px !important; height: 48px !important; border-radius: 14px !important; border: none !important; background: #1a9aa6 !important; color: #fff !important; font-size: 13px !important; font-weight: 950 !important; cursor: pointer !important; transition: all 0.25s ease !important; padding: 12px 14px !important; box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; white-space: nowrap !important;';
+    
     // 기존 이벤트 리스너 제거 후 새로 등록
     const newBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+    
+    // 새 버튼에도 스타일 다시 적용
+    newBtn.style.cssText = 'width: auto !important; min-width: 160px !important; height: 48px !important; border-radius: 14px !important; border: none !important; background: #1a9aa6 !important; color: #fff !important; font-size: 13px !important; font-weight: 950 !important; cursor: pointer !important; transition: all 0.25s ease !important; padding: 12px 14px !important; box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; white-space: nowrap !important;';
     
     newBtn.onclick = function(e) {
         e.preventDefault();
@@ -273,20 +419,61 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
         return false;
     };
     
+    // 호버 효과도 추가
+    newBtn.addEventListener('mouseenter', function() {
+        this.style.filter = 'brightness(0.985)';
+        this.style.transform = 'translateY(-1px)';
+    });
+    newBtn.addEventListener('mouseleave', function() {
+        this.style.filter = '';
+        this.style.transform = '';
+    });
+    
     console.log('[DEBUG] Modal displayed');
 }
 
 function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
     console.log('[DEBUG] submitToContractCheck called', { inputType, projectId, freelancerId, fileName });
     
+    // 모달 완전히 숨기기 - 모든 방법으로 강제 숨김
     const modalEl = document.getElementById('aiAnalysisModal');
     if (modalEl) {
+        // 모든 클래스 제거
+        modalEl.className = 'modal-overlay';
+        // 모든 스타일 속성 제거 후 숨김
+        modalEl.removeAttribute('style');
+        modalEl.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; z-index: -1 !important; pointer-events: none !important; position: fixed !important; top: -9999px !important; left: -9999px !important; width: 0 !important; height: 0 !important;';
         modalEl.classList.remove('show');
+        
+        // 모달 내부 요소도 숨김
+        const modalContent = modalEl.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.cssText = 'display: none !important;';
+        }
     }
     
+    // 로딩 오버레이 표시 - 모든 스타일을 강제로 적용
     const loadingEl = document.getElementById('loadingOverlay');
     if (loadingEl) {
+        // body의 마지막 자식으로 이동하여 다른 요소의 영향을 받지 않도록
+        document.body.appendChild(loadingEl);
+        
+        // 기존 스타일 모두 제거 후 새로 설정
+        loadingEl.removeAttribute('style');
+        loadingEl.className = 'loading-overlay';
+        
+        // 화면 전체를 덮고 중앙에 표시되도록 강제 설정 - cssText로 한 번에 설정
+        loadingEl.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(255,255,255,0.98) !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; transform: none !important;';
         loadingEl.classList.add('show');
+        
+        // loading-content도 중앙 정렬 강제
+        const loadingContent = loadingEl.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.style.cssText = 'text-align: center !important; margin: 0 auto !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;';
+        }
+        
+        // 강제로 리플로우 발생시켜 스타일 적용 확인
+        loadingEl.offsetHeight;
     }
     
     const loadingMessages = [
@@ -349,8 +536,8 @@ function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
 </script>
 
 <!-- AI 분석 안내 모달 -->
-<div id="aiAnalysisModal" class="modal-overlay">
-    <div class="modal-content">
+<div id="aiAnalysisModal" class="modal-overlay" style="display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important; margin: 0 !important; padding: 0 !important;">
+    <div class="modal-content" style="background: #ffffff !important; border-radius: 20px !important; padding: 40px !important; max-width: 500px !important; width: 90% !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; text-align: center !important; position: relative !important; margin: auto !important; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; text-rendering: optimizeLegibility !important;">
         <div class="modal-icon">🤖</div>
         <h2 class="modal-title">AI 계약서 분석</h2>
         <p class="modal-description">
@@ -373,8 +560,8 @@ function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
 </div>
 
 <!-- 로딩 오버레이 -->
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-content">
+<div id="loadingOverlay" class="loading-overlay" style="display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(255,255,255,0.98) !important; margin: 0 !important; padding: 0 !important;">
+    <div class="loading-content" style="text-align: center !important; margin: 0 auto !important;">
         <div class="loading-spinner"></div>
         <h3 class="loading-title">AI 계약서 생성 중</h3>
         <p class="loading-description">
@@ -647,10 +834,17 @@ $(function () {
 
     // STEP 3: PDF 여부
     $('input[name="hasPdf"]').on('change', function() {
+        // 선택된 카드에 클래스 추가/제거
+        $('.choice-card').removeClass('selected');
+        $(this).closest('.choice-card').addClass('selected');
+        
         $('#stepPdfUpload, #stepDirectForm, #stepFinalAction').removeClass('visible');
         $('#pdfFinalSubmitBtn, #finalSubmitBtn').addClass('hidden').hide();
+        $('#directFormActionArea').hide();
         $('#pdfUploadStatus').empty();
         $('#pdfFileInput').val(''); // 파일 선택 초기화
+        // 업로드 버튼 다시 표시 (초기화 시)
+        $('#pdfUploadBtn').show().text('PDF 파일 선택 및 업로드');
         
         if (this.value === 'yes') {
             $('#stepPdfUpload').addClass('visible');
@@ -658,7 +852,13 @@ $(function () {
             scrollToCard($('#stepPdfUpload'));
         } else {
             $('#stepDirectForm').addClass('visible');
-            $('#stepFinalAction').addClass('visible').css('display', 'block');
+            $('#directFormActionArea').css({
+                'display': 'flex',
+                'justify-content': 'center',
+                'align-items': 'center',
+                'text-align': 'center'
+            }).show();
+            $('#finalSubmitBtn').css('margin', '0 auto');
             const finalBtn = document.getElementById('finalSubmitBtn');
             if (finalBtn) {
                 $(finalBtn).removeClass('hidden').show();
@@ -752,13 +952,17 @@ $(function () {
                     
                     // 성공 알림
                     $status.html('<span class="status-success">✓ 업로드 완료: ' + fileNameDisplay + '</span>');
-                    $btn.prop('disabled', false).text('다시 업로드');
+                    // 업로드 완료 후 버튼 완전히 숨김
+                    $btn.hide().css('display', 'none').prop('disabled', false).text('PDF 파일 선택 및 업로드');
                     
                     // 완성 버튼 표시 및 활성화
-                    $('#stepFinalAction').addClass('visible').css('display', 'block');
+                    $('#stepFinalAction').addClass('visible').css({
+                        'display': 'block',
+                        'text-align': 'center'
+                    });
                     const pdfBtn = document.getElementById('pdfFinalSubmitBtn');
                     if (pdfBtn) {
-                        $(pdfBtn).removeClass('hidden').show();
+                        $(pdfBtn).removeClass('hidden').show().css('margin', '0 auto');
                         // onclick 속성 확실하게 설정
                         pdfBtn.setAttribute('onclick', 'handlePdfFinalSubmit(event); return false;');
                         pdfBtn.onclick = function(e) {
@@ -770,15 +974,21 @@ $(function () {
                         pdfBtn.title = '';
                         console.log('[DEBUG] PDF button displayed with onclick handler');
                     }
+                    // action-area도 중앙 정렬 유지
+                    $('#stepFinalAction .action-area').css({
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                        'display': 'flex'
+                    });
                     
                     // 알림 표시
                     setTimeout(function() {
-                        alert('PDF 업로드가 완료되었습니다.\n이제 "AI와 계약서 완성하기" 버튼을 클릭하세요.');
+                        alert('PDF 업로드가 완료되었습니다.\n이제 "계약 요청하기" 버튼을 클릭하세요.');
                         scrollToCard($('#stepFinalAction'));
                     }, 300);
                 } else {
                     $status.html('<span class="status-error">✗ 업로드 실패: ' + ((res && res.error) ? res.error : '알 수 없는 오류') + '</span>');
-                    $btn.prop('disabled', false).text('PDF 파일 선택 및 업로드');
+                    $btn.prop('disabled', false).show().text('PDF 파일 선택 및 업로드');
                     alert('PDF 업로드 실패: ' + ((res && res.error) ? res.error : '알 수 없는 오류'));
                 }
             },
@@ -787,7 +997,7 @@ $(function () {
                     ? xhr.responseJSON.error 
                     : (xhr.statusText || '알 수 없는 오류');
                 $status.html('<span class="status-error">✗ 업로드 오류: ' + errorMsg + '</span>');
-                $btn.prop('disabled', false).text('PDF 파일 선택 및 업로드');
+                $btn.prop('disabled', false).show().text('PDF 파일 선택 및 업로드');
                 alert('PDF 업로드 중 오류 발생: ' + errorMsg);
                 console.error('PDF upload error:', xhr);
             }
@@ -1102,10 +1312,9 @@ $(function () {
             }, 100);
         } else {
             // 마지막까지 저장한 경우: 완성 버튼 표시
-            $('#stepFinalAction').addClass('visible').css('display', 'block');
             const finalBtn = document.getElementById('finalSubmitBtn');
             if (finalBtn) {
-                $(finalBtn).removeClass('hidden').show();
+                $(finalBtn).removeClass('hidden').show().css('margin', '0 auto');
                 // onclick 속성 확실하게 설정
                 finalBtn.setAttribute('onclick', 'handleFinalSubmit(event); return false;');
                 finalBtn.onclick = function(e) {
@@ -1116,6 +1325,13 @@ $(function () {
                 };
                 console.log('[DEBUG] All clauses saved, finalSubmitBtn displayed with onclick handler');
             }
+            // action-area도 중앙 정렬 유지
+            $('#directFormActionArea').css({
+                'justify-content': 'center',
+                'align-items': 'center',
+                'display': 'flex',
+                'text-align': 'center'
+            });
             validateDirectReady();
             
             // 완료 안내 메시지 (한 번만 표시)
@@ -1123,14 +1339,19 @@ $(function () {
                 $('#clauseEditor').prepend(
                     '<div class="completion-message">' +
                     '<strong>✓ 모든 조항 입력이 완료되었습니다!</strong><br/>' +
-                    '<span>아래 "AI와 계약서 완성하기" 버튼을 클릭하세요.</span>' +
+                    '<span>아래 "계약 요청하기" 버튼을 클릭하세요.</span>' +
                     '</div>'
                 );
             }
             
             // 완성 버튼으로 스크롤
             setTimeout(function() {
-                scrollToCard($('#stepFinalAction'));
+                const actionArea = document.getElementById('directFormActionArea');
+                if (actionArea) {
+                    $('html, body').animate({
+                        scrollTop: $(actionArea).offset().top - 40
+                    }, 400);
+                }
             }, 300);
         }
     });
@@ -1161,6 +1382,11 @@ $(function () {
     // 초기 상태 세팅
     updateProjectInfoBox();
     
+    // 초기 로드 시 선택된 choice-card에 클래스 추가
+    $('input[name="hasPdf"]:checked').each(function() {
+        $(this).closest('.choice-card').addClass('selected');
+    });
+    
     // 초기 로드 시 프리랜서 정보도 표시
     function updateFreelancerInfoBox() {
         const $sel = $('#freelancerSelect');
@@ -1185,15 +1411,50 @@ $(function () {
         $('#freelancerInfo').html(info).removeClass('hidden');
     }
     
-    if (!$('#projectSelect').val()) {
-        resetFreelancerSelect(true, '-- 선택 --');
-    } else {
-        // 서버 렌더링 목록이 없어도, 선택된 프로젝트가 있다면 AJAX로 다시 로드
-        loadFreelancersByProject($('#projectSelect').val());
-        // 프리랜서 정보도 초기 표시
+    // URL 쿼리 파라미터에서 projectId와 freelancerId 가져오기
+    function getUrlParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+    
+    // 쿼리 파라미터로 전달된 프로젝트와 프리랜서 자동 선택
+    const urlProjectId = getUrlParameter('projectId');
+    const urlFreelancerId = getUrlParameter('freelancerId');
+    
+    if (urlProjectId) {
+        // 프로젝트 선택
+        $('#projectSelect').val(urlProjectId).trigger('change');
+        
+        // 프로젝트 정보 업데이트 후 프리랜서 목록 로드
         setTimeout(function() {
-            updateFreelancerInfoBox();
+            if (urlFreelancerId) {
+                // 프리랜서 목록이 로드될 때까지 대기 후 선택
+                const checkFreelancerSelect = setInterval(function() {
+                    const $freelancerSelect = $('#freelancerSelect');
+                    if (!$freelancerSelect.prop('disabled') && $freelancerSelect.find('option[value="' + urlFreelancerId + '"]').length > 0) {
+                        $freelancerSelect.val(urlFreelancerId).trigger('change');
+                        clearInterval(checkFreelancerSelect);
+                    }
+                }, 200);
+                
+                // 최대 5초 대기 후 타임아웃
+                setTimeout(function() {
+                    clearInterval(checkFreelancerSelect);
+                }, 5000);
+            }
         }, 500);
+    } else {
+        // 쿼리 파라미터가 없으면 기존 로직 실행
+        if (!$('#projectSelect').val()) {
+            resetFreelancerSelect(true, '-- 선택 --');
+        } else {
+            // 서버 렌더링 목록이 없어도, 선택된 프로젝트가 있다면 AJAX로 다시 로드
+            loadFreelancersByProject($('#projectSelect').val());
+            // 프리랜서 정보도 초기 표시
+            setTimeout(function() {
+                updateFreelancerInfoBox();
+            }, 500);
+        }
     }
     
     // 리사이즈 및 콘텐츠 변경 시 높이 동기화

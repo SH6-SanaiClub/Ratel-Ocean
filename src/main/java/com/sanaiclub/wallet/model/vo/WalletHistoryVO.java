@@ -1,4 +1,4 @@
-package com.sanaiclub.payment.model.vo;
+package com.sanaiclub.wallet.model.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
