@@ -309,9 +309,6 @@
                         <div class="project-overview">
                             <div class="project-overview-header">
                                 <div>
-                                    <div style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px;">
-                                        Project #${selectedContract.contractId} • 계약일: ${selectedContract.contractedAt}
-                                    </div>
                                     <h2 class="project-overview-title">
                                         <c:out value="${selectedContract.projectTitle != null ? selectedContract.projectTitle : '프로젝트 정보 없음'}"/>
                                     </h2>
