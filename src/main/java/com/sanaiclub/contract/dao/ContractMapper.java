@@ -87,4 +87,7 @@ public interface ContractMapper {
             @Param("projectId") Integer projectId,
             @Param("freelancerId") Integer freelancerId
     );
+
+    /** contract_id로 프리랜서 ID 조회 */
+    Integer selectFreelancerIdByContractId(@Param("contractId") Integer contractId);
 }

@@ -56,21 +56,24 @@
     <c:set var="totalReviewWaiting" value="0"/>
     
     <c:forEach var="contract" items="${recentContracts}">
-        <%-- 작업중 마일스톤: requestedMilestones == 0 AND depositedMilestones > 0 AND totalMilestones > 0 --%>
-        <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
-            <c:set var="totalWorkingMilestones" value="${totalWorkingMilestones + contract.depositedMilestones}"/>
-        </c:if>
-        <%-- 지급 요청 마일스톤 --%>
-        <c:if test="${contract.requestedMilestones != null and contract.requestedMilestones > 0}">
-            <c:set var="totalPaymentRequestMilestones" value="${totalPaymentRequestMilestones + contract.requestedMilestones}"/>
-        </c:if>
-        <%-- 결제 대기 (SIGNED 상태) --%>
-        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
-            <c:set var="totalPaymentWaiting" value="${totalPaymentWaiting + 1}"/>
-        </c:if>
-        <%-- 검토 대기 (WAITING 상태) --%>
-        <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
-            <c:set var="totalReviewWaiting" value="${totalReviewWaiting + 1}"/>
+        <%-- TERMINATED 상태의 계약은 제외 --%>
+        <c:if test="${contract.contractStatus == null or (contract.contractStatus.name() ne 'TERMINATED' and contract.contractStatus.name() ne 'terminated')}">
+            <%-- 작업중 마일스톤: requestedMilestones == 0 AND depositedMilestones > 0 AND totalMilestones > 0 --%>
+            <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
+                <c:set var="totalWorkingMilestones" value="${totalWorkingMilestones + contract.depositedMilestones}"/>
+            </c:if>
+            <%-- 지급 요청 마일스톤 --%>
+            <c:if test="${contract.requestedMilestones != null and contract.requestedMilestones > 0}">
+                <c:set var="totalPaymentRequestMilestones" value="${totalPaymentRequestMilestones + contract.requestedMilestones}"/>
+            </c:if>
+            <%-- 결제 대기 (SIGNED 상태) --%>
+            <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'SIGNED' or contract.contractStatus.name() eq 'signed')}">
+                <c:set var="totalPaymentWaiting" value="${totalPaymentWaiting + 1}"/>
+            </c:if>
+            <%-- 검토 대기 (WAITING 상태) --%>
+            <c:if test="${contract.contractStatus != null and (contract.contractStatus.name() eq 'WAITING' or contract.contractStatus.name() eq 'waiting')}">
+                <c:set var="totalReviewWaiting" value="${totalReviewWaiting + 1}"/>
+            </c:if>
         </c:if>
     </c:forEach>
 
@@ -252,8 +255,11 @@
     <!-- 작업중 계약 목록 -->
     <c:set var="hasWorkingContracts" value="false"/>
     <c:forEach var="contract" items="${recentContracts}">
-        <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
-            <c:set var="hasWorkingContracts" value="true"/>
+        <%-- TERMINATED 상태의 계약은 제외 --%>
+        <c:if test="${contract.contractStatus == null or (contract.contractStatus.name() ne 'TERMINATED' and contract.contractStatus.name() ne 'terminated')}">
+            <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
+                <c:set var="hasWorkingContracts" value="true"/>
+            </c:if>
         </c:if>
     </c:forEach>
     
@@ -265,19 +271,22 @@
         </div>
         <ul class="contract-list compact">
             <c:forEach var="contract" items="${recentContracts}">
-                <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
-                    <li class="contract-item" 
-                        onclick="location.href='${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}'">
-                        <div class="contract-header">
-                            <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
-                            <span class="contract-badge status-progress">작업중 ${contract.depositedMilestones}건</span>
-                        </div>
-                        <div class="contract-meta">
-                            <span class="contract-freelancer">${contract.freelancerName != null ? contract.freelancerName : '프리랜서 정보 없음'}</span>
-                            <span>•</span>
-                            <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
-                        </div>
-                    </li>
+                <%-- TERMINATED 상태의 계약은 제외 --%>
+                <c:if test="${contract.contractStatus == null or (contract.contractStatus.name() ne 'TERMINATED' and contract.contractStatus.name() ne 'terminated')}">
+                    <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones != null and contract.depositedMilestones > 0 and contract.totalMilestones != null and contract.totalMilestones > 0}">
+                        <li class="contract-item" 
+                            onclick="location.href='${pageContext.request.contextPath}/client/contract/management?contractId=${contract.contractId}'">
+                            <div class="contract-header">
+                                <div class="contract-title">${contract.projectTitle != null ? contract.projectTitle : '프로젝트명 없음'}</div>
+                                <span class="contract-badge status-progress">작업중 ${contract.depositedMilestones}건</span>
+                            </div>
+                            <div class="contract-meta">
+                                <span class="contract-freelancer">${contract.freelancerName != null ? contract.freelancerName : '프리랜서 정보 없음'}</span>
+                                <span>•</span>
+                                <span><fmt:formatNumber value="${contract.totalBudget != null ? contract.totalBudget : 0}" pattern="#,###" />원</span>
+                            </div>
+                        </li>
+                    </c:if>
                 </c:if>
             </c:forEach>
         </ul>
