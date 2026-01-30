@@ -69,8 +69,8 @@ public class PayoutServiceImpl implements PayoutService {
         // 4-1. 순차 진행 검증 추가
         validateSequentialProgress(contractId, milestone.getStep());
 
-        // 5. 프리랜서 ID 추출 (origin_contract_url에서)
-        Integer freelancerId = extractFreelancerIdFromContract(contract);
+        // 5. 프리랜서 ID 추출
+        Integer freelancerId = getFreelancerIdByContractId(contractId);
 
         // 6. 프리랜서 지갑 조회
         FreelancerWalletVO wallet = walletMapper.selectWalletByUserId(freelancerId);
@@ -284,23 +284,14 @@ public class PayoutServiceImpl implements PayoutService {
     // ========================================================================
 
     /**
-     * origin_contract_url에서 프리랜서 ID 추출
-     * 형식: /project/{projectId}/freelancer/{freelancerId}
+     * contract_id로 프리랜서 ID 조회
      */
-    private Integer extractFreelancerIdFromContract(ContractVO contract) {
-        String url = contract.getOriginContractUrl();
-        if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("계약 URL이 없습니다.");
+    private Integer getFreelancerIdByContractId(Integer contractId) {
+        Integer freelancerId = contractMapper.selectFreelancerIdByContractId(contractId);
+        if (freelancerId == null) {
+            throw new IllegalArgumentException("프리랜서 ID를 찾을 수 없습니다. contractId: " + contractId);
         }
-
-        Pattern pattern = Pattern.compile("/freelancer/(\\d+)");
-        Matcher matcher = pattern.matcher(url);
-
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-
-        throw new IllegalArgumentException("URL에서 프리랜서 ID를 추출할 수 없습니다: " + url);
+        return freelancerId;
     }
 
     /**

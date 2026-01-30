@@ -46,10 +46,10 @@
             cm.due_date           AS dueDate,
             cm.status             AS status
         FROM projects p
-            INNER JOIN project_applications pa ON p.project_id = pa.project_id
-            INNER JOIN contracts c ON pa.application_id = c.contract_id
-            LEFT JOIN users u ON pa.freelancer_id = u.user_id
-            LEFT JOIN contract_milestones cm ON c.contract_id = cm.contract_id
+                 INNER JOIN project_applications pa ON p.project_id = pa.project_id
+                 INNER JOIN contracts c ON pa.application_id = c.contract_id
+                 LEFT JOIN users u ON pa.freelancer_id = u.user_id
+                 LEFT JOIN contract_milestones cm ON c.contract_id = cm.contract_id
         WHERE p.project_id = #{projectId}
           AND c.contract_status IN ('SIGNED', 'PAID')
         ORDER BY cm.step_order ASC
