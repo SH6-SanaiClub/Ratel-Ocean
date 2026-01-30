@@ -2377,6 +2377,8 @@ body {
 .contract-meta-toggle {
     font-size: 12px;
     color: #6b7280;
+    cursor: pointer;
+    user-select: none;
 }
 
 .contract-meta-body {

@@ -20,6 +20,7 @@
             --text: #111827;
             --muted: #6b7280;
             --line: #e5e7eb;
+            --light-gray: #e5e7eb;
             --primary: #1a9aa6;
             --primary-weak: rgba(26,154,166,.12);
             --primary-hover: #158a94;
@@ -330,77 +331,19 @@
                                                         </c:if>
             </div>
 
-                        <!-- 계약 정보 (접을 수 있는 카드) -->
-                        <div class="contract-meta-card" onclick="toggleContractMeta(this)">
+                        <!-- 계약 세부 정보 (요약 카드, 접기 가능) -->
+                        <div class="contract-meta-card">
                             <div class="contract-meta-header">
-                                <span class="contract-meta-title">📄 계약 정보</span>
-                                <span class="contract-meta-toggle">▼</span>
+                                <div class="contract-meta-title">
+                                    📄 계약 세부 정보
+                                </div>
+                                <div class="contract-meta-toggle" onclick="toggleContractMeta(this.closest('.contract-meta-card'))">펼치기/접기</div>
                             </div>
                             <div class="contract-meta-body">
                         <div class="info-grid">
                             <div class="info-item">
                                 <div class="info-label">계약 ID</div>
                                 <div class="info-value">#${selectedContract.contractId}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">계약 상태</div>
-                                <div class="info-value">
-                                    <span class="status-indicator ${selectedContract.contractStatus != null ? fn:toLowerCase(selectedContract.contractStatus.name()) : ''}">
-                                        <c:choose>
-                                            <c:when test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'WAITING' or selectedContract.contractStatus.name() eq 'waiting')}">⏳ 전송됨</c:when>
-                                            <c:when test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'SIGNED' or selectedContract.contractStatus.name() eq 'signed')}">✅ 내가 수락함 (클라이언트 결제 대기 중)</c:when>
-                                            <c:when test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'PAID' or selectedContract.contractStatus.name() eq 'paid')}">
-                                                <c:choose>
-                                                    <c:when test="${selectedContract.requestedMilestones > 0}">
-                                                        💰 결제 완료 (지급 요청 중: ${selectedContract.requestedMilestones}건)
-                                                    </c:when>
-                                                    <c:when test="${selectedContract.depositedMilestones > 0}">
-                                                        💰 결제 완료 (입금 완료: ${selectedContract.depositedMilestones}건)
-                                                    </c:when>
-                                                    <c:when test="${selectedContract.paidMilestones > 0}">
-                                                        💰 결제 완료 (수령 진행: ${selectedContract.paidMilestones}/${selectedContract.totalMilestones})
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        💰 결제 완료 (수령 대기 중)
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </c:when>
-                                            <c:when test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'COMPLETED' or selectedContract.contractStatus.name() eq 'completed')}">
-                                                <c:choose>
-                                                    <%-- 마일스톤이 없는 경우 (일시지급) --%>
-                                                    <c:when test="${selectedContract.totalMilestones == null || selectedContract.totalMilestones == 0}">
-                                                        ✅ 완료 내역
-                                                    </c:when>
-                                                    <%-- 마일스톤이 있는 경우 (MILESTONE) --%>
-                                                    <c:otherwise>
-                                                        <c:choose>
-                                                            <c:when test="${selectedContract.paidMilestones == selectedContract.totalMilestones}">
-                                                                ✅ 완료 내역
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                🎉 정산 대기
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </c:when>
-                                            <c:when test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'TERMINATED' or selectedContract.contractStatus.name() eq 'terminated')}">
-                                                <c:choose>
-                                                    <c:when test="${fn:startsWith(selectedContract.cancelReason, '[거절]')}">
-                                                        <span class="status-rejected">🚫 내가 거절함</span>
-                                                    </c:when>
-                                                    <c:when test="${fn:startsWith(selectedContract.cancelReason, '[취소]')}">
-                                                        <span class="status-cancelled">❌ 클라이언트가 취소함</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="status-terminated">⚠️ 중도 종료</span>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </c:when>
-                                            <c:otherwise>${selectedContract.contractStatus != null ? selectedContract.contractStatus.name() : '-'}</c:otherwise>
-                                        </c:choose>
-                                    </span>
-                                </div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">프로젝트명</div>
@@ -482,13 +425,13 @@
                                     <div class="info-value">
                                         <c:choose>
                                             <c:when test="${fn:startsWith(selectedContract.cancelReason, '[거절]')}">
-                                                <span class="status-rejected-text">🚫 내가 거절함</span>
+                                                <span style="color: #dc2626; font-weight: 600;">🚫 내가 거절함</span>
                                             </c:when>
                                             <c:when test="${fn:startsWith(selectedContract.cancelReason, '[취소]')}">
-                                                <span class="status-cancelled-text">❌ 클라이언트가 취소함</span>
+                                                <span style="color: #d97706; font-weight: 600;">❌ 클라이언트가 취소함</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="status-terminated-text">⚠️ 중도 종료</span>
+                                                <span style="color: #6b7280; font-weight: 600;">⚠️ 중도 종료</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
@@ -736,10 +679,6 @@
         // 계약 정보 카드 토글 기능
         function toggleContractMeta(card) {
             card.classList.toggle('collapsed');
-            const toggle = card.querySelector('.contract-meta-toggle');
-            if (toggle) {
-                toggle.textContent = card.classList.contains('collapsed') ? '▶' : '▼';
-            }
         }
         
         // 사이드바 토글 기능

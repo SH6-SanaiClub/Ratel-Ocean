@@ -28,6 +28,7 @@
             --text: #111827;
             --muted: #6b7280;
             --line: #e5e7eb;
+            --light-gray: #e5e7eb;
             --primary: #1a9aa6;
             --primary-weak: rgba(26,154,166,.12);
             --primary-hover: #158a94;
@@ -349,12 +350,12 @@
                         </div>
                         
                         <!-- 계약 세부 정보 (요약 카드, 접기 가능) -->
-                        <div class="contract-meta-card" onclick="toggleContractMeta(this)">
+                        <div class="contract-meta-card">
                             <div class="contract-meta-header">
                                 <div class="contract-meta-title">
                                     📄 계약 세부 정보
                                 </div>
-                                <div class="contract-meta-toggle">펼치기/접기</div>
+                                <div class="contract-meta-toggle" onclick="toggleContractMeta(this.closest('.contract-meta-card'))">펼치기/접기</div>
                             </div>
                             <div class="contract-meta-body">
                         <div class="info-grid">
