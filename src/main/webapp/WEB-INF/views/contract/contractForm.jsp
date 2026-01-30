@@ -383,8 +383,15 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
     // 모달 화면 중앙에 표시 - 모든 스타일 명시적으로 설정
     modalEl.removeAttribute('style');
     modalEl.className = 'modal-overlay';
-    modalEl.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.7) !important; margin: 0 !important; padding: 0 !important;';
+    // 배경을 더 진하게 (0.7 -> 0.9), backdrop-filter 추가
+    modalEl.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important; margin: 0 !important; padding: 0 !important;';
     modalEl.classList.add('show');
+    
+    // 모달 콘텐츠 스타일 강제 적용 (글자 깨짐 방지)
+    const modalContent = modalEl.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.style.cssText = 'background: #ffffff !important; border-radius: 20px !important; padding: 40px !important; max-width: 500px !important; width: 90% !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; text-align: center !important; position: relative !important; margin: auto !important; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; text-rendering: optimizeLegibility !important; font-smooth: always !important;';
+    }
     
     // 모달 내부 확인 버튼 이벤트 설정
     const confirmBtn = document.getElementById('confirmAiAnalysisBtn');
@@ -394,9 +401,15 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
         return;
     }
     
+    // 버튼 스타일을 "계약 요청하기" 버튼과 유사하게 강제 적용
+    confirmBtn.style.cssText = 'width: auto !important; min-width: 160px !important; height: 48px !important; border-radius: 14px !important; border: none !important; background: #1a9aa6 !important; color: #fff !important; font-size: 13px !important; font-weight: 950 !important; cursor: pointer !important; transition: all 0.25s ease !important; padding: 12px 14px !important; box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; white-space: nowrap !important;';
+    
     // 기존 이벤트 리스너 제거 후 새로 등록
     const newBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+    
+    // 새 버튼에도 스타일 다시 적용
+    newBtn.style.cssText = 'width: auto !important; min-width: 160px !important; height: 48px !important; border-radius: 14px !important; border: none !important; background: #1a9aa6 !important; color: #fff !important; font-size: 13px !important; font-weight: 950 !important; cursor: pointer !important; transition: all 0.25s ease !important; padding: 12px 14px !important; box-shadow: 0 14px 30px rgba(26, 154, 166, 0.22) !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; white-space: nowrap !important;';
     
     newBtn.onclick = function(e) {
         e.preventDefault();
@@ -405,6 +418,16 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
         submitToContractCheck(inputType, projectId, freelancerId, fileName);
         return false;
     };
+    
+    // 호버 효과도 추가
+    newBtn.addEventListener('mouseenter', function() {
+        this.style.filter = 'brightness(0.985)';
+        this.style.transform = 'translateY(-1px)';
+    });
+    newBtn.addEventListener('mouseleave', function() {
+        this.style.filter = '';
+        this.style.transform = '';
+    });
     
     console.log('[DEBUG] Modal displayed');
 }
@@ -513,8 +536,8 @@ function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
 </script>
 
 <!-- AI 분석 안내 모달 -->
-<div id="aiAnalysisModal" class="modal-overlay" style="display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.7) !important; margin: 0 !important; padding: 0 !important;">
-    <div class="modal-content">
+<div id="aiAnalysisModal" class="modal-overlay" style="display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important; margin: 0 !important; padding: 0 !important;">
+    <div class="modal-content" style="background: #ffffff !important; border-radius: 20px !important; padding: 40px !important; max-width: 500px !important; width: 90% !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; text-align: center !important; position: relative !important; margin: auto !important; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; text-rendering: optimizeLegibility !important;">
         <div class="modal-icon">🤖</div>
         <h2 class="modal-title">AI 계약서 분석</h2>
         <p class="modal-description">
