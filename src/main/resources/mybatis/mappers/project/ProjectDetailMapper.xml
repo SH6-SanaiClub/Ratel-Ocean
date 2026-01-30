@@ -22,7 +22,7 @@
                p.is_public           AS isPublic,
                p.created_at          AS createdAt,
                p.view_count          AS viewCount,
-               p.applicant_count     AS applicantCount,
+               (SELECT COUNT(*) FROM project_applications WHERE project_id = p.project_id) AS applicantCount,
                p.budget_negotiable   AS budgetNegotiable,
                p.duration_negotiable AS durationNegotiable,
                p.plan_url            AS planUrl,

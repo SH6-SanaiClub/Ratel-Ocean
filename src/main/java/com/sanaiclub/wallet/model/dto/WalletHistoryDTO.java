@@ -1,6 +1,6 @@
 package com.sanaiclub.wallet.model.dto;
 
-import com.sanaiclub.payment.model.vo.WalletIoType;
+import com.sanaiclub.wallet.model.vo.WalletIoType;
 import lombok.Getter;
 import lombok.Setter;
 

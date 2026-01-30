@@ -29,7 +29,7 @@
 
     <select id="selectInProgressProjects" resultType="com.sanaiclub.project.model.dto.FreelancerBoardProjectDTO">
         <include refid="baseList"/>
-        AND ct.contract_status = 'SIGNED'
+        AND ct.contract_status IN ('SIGNED', 'PAID')
         ORDER BY ct.contracted_at DESC
     </select>
 
@@ -80,7 +80,7 @@
         SELECT MIN(step_order)
         FROM contract_milestones
         WHERE contract_id = #{contractId}
-          AND status IN ('WAITING','REQUESTED')
+          AND status IN ('DEPOSITED','REQUESTED')
     </select>
 
     <select id="selectContractIdByMilestone" resultType="int">
@@ -105,8 +105,8 @@
     <update id="toggleMilestoneRequest">
         UPDATE contract_milestones
         SET status = CASE
-                         WHEN status = 'WAITING' THEN 'REQUESTED'
-                         WHEN status = 'REQUESTED' THEN 'WAITING'
+                         WHEN status = 'DEPOSITED' THEN 'REQUESTED'
+                         WHEN status = 'REQUESTED' THEN 'DEPOSITED'
                          ELSE status
             END
         WHERE milestone_id = #{milestoneId}

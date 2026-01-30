@@ -166,17 +166,17 @@
 					
 					<div class="form-group">
 						<label>② 계약 시작일 <span class="required-mark">*</span></label>
-						<input type="date" name="contractStartDate" value="${contract.contractStartDate}" required />
+						<input type="date" class="readonly-input" name="contractStartDate" value="${contract.contractStartDate}" required />
 					</div>
 					
 					<div class="form-group">
 						<label>③ 계약 종료일 <span class="required-mark">*</span></label>
-						<input type="date" name="contractEndDate" value="${contract.contractEndDate}" required />
+						<input type="date" class="readonly-input" name="contractEndDate" value="${contract.contractEndDate}" required />
 					</div>
 					
 					<div class="form-group">
 						<label>④ 총 계약금액 <span class="required-mark">*</span></label>
-						<input type="number" name="totalBudget" value="${contract.totalBudget}" required min="0" step="1" />
+						<input type="number" class="readonly-input" name="totalBudget" value="${contract.totalBudget}" required min="0" step="1" />
 						<p class="hint-text">※ 위 금액은 부가세를 포함하지 않습니다.</p>
 					</div>
 

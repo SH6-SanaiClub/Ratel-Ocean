@@ -5,6 +5,8 @@ import com.sanaiclub.user.dao.*;
 import com.sanaiclub.user.model.dto.*;
 import com.sanaiclub.user.model.vo.*;
 import com.sanaiclub.user.service.JoinService;
+import com.sanaiclub.wallet.dao.WalletMapper;
+import com.sanaiclub.wallet.model.vo.FreelancerWalletVO;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ public class JoinServiceImpl implements JoinService {
     private final ClientProfileMapper clientProfileMapper;
     private final CompanyMapper companyMapper;
     private final AccountMapper accountMapper;
+    private final WalletMapper walletMapper;
     private final PasswordEncoder passwordEncoder;
     private final EncryptionUtil encryptionUtil;
 
@@ -70,8 +73,12 @@ public class JoinServiceImpl implements JoinService {
             logger.debug("프리랜서 프로필 등록 완료: userId={}", userId);
 
             // 3. Account INSERT
-            insertCommonAccount(userId, accountDto);
-            logger.debug("계좌 정보 등록 완료: userId={}", userId);
+            Integer accountId = insertCommonAccount(userId, accountDto);
+            logger.debug("계좌 정보 등록 완료: userId={}, accountId={}", userId, accountId);
+
+            // 4. FreelancerWallet INSERT (프리랜서만)
+            insertFreelancerWallet(userId, accountId, accountDto.getWalletPassword());
+            logger.debug("지갑 생성 완료: userId={}, accountId={}", userId, accountId);
 
             logger.info("✅ 프리랜서 회원가입 완료: userId={}, loginId={}", userId, userDto.getLoginId());
             return true;
@@ -204,7 +211,7 @@ public class JoinServiceImpl implements JoinService {
     }
 
     // 공통 계좌 정보 INSERT
-    private void insertCommonAccount(Integer userId, AccountDTO accountDto) throws Exception {
+    private Integer insertCommonAccount(Integer userId, AccountDTO accountDto) throws Exception {
 
         // 계좌번호 암호화
         String encryptedAccountNumber = encryptionUtil.encrypt(accountDto.getAccountNumber());
@@ -221,6 +228,29 @@ public class JoinServiceImpl implements JoinService {
         int inserted = accountMapper.insertAccount(accountVO);
         if (inserted == 0) {
             throw new IllegalStateException("계좌 정보 등록 실패");
+        }
+
+        // useGeneratedKeys로 받아온 accountId 반환
+        return accountVO.getAccountId();
+    }
+
+    // 프리랜서 지갑 생성 메서드
+    private void insertFreelancerWallet(Integer userId, Integer accountId, String walletPassword) {
+        // 지갑 비밀번호 암호화 (BCrypt)
+        String encodedWalletPw = passwordEncoder.encode(walletPassword);
+
+        FreelancerWalletVO walletVO = FreelancerWalletVO.builder()
+                .userId(userId)
+                .accountId(accountId)
+                .balance(0L)
+                .totalEarned(0L)
+                .walletPw(encodedWalletPw)
+                .version(0)
+                .build();
+
+        int inserted = walletMapper.insertWallet(walletVO);
+        if (inserted == 0) {
+            throw new IllegalStateException("지갑 생성 실패");
         }
     }
 }
