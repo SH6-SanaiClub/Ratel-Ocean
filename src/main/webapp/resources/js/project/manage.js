@@ -279,7 +279,7 @@ function renderDetail(data) {
 }
 
 function openChatRoom(freelancerId) {
-    if (!currentProjectId) {
+   if (!currentProjectId) {
         alert("프로젝트 정보가 없습니다.");
         return;
     }
@@ -297,12 +297,9 @@ function openChatRoom(freelancerId) {
             freelancerId: freelancerId
         },
         success: function (roomId) {
-            if (roomId) {
-                // 현재 창에서 채팅방으로 이동
-                location.href = contextPath + '/chat?roomId=' + roomId;
-            } else {
-                alert("채팅방 연결에 실패했습니다.");
-            }
+            const url = `/ratelocean/chat?roomId=${roomId}&mode=view`;
+            const options = "width=470,height=600,resizable=yes,scrollbars=no,status=no,location=no";
+            window.open(url, "chatPopup_" + roomId, options);
         },
         error: function (xhr, status, err) {
             console.error(err);

@@ -862,25 +862,23 @@
             document.getElementById("filePreview").style.display = "flex";
             document.getElementById("fileNameText").innerText = file.name;
         }
-    });/*
-    document.addEventListener("DOMContentLoaded", function() {
-        // 1. 주소창에서 파라미터 읽기 (?roomId=5&mode=view)
+    });
+    $(document).ready(function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const roomIdParam = urlParams.get('roomId');
-        const modeParam = urlParams.get('mode');
+        const mode = urlParams.get('mode');
+        const roomId = urlParams.get('roomId'); // URL에서 roomId 추출
 
-        // 2. mode가 view면 양옆을 숨기는 CSS 클래스 추가
-        if (modeParam === 'view') {
-            const appElement = document.querySelector(".app");
-            if (appElement) appElement.classList.add("full-chat");
+        if (mode === 'view') {
+            $(".app").addClass("full-chat");
         }
 
-        // 3. roomId가 있으면 해당 채팅방을 즉시 클릭한 것처럼 로드
-        if (roomIdParam) {
-            const roomId = parseInt(roomIdParam);
-            selectRoom(roomId);
+        // [핵심] roomId가 있으면 자동으로 해당 방을 선택(로드)함
+        if (roomId) {
+            // 기존에 만들어두신 selectRoom 함수를 호출
+            // 만약 숫자가 아니면 숫자로 변환해서 전달
+            selectRoom(Number(roomId));
         }
-    });*/
+    });
     if (!autoRoomId) {
         initEmptyRoom();
     }
