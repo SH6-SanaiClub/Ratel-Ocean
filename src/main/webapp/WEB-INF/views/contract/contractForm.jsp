@@ -1411,15 +1411,50 @@ $(function () {
         $('#freelancerInfo').html(info).removeClass('hidden');
     }
     
-    if (!$('#projectSelect').val()) {
-        resetFreelancerSelect(true, '-- 선택 --');
-    } else {
-        // 서버 렌더링 목록이 없어도, 선택된 프로젝트가 있다면 AJAX로 다시 로드
-        loadFreelancersByProject($('#projectSelect').val());
-        // 프리랜서 정보도 초기 표시
+    // URL 쿼리 파라미터에서 projectId와 freelancerId 가져오기
+    function getUrlParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+    
+    // 쿼리 파라미터로 전달된 프로젝트와 프리랜서 자동 선택
+    const urlProjectId = getUrlParameter('projectId');
+    const urlFreelancerId = getUrlParameter('freelancerId');
+    
+    if (urlProjectId) {
+        // 프로젝트 선택
+        $('#projectSelect').val(urlProjectId).trigger('change');
+        
+        // 프로젝트 정보 업데이트 후 프리랜서 목록 로드
         setTimeout(function() {
-            updateFreelancerInfoBox();
+            if (urlFreelancerId) {
+                // 프리랜서 목록이 로드될 때까지 대기 후 선택
+                const checkFreelancerSelect = setInterval(function() {
+                    const $freelancerSelect = $('#freelancerSelect');
+                    if (!$freelancerSelect.prop('disabled') && $freelancerSelect.find('option[value="' + urlFreelancerId + '"]').length > 0) {
+                        $freelancerSelect.val(urlFreelancerId).trigger('change');
+                        clearInterval(checkFreelancerSelect);
+                    }
+                }, 200);
+                
+                // 최대 5초 대기 후 타임아웃
+                setTimeout(function() {
+                    clearInterval(checkFreelancerSelect);
+                }, 5000);
+            }
         }, 500);
+    } else {
+        // 쿼리 파라미터가 없으면 기존 로직 실행
+        if (!$('#projectSelect').val()) {
+            resetFreelancerSelect(true, '-- 선택 --');
+        } else {
+            // 서버 렌더링 목록이 없어도, 선택된 프로젝트가 있다면 AJAX로 다시 로드
+            loadFreelancersByProject($('#projectSelect').val());
+            // 프리랜서 정보도 초기 표시
+            setTimeout(function() {
+                updateFreelancerInfoBox();
+            }, 500);
+        }
     }
     
     // 리사이즈 및 콘텐츠 변경 시 높이 동기화
