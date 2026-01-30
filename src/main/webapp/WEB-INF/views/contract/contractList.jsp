@@ -214,6 +214,7 @@
                 <span class="alert-icon">💰</span>
                 지급 요청 <span class="badge-count">${totalRequestedMilestones}건</span>
             </h2>
+            <a href="${pageContext.request.contextPath}/freelancer/contract/list" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="contract-list compact">
             <c:forEach var="contract" items="${allContracts}">
@@ -256,6 +257,7 @@
     <div class="section-card" id="working">
         <div class="section-header">
             <h2 class="section-title">💼 작업중 계약</h2>
+            <a href="${pageContext.request.contextPath}/freelancer/contract/list" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="contract-list compact">
             <c:forEach var="contract" items="${allContracts}">
@@ -283,6 +285,7 @@
     <div class="section-card" id="signed">
         <div class="section-header">
             <h2 class="section-title">⏳ 결제 대기</h2>
+            <a href="${pageContext.request.contextPath}/freelancer/contract/list" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="contract-list compact">
             <c:forEach var="contract" items="${allContracts}">
@@ -312,6 +315,7 @@
     <div class="section-card" id="waiting">
         <div class="section-header">
             <h2 class="section-title">👀 검토 대기</h2>
+            <a href="${pageContext.request.contextPath}/freelancer/contract/list" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="contract-list compact">
             <c:forEach var="contract" items="${allContracts}">
@@ -339,7 +343,7 @@
     </c:if>
 
     <!-- 최근 계약 목록 (전체) -->
-    <div class="section-card">
+    <div class="section-card" id="all-contracts">
         <div class="section-header">
             <h2 class="section-title">📋 전체 계약</h2>
         </div>
