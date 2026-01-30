@@ -266,7 +266,7 @@ function renderDetail(data) {
                 1:1 채팅하기
             </button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="updateStatus(${data.applicationId}, 'OFFERED')">
+                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="goToContractForm(${currentProjectId}, ${data.freelancerId})">
                     계약 제안
                 </button>
                 <button class="btn-action ${rejectStyle}" ${rejectDisabled} onclick="updateStatus(${data.applicationId}, 'REJECTED')">
@@ -279,7 +279,7 @@ function renderDetail(data) {
 }
 
 function openChatRoom(freelancerId) {
-    if (!currentProjectId) {
+   if (!currentProjectId) {
         alert("프로젝트 정보가 없습니다.");
         return;
     }
@@ -297,12 +297,9 @@ function openChatRoom(freelancerId) {
             freelancerId: freelancerId
         },
         success: function (roomId) {
-            if (roomId) {
-                // 현재 창에서 채팅방으로 이동
-                location.href = contextPath + '/chat?roomId=' + roomId;
-            } else {
-                alert("채팅방 연결에 실패했습니다.");
-            }
+            const url = `/ratelocean/chat?roomId=${roomId}&mode=view`;
+            const options = "width=470,height=600,resizable=yes,scrollbars=no,status=no,location=no";
+            window.open(url, "chatPopup_" + roomId, options);
         },
         error: function (xhr, status, err) {
             console.error(err);
@@ -369,4 +366,13 @@ function deleteProject() {
             }
         });
     }
+}
+
+function goToContractForm(projectId, freelancerId) {
+    if (!projectId || !freelancerId) {
+        alert('프로젝트와 프리랜서를 선택해주세요.');
+        return;
+    }
+    const url = contextPath + '/client/contract/form?projectId=' + projectId + '&freelancerId=' + freelancerId;
+    window.location.href = url;
 }

@@ -153,12 +153,9 @@ function moveToChat() {
         type: 'POST',
         data: { projectId: projectId },
         success: function (roomId) {
-
-            if (!roomId) {
-                alert("채팅방 생성에 실패했습니다.");
-                return;
-            }
-            location.href = '/ratelocean/chat?roomId=' + roomId;
+            const url = `/ratelocean/chat?roomId=${roomId}&mode=view`;
+            const options = "width=470,height=600,resizable=yes,scrollbars=no,status=no,location=no";
+            window.open(url, "chatPopup_" + roomId, options);
         },
         error: function () {
             alert("채팅방 생성 중 오류가 발생했습니다.");

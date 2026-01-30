@@ -50,7 +50,7 @@ public class FreelancerProjectManageDetailServiceImpl implements FreelancerProje
         for (MilestoneDTO m : list) {
             boolean ok = actionableStep != null
                     && actionableStep.equals(m.getStepOrder())
-                    && ("WAITING".equals(m.getStatus()) || "REQUESTED".equals(m.getStatus()));
+                    && ("DEPOSITED".equals(m.getStatus()) || "REQUESTED".equals(m.getStatus()));
             m.setActionable(ok);
         }
         return list;
@@ -72,7 +72,7 @@ public class FreelancerProjectManageDetailServiceImpl implements FreelancerProje
 
         String prev = freelancerProjectManageDetailMapper.selectMilestoneStatus(milestoneId);
         if (prev == null) return null;
-        if (!("WAITING".equals(prev) || "REQUESTED".equals(prev))) return null;
+        if (!("DEPOSITED".equals(prev) || "REQUESTED".equals(prev))) return null;
 
         int updated = freelancerProjectManageDetailMapper.toggleMilestoneRequest(milestoneId);
         if (updated == 0) return null;

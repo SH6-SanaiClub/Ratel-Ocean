@@ -12,7 +12,7 @@ import java.util.List;
 public class ContractCreateRequestDTO {
     private Integer projectId;
     private Integer freelancerId;
-    private Integer applicationId;
+    private Integer applicationId; // 프로젝트 지원 ID (계약 ID로 사용됨)
     private String contractStartDate;
     private String contractEndDate;
     private Long totalBudget;
