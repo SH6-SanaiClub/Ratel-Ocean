@@ -79,14 +79,17 @@
                 <c:set var="totalTerminated" value="0"/>
                 <c:forEach var="statusEntry" items="${contractsByStatus}">
                     <c:forEach var="contract" items="${statusEntry.value}">
-                        <%-- 작업중 마일스톤 수: 계약 리스트에 "작업중 X건"으로 표시되는 조건과 동일 --%>
-                        <%-- 조건: requestedMilestones == 0 AND depositedMilestones > 0 AND totalMilestones > 0 --%>
-                        <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones > 0 and contract.totalMilestones > 0}">
-                            <c:set var="totalRequested" value="${totalRequested + contract.depositedMilestones}"/>
-                        </c:if>
-                        <%-- 승인 요청 건수 --%>
-                        <c:if test="${contract.requestedMilestones > 0}">
-                            <c:set var="totalPaymentRequest" value="${totalPaymentRequest + contract.requestedMilestones}"/>
+                        <%-- TERMINATED 상태의 계약은 작업중 마일스톤 계산에서 제외 --%>
+                        <c:if test="${statusEntry.key ne 'TERMINATED'}">
+                            <%-- 작업중 마일스톤 수: 계약 리스트에 "작업중 X건"으로 표시되는 조건과 동일 --%>
+                            <%-- 조건: requestedMilestones == 0 AND depositedMilestones > 0 AND totalMilestones > 0 --%>
+                            <c:if test="${contract.requestedMilestones == 0 and contract.depositedMilestones > 0 and contract.totalMilestones > 0}">
+                                <c:set var="totalRequested" value="${totalRequested + contract.depositedMilestones}"/>
+                            </c:if>
+                            <%-- 승인 요청 건수 --%>
+                            <c:if test="${contract.requestedMilestones > 0}">
+                                <c:set var="totalPaymentRequest" value="${totalPaymentRequest + contract.requestedMilestones}"/>
+                            </c:if>
                         </c:if>
                         <%-- 진행 중 상태 (SIGNED, PAID, WAITING) --%>
                         <c:if test="${statusEntry.key eq 'PAID' or statusEntry.key eq 'SIGNED' or statusEntry.key eq 'WAITING'}">
