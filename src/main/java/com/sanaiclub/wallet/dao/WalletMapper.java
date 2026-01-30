@@ -1,7 +1,7 @@
-package com.sanaiclub.payment.dao;
+package com.sanaiclub.wallet.dao;
 
-import com.sanaiclub.payment.model.vo.FreelancerWalletVO;
-import com.sanaiclub.payment.model.vo.WalletHistoryVO;
+import com.sanaiclub.wallet.model.vo.FreelancerWalletVO;
+import com.sanaiclub.wallet.model.vo.WalletHistoryVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -528,4 +528,12 @@
           AND CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(c.origin_contract_url, '/', 4), '/', -1) AS UNSIGNED) = #{freelancerId}
         ORDER BY c.contract_id DESC
     </select>
+
+    <select id="selectClientIdByContractId" parameterType="int" resultType="int">
+        SELECT p.user_id
+        FROM contracts c
+                 INNER JOIN projects p ON c.origin_contract_url LIKE CONCAT('/project/', p.project_id, '/%')
+        WHERE c.contract_id = #{contractId}
+            LIMIT 1
+    </select>
 </mapper>
