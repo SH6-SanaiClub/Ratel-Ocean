@@ -197,7 +197,9 @@
     }
     // ================== 방 선택 ==================
     function renderSingleRoom(room) {
-
+        const profileImg = room.profileImageUrl
+            ? '/ratelocean' + room.profileImageUrl
+            : '/ratelocean/resources/image/default-profile.png';
         let timeText = "";
         if (room.lastMessageAt) {
             timeText = new Date(room.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -219,7 +221,7 @@
         }
         return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
             '<div class="avatar-box">' +
-            '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
+            '<img src="' + profileImg + '" class="avatar">' +
             underAvatarHtml+
             '</div>' +
             '<div class="room-info" style="flex: 1; min-width: 0;">' +
@@ -600,11 +602,13 @@
             .then(room => {
                 document.getElementById("headerName").innerText = room.name;
                 document.getElementById("headerProject").innerText = room.title;
-
+                const profileImg = room.profileImageUrl
+                    ? '/ratelocean' + room.profileImageUrl
+                    : '/ratelocean/resources/image/default-profile.png';
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =
                     `<div class="profile-card">
-                    <img src="\${room.profileImageUrl || '/assets/img/default-profile.png'}">
+                   <img src="\${profileImg}" class="avatar">
                     <h3>\${room.name}</h3>
                     <div class="action-buttons">
                         <a href="/ratelocean/profile/\${room.opponentId}">프로필</a>
