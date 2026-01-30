@@ -76,9 +76,18 @@ public interface ContractMapper {
     /** 프리랜서의 계약 목록 조회. 프로젝트, 상대방 정보, 마일스톤 집계 포함. */
     List<java.util.Map<String, Object>> selectContractsByFreelancerIdWithDetails(@Param("freelancerId") Integer freelancerId);
 
+    /**
+     * 계약 ID로 클라이언트 ID 조회
+     */
+    Integer selectClientIdByContractId(@Param("contractId") Integer contractId);
+
+
     /** projectId와 freelancerId로 application_id 조회 */
     Integer selectApplicationIdByProjectAndFreelancer(
             @Param("projectId") Integer projectId,
             @Param("freelancerId") Integer freelancerId
     );
+
+    /** contract_id로 프리랜서 ID 조회 */
+    Integer selectFreelancerIdByContractId(@Param("contractId") Integer contractId);
 }

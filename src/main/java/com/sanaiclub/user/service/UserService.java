@@ -9,4 +9,7 @@ public interface UserService {
 
     // 로그인 ID로 사용자 정보 조회
     UserInfoDTO getUserInfoByLoginId(String loginId);
+
+    // 비밀번호 검증 (추가)
+    boolean verifyPassword(Integer userId, String password);
 }

@@ -1,4 +1,4 @@
-package com.sanaiclub.payment.model.vo;
+package com.sanaiclub.wallet.model.vo;
 
 public enum WalletIoType {
 

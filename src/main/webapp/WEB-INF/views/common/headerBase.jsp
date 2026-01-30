@@ -208,7 +208,7 @@
   <div class="header-inner">
 
     <div class="logo">
-      <a href="${pageContext.request.contextPath}/">RateOcean</a>
+      <a href="${pageContext.request.contextPath}/">RateLOcean</a>
     </div>
 
     <nav class="nav">

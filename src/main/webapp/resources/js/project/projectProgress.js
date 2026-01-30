@@ -1,3 +1,16 @@
+/**
+ * projectProgress.js
+ * 클라이언트 프로젝트 진행 관리 - 마일스톤 지급 기능
+ * PayoutController API 연동 + 비밀번호 인증
+ */
+
+// 전역 변수
+let currentProjectData = null;
+let pendingPayoutAction = null; // {type: 'approve'|'release'|'reject', milestoneId, contractId, amount}
+
+/**
+ * 프로젝트 진행 정보 로드
+ */
 function loadProjectProgress(projectId, element) {
     $('.custom-list-item').removeClass('active');
     $(element).addClass('active');
@@ -15,8 +28,6 @@ function loadProjectProgress(projectId, element) {
     $('#ongoingControlButtons').hide();
     $('#projectDetailSummary').hide();
     $('#milestoneListArea').html('<div style="padding:20px; text-align:center;">불러오는 중...</div>');
-
-    // 초기화 시 텍스트 비우기
     $('#ongoingFreelancerDisplay').text('');
 
     $.ajax({
@@ -24,6 +35,8 @@ function loadProjectProgress(projectId, element) {
         type: 'GET',
         data: {projectId: projectId},
         success: function (data) {
+            currentProjectData = data;
+            currentProjectData.projectId = projectId;
             renderMilestones(data);
         },
         error: function () {
@@ -32,6 +45,9 @@ function loadProjectProgress(projectId, element) {
     });
 }
 
+/**
+ * 마일스톤 목록 렌더링
+ */
 function renderMilestones(data) {
     const target = $('#milestoneListArea');
     target.empty();
@@ -45,15 +61,14 @@ function renderMilestones(data) {
     $('#projectDetailSummary').show();
 
     if (data.freelancerName) {
-        $('#ongoingFreelancerDisplay').html(`<i class="fa-solid fa-user" style="color:#1F7A8C; margin-right:5px;"></i> ${data.freelancerName}`);
-        // 오른쪽 채팅창 헤더 이름도 업데이트
+        $('#ongoingFreelancerDisplay').html('<i class="fa-solid fa-user" style="color:#1F7A8C; margin-right:5px;"></i> ' + data.freelancerName);
         $('#chatFreelancerName').text(data.freelancerName);
     }
 
     const startStr = data.startDate ? new Date(data.startDate).toISOString().split('T')[0].replace(/-/g, '/') : '-';
     const endStr = data.endDate ? new Date(data.endDate).toISOString().split('T')[0].replace(/-/g, '/') : '-';
 
-    $('#projectPeriodDisplay').text(`${startStr} ~ ${endStr}`);
+    $('#projectPeriodDisplay').text(startStr + ' ~ ' + endStr);
     $('#sumBudget').text('₩ ' + (data.budget || 0).toLocaleString());
     $('#sumComm').text(data.communicateMethod || '-');
     $('#sumPayment').text(data.paymentMethod || '-');
@@ -71,56 +86,219 @@ function renderMilestones(data) {
     }
 
     let html = '';
-    data.milestones.forEach(m => {
-        let statusBadge = '<span class="ms-status st-WAITING">대기중</span>';
-        let btnHtml = '';
+    data.milestones.forEach(function(m) {
         const safeAmount = (m.amount || 0).toLocaleString();
-
-        if (m.status === 'REQUESTED') {
-            statusBadge = '<span class="ms-status st-REQUESTED">지급 요청됨</span>';
-            btnHtml = `<button class="btn-pay-approve" onclick="payMilestone(${m.milestoneId})">
-                         <i class="fa-solid fa-check"></i> ₩ ${safeAmount} 지급 승인
-                       </button>`;
-        } else if (m.status === 'PAID') {
-            statusBadge = '<span class="ms-status st-PAID">지급 완료</span>';
-        }
-
         const dateStr = m.dueDate ? new Date(m.dueDate).toISOString().split('T')[0] : '-';
 
-        html += `
-            <div class="milestone-card">
-                <div class="ms-header">
-                    <div><span class="ms-step">${m.stepOrder}단계</span> <span class="ms-title">${m.milestoneName}</span></div>
-                    ${statusBadge}
-                </div>
-                <div class="ms-details">
-                    <span>지급 예정일: ${dateStr}</span>
-                    <span class="ms-amount">₩ ${safeAmount}</span>
-                </div>
-                ${btnHtml}
-            </div>`;
+        // 상태별 뱃지 및 버튼 설정
+        let statusBadge = '';
+        let btnHtml = '';
+
+        switch(m.status) {
+            case 'WAITING':
+                statusBadge = '<span class="ms-status st-WAITING">⏳ 결제 대기</span>';
+                break;
+
+            case 'DEPOSITED':
+                statusBadge = '<span class="ms-status st-DEPOSITED">💳 에스크로 보관</span>';
+                btnHtml = '<button class="btn-pay-direct" onclick="openPayoutModal(\'release\', ' + m.milestoneId + ', ' + m.contractId + ', ' + m.amount + ')">' +
+                    '<i class="fa-solid fa-paper-plane"></i> ₩ ' + safeAmount + ' 직접 지급</button>';
+                break;
+
+            case 'REQUESTED':
+                statusBadge = '<span class="ms-status st-REQUESTED">📤 지급 요청됨</span>';
+                btnHtml = '<div class="btn-group-payout">' +
+                    '<button class="btn-pay-approve" onclick="openPayoutModal(\'approve\', ' + m.milestoneId + ', ' + m.contractId + ', ' + m.amount + ')">' +
+                    '<i class="fa-solid fa-check"></i> 승인</button>' +
+                    '<button class="btn-pay-reject" onclick="openPayoutModal(\'reject\', ' + m.milestoneId + ', ' + m.contractId + ', ' + m.amount + ')">' +
+                    '<i class="fa-solid fa-times"></i> 거부</button>' +
+                    '</div>';
+                break;
+
+            case 'PAID':
+                statusBadge = '<span class="ms-status st-PAID">✅ 지급 완료</span>';
+                break;
+
+            default:
+                statusBadge = '<span class="ms-status">' + (m.status || '-') + '</span>';
+        }
+
+        html += '<div class="milestone-card' + (m.status === 'REQUESTED' ? ' requested' : '') + '">' +
+            '<div class="ms-header">' +
+            '<div><span class="ms-step">' + m.stepOrder + '단계</span> <span class="ms-title">' + (m.milestoneName || '') + '</span></div>' +
+            statusBadge +
+            '</div>' +
+            '<div class="ms-details">' +
+            '<span>예정일: ' + dateStr + '</span>' +
+            '<span class="ms-amount">₩ ' + safeAmount + '</span>' +
+            '</div>' +
+            (btnHtml ? '<div class="ms-actions">' + btnHtml + '</div>' : '') +
+            '</div>';
     });
+
     target.html(html);
 }
 
-function payMilestone(milestoneId) {
-    if (!confirm("지급을 승인하시겠습니까?")) return;
+/**
+ * 비밀번호 인증 모달 열기
+ */
+function openPayoutModal(actionType, milestoneId, contractId, amount) {
+    pendingPayoutAction = {
+        type: actionType,
+        milestoneId: milestoneId,
+        contractId: contractId,
+        amount: amount
+    };
+
+    // 모달 내용 설정
+    let title = '';
+    let desc = '';
+    const amountStr = (amount || 0).toLocaleString();
+
+    switch(actionType) {
+        case 'approve':
+            title = '💰 지급 승인';
+            desc = '프리랜서에게 ₩' + amountStr + '을 지급합니다.';
+            break;
+        case 'release':
+            title = '💸 직접 지급';
+            desc = '프리랜서에게 ₩' + amountStr + '을 직접 지급합니다.';
+            break;
+        case 'reject':
+            title = '❌ 지급 거부';
+            desc = '지급 요청을 거부합니다. 프리랜서가 다시 요청할 수 있습니다.';
+            break;
+    }
+
+    $('#payoutModalTitle').text(title);
+    $('#payoutModalDesc').text(desc);
+    $('#payoutPassword').val('');
+    $('#payoutModal').show();
+    $('#payoutPassword').focus();
+}
+
+/**
+ * 비밀번호 인증 모달 닫기
+ */
+function closePayoutModal() {
+    $('#payoutModal').hide();
+    pendingPayoutAction = null;
+    $('#payoutPassword').val('');
+}
+
+/**
+ * 비밀번호 확인 후 지급 처리
+ */
+function confirmPayout() {
+    const password = $('#payoutPassword').val();
+
+    if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        $('#payoutPassword').focus();
+        return;
+    }
+
+    if (!pendingPayoutAction) {
+        alert('처리할 작업이 없습니다.');
+        closePayoutModal();
+        return;
+    }
+
+    const action = pendingPayoutAction;
+    let url = '';
+    let data = {};
+
+    switch(action.type) {
+        case 'approve':
+            url = contextPath + '/payout/milestone/approve';
+            data = { milestoneId: action.milestoneId, password: password };
+            break;
+        case 'release':
+            url = contextPath + '/payout/milestone/release';
+            data = { contractId: action.contractId, milestoneId: action.milestoneId, password: password };
+            break;
+        case 'reject':
+            url = contextPath + '/payout/milestone/reject';
+            data = { milestoneId: action.milestoneId, password: password };
+            break;
+    }
+
+    // 버튼 비활성화
+    $('#payoutConfirmBtn').prop('disabled', true).text('처리 중...');
+
     $.ajax({
-        url: contextPath + '/client/api/progress/pay',
+        url: url,
         type: 'POST',
-        data: {milestoneId: milestoneId},
-        success: function () {
-            alert("지급이 승인되었습니다.");
-            const activeId = $('.custom-list-item.active').attr('onclick').match(/\d+/)[0];
-            loadProjectProgress(activeId, $('.custom-list-item.active'));
+        data: data,
+        success: function(response) {
+            closePayoutModal();
+
+            if (response.success) {
+                let msg = '';
+                switch(action.type) {
+                    case 'approve':
+                    case 'release':
+                        msg = '지급이 완료되었습니다.';
+                        break;
+                    case 'reject':
+                        msg = '지급 요청을 거부했습니다.';
+                        break;
+                }
+                alert(msg);
+
+                // 목록 새로고침
+                refreshCurrentProject();
+            } else {
+                alert(response.message || '처리 중 오류가 발생했습니다.');
+            }
         },
-        error: function() { alert("오류가 발생했습니다."); }
+        error: function(xhr) {
+            let errorMsg = '처리 중 오류가 발생했습니다.';
+            try {
+                const resp = JSON.parse(xhr.responseText);
+                if (resp.message) errorMsg = resp.message;
+            } catch(e) {}
+            alert(errorMsg);
+        },
+        complete: function() {
+            $('#payoutConfirmBtn').prop('disabled', false).text('확인');
+        }
     });
 }
 
+/**
+ * 현재 선택된 프로젝트 새로고침
+ */
+function refreshCurrentProject() {
+    const activeItem = $('.custom-list-item.active');
+    if (activeItem.length > 0 && currentProjectData && currentProjectData.projectId) {
+        loadProjectProgress(currentProjectData.projectId, activeItem[0]);
+    }
+}
+
+/**
+ * Enter 키로 비밀번호 제출
+ */
+$(document).on('keypress', '#payoutPassword', function(e) {
+    if (e.which === 13) {
+        confirmPayout();
+    }
+});
+
+/**
+ * 모달 외부 클릭 시 닫기
+ */
+$(document).on('click', '#payoutModal', function(e) {
+    if (e.target === this) {
+        closePayoutModal();
+    }
+});
+
+// 기존 함수 유지
 function terminateProject() {
     if(confirm("정말 계약을 파기하시겠습니까?")) alert("준비중입니다.");
 }
+
 function completeProject() {
     if(confirm("프로젝트를 완료하시겠습니까?")) alert("준비중입니다.");
 }
