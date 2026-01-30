@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/project/create.css">
 </head>
 <body>
-
+<jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
 <div class="wrapper">
     <div class="step-indicator">
         <div class="step active" data-step="1">1. 기본 정보</div>
