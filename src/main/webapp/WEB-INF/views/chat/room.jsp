@@ -219,7 +219,10 @@
         } else {
             nameHtml = '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>';
         }
-        return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
+
+        const projectKey = btoa(encodeURIComponent(room.title)).replace(/=/g, "");
+
+        return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" data-project-key="' + projectKey + '"' + '" onclick="selectRoom(' + room.roomId + ')">' +
             '<div class="avatar-box">' +
             '<img src="' + profileImg + '" class="avatar">' +
             underAvatarHtml+
@@ -483,6 +486,26 @@
                     // 방 제목 옆이나 적절한 위치에 append (구조에 따라 조정 필요, 여기서는 .room-top에 추가 예시)
                     $roomItem.find('.room-top').append(newBadge);
                 }
+
+                // ===== 🔥 프로젝트 total unread =====
+                const projectKey = $roomItem.data('project-key');
+                if (projectKey) {
+                    const $projectHeader = $('.project-header')
+                        .filter(function () {
+                            return $(this).find('#icon-' + projectKey).length > 0;
+                        });
+
+                    let $totalBadge = $projectHeader.find('.total-unread-badge');
+
+                    if ($totalBadge.length > 0) {
+                        let total = parseInt($totalBadge.text()) || 0;
+                        $totalBadge.text(total + 1);
+                    } else {
+                        const newTotalBadge =
+                            '<span class="total-unread-badge" style="background:#e53935;color:#fff;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:8px;">1</span>';
+                        $projectHeader.find('div').first().append(newTotalBadge);
+                    }
+                }
             }
 
             // (4) 목록 최상단으로 이동 (애니메이션 효과 포함 가능)
@@ -665,7 +688,41 @@
             searchArea.style.display = "flex"; // 검색 영역 내부가 flex 구조이므로 flex로 설정
         }
         loadMessages(roomId);
+
+
         const $roomItem = $('#room-item-' + roomId);
+
+        // 1️⃣ 이 방의 unread 개수
+        const roomUnread = parseInt(
+            $roomItem.find('.unread-badge').text()
+        ) || 0;
+
+        // 2️⃣ 방 unread 뱃지 제거
+        $roomItem.find('.unread-badge').remove();
+
+        // 3️⃣ 프로젝트 key 가져오기 (renderSingleRoom에서 심어둔 값)
+        const projectKey = $roomItem.data('project-key');
+
+        if (projectKey && roomUnread > 0) {
+            const $projectHeader = $('.project-header')
+                .filter(function () {
+                    return $(this).find('#icon-' + projectKey).length > 0;
+                });
+
+            const $totalBadge = $projectHeader.find('.total-unread-badge');
+
+            if ($totalBadge.length > 0) {
+                let total = parseInt($totalBadge.text()) || 0;
+                total -= roomUnread;
+
+                if (total <= 0) {
+                    $totalBadge.remove();
+                } else {
+                    $totalBadge.text(total);
+                }
+            }
+        }
+
         $roomItem.find('.unread-badge').remove();
         fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
@@ -885,6 +942,7 @@
         initEmptyRoom();
     }
     loadChatRooms();
+
 </script>
 </body>
 </html>
