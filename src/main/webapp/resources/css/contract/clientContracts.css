@@ -238,9 +238,17 @@
 
 .stats-grid.compact {
     display: grid;
-    grid-template-columns: repeat(6, minmax(120px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
     margin-bottom: 2rem;
+}
+
+.stats-grid.compact.stats-grid-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.stats-grid.compact.stats-grid-6 {
+    grid-template-columns: repeat(6, 1fr);
 }
 
 .stat-card {
@@ -252,8 +260,8 @@
 }
 
 .stats-grid.compact .stat-card {
-    padding: 0.875rem;
-    min-height: 100px;
+    padding: 1.25rem;
+    min-height: 120px;
     position: relative;
 }
 
@@ -327,7 +335,7 @@
 }
 
 .stats-grid.compact .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
 }
 
 .stat-label {
@@ -336,17 +344,17 @@
 }
 
 .stats-grid.compact .stat-label {
-    font-size: 0.75rem;
-}
-
-.stats-grid.compact .stat-title {
     font-size: 0.8rem;
 }
 
+.stats-grid.compact .stat-title {
+    font-size: 0.85rem;
+}
+
 .stats-grid.compact .stat-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
 }
 
 /* 차트 섹션 */
@@ -671,15 +679,26 @@
 }
 
 @media (max-width: 1400px) {
-    .stats-grid.compact {
-        grid-template-columns: repeat(6, minmax(110px, 1fr));
-        gap: 0.5rem;
+    .stats-grid.compact.stats-grid-5 {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stats-grid.compact.stats-grid-6 {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.75rem;
     }
 }
 
 @media (max-width: 1200px) {
-    .stats-grid.compact {
+    .stats-grid.compact.stats-grid-5 {
         grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stats-grid.compact.stats-grid-6 {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
     }
     
     .info-cards {

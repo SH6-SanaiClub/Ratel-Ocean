@@ -25,14 +25,14 @@
 <main class="main-content">
     <!-- 페이지 헤더 -->
 
-    <div class="page-header" style="background: var(--primary); color: #fff; border-radius: 16px; padding: 32px 0 24px 32px; margin-bottom: 32px; display: flex; align-items: center; min-height: 80px;">
-        <div style="display: flex; align-items: center; gap: 18px;">
-            <span style="font-size: 2.5rem; background: rgba(255,255,255,0.13); border-radius: 12px; padding: 12px 18px 12px 14px; display: flex; align-items: center; justify-content: center;">
-                <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='none' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='white' fill-opacity='0.13'/><path d='M7.5 4.75A2.25 2.25 0 0 0 5.25 7v10A2.25 2.25 0 0 0 7.5 19.25h9A2.25 2.25 0 0 0 18.75 17V7A2.25 2.25 0 0 0 16.5 4.75h-9Zm0 1.5h9c.414 0 .75.336.75.75v10a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V7c0-.414.336-.75.75-.75Zm1.25 2.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm-.75 3.25c0-.414.336-.75.75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm.75 2.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-4.5Z' fill='white'/></svg>
+    <div class="page-header" style="background: var(--primary); color: #fff; border-radius: 12px; padding: 16px 0 16px 24px; margin-bottom: 24px; display: flex; align-items: center; min-height: 50px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.5rem; background: rgba(255,255,255,0.13); border-radius: 8px; padding: 8px 12px 8px 10px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='white' fill-opacity='0.13'/><path d='M7.5 4.75A2.25 2.25 0 0 0 5.25 7v10A2.25 2.25 0 0 0 7.5 19.25h9A2.25 2.25 0 0 0 18.75 17V7A2.25 2.25 0 0 0 16.5 4.75h-9Zm0 1.5h9c.414 0 .75.336.75.75v10a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V7c0-.414.336-.75.75-.75Zm1.25 2.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm-.75 3.25c0-.414.336-.75.75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm.75 2.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-4.5Z' fill='white'/></svg>
             </span>
             <div>
-                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">계약 관리</h1>
-                <p style="font-size: 1.1rem; color: #eaf7fa; font-weight: 400; margin: 0;">계약 현황과 통계를 한눈에 확인하세요</p>
+                <h1 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem; color: #fff;">계약 관리</h1>
+                <p style="font-size: 0.875rem; color: #eaf7fa; font-weight: 400; margin: 0;">계약 현황과 통계를 한눈에 확인하세요</p>
             </div>
         </div>
     </div>
@@ -69,7 +69,7 @@
     </c:forEach>
 
     <!-- 핵심 지표 카드 (클라이언트 관점) -->
-    <div class="stats-grid compact">
+    <div class="stats-grid compact stats-grid-6">
         <div class="stat-card priority clickable" onclick="scrollToSection('payment-request')">
             <div class="stat-header">
                 <span class="stat-title">지급 요청</span>
