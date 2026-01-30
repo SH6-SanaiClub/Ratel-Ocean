@@ -204,7 +204,7 @@
     <section class="card step-card" id="stepPdfUpload">
         <h2 class="section-title">4. 계약서 PDF 업로드</h2>
         <form id="pdfUploadForm" enctype="multipart/form-data" onsubmit="return false;">
-            <input type="file" name="contractPdf" accept="application/pdf" id="pdfFileInput" class="hidden" />
+            <input type="file" name="contractPdf" accept="application/pdf" id="pdfFileInput" style="display: none !important; position: absolute !important; width: 0 !important; height: 0 !important; opacity: 0 !important; pointer-events: none !important;" />
             <input type="hidden" name="projectId" />
             <input type="hidden" name="freelancerId" />
             <input type="hidden" id="uploadedPdfFileName" />
@@ -377,7 +377,13 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
         return;
     }
     
-    // 모달 즉시 표시
+    // body의 마지막 자식으로 이동하여 다른 요소의 영향을 받지 않도록
+    document.body.appendChild(modalEl);
+    
+    // 모달 화면 중앙에 표시 - 모든 스타일 명시적으로 설정
+    modalEl.removeAttribute('style');
+    modalEl.className = 'modal-overlay';
+    modalEl.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.7) !important; margin: 0 !important; padding: 0 !important;';
     modalEl.classList.add('show');
     
     // 모달 내부 확인 버튼 이벤트 설정
@@ -406,14 +412,45 @@ function showAiAnalysisModal(inputType, projectId, freelancerId, fileName) {
 function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
     console.log('[DEBUG] submitToContractCheck called', { inputType, projectId, freelancerId, fileName });
     
+    // 모달 완전히 숨기기 - 모든 방법으로 강제 숨김
     const modalEl = document.getElementById('aiAnalysisModal');
     if (modalEl) {
+        // 모든 클래스 제거
+        modalEl.className = 'modal-overlay';
+        // 모든 스타일 속성 제거 후 숨김
+        modalEl.removeAttribute('style');
+        modalEl.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; z-index: -1 !important; pointer-events: none !important; position: fixed !important; top: -9999px !important; left: -9999px !important; width: 0 !important; height: 0 !important;';
         modalEl.classList.remove('show');
+        
+        // 모달 내부 요소도 숨김
+        const modalContent = modalEl.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.cssText = 'display: none !important;';
+        }
     }
     
+    // 로딩 오버레이 표시 - 모든 스타일을 강제로 적용
     const loadingEl = document.getElementById('loadingOverlay');
     if (loadingEl) {
+        // body의 마지막 자식으로 이동하여 다른 요소의 영향을 받지 않도록
+        document.body.appendChild(loadingEl);
+        
+        // 기존 스타일 모두 제거 후 새로 설정
+        loadingEl.removeAttribute('style');
+        loadingEl.className = 'loading-overlay';
+        
+        // 화면 전체를 덮고 중앙에 표시되도록 강제 설정 - cssText로 한 번에 설정
+        loadingEl.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(255,255,255,0.98) !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; transform: none !important;';
         loadingEl.classList.add('show');
+        
+        // loading-content도 중앙 정렬 강제
+        const loadingContent = loadingEl.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.style.cssText = 'text-align: center !important; margin: 0 auto !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;';
+        }
+        
+        // 강제로 리플로우 발생시켜 스타일 적용 확인
+        loadingEl.offsetHeight;
     }
     
     const loadingMessages = [
@@ -476,7 +513,7 @@ function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
 </script>
 
 <!-- AI 분석 안내 모달 -->
-<div id="aiAnalysisModal" class="modal-overlay">
+<div id="aiAnalysisModal" class="modal-overlay" style="display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(0,0,0,0.7) !important; margin: 0 !important; padding: 0 !important;">
     <div class="modal-content">
         <div class="modal-icon">🤖</div>
         <h2 class="modal-title">AI 계약서 분석</h2>
@@ -500,8 +537,8 @@ function submitToContractCheck(inputType, projectId, freelancerId, fileName) {
 </div>
 
 <!-- 로딩 오버레이 -->
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-content">
+<div id="loadingOverlay" class="loading-overlay" style="display: none !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999999 !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; background: rgba(255,255,255,0.98) !important; margin: 0 !important; padding: 0 !important;">
+    <div class="loading-content" style="text-align: center !important; margin: 0 auto !important;">
         <div class="loading-spinner"></div>
         <h3 class="loading-title">AI 계약서 생성 중</h3>
         <p class="loading-description">
@@ -783,6 +820,8 @@ $(function () {
         $('#directFormActionArea').hide();
         $('#pdfUploadStatus').empty();
         $('#pdfFileInput').val(''); // 파일 선택 초기화
+        // 업로드 버튼 다시 표시 (초기화 시)
+        $('#pdfUploadBtn').show().text('PDF 파일 선택 및 업로드');
         
         if (this.value === 'yes') {
             $('#stepPdfUpload').addClass('visible');
@@ -890,7 +929,8 @@ $(function () {
                     
                     // 성공 알림
                     $status.html('<span class="status-success">✓ 업로드 완료: ' + fileNameDisplay + '</span>');
-                    $btn.prop('disabled', false).text('다시 업로드');
+                    // 업로드 완료 후 버튼 완전히 숨김
+                    $btn.hide().css('display', 'none').prop('disabled', false).text('PDF 파일 선택 및 업로드');
                     
                     // 완성 버튼 표시 및 활성화
                     $('#stepFinalAction').addClass('visible').css({
@@ -925,7 +965,7 @@ $(function () {
                     }, 300);
                 } else {
                     $status.html('<span class="status-error">✗ 업로드 실패: ' + ((res && res.error) ? res.error : '알 수 없는 오류') + '</span>');
-                    $btn.prop('disabled', false).text('PDF 파일 선택 및 업로드');
+                    $btn.prop('disabled', false).show().text('PDF 파일 선택 및 업로드');
                     alert('PDF 업로드 실패: ' + ((res && res.error) ? res.error : '알 수 없는 오류'));
                 }
             },
@@ -934,7 +974,7 @@ $(function () {
                     ? xhr.responseJSON.error 
                     : (xhr.statusText || '알 수 없는 오류');
                 $status.html('<span class="status-error">✗ 업로드 오류: ' + errorMsg + '</span>');
-                $btn.prop('disabled', false).text('PDF 파일 선택 및 업로드');
+                $btn.prop('disabled', false).show().text('PDF 파일 선택 및 업로드');
                 alert('PDF 업로드 중 오류 발생: ' + errorMsg);
                 console.error('PDF upload error:', xhr);
             }
