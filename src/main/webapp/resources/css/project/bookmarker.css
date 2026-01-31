@@ -1,0 +1,167 @@
+/* [CSS 전면 수정] - 디자인 통일 (Teal & Gray) */
+:root {
+    --primary: #1F7A8C;
+    --primary-dark: #155b6a;
+    --primary-light: #E0F2F1;
+    --bg-body: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text-main: #333333;
+    --text-sub: #666666;
+    --border: #E2E8F0;
+    --danger: #E74C3C;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Pretendard', sans-serif;
+    background: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+.dashboard-wrap {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* 검색 박스 스타일 통일 */
+.search-box {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.search-box input[type="text"] {
+    width: 400px; max-width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.search-box input[type="text"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.1);
+}
+
+.search-box button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.search-box button:hover { background: var(--primary-dark); }
+
+
+/* 프로젝트 리스트 (카드형) */
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    border-color: #d0d7de;
+}
+
+/* 왼쪽 정보 */
+.left { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+.owner-name { display: flex; gap: 8px; margin-bottom: 4px; }
+.badge {
+    font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600;
+    background: #F1F3F5; color: #495057; border: 1px solid #E9ECEF;
+}
+.badge.company { background: #E3FAFC; color: #0C8599; border-color: #C5F6FA; }
+
+.title {
+    font-size: 18px; font-weight: 700; color: var(--text-main);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip {
+    font-size: 12px; padding: 4px 10px; border-radius: 6px;
+    background: #F8F9FA; color: #666; border: 1px solid #EEE;
+}
+.chip.position {
+    background: var(--primary-light); color: var(--primary); border-color: rgba(31,122,140,0.1);
+}
+
+/* 오른쪽 정보 */
+.right {
+    width: 200px;
+    text-align: right;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding-left: 20px; border-left: 1px solid #f0f0f0;
+}
+
+.bookmark-btn {
+    align-self: flex-end;
+    background: none; border: 1px solid #ddd; border-radius: 50%;
+    width: 36px; height: 36px; cursor: pointer; color: #ccc;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px; transition: 0.2s;
+}
+.bookmark-btn:hover { border-color: var(--primary); color: var(--primary); }
+.bookmark-btn.is-active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.bookmark-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.right-mid { margin-top: 4px; }
+.dday {
+    display: inline-block; padding: 4px 10px; border-radius: 4px;
+    background: #FFF5F5; color: var(--danger); font-weight: 700; font-size: 12px;
+    margin-bottom: 4px; border: 1px solid #FFC9C9;
+}
+.applicants { font-size: 13px; color: var(--text-sub); }
+
+.right-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: flex-end; }
+.duration { font-size: 12px; color: var(--text-sub); margin-bottom: 2px; }
+.budget { font-size: 18px; font-weight: 800; color: var(--text-main); }
+
+.empty {
+    text-align: center; padding: 60px; color: #999; font-size: 15px;
+    background: #fff; border-radius: var(--radius); border: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+    .project-card { flex-direction: column; gap: 16px; }
+    .right {
+        width: 100%; border-left: none; border-top: 1px solid #f0f0f0;
+        padding-left: 0; padding-top: 16px; flex-direction: row; align-items: center;
+    }
+    .bookmark-btn { margin-bottom: 0; order: 3; }
+    .right-mid { order: 1; text-align: left; }
+    .right-bottom { order: 2; align-items: center; margin-top: 0; }
+}

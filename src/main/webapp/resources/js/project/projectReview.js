@@ -48,7 +48,7 @@ function renderReviewPage(data) {
     // [내용]
     $('#reviewComment').val(data.reviewContent || '');
 
-    // [재계약 의사] (수정됨: renewalIntended 사용)
+    // [재계약 의사]
     // 데이터가 null이 아닐 때만 체크
     if(data.renewalIntended !== null && data.renewalIntended !== undefined) {
         // true/false 값을 문자열로 변환하여 라디오 버튼 찾기
