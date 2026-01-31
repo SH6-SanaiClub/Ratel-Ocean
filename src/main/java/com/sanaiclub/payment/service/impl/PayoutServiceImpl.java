@@ -2,10 +2,13 @@ package com.sanaiclub.payment.service.impl;
 
 import com.sanaiclub.contract.dao.ContractMapper;
 import com.sanaiclub.contract.dao.ContractMilestoneMapper;
+import com.sanaiclub.contract.model.dto.ContractDetailDTO;
 import com.sanaiclub.contract.model.vo.ContractStatus;
 import com.sanaiclub.contract.model.vo.MilestoneStatus;
 import com.sanaiclub.contract.model.vo.ContractMilestoneVO;
 import com.sanaiclub.contract.model.vo.ContractVO;
+import com.sanaiclub.project.dao.ProjectDetailMapper;
+import com.sanaiclub.project.model.vo.ProjectStatus;
 import com.sanaiclub.wallet.dao.WalletMapper;
 import com.sanaiclub.payment.model.dto.PayoutRequestDTO;
 import com.sanaiclub.payment.model.dto.PayoutResponseDTO;
@@ -34,6 +37,7 @@ public class PayoutServiceImpl implements PayoutService {
     private final ContractMapper contractMapper;
     private final ContractMilestoneMapper milestoneMapper;
     private final WalletMapper walletMapper;
+    private final ProjectDetailMapper projectDetailMapper;
 
     /**
      * 마일스톤 지급 (클라이언트가 직접 지급)
@@ -101,6 +105,16 @@ public class PayoutServiceImpl implements PayoutService {
             // 모든 마일스톤 지급 완료 → 계약 완료
             contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
             logger.info("모든 마일스톤 지급 완료, 계약 종료: contractId={}", contractId);
+
+            // 프로젝트 상태도 CLOSED로 업데이트
+            ContractDetailDTO contractDetail = contractMapper.selectContractDetailWithJoin(contractId);
+            if (contractDetail != null && contractDetail.getProjectId() != null) {
+                projectDetailMapper.updateProjectStatus(
+                        contractDetail.getProjectId(),
+                        ProjectStatus.CLOSED.name()
+                );
+                logger.info("프로젝트 상태 업데이트: projectId={}, status=CLOSED", contractDetail.getProjectId());
+            }
         }
 
         // 10. 지갑 잔액 다시 조회 (업데이트된 값)
