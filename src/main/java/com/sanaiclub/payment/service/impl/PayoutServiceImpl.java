@@ -62,7 +62,7 @@ public class PayoutServiceImpl implements PayoutService {
         }
 
         // 4. 마일스톤 상태 검증 (DEPOSITED 상태여야 함)
-        if (!MilestoneStatus.DEPOSITED.equals(milestone.getStatus())) {
+        if (!MilestoneStatus.DEPOSITED.equals(milestone.getStatus()) && !MilestoneStatus.REQUESTED.equals(milestone.getStatus())) {
             throw new IllegalStateException("지급 가능한 마일스톤 상태가 아닙니다: " + milestone.getStatus());
         }
 
