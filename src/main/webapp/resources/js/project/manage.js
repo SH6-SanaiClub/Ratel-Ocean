@@ -44,7 +44,6 @@ function switchProjectTab(status, btn) {
 
     } else if (status === 'COMPLETED') {
         $('#completedCenterPanel, #completedRightPanel').show();
-        // ... (완료 탭 로직 유지) ...
         $('#reviewProjectTitle').text('');
         $('#reviewComment').val('');
         $('#ratingValue').text('0점');
@@ -193,22 +192,33 @@ function renderDetail(data) {
     currentSelectedFreelancerId = data.freelancerId;
     $('#btnGoFreelancerProfile').css('display', 'flex');
 
-    // 1. 프로필 이미지 처리
-    let imageHtml = '';
-    if (data.profileImageUrl) {
-        const raw = data.profileImageUrl;
-        const fixedSrc =
-            raw.startsWith('http') ? raw :
-                raw.startsWith('/') ? (contextPath + raw) :
-                    (contextPath + '/resources/upload/' + raw);
+    // 1. 프로필 이미지
+    let imgSrc = data.profileImageUrl;
 
+    if (imgSrc && imgSrc !== 'null') {
+        if (!imgSrc.startsWith('/') && !imgSrc.startsWith('http')) {
+            imgSrc = contextPath + "/resources/upload/profile/" + encodeURIComponent(imgSrc);
+        }
+        else if (imgSrc.startsWith('/')) {
+            imgSrc = contextPath + imgSrc;
+        }
+    }
+
+    let imageHtml = '';
+
+    if (imgSrc && imgSrc !== 'null') {
         imageHtml = `
-    <img src="${fixedSrc}" class="detail-img"
-         style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #eee;"
-         onerror="this.onerror=null; this.src='${contextPath}/resources/img/default-profile.png';">
-  `;
+        <div style="position:relative; width:80px; height:80px;">
+            <img src="${imgSrc}" class="detail-img" 
+                 style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:1px solid #eee; display:block;"
+                 onerror="this.style.display='none'; this.parentElement.querySelector('.alt-icon').style.display='flex';">
+            
+            <div class="alt-icon" style="display:none; width:100%; height:100%; border-radius:50%; background:#f0f0f0; align-items:center; justify-content:center; font-size:30px; color:#ccc; position:absolute; top:0; left:0;">
+                <i class="fa-solid fa-user"></i>
+            </div>
+        </div>`;
     } else {
-        imageHtml = `<div class="detail-img-icon" style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
+        imageHtml = `<div style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
     }
 
     // 2. 평점 처리

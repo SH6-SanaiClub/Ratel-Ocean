@@ -182,6 +182,11 @@
         WHERE project_id = #{projectId}
     </update>
 
-
-    <!-- ?꾨줈?앺듃 ?곹깭 ?낅뜲?댄듃 (payment ?꾨찓?몄뿉???ъ슜) -->
+    <!-- application_id로 지원 상태 업데이트 (결제 완료 시 CONTRACTED로 변경) -->
+    <update id="updateApplicationStatusByApplicationId">
+        UPDATE project_applications
+        SET application_status = #{status},
+            applied_at = NOW()
+        WHERE application_id = #{applicationId}
+    </update>
 </mapper>
