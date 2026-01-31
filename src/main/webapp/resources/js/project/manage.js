@@ -196,9 +196,17 @@ function renderDetail(data) {
     // 1. 프로필 이미지 처리
     let imageHtml = '';
     if (data.profileImageUrl) {
-        imageHtml = `<img src="${data.profileImageUrl}" class="detail-img" 
-                      style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #eee;"
-                      onerror="this.src='${contextPath}/resources/img/default_profile.png';">`;
+        const raw = data.profileImageUrl;
+        const fixedSrc =
+            raw.startsWith('http') ? raw :
+                raw.startsWith('/') ? (contextPath + raw) :
+                    (contextPath + '/resources/upload/' + raw);
+
+        imageHtml = `
+    <img src="${fixedSrc}" class="detail-img"
+         style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #eee;"
+         onerror="this.onerror=null; this.src='${contextPath}/resources/img/default-profile.png';">
+  `;
     } else {
         imageHtml = `<div class="detail-img-icon" style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
     }

@@ -13,6 +13,7 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
+
 <div class="container">
 
     <div class="page-header">
@@ -54,7 +55,7 @@
                 <button type="button" class="btn-icon"
                         onclick="location.href='${pageContext.request.contextPath}/project/bookmark'"
                         title="북마크 바로가기"
-                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; color:#1f7a8c; border-color:#1f7a8c; gap:5px; display:flex; align-items:center; background:#fff; cursor:pointer;">
+                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; gap:5px; display:flex; align-items:center; background:#fff; cursor:pointer;">
                     <i class="fa-solid fa-bookmark"></i> 북마크
                 </button>
             </div>
@@ -206,7 +207,7 @@
                 <span>지원자 프로필</span>
                 <button type="button" class="btn-icon" id="btnGoFreelancerProfile" onclick="goFreelancerProfileDetail()"
                         title="전체 프로필 보기"
-                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; color:#1F7A8C; border-color:#1F7A8C; gap:5px; display:none; align-items:center; background:#fff; cursor:pointer;">
+                        style="width:auto; padding:0 10px; height:28px; border-radius:6px; font-size:12px; font-weight:700; gap:5px; display:none; align-items:center; background:#fff; cursor:pointer;">
                     <i class="fa-solid fa-user-tag"></i> 프로필 상세보기
                 </button>
             </div>
