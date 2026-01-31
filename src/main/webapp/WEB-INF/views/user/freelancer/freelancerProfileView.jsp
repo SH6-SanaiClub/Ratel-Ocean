@@ -213,7 +213,7 @@
         .v{ font-size:13px; font-weight: 650; color: var(--text); word-break: break-word; line-height:1.5; }
 
         .link{
-            color: var(--p700);
+            color: var(--primary);
             font-weight: 750;
             border-bottom:1px solid rgba(38,79,168,.30);
         }
@@ -369,7 +369,7 @@
             border-radius: var(--Rchip);
 
             background: #f3f4f6;
-            border: 1px solid #d1d5db;
+            /*border: 1px solid #d1d5db;*/
             color: rgba(17,24,39,.92);
 
             font-size:12px;

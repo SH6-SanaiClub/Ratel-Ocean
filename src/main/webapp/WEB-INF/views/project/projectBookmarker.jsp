@@ -63,7 +63,7 @@
             align-items:flex-end;
             justify-content:space-between;
             gap:14px;
-            margin-bottom: 14px;
+            margin-bottom: 25px;
             flex-wrap:wrap;
         }
 

@@ -109,6 +109,11 @@
     }
     .pm .btn.ghost:hover{ filter:brightness(.99); }
 
+    .pm .btn.cal{
+      background: #fff;
+      border-color: var(--ghost-bg);
+      color: var(--ghost-fg);
+    }
 
     .pm .gridTop{
       display:grid;
@@ -496,9 +501,9 @@
         <div class="calHead">
           <div class="ym" id="ymText"></div>
           <div class="calNav">
-            <button class="btn ghost" type="button" id="prevBtn">◀</button>
-            <button class="btn ghost" type="button" id="todayBtn">오늘</button>
-            <button class="btn ghost" type="button" id="nextBtn">▶</button>
+            <button class="btn cal" type="button" id="prevBtn">◀</button>
+            <button class="btn cal" type="button" id="todayBtn">오늘</button>
+            <button class="btn cal" type="button" id="nextBtn">▶</button>
           </div>
         </div>
 

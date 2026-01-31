@@ -51,25 +51,31 @@
             padding: 0 16px;
         }
 
-        .bm-title{
+        .pageTitle{
             display:flex;
-            flex-direction:column;
-            gap:6px;
-            min-width: 220px;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:16px;
+            margin-bottom:16px;
         }
-        .bm-title h1{
+        .titleBox{ display:flex; flex-direction:column; gap:6px; }
+        .titleBox h1{
             margin:0;
-            font-size: 20px;
-            font-weight: 950;
-            letter-spacing: -0.2px;
+            font-size:24px;
+            font-weight:900;
+            letter-spacing:-.6px;
+            color:var(--text);
         }
-        .bm-sub{
+        .titleBox .bm-sub{
             margin:0;
-            color: var(--muted);
-            font-size: 13px;
-            font-weight: 800;
-            margin-bottom: 10px;
+            color:var(--muted);
+            font-weight:800;
+            line-height:1.45;
+            font-size:13px;
         }
+
+
+
         .pd-register{
             display:flex;
             justify-content:flex-end;
@@ -627,16 +633,20 @@
 
 <div class="pd-wrap">
 
-    <div class="bm-title">
-        <h1>프로젝트 찾기</h1>
-        <p class="bm-sub">프로젝트를 찾을 수 있긔</p>
+
+    <div class="pageTitle">
+        <div class="titleBox">
+            <h1>프로젝트 찾기</h1>
+            <p class="bm-sub">프로젝트를 찾을 수 있긔</p>
+        </div>
+
+        <c:if test="${isClient}">
+            <div class="pd-register">
+                <a href="${pageContext.request.contextPath}/project/create" class="pd-btn-primary">프로젝트 등록하기</a>
+            </div>
+        </c:if>
     </div>
 
-    <c:if test="${isClient}">
-        <div class="pd-register">
-            <a href="${pageContext.request.contextPath}/project/create" class="pd-btn-primary">프로젝트 등록하기</a>
-        </div>
-    </c:if>
 
     <!-- SUMMARY -->
     <div class="pd-summary">
