@@ -280,7 +280,7 @@ function renderDetail(data) {
         </div>
 
         <div class="action-btn-group" style="margin-top:auto; padding-top:20px;">
-            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="updateStatus(${data.applicationId}, 'CHATTING')">
+            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="openChatRoom(${data.freelancerId})">
                 1:1 채팅하기
             </button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
@@ -294,6 +294,36 @@ function renderDetail(data) {
         </div>
     `;
     $('#applicantDetailArea').html(html);
+}
+
+function openChatRoom(freelancerId) {
+   if (!currentProjectId) {
+        alert("프로젝트 정보가 없습니다.");
+        return;
+    }
+
+    if (!freelancerId) {
+        alert("프리랜서 정보가 올바르지 않습니다.");
+        return;
+    }
+
+    $.ajax({
+        url: contextPath + '/chat/create-or-get-room',
+        type: 'POST',
+        data: {
+            projectId: currentProjectId,
+            freelancerId: freelancerId
+        },
+        success: function (roomId) {
+            const url = `/ratelocean/chat?roomId=${roomId}&mode=view`;
+            const options = "width=470,height=600,resizable=yes,scrollbars=no,status=no,location=no";
+            window.open(url, "chatPopup_" + roomId, options);
+        },
+        error: function (xhr, status, err) {
+            console.error(err);
+            alert("채팅방을 생성하는 중 오류가 발생했습니다.");
+        }
+    });
 }
 
 function goFreelancerProfileDetail() {

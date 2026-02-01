@@ -19,28 +19,37 @@
         <result property="name" column="name"/>
         <result property="opponentId" column="opponent_id"/>
     </resultMap>
-
+    <select id="findExistRoom" resultType="Integer">
+        SELECT room_id
+        FROM chat_rooms
+        WHERE project_id = #{projectId}
+          AND freelancer_id = #{freelancerId}
+            LIMIT 1
+    </select>
     <select id="findMyRooms" parameterType="int" resultMap="chatRoomMap">
         SELECT
             rooms.room_id,
             rooms.freelancer_id,
             rooms.project_id,
             rooms.is_active,
-            rooms.last_message_at,
-            rooms.created_at,
             rooms.freelancer_exited,
             rooms.client_exited,
+            p.title,
+            /* 상대방 정보 추출 (내가 프리랜서면 클라이언트 정보, 내가 클라이언트면 프리랜서 정보) */
+            u.name,
+            u.profile_image_url,
+            u.user_id AS opponent_id,
 
+            /* 마지막 메시지 처리 (삭제 여부 및 파일 여부) */
             CASE
                 WHEN m.is_deleted = 1 THEN '삭제된 메시지입니다.'
                 WHEN m.file_name IS NOT NULL THEN CONCAT('📎 ', m.file_name)
                 ELSE m.content
-                END AS last_message_content,            m.sender_id   AS last_message_sender_id,
-            m.created_at  AS last_message_at,
-            p.title,
-            u.name,
-            u.profile_image_url,
+                END AS last_message_content,
+            m.sender_id AS last_message_sender_id,
+            m.created_at AS last_message_at,
 
+            /* 안 읽은 메시지 수 */
             (
                 SELECT COUNT(*)
                 FROM messages m3
@@ -50,17 +59,16 @@
             ) AS unread_count
 
         FROM chat_rooms rooms
-            LEFT JOIN projects p
-        ON p.project_id = rooms.project_id
-            LEFT JOIN users u
-            ON u.user_id =
+            JOIN projects p ON p.project_id = rooms.project_id
+            /* 상대방 유저 정보를 Join */
+            JOIN users u ON u.user_id = (
             CASE
-            WHEN rooms.freelancer_id = #{loginUserId}
-            THEN p.client_id
+            WHEN rooms.freelancer_id = #{loginUserId} THEN p.client_id
             ELSE rooms.freelancer_id
-        END
-        LEFT JOIN messages m
-            ON m.message_id = (
+            END
+            )
+            /* 마지막 메시지 성능 최적화를 위한 서브쿼리 Join */
+            LEFT JOIN messages m ON m.message_id = (
             SELECT m2.message_id
             FROM messages m2
             WHERE m2.room_id = rooms.room_id
@@ -68,20 +76,13 @@
             LIMIT 1
             )
         WHERE
-(
-    rooms.freelancer_id = #{loginUserId}
-        AND rooms.freelancer_exited = 0
-        )
-        OR
-        (
-        rooms.freelancer_id != #{loginUserId}
-        AND rooms.client_exited = 0
-        AND p.client_id = #{loginUserId}
-        )
+            /* 리팩토링: 나가지 않은 방만 조회 */
+            (rooms.freelancer_id = #{loginUserId} AND rooms.freelancer_exited = 0)
+           OR
+            (p.client_id = #{loginUserId} AND rooms.client_exited = 0)
 
-
-        ORDER BY
-    m.created_at DESC
+        /* 최신 메시지 순으로 정렬 (메시지가 없으면 방 생성 시간 순) */
+        ORDER BY COALESCE(m.created_at, rooms.created_at) DESC
     </select>
     <resultMap id="chatMessageMap" type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
         <id property="messageId" column="message_id"/>
@@ -101,39 +102,6 @@
         <result property="fileUrl" column="file_url"/>
         <result property="fileSize" column="file_size"/>
     </resultMap>
-
-    <select id="findRoomById" resultMap="chatMessageMap">
-        SELECT
-            cr.room_id,
-            cr.project_id,
-            p.title,
-            u.user_id,
-            u.name,
-            u.profile_image_url,
-            m.message_id,
-            m.content,
-            m.sender_id,
-            m.created_at,
-            m.deleted_at,
-            m.is_read,
-            m.is_deleted,
-            m.file_name,
-            m.file_url,
-            m.file_size
-        FROM chat_rooms cr
-                 JOIN projects p
-                      ON cr.project_id = p.project_id
-                 JOIN users u
-                      ON u.user_id =
-                         CASE
-                             WHEN p.client_id = #{loginUserId}
-                                 THEN cr.freelancer_id
-                             ELSE p.client_id
-                             END
-                 LEFT JOIN messages m ON m.room_id = cr.room_id
-        WHERE cr.room_id = #{roomId}
-        ORDER BY m.created_at ASC
-    </select>
     <update id="exitRoom" parameterType="map">
         UPDATE chat_rooms r
             JOIN projects p ON r.project_id = p.project_id
@@ -168,6 +136,11 @@
         WHERE r.room_id = #{roomId}
     </select>
 
+    <insert id="insertChatRoom" useGeneratedKeys="true" keyProperty="roomId">
+        INSERT INTO chat_rooms (freelancer_id,project_id)
+        VALUES (#{freelancerId},#{projectId})
+    </insert>
+
     <update id="updateLastMessage" parameterType="int">
         UPDATE chat_rooms
         SET last_message_at = CURRENT_TIMESTAMP
@@ -179,4 +152,13 @@
         FROM users
         WHERE user_id = #{userId}
     </select>
+
+    <select id="findRoomIdByProjectAndUser" resultType="int">
+        SELECT room_id
+        FROM chat_rooms
+        WHERE project_id = #{projectId}
+          AND (sender_id = #{userId} OR opponent_id = #{userId})
+            LIMIT 1
+    </select>
+
 </mapper>
