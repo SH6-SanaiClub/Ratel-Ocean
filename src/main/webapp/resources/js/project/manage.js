@@ -208,7 +208,7 @@ function renderDetail(data) {
 
     if (imgSrc && imgSrc !== 'null') {
         imageHtml = `
-        <div style="position:relative; width:80px; height:80px;">
+        <div style="position:relative; width:80px; height:80px; margin: 0 auto;">
             <img src="${imgSrc}" class="detail-img" 
                  style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:1px solid #eee; display:block;"
                  onerror="this.style.display='none'; this.parentElement.querySelector('.alt-icon').style.display='flex';">
@@ -218,7 +218,7 @@ function renderDetail(data) {
             </div>
         </div>`;
     } else {
-        imageHtml = `<div style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
+        imageHtml = `<div style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc; margin: 0 auto;"><i class="fa-solid fa-user"></i></div>`;
     }
 
     // 2. 평점 처리

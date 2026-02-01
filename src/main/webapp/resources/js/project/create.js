@@ -1,13 +1,13 @@
-$(document).ready(function() {
+$(document).ready(function () {
     $('#description').summernote({
         height: 350,
         lang: 'ko-KR',
-        toolbar: [ ['style', ['style']], ['font', ['bold', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link']] ]
+        toolbar: [['style', ['style']], ['font', ['bold', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link']]]
     });
 
-    $('#stackSearch').on('input', function() {
+    $('#stackSearch').on('input', function () {
         const val = $(this).val().toLowerCase();
-        $('.stack-chip').each(function() {
+        $('.stack-chip').each(function () {
             const text = $(this).text().toLowerCase();
             $(this).toggle(text.includes(val));
         });
@@ -16,7 +16,7 @@ $(document).ready(function() {
     toggleStartType($('input[name="startType"]:checked')[0]);
 
     // 폼 제출 시 데이터 전처리
-    $('#projectForm').on('submit', function(e) {
+    $('#projectForm').on('submit', function (e) {
         // 1. 공고 마감일 자동 계산 (오늘 + 30일)
         const today = new Date();
         today.setDate(today.getDate() + 30);
@@ -109,18 +109,53 @@ function toggleYear(chk) {
 // 단계 이동 시 필수값 검증
 function nextStep(step) {
     if (step === 2) {
-        if (!$('#title').val().trim()) { alert('프로젝트 제목을 입력해주세요.'); $('#title').focus(); return; }
-        if ($('#description').summernote('isEmpty')) { alert('상세 내용을 입력해주세요.'); return; }
+        if (!$('#title').val().trim()) {
+            alert('프로젝트 제목을 입력해주세요.');
+            $('#title').focus();
+            return;
+        }
+        if ($('#description').summernote('isEmpty')) {
+            alert('상세 내용을 입력해주세요.');
+            return;
+        }
     }
     if (step === 3) {
-        if ($('input[name="positionIds"]:checked').length === 0) { alert('개발 분야를 하나 이상 선택해주세요.'); return; }
-        if ($('input[name="stackIds"]:checked').length === 0 && !$('#stackIdsUnknown').is(':checked')) { alert('기술 스택을 선택하거나 "잘 모르겠어요"를 체크해주세요.'); return; }
+        if ($('input[name="positionIds"]:checked').length === 0) {
+            alert('개발 분야를 하나 이상 선택해주세요.');
+            return;
+        }
+        if ($('input[name="stackIds"]:checked').length === 0 && !$('#stackIdsUnknown').is(':checked')) {
+            alert('기술 스택을 선택하거나 "잘 모르겠어요"를 체크해주세요.');
+            return;
+        }
     }
     if (step === 4) {
-        if (!$('#budgetInput').val()) { alert('예산을 입력해주세요.'); $('#budgetInput').focus(); return; }
-        if (!$('#estDuration').val()) { alert('예상 기간을 선택해주세요.'); $('#estDuration').focus(); return; }
-        if ($('input[name="startType"]:checked').val() === 'DATE' && !$('#startDate').val()) { alert('시작 예정일을 선택해주세요.'); $('#startDate').focus(); return; }
-        if (!$('#maxRevisionCount').val()) { alert('수정 횟수를 입력해주세요.'); $('#maxRevisionCount').focus(); return; }
+        if (!$('#budgetInput').val()) {
+            alert('예산을 입력해주세요.');
+            $('#budgetInput').focus();
+            return;
+        }
+        if (!$('#estDuration').val()) {
+            alert('예상 기간을 선택해주세요.');
+            $('#estDuration').focus();
+            return;
+        }
+        if ($('input[name="startType"]:checked').val() === 'DATE' && !$('#startDate').val()) {
+            alert('시작 예정일을 선택해주세요.');
+            $('#startDate').focus();
+            return;
+        }
+        const revVal = $('#maxRevisionCount').val();
+        if (!revVal) {
+            alert('수정 횟수를 입력해주세요.');
+            $('#maxRevisionCount').focus();
+            return;
+        }
+        if (parseInt(revVal) >= 4) {
+            alert('수정 횟수는 3회 이하로만 설정 가능합니다.');
+            $('#maxRevisionCount').val('').focus();
+            return;
+        }
     }
 
     $('.step-section').removeClass('active');
@@ -212,8 +247,7 @@ function initEditMode(stackList) {
                     togglePosition(posInput.closest('.position-card')[0]);
                 }
             }
-        }
-        else if (stack.category === 'SKILL') {
+        } else if (stack.category === 'SKILL') {
             const stackInput = $(`.stack-chip input[value='${stack.stackId}']`);
             if (stackInput.length > 0) {
                 const chip = stackInput.closest('.stack-chip');

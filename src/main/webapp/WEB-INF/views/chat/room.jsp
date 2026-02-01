@@ -12,6 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
+<c:if test="${param.mode ne 'view'}">
+    <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
+</c:if>
 <div class="app">
     <!-- LEFT: 채팅방 목록 -->
     <aside class="chat-list" id="roomList">
@@ -36,11 +39,12 @@
                             <span id="searchIndex" style="font-size: 11px; color: #666; min-width: 30px; text-align: center;">0/0</span>
                             <button onclick="clearSearch()" style="border:none; background:none; cursor:pointer; color: #ff4d4f; font-weight: bold; margin-left:2px;">✕</button>
                         </div>
-                <div>
-                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none;">나가기</button>
-                </div>
+
             </div>
         </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none; font-size: 13px;">나가기</button>
+                </div>
             </div>
         </div>
         <div class="chat-body" id="chatBody"></div>
@@ -69,10 +73,9 @@
     const autoRoomId = Number(urlParams.get("roomId"));
     const messageInput = document.getElementById("messageInput");
     const loginUserType = '${userType}';
-    let stompClient = null;
-    let selectedRoomId = null;
-    const loginUserId =  Number('${loginUserId}');
-    let opponentExited = false;
+    let roomSubscription = null;
+    let listSubscription = null;
+    let pendingRoomId = null;
 
     function escapeHtml(text) {
         if (!text) return "";
@@ -80,6 +83,19 @@
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
+    }
+
+    let stompClient = null;
+    let selectedRoomId = null;
+    const loginUserId =  Number('${loginUserId}');
+    let opponentExited = false;
+
+    let autoEntered = false;
+
+    function tryAutoEnter() {
+        if (autoEntered || !autoRoomId) return;
+        autoEntered = true;
+        selectRoom(autoRoomId);
     }
 
     function exitRoom() {
@@ -98,6 +114,11 @@
                     document.getElementById("headerProject").innerText = "";
                     document.getElementById("roomInfo").innerHTML = "";
                     loadChatRooms();
+
+                    if (roomSubscription) {
+                        roomSubscription.unsubscribe();
+                        roomSubscription = null;
+                    }
                 } else {
                     alert("채팅방 나가기에 실패했습니다.");
                 }
@@ -158,24 +179,10 @@
                     });
                 }
                 container.innerHTML = finalHtml;
-                if (!isNaN(autoRoomId)) {
-                    setTimeout(() => {
-                        const target = document.querySelector(
-                            `.chat-room[data-room-id="\${autoRoomId}"]`
-                        );
-                        console.log(target);
-                        if (target) {
-                            target.click();
-                            target.scrollIntoView({
-                                behavior: "smooth",
-                                block: "center"
-                            });
-                        }
-                    }, 50);
-                }
+
             })
             .catch(err => console.error("로드 에러:", err));
-        if (typeof connectStomp === "function") connectStomp();
+
     }
     // ================== 방 선택 ==================
     function renderSingleRoom(room) {
@@ -583,14 +590,12 @@
 
     function selectRoom( roomId) {
         console.log(roomId);
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
         messageInput.value = "";
         const fileInput = document.getElementById("fileInput");
         if (fileInput) fileInput.value = "";
         const filePreview = document.getElementById("filePreview");
         if (filePreview) filePreview.style.display = "none";
+        if (selectedRoomId === roomId) return;
         selectedRoomId = roomId;
         opponentExited = false;
         document.getElementById("exitRoomBtn").style.display = "inline-block";
@@ -636,8 +641,10 @@
                 let clientExitedValue = roomDiv.find('span.clientExited').attr('data-client');
                 opponentExited = freelancerexitedValue == 1 || clientExitedValue == 1;
         highlightSelectedRoom();
-        connectStomp(roomId);
+
+        subscribeRoom(roomId);
     }
+
     function formatFileSize(bytes) {
         if (!bytes) return "";
         if (bytes < 1024) return bytes + "B";
@@ -713,30 +720,43 @@
         });
     }
 
-    function connectStomp(roomId) {
-        const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');// WebSocketConfig에서 설정한 엔드포인트
+    function connectStompOnce() {
+        if (stompClient) return;
+        const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
-        stompClient.connect({}, function (frame) {
-            console.log('STOMP Connected: ' + frame);
-            stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
-                const received = JSON.parse(message.body);
+        stompClient.connect({}, () => {
+            listSubscription = stompClient.subscribe(
+                '/sub/chat/list/' + loginUserId,
+                msg => updateChatListUI(JSON.parse(msg.body))
+            );
+            if (pendingRoomId) {
+                subscribeRoom(pendingRoomId);
+                pendingRoomId = null;
+            }
+        });
+    }
 
+    function subscribeRoom(roomId) {
+        if (!stompClient || !stompClient.connected) {
+            pendingRoomId = roomId;
+            connectStompOnce();
+            return;
+        }
+        if (roomSubscription) {
+            roomSubscription.unsubscribe();
+        }
+        roomSubscription = stompClient.subscribe(
+            '/sub/chat/room/' + roomId,
+            msg => {
+                const received = JSON.parse(msg.body);
                 if (received.type === 'DELETE') {
                     handleDeleteMessageUI(received.messageId);
                 } else {
                     showReceivedMessage(received);
                 }
-            });
-
-            stompClient.subscribe('/sub/chat/list/' + loginUserId, function (message) {
-                const msg = JSON.parse(message.body);
-                updateChatListUI(msg);
-            });
-
-        }, function(error) {
-            console.error("STOMP connection error:", error);
-        });
+            }
+        );
     }
 
     messageInput.addEventListener("keydown", (e) => {
@@ -795,18 +815,26 @@
     $(document).ready(function() {
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode');
-        const roomId = urlParams.get('roomId');
+
         if (mode === 'view') {
             $(".app").addClass("full-chat");
         }
-        if (roomId) {
-            selectRoom(Number(roomId));
+
+        loadChatRooms();
+        connectStompOnce();
+
+        if (!autoRoomId) {
+            initEmptyRoom();
+        }
+        tryAutoEnter(); // ✅ 여기 딱 한 번
+
+    });
+
+    window.addEventListener("beforeunload", () => {
+        if (stompClient) {
+            stompClient.disconnect();
         }
     });
-    if (!autoRoomId) {
-        initEmptyRoom();
-    }
-    loadChatRooms();
 
 </script>
 </body>

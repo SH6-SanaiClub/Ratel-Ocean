@@ -1,11 +1,11 @@
 @charset "UTF-8";
 
 :root {
-    --primary: #1F7A8C;
-    --primary-bg: #E8F7F8;
-    --primary-dark: #165b69;
-    --text-main: #333;
-    --text-sub: #666;
+    --primary: #173160;
+    --primary-bg: rgba(59,111,220,.10);
+    --primary-dark: #102645;
+    --text-main: #0f172a;
+    --text-sub: #475569;
 }
 
 /* 전체 래퍼 */
@@ -22,9 +22,9 @@
     background: #fff;
     border-radius: 16px;
     padding: 80px 50px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(15,23,42,0.05);
     text-align: center;
-    border: 1px solid #eee;
+    border: 1px solid rgba(59,111,220,.22);
     width: 100%;
     max-width: 600px; /* 너무 넓어지지 않게 제한 */
     animation: slideUp 0.5s ease-out;
@@ -39,7 +39,7 @@
 .icon-circle {
     width: 100px;
     height: 100px;
-    background-color: var(--primary-bg); /* 연한 청록색 */
+    background-color: var(--primary-bg); /* 연한 톤 */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -50,7 +50,7 @@
 
 .icon-circle i {
     font-size: 40px;
-    color: var(--primary); /* 메인 청록색 */
+    color: var(--primary); /* 메인 */
 }
 
 @keyframes popIn {
@@ -76,12 +76,12 @@
 
 /* 안내 박스 (회색 톤) */
 .info-box {
-    background-color: #F8F9FA;
+    background-color: #f1f5f9;
     border-radius: 12px;
     padding: 25px;
     text-align: left;
     margin-bottom: 40px;
-    border: 1px solid #eee;
+    border: 1px solid rgba(59,111,220,.22);
 }
 
 .info-box p {
@@ -105,14 +105,14 @@
     position: relative;
     padding-left: 18px;
     font-size: 14px;
-    color: #555;
+    color: #475569;
     margin-bottom: 8px;
     line-height: 1.5;
 }
 
 .info-list li::before {
     content: "•";
-    color: #bbb;
+    color: #cbd5e1;
     position: absolute;
     left: 0;
     top: 0;
@@ -140,12 +140,12 @@
 }
 
 .btn-home {
-    background-color: #f0f0f0;
-    color: #555;
+    background-color: #e5e7eb;
+    color: #111827;
 }
 
 .btn-home:hover {
-    background-color: #e0e0e0;
+    background-color: #d1d5db;
 }
 
 .btn-submit {
