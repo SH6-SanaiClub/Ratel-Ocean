@@ -251,5 +251,7 @@
     const contextPath = "${pageContext.request.contextPath}";
 </script>
 <script src="${pageContext.request.contextPath}/resources/js/project/manage.js"></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/project/projectProgress.css">
+<script src="${pageContext.request.contextPath}/resources/js/project/projectProgress.js"></script>
 </body>
 </html>

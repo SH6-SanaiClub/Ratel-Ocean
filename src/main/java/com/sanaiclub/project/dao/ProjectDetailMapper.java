@@ -54,4 +54,13 @@ public interface ProjectDetailMapper {
      */
     int updateProjectStatus(@Param("projectId") Integer projectId, @Param("projectStatus") String projectStatus);
 
+    /**
+     * application_id로 지원 상태 업데이트 (결제 완료 시 CONTRACTED로 변경)
+     *
+     * @param applicationId 지원 ID (= contract_id)
+     * @param status 변경할 상태
+     */
+    int updateApplicationStatusByApplicationId(
+            @Param("applicationId") Integer applicationId,
+            @Param("status") String status);
 }
