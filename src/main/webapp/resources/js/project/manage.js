@@ -208,15 +208,13 @@ function renderDetail(data) {
 
     if (imgSrc && imgSrc !== 'null') {
         imageHtml = `
-        <div style="position:relative; width:80px; height:80px;">
             <img src="${imgSrc}" class="detail-img" 
-                 style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:1px solid #eee; display:block;"
+                 style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #eee; "
                  onerror="this.style.display='none'; this.parentElement.querySelector('.alt-icon').style.display='flex';">
             
             <div class="alt-icon" style="display:none; width:100%; height:100%; border-radius:50%; background:#f0f0f0; align-items:center; justify-content:center; font-size:30px; color:#ccc; position:absolute; top:0; left:0;">
                 <i class="fa-solid fa-user"></i>
-            </div>
-        </div>`;
+            </div>`;
     } else {
         imageHtml = `<div style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
     }

@@ -189,7 +189,7 @@
                     <c:forEach var="stack" items="${project.stacks}">
                         <c:if test="${stack.category eq 'POSITION'}">
                             <c:set var="hasPosition" value="true" />
-                            <span class="tech-chip" style="background-color: #E8F0FE; color: #1967D2;">
+                            <span class="tech-chip" style="border-color:rgba(23, 49, 96, .14);background: rgba(23, 49, 96, .06);color: rgba(23, 49, 96, .92);">
                                     ${stack.stackName}
                             </span>
                         </c:if>
