@@ -9,34 +9,54 @@
     --secondary: #A9D9DB;
     --dark: #2B2B2B;
     --muted: #6F7272;
-    --light: #F1F6EE;
-}
-
-body {
-    font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--light);
+/* contract-common.css의 컬러 변수와 통일 */
+:root {
+    --primary-color: #1a9aa6;
+    --primary-hover: #158a94;
+    --primary-weak: rgba(26,154,166,.12);
+    --secondary-color: #A9D9DB;
+    --secondary-hover: #7FC5BE;
+    --bg: #f6f7fb;
+    --card: #fff;
+    --dark-color: #111827;
+    --gray-color: #6b7280;
+    --white-color: #FFFFFF;
+    --accent-color: #f6f7fb;
+    --light-gray: #e5e7eb;
+        --bg: #f6f7fb; /* This line is unchanged */
+    --radius: 18px;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+    --dark: var(--dark-color);
+    --gray: var(--gray-color);
+    --off-white: var(--accent-color);
+    --deep-teal: var(--primary-color);
+    --white: var(--white-color);
     color: var(--dark);
 }
 
-/* 헤더 네비게이션 */
-.header {
-    background: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--dark-color);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
-.header-inner {
+        background: #f6f7fb; /* Updated background color */
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.logo {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: all 0.3s;
     font-size: 1.25rem;
     font-weight: bold;
     color: var(--primary);
@@ -166,10 +186,31 @@ body {
 }
 
 /* 메인 콘텐츠 */
+
 .main-content {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
+    background: var(--bg);
+}
+
+.section-card,
+.alert-section,
+.priority-section {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+.stats-grid.compact .stat-card {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+    padding: 0.875rem;
+    min-height: 100px;
+    position: relative;
 }
 
 .page-header {
@@ -195,6 +236,21 @@ body {
     margin-bottom: 2rem;
 }
 
+.stats-grid.compact {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stats-grid.compact.stats-grid-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.stats-grid.compact.stats-grid-6 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
 .stat-card {
     background: white;
     padding: 1.5rem;
@@ -203,9 +259,47 @@ body {
     transition: all 0.3s;
 }
 
+.stats-grid.compact .stat-card {
+    padding: 1.25rem;
+    min-height: 120px;
+    position: relative;
+}
+
+.stat-card.priority {
+    border: 2px solid #f59e0b;
+    background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+}
+
+.stat-card.priority:hover {
+    border-color: #d97706;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+}
+
 .stat-card:hover {
     box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     transform: translateY(-2px);
+}
+
+.stat-badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.stat-badge.urgent {
+    background: #fee2e2;
+    color: #991b1b;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .stat-header {
@@ -240,9 +334,27 @@ body {
     margin-bottom: 0.25rem;
 }
 
+.stats-grid.compact .stat-value {
+    font-size: 1.75rem;
+}
+
 .stat-label {
     color: var(--muted);
     font-size: 0.85rem;
+}
+
+.stats-grid.compact .stat-label {
+    font-size: 0.8rem;
+}
+
+.stats-grid.compact .stat-title {
+    font-size: 0.85rem;
+}
+
+.stats-grid.compact .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
 }
 
 /* 차트 섹션 */
@@ -314,6 +426,10 @@ body {
     list-style: none;
 }
 
+.contract-list.compact .contract-item {
+    padding: 1rem;
+}
+
 .contract-item {
     padding: 1.25rem;
     border-bottom: 1px solid #e2e8f0;
@@ -378,6 +494,11 @@ body {
     color: #991b1b;
 }
 
+.contract-badge.status-progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
 .contract-meta {
     display: flex;
     gap: 1rem;
@@ -396,6 +517,12 @@ body {
     background: #fffbeb;
 }
 
+.alert-section.priority-section {
+    border-left-width: 6px;
+    border-left-color: #dc2626;
+    background: linear-gradient(135deg, #fef2f2 0%, #fffbeb 100%);
+}
+
 .alert-section .section-title {
     color: #92400e;
     display: flex;
@@ -403,8 +530,23 @@ body {
     gap: 0.5rem;
 }
 
+.priority-section .section-title {
+    color: #991b1b;
+}
+
 .alert-icon {
     font-size: 1.2rem;
+}
+
+.badge-count {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: #dc2626;
+    color: white;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 .alert-item {
@@ -462,6 +604,108 @@ body {
     }
 }
 
+/* 물음표 아이콘 */
+.help-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light);
+    color: var(--primary);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: help;
+    transition: all 0.2s;
+    border: 1px solid var(--secondary);
+}
+
+.help-icon:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+
+.tooltip {
+    position: absolute;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-left: 4px solid var(--primary);
+    min-width: 280px;
+    max-width: 320px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    transform: translateY(-10px);
+    pointer-events: none;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+}
+
+.stat-card:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.tooltip-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tooltip-icon {
+    font-size: 1.1rem;
+}
+
+.tooltip-description {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+@media (max-width: 1400px) {
+    .stats-grid.compact.stats-grid-5 {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stats-grid.compact.stats-grid-6 {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .stats-grid.compact.stats-grid-5 {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stats-grid.compact.stats-grid-6 {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .info-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .header-inner {
         padding: 0 1rem;
@@ -478,10 +722,59 @@ body {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    
+    .stats-grid.compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 640px) {
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* 플로팅 차트 버튼 */
+.floating-chart-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(31, 122, 140, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 999;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.floating-chart-btn:hover {
+    background: #1a6b7a;
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(31, 122, 140, 0.4);
+}
+
+.floating-chart-btn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .floating-chart-btn {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
     }
 }

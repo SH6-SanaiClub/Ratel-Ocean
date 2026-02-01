@@ -2,10 +2,13 @@ package com.sanaiclub.payment.service.impl;
 
 import com.sanaiclub.contract.dao.ContractMapper;
 import com.sanaiclub.contract.dao.ContractMilestoneMapper;
+import com.sanaiclub.contract.model.dto.ContractDetailDTO;
 import com.sanaiclub.contract.model.vo.ContractStatus;
 import com.sanaiclub.contract.model.vo.MilestoneStatus;
 import com.sanaiclub.contract.model.vo.ContractMilestoneVO;
 import com.sanaiclub.contract.model.vo.ContractVO;
+import com.sanaiclub.project.dao.ProjectDetailMapper;
+import com.sanaiclub.project.model.vo.ProjectStatus;
 import com.sanaiclub.wallet.dao.WalletMapper;
 import com.sanaiclub.payment.model.dto.PayoutRequestDTO;
 import com.sanaiclub.payment.model.dto.PayoutResponseDTO;
@@ -34,6 +37,7 @@ public class PayoutServiceImpl implements PayoutService {
     private final ContractMapper contractMapper;
     private final ContractMilestoneMapper milestoneMapper;
     private final WalletMapper walletMapper;
+    private final ProjectDetailMapper projectDetailMapper;
 
     /**
      * 마일스톤 지급 (클라이언트가 직접 지급)
@@ -62,15 +66,15 @@ public class PayoutServiceImpl implements PayoutService {
         }
 
         // 4. 마일스톤 상태 검증 (DEPOSITED 상태여야 함)
-        if (!MilestoneStatus.DEPOSITED.equals(milestone.getStatus())) {
+        if (!MilestoneStatus.DEPOSITED.equals(milestone.getStatus()) && !MilestoneStatus.REQUESTED.equals(milestone.getStatus())) {
             throw new IllegalStateException("지급 가능한 마일스톤 상태가 아닙니다: " + milestone.getStatus());
         }
 
         // 4-1. 순차 진행 검증 추가
         validateSequentialProgress(contractId, milestone.getStep());
 
-        // 5. 프리랜서 ID 추출 (origin_contract_url에서)
-        Integer freelancerId = extractFreelancerIdFromContract(contract);
+        // 5. 프리랜서 ID 추출
+        Integer freelancerId = getFreelancerIdByContractId(contractId);
 
         // 6. 프리랜서 지갑 조회
         FreelancerWalletVO wallet = walletMapper.selectWalletByUserId(freelancerId);
@@ -101,6 +105,16 @@ public class PayoutServiceImpl implements PayoutService {
             // 모든 마일스톤 지급 완료 → 계약 완료
             contractMapper.updateContractStatus(contractId, ContractStatus.COMPLETED.name(), null);
             logger.info("모든 마일스톤 지급 완료, 계약 종료: contractId={}", contractId);
+
+            // 프로젝트 상태도 CLOSED로 업데이트
+            ContractDetailDTO contractDetail = contractMapper.selectContractDetailWithJoin(contractId);
+            if (contractDetail != null && contractDetail.getProjectId() != null) {
+                projectDetailMapper.updateProjectStatus(
+                        contractDetail.getProjectId(),
+                        ProjectStatus.CLOSED.name()
+                );
+                logger.info("프로젝트 상태 업데이트: projectId={}, status=CLOSED", contractDetail.getProjectId());
+            }
         }
 
         // 10. 지갑 잔액 다시 조회 (업데이트된 값)
@@ -284,23 +298,14 @@ public class PayoutServiceImpl implements PayoutService {
     // ========================================================================
 
     /**
-     * origin_contract_url에서 프리랜서 ID 추출
-     * 형식: /project/{projectId}/freelancer/{freelancerId}
+     * contract_id로 프리랜서 ID 조회
      */
-    private Integer extractFreelancerIdFromContract(ContractVO contract) {
-        String url = contract.getOriginContractUrl();
-        if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("계약 URL이 없습니다.");
+    private Integer getFreelancerIdByContractId(Integer contractId) {
+        Integer freelancerId = contractMapper.selectFreelancerIdByContractId(contractId);
+        if (freelancerId == null) {
+            throw new IllegalArgumentException("프리랜서 ID를 찾을 수 없습니다. contractId: " + contractId);
         }
-
-        Pattern pattern = Pattern.compile("/freelancer/(\\d+)");
-        Matcher matcher = pattern.matcher(url);
-
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-
-        throw new IllegalArgumentException("URL에서 프리랜서 ID를 추출할 수 없습니다: " + url);
+        return freelancerId;
     }
 
     /**

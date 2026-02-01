@@ -25,7 +25,7 @@ public interface ContractMapper {
             @Param("contractStatus") String contractStatus,
             @Param("rejectReason") String rejectReason
     );
-    
+
     /** 계약 취소 사유만 업데이트. 상태 변경 없음. */
     int updateCancelReason(
             @Param("contractId") Integer contractId,
@@ -87,4 +87,7 @@ public interface ContractMapper {
             @Param("projectId") Integer projectId,
             @Param("freelancerId") Integer freelancerId
     );
+
+    /** contract_id로 프리랜서 ID 조회 */
+    Integer selectFreelancerIdByContractId(@Param("contractId") Integer contractId);
 }

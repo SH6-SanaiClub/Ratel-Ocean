@@ -241,9 +241,6 @@ function confirmPayout() {
                     case 'approve':
                     case 'release':
                         msg = '지급이 완료되었습니다.';
-                        if (response.walletBalance !== undefined) {
-                            msg += '\n프리랜서 지갑 잔액: ₩' + response.walletBalance.toLocaleString();
-                        }
                         break;
                     case 'reject':
                         msg = '지급 요청을 거부했습니다.';

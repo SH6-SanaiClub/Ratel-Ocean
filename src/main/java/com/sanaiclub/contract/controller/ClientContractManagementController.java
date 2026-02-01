@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Map;
 
+
 /** 클라이언트 계약 관리 컨트롤러. 계약 목록 조회, 상태 변경, 지급 수락/거부 처리. */
 @Slf4j
 @Controller
@@ -34,10 +35,14 @@ public class ClientContractManagementController {
             Model model) {
         // 로그인 클라이언트 조회
         Integer userId = AuthContext.getCurrentUserId();
+        String loginId = AuthContext.getCurrentLoginId();
         if (userId == null) {
             model.addAttribute("errorMessage", "로그인이 필요합니다.");
             return "contract/contractManagement";
         }
+        
+        // 헤더용 loginId 추가
+        model.addAttribute("loginId", loginId);
 
         // 클라이언트의 계약 목록 조회 (쿼리에서 필터링)
         List<ContractResponseDTO> allContracts = contractService.getContractsByClientId(userId);
