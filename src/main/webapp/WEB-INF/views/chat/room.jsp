@@ -12,6 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
+<c:if test="${param.mode ne 'view'}">
+    <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
+</c:if>
 <div class="app">
 
     <!-- LEFT: 채팅방 목록 -->
