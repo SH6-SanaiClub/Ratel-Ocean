@@ -70,16 +70,11 @@ public class ChatService {
 
     @Transactional
     public ChatMessageDTO sendAndReturnMessage(Integer roomId, Integer senderId, String content, String fileName, String fileUrl, Long fileSize) {
-        ChatMessageDTO message = new ChatMessageDTO();
-        message.setRoomId(roomId);
-        message.setSenderId(senderId);
-        message.setContent(content);
-        message.setFileName(fileName);
-        message.setFileUrl(fileUrl);
-        message.setFileSize(fileSize);
-        chatMessageMapper.insertMessage(message);
+        chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
+        List<ChatMessageDTO> messages = chatMessageMapper.findMessages(roomId);
+        ChatMessageDTO newMessage = messages.get(messages.size() - 1);
         chatRoomMapper.updateLastMessage(roomId);
-        return message;
+        return newMessage;
     }
 
     @Transactional

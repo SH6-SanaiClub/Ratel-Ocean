@@ -12,7 +12,14 @@ public interface ChatMessageMapper {
 
     ChatMessageDTO findFileByMessageId(Integer messageId);
 
-    int insertMessage(ChatMessageDTO message);
+    void insertMessage(
+            @Param("roomId") Integer roomId,
+            @Param("senderId") Integer senderId,
+            @Param("content") String content,
+            @Param("fileName") String fileName,
+            @Param("fileUrl") String fileUrl,
+            @Param("fileSize") Long fileSize
+    );
 
     void markRoomMessagesAsRead(
             @Param("roomId") Integer roomId,

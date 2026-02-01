@@ -819,15 +819,13 @@
         if (mode === 'view') {
             $(".app").addClass("full-chat");
         }
-
         loadChatRooms();
         connectStompOnce();
 
         if (!autoRoomId) {
             initEmptyRoom();
         }
-        tryAutoEnter(); // ✅ 여기 딱 한 번
-
+        tryAutoEnter();
     });
 
     window.addEventListener("beforeunload", () => {

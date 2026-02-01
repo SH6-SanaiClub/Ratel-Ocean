@@ -41,23 +41,25 @@
 
     </select>
 
-    <insert id="insertMessage"  parameterType="ChatMessageDTO"
-            useGeneratedKeys="true"
-            keyProperty="messageId">
+    <insert id="insertMessage">
         INSERT INTO messages (
             room_id,
             sender_id,
             content,
             file_name,
             file_url,
-            file_size
+            file_size,
+            created_at,
+            is_read
         ) VALUES (
-                  #{roomId},
-                  #{senderId},
-                  #{content},
-                  #{fileName},
-                  #{fileUrl},
-                  #{fileSize}
+                     #{roomId},
+                     #{senderId},
+                     #{content},
+                     #{fileName},
+                     #{fileUrl},
+                     #{fileSize},
+                     CURRENT_TIMESTAMP,
+                     0
                  )
     </insert>
 
