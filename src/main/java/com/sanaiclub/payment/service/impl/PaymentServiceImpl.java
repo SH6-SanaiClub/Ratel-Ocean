@@ -156,6 +156,14 @@ public class PaymentServiceImpl implements PaymentService {
                 );
                 logger.info("프로젝트 상태 업데이트: projectId={}, status=IN_PROGRESS",
                         contractDetail.getProjectId());
+
+                // 9. 지원 상태 업데이트 (→ CONTRACTED)
+                // contractId = applicationId 이므로, application_id로 직접 업데이트
+                projectDetailMapper.updateApplicationStatusByApplicationId(
+                        contractId,  // contract_id = application_id
+                        "CONTRACTED"
+                );
+                logger.info("지원 상태 업데이트: applicationId={}, status=CONTRACTED", contractId);
             } else {
                 logger.warn("프로젝트 상태 업데이트 실패: contractId={}, projectId를 찾을 수 없습니다.", contractId);
             }

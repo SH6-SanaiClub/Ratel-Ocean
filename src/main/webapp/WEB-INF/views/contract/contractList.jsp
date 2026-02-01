@@ -71,8 +71,7 @@
     </c:forEach>
 
     <!-- 핵심 지표 카드 (프리랜서 관점) -->
-    <div class="stats-grid compact stats-grid-5">
-        <c:if test="${totalRequestedMilestones > 0}">
+    <div class="stats-grid compact stats-grid-6">
         <div class="stat-card priority clickable" onclick="scrollToSection('requested')">
             <div class="stat-header">
                 <span class="stat-title">지급 요청</span>
@@ -83,7 +82,9 @@
             </div>
             <div class="stat-value">${totalRequestedMilestones}</div>
             <div class="stat-label">마일스톤</div>
-            <div class="stat-badge urgent">승인 대기</div>
+            <c:if test="${totalRequestedMilestones > 0}">
+                <div class="stat-badge urgent">승인 대기</div>
+            </c:if>
             <div class="tooltip">
                 <div class="tooltip-title">
                     <span class="tooltip-icon">💰</span>
@@ -94,7 +95,6 @@
                 </div>
             </div>
         </div>
-        </c:if>
 
         <div class="stat-card clickable" onclick="scrollToSection('working')">
             <div class="stat-header">

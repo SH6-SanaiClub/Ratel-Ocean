@@ -55,6 +55,3 @@
         채팅 모듈 로딩 영역
     </div>
 </div>
-
-<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/project/projectProgress.css">
-<script src="${pageContext.request.contextPath}/resources/js/project/projectProgress.js"></script>
