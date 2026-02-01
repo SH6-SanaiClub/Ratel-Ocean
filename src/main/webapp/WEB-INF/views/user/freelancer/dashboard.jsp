@@ -13,191 +13,37 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    /* [색상 적용] manage.css 테마 (Deep Navy) */
     :root {
-      --primary: #173160;
-      --accent: #6d4dfd;
-      --primary-bg: rgba(109, 77, 253, 0.12);
-      --danger: #dc2626;
+      --primary-color: #173160;
+      --primary-bg: rgba(59,111,220,.10);
+      --dark-color: #0f172a;
+      --gray-color: #475569;
+      --border-color: rgba(59,111,220,.22);
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+      /* 포인트 컬러 */
+      --danger-color: #dc2626;
       --danger-bg: #fee2e2;
-      --dark: #0f172a;
-      --muted: #64748b;
-      --light: #f6f6f8;
-      --card-bg: #ffffff;
-      --line: #e5e7eb;
+      --accent-blue: #3b6fdc;
     }
 
     body {
-      font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--light);
-      color: var(--dark);
+      background-color: #f6f6f8;
+      color: var(--dark-color);
+      font-family: 'Noto Sans KR', sans-serif;
     }
 
-    /* 헤더 네비게이션 */
-    .header {
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-    }
-
-    .logo {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: var(--primary);
-      text-decoration: none;
-      padding: 1rem 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .logo-icon {
-      width: 28px;
-      height: 28px;
-      background: var(--primary);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-
-    .nav-menu {
-      display: flex;
-      gap: 0.5rem;
-      flex: 1;
-    }
-
-    .nav-link {
-      color: var(--dark);
-      text-decoration: none;
-      padding: 1rem 1.25rem;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-
-    .nav-link:hover {
-      color: var(--primary);
-    }
-
-    .nav-link.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-
-    .nav-icons {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .icon-btn {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--light);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .icon-btn:hover {
-      background: var(--secondary);
-    }
-
-    .icon-btn .badge {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      width: 8px;
-      height: 8px;
-      background: #ef4444;
-      border-radius: 50%;
-    }
-
-    .profile-dropdown {
-      position: relative;
-    }
-
-    .profile-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--light);
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .profile-btn:hover {
-      background: var(--secondary);
-    }
-
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 100%;
-      right: 0;
-      margin-top: 0.5rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      min-width: 180px;
-      overflow: hidden;
-    }
-
-    .dropdown-menu.show {
-      display: block;
-    }
-
-    .dropdown-item {
-      display: block;
-      padding: 0.875rem 1.25rem;
-      color: var(--dark);
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .dropdown-item:hover {
-      background: var(--light);
-    }
-
-    .dropdown-divider {
-      height: 1px;
-      background: #e2e8f0;
-      margin: 0.5rem 0;
-    }
-
-    /* 메인 콘텐츠 */
     .main-content {
-      max-width: 1400px;
+      max-width: 1500px;
       margin: 0 auto;
       padding: 2rem;
     }
@@ -208,12 +54,13 @@
 
     .page-title {
       font-size: 1.75rem;
-      color: var(--dark);
+      color: var(--dark-color);
       margin-bottom: 0.5rem;
+      font-weight: 800;
     }
 
     .page-subtitle {
-      color: var(--muted);
+      color: var(--gray-color);
       font-size: 0.95rem;
     }
 
@@ -229,13 +76,15 @@
       background: white;
       padding: 1.5rem;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
       transition: all 0.3s;
     }
 
     .stat-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
       transform: translateY(-2px);
+      border-color: var(--primary-color);
     }
 
     .stat-header {
@@ -246,31 +95,31 @@
     }
 
     .stat-title {
-      color: var(--muted);
+      color: var(--gray-color);
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .stat-icon {
       width: 40px;
       height: 40px;
-      background: var(--light);
+      background: var(--primary-bg);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--primary);
+      color: var(--primary-color);
     }
 
     .stat-value {
       font-size: 2rem;
-      font-weight: 700;
-      color: var(--dark);
+      font-weight: 800;
+      color: var(--dark-color);
       margin-bottom: 0.25rem;
     }
 
     .stat-label {
-      color: var(--muted);
+      color: var(--gray-color);
       font-size: 0.85rem;
     }
 
@@ -286,7 +135,8 @@
       background: white;
       padding: 1.5rem;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
     }
 
     .chart-header {
@@ -295,22 +145,23 @@
 
     .chart-title {
       font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--dark);
+      font-weight: 700;
+      color: var(--dark-color);
     }
 
     .chart-subtitle {
-      color: var(--muted);
+      color: var(--gray-color);
       font-size: 0.85rem;
       margin-top: 0.25rem;
     }
 
-    /* 프로젝트 리스트 */
+    /* [복구됨] 프로젝트 리스트 스타일 (프리랜서용) */
     .projects-section {
       background: white;
       padding: 1.5rem;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
     }
 
     .section-header {
@@ -322,15 +173,15 @@
 
     .section-title {
       font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--dark);
+      font-weight: 700;
+      color: var(--dark-color);
     }
 
     .view-all-link {
-      color: var(--primary);
+      color: var(--primary-color);
       text-decoration: none;
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .project-list {
@@ -339,7 +190,7 @@
 
     .project-item {
       padding: 1.25rem;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--border-color);
       transition: background 0.2s;
     }
 
@@ -348,12 +199,12 @@
     }
 
     .project-item:hover {
-      background: var(--light);
+      background: #f8fafc;
     }
 
     .project-title {
-      font-weight: 600;
-      color: var(--dark);
+      font-weight: 700;
+      color: var(--dark-color);
       margin-bottom: 0.5rem;
       font-size: 0.95rem;
     }
@@ -361,45 +212,47 @@
     .project-meta {
       display: flex;
       gap: 1rem;
-      color: var(--muted);
+      color: var(--gray-color);
       font-size: 0.85rem;
+      font-weight: 500;
+      align-items: center;
     }
 
+    /* 상태 뱃지 스타일 */
     .project-badge {
       display: inline-block;
       padding: 0.25rem 0.75rem;
-      background: var(--secondary);
-      color: var(--dark);
-      border-radius: 20px;
+      border-radius: 6px;
       font-size: 0.75rem;
-      font-weight: 500;
+      font-weight: 700;
     }
 
-    /* 반응형 */
+    .project-badge.status-PENDING {
+      background: #f1f5f9;
+      color: var(--gray-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .project-badge.status-ACCEPTED {
+      background: var(--primary-bg);
+      color: var(--primary-color);
+    }
+
+    .project-badge.status-REJECTED {
+      background: var(--danger-bg);
+      color: var(--danger-color);
+    }
+
     @media (max-width: 1024px) {
       .chart-section {
         grid-template-columns: 1fr;
       }
     }
-
     @media (max-width: 768px) {
-      .header-inner {
-        padding: 0 1rem;
-      }
-
-      .nav-menu {
-        display: none;
-      }
-
-      .main-content {
-        padding: 1rem;
-      }
-
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-
     @media (max-width: 640px) {
       .stats-grid {
         grid-template-columns: 1fr;
@@ -608,7 +461,7 @@
         data: earningsData,
         borderColor: '#173160', // --primary
         backgroundColor: 'rgba(109, 77, 253, 0.1)', // --primary-bg
-        pointBackgroundColor: '#6d4dfd', // --accent
+        pointBackgroundColor: 'rgba(142,172,228,0.5)', // --accent
         borderWidth: 2,
         tension: 0.4,
         fill: true
@@ -642,9 +495,9 @@
       datasets: [{
         data: statusData,
         backgroundColor: [
-          '#173160', // 완료 (Primary)
-          '#6d4dfd', // 진행중 (Accent)
-          '#64748b'  // 취소 (Muted)
+          '#173160', // 완료: Deep Navy
+          '#3b6fdc', // 진행중: Accent Blue
+          '#475569'  // 모집중: Muted Slate
         ],
         borderWidth: 0
       }]
