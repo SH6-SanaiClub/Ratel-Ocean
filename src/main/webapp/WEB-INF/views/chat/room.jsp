@@ -12,6 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
+<c:if test="${param.mode ne 'view'}">
+    <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
+</c:if>
 <div class="app">
 
     <!-- LEFT: 채팅방 목록 -->
@@ -29,7 +32,7 @@
                 </div>
                 <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
 
-                    <div id="searchArea" style="display: flex; align-items: center; gap: 5px;">
+                    <div id="searchArea" style="display: none; align-items: center; gap: 5px;">
                         <input type="text" id="searchInput" placeholder="메시지 검색"
                                style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 130px;">
                         <button onclick="searchMessages()"
@@ -41,9 +44,7 @@
                             <span id="searchIndex" style="font-size: 11px; color: #666; min-width: 30px; text-align: center;">0/0</span>
                             <button onclick="clearSearch()" style="border:none; background:none; cursor:pointer; color: #ff4d4f; font-weight: bold; margin-left:2px;">✕</button>
                         </div>
-                <div>
-                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none;">나가기</button>
-                </div>
+
             </div>
         </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
@@ -62,8 +63,8 @@
                 <button type="button" class="remove-file" onclick="removeFile()">✕</button>
             </div>
 
-            <input type="text" id="messageInput" placeholder="메시지를 입력하세요">
-
+            <textarea id="messageInput" placeholder="메시지를 입력하세요" rows="1"
+                      style="flex: 1; border: none; outline: none; padding: 10px; resize: none; overflow-y: hidden; max-height: 150px; font-family: inherit;"></textarea>
             <button class="send-btn" onclick="sendMessage()">전송</button>
         </div>
     </main>
@@ -75,8 +76,15 @@
 </div>
 
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoRoomId = Number(urlParams.get("roomId"));
     const messageInput = document.getElementById("messageInput");
     const loginUserType = '${userType}';
+
+    let roomSubscription = null;
+    let listSubscription = null;
+    let pendingRoomId = null;
+
     function escapeHtml(text) {
         if (!text) return "";
         return text
@@ -89,6 +97,15 @@
     let selectedRoomId = null;
     const loginUserId =  Number('${loginUserId}');
     let opponentExited = false;
+
+    let autoEntered = false;
+
+    function tryAutoEnter() {
+        if (autoEntered || !autoRoomId) return;
+        autoEntered = true;
+        selectRoom(autoRoomId);
+    }
+
     function exitRoom() {
         if (!selectedRoomId) return;
         if (!confirm("채팅방을 나가시겠습니까?")) return;
@@ -107,6 +124,11 @@
                     document.getElementById("headerProject").innerText = "";
                     document.getElementById("roomInfo").innerHTML = "";
                     loadChatRooms();
+
+                    if (roomSubscription) {
+                        roomSubscription.unsubscribe();
+                        roomSubscription = null;
+                    }
                 } else {
                     alert("채팅방 나가기에 실패했습니다.");
                 }
@@ -124,16 +146,11 @@
             .then(res => res.json())
             .then(list => {
                 const container = document.getElementById("roomList");
-                let finalHtml = ""; // 모든 HTML을 합쳐서 담을 변수
-                const filteredList = list.filter(room => {
-                    if (loginUserId === room.freelancerId) return room.freelancerExited === 0;
-                    if (loginUserId === room.clientId) return room.clientExited === 0;
-                    return true;
-                });
+                let finalHtml = ""; // 모든 HTML을 합쳐서 담을 변수D
                 if (loginUserType === 'CLIENT') {
                     const projectGroups = {};
                     const projectOrder = [];
-                    filteredList.forEach(room => {
+                    list.forEach(room => {
                         if (!projectGroups[room.title]) {
                             projectGroups[room.title] = [];
                             projectOrder.push(room.title); // 처음 발견된 순서(정렬된 순서)대로 프로젝트 저장
@@ -170,25 +187,24 @@
                             finalHtml += renderSingleRoom(room);
                         });
 
-                        // 4. 영역 닫기
                         finalHtml += '</div>';
                     });
                 } else {
-                    // 프리랜서: 기존 방식
-                    filteredList.forEach(room => {
+                    list.forEach(room => {
                         finalHtml += renderSingleRoom(room);
                     });
                 }
-
-                // [중요] 모든 작업이 끝난 후 한꺼번에 화면에 반영
                 container.innerHTML = finalHtml;
-            });
 
-        if (typeof connectStomp === "function") connectStomp();
+            })
+            .catch(err => console.error("로드 에러:", err));
+
     }
     // ================== 방 선택 ==================
     function renderSingleRoom(room) {
-
+        const profileImg = room.profileImageUrl
+            ? '/ratelocean' + room.profileImageUrl
+            : '/ratelocean/resources/image/default-profile.png';
         let timeText = "";
         if (room.lastMessageAt) {
             timeText = new Date(room.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -200,17 +216,28 @@
         let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
         if (room.lastMessageDeleted === 1) lastMsg = "메시지가 삭제되었습니다.";
         const isSelected = (room.roomId == selectedRoomId) ? " selected" : "";
+        let nameHtml = "";
+        let underAvatarHtml = '';
+        if (loginUserType === 'FREELANCER') {
+            nameHtml = '<span class="room-project-tag" style="font-size: 13px; font-weight: bold; color: #333;">[' + room.title + ']</span>';
+            underAvatarHtml = '<span class="name-under-avatar">' + room.name + '</span>';
+        } else {
+            nameHtml = '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' + room.name + '</span>';
+        }
 
-        return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" onclick="selectRoom(' + room.roomId + ')">' +
+        const projectKey = btoa(encodeURIComponent(room.title)).replace(/=/g, "");
+
+        return '<div class="chat-room' + isSelected + '" id="room-item-' + room.roomId + '" data-room-id="' + room.roomId + '" data-project-key="' + projectKey + '"' + '" onclick="selectRoom(' + room.roomId + ')">' +
             '<div class="avatar-box">' +
-            '<img src="' + (room.profileImageUrl || '/ratelocean/resources/image/default-profile.png') + '" class="avatar">' +
+            '<img src="' + profileImg + '" class="avatar">' +
+            underAvatarHtml+
             '</div>' +
-            '<div class="room-info" style="flex: 1;">' +
+            '<div class="room-info" style="flex: 1; min-width: 0;">' +
             '<div class="room-top" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">' +
-            '<span class="room-name-main" style="font-size: 15px; font-weight: bold; color: #333;">' +  room.name + '</span>' +
+            '<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">' + nameHtml + '</div>' +
             '<span class="room-time">' + timeText + '</span>' +
             '</div>' +
-            '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' +
+            '<div class="room-bottom" style="font-size: 13px; color: #666; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;">' +
             '<span class="last-msg-text">' + lastMsg + '</span>' +
             '<div class="find-out" data-roomid="' + room.roomId + '">' +
             '<span class="freelancerExited" data-free="' + (room.freelancerExited?1:0 )+ '"/>'+
@@ -237,15 +264,14 @@
         }
     }
 
-    messageInput.addEventListener("keydown", (e) => {
-        if (!selectedRoomId) return;
-        if (e.keyCode === 13 && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-            return;
-        }
+    // (선택사항) 입력 내용에 따라 입력창 높이가 늘어나는 함수
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+    messageInput.addEventListener("input", function() {
+        autoResize(this);
     });
-
     function openFile() {
         document.getElementById("fileInput").click();
     }
@@ -407,10 +433,9 @@
             .then(message => {
                 messageInput.value = "";
                 fileInput.value = "";
+                document.getElementById("filePreview").style.display = "none";
+                document.getElementById("fileNameText").innerText = "";
 
-                if(document.getElementById("filePreview")) {
-                    document.getElementById("filePreview").style.display = "none";
-                }
             })
             .catch(err => console.error("Message send error:", err));
     }
@@ -466,6 +491,26 @@
                     // 방 제목 옆이나 적절한 위치에 append (구조에 따라 조정 필요, 여기서는 .room-top에 추가 예시)
                     $roomItem.find('.room-top').append(newBadge);
                 }
+
+                // ===== 🔥 프로젝트 total unread =====
+                const projectKey = $roomItem.data('project-key');
+                if (projectKey) {
+                    const $projectHeader = $('.project-header')
+                        .filter(function () {
+                            return $(this).find('#icon-' + projectKey).length > 0;
+                        });
+
+                    let $totalBadge = $projectHeader.find('.total-unread-badge');
+
+                    if ($totalBadge.length > 0) {
+                        let total = parseInt($totalBadge.text()) || 0;
+                        $totalBadge.text(total + 1);
+                    } else {
+                        const newTotalBadge =
+                            '<span class="total-unread-badge" style="background:#e53935;color:#fff;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:8px;">1</span>';
+                        $projectHeader.find('div').first().append(newTotalBadge);
+                    }
+                }
             }
 
             // (4) 목록 최상단으로 이동 (애니메이션 효과 포함 가능)
@@ -513,7 +558,7 @@
                     '<span style="font-size: 11px; color: #888; margin-left: 5px;">' +
                     '(' + formatFileSize(msg.fileSize) + ')' +
                     '</span>';
-                updateSharedFilesFromMessages([msg]);
+                appendFileToInfo(msg);
             }
             fileHtml =
                 '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
@@ -542,33 +587,6 @@
         body.scrollTop = body.scrollHeight;
     }
 
-
-    // ================== 우측 방 정보 로드 ==================
-    function loadRoomInfo(roomId) {
-
-        fetch(`/ratelocean/chat/room/\${selectedRoomId}/info`)
-            .then(res => res.json())
-            .then(room => {
-                document.getElementById("headerName").innerText = room.name;
-                document.getElementById("headerProject").innerText = room.title;
-                const info = document.getElementById("roomInfo");
-                info.innerHTML =
-                    '<div class="profile-card">' +
-                    '<img src="' + (room.profileImageUrl || '/assets/img/default-profile.png') + '">' +
-                    '<h3>' + room.name + '</h3>' +
-                    '<div class="action-buttons">' +
-                    '<a href="/user/profile/' + room.senderId + '">프로필</a>' +
-                    '<a href="/project/' + room.projectId+ '" class="secondary">프로젝트</a>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="info-section">' +
-                    '<h4>공유 파일</h4>' +
-                    '<div class="file-list"></div>' +
-                    '</div>';
-                updateSharedFiles(roomId);
-            })
-            .catch(err => console.error("방 정보 로드 실패:", err));
-    }
     function updateSharedFilesFromMessages(messages) {
        let fileContainer = document.querySelector("#roomInfo .file-list");
         if (!fileContainer) {
@@ -585,7 +603,7 @@
         fileContainer.innerHTML = ""; // 기존 내용 초기화
         let filesExist = false;
         messages.forEach(msg => {
-            if (msg.fileUrl) {
+            if (msg.fileUrl && msg.isDeleted != 1) {
                 filesExist = true;
                 const div = document.createElement("div");
                 div.className = "file-item";
@@ -612,15 +630,18 @@
             .then(room => {
                 document.getElementById("headerName").innerText = room.name;
                 document.getElementById("headerProject").innerText = room.title;
-
+                const profileImg = room.profileImageUrl
+                    ? '/ratelocean' + room.profileImageUrl
+                    : '/ratelocean/resources/image/default-profile.png';
                 const info = document.getElementById("roomInfo");
                 info.innerHTML =
                     `<div class="profile-card">
-                    <img src="\${room.profileImageUrl || '/assets/img/default-profile.png'}">
+                   <img src="\${profileImg}" class="avatar">
                     <h3>\${room.name}</h3>
                     <div class="action-buttons">
-                        <a href="/user/profile/\${room.userId}">프로필</a>
-                        <a href="/project/\${room.projectId}" class="secondary">프로젝트</a>
+                        <a href="/ratelocean/profile/\${room.opponentId}">프로필</a>
+                       <a href="/ratelocean/project/detail?projectId=\${room.projectId}&page=1&size=10&onlyActive=false&keyword="
+       class="secondary">프로젝트</a>
                     </div>
                 </div>
                 <div class="info-section">
@@ -647,19 +668,66 @@
 
         // ✅ 나가기 버튼 숨김
         document.getElementById("exitRoomBtn").style.display = "none";
+        const searchArea = document.getElementById("searchArea");
+        if (searchArea) {
+            searchArea.style.display = "none";
+        }
     }
 
     function selectRoom( roomId) {
         // 기존 방 구독 해제 (다른 방으로 이동 시)
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
+        console.log(roomId);
+        messageInput.value = "";
+        const fileInput = document.getElementById("fileInput");
+        if (fileInput) fileInput.value = "";
+        const filePreview = document.getElementById("filePreview");
+        if (filePreview) filePreview.style.display = "none";
 
+
+        if (selectedRoomId === roomId) return;
         selectedRoomId = roomId;
         opponentExited = false;
         document.getElementById("exitRoomBtn").style.display = "inline-block";
+        const searchArea = document.getElementById("searchArea");
+        if (searchArea) {
+            searchArea.style.display = "flex"; // 검색 영역 내부가 flex 구조이므로 flex로 설정
+        }
         loadMessages(roomId);
+
+
         const $roomItem = $('#room-item-' + roomId);
+
+        // 1️⃣ 이 방의 unread 개수
+        const roomUnread = parseInt(
+            $roomItem.find('.unread-badge').text()
+        ) || 0;
+
+        // 2️⃣ 방 unread 뱃지 제거
+        $roomItem.find('.unread-badge').remove();
+
+        // 3️⃣ 프로젝트 key 가져오기 (renderSingleRoom에서 심어둔 값)
+        const projectKey = $roomItem.data('project-key');
+
+        if (projectKey && roomUnread > 0) {
+            const $projectHeader = $('.project-header')
+                .filter(function () {
+                    return $(this).find('#icon-' + projectKey).length > 0;
+                });
+
+            const $totalBadge = $projectHeader.find('.total-unread-badge');
+
+            if ($totalBadge.length > 0) {
+                let total = parseInt($totalBadge.text()) || 0;
+                total -= roomUnread;
+
+                if (total <= 0) {
+                    $totalBadge.remove();
+                } else {
+                    $totalBadge.text(total);
+                }
+            }
+        }
+
         $roomItem.find('.unread-badge').remove();
         fetch(`/ratelocean/chat/room/\${roomId}/read`, {
             method: "POST"
@@ -674,9 +742,10 @@
                 opponentExited = freelancerexitedValue == 1 || clientExitedValue == 1;
 
         highlightSelectedRoom();
-        // WebSocket 연결 시작
-        connectStomp(roomId);
+
+        subscribeRoom(roomId);
     }
+
     function formatFileSize(bytes) {
         if (!bytes) return "";
         if (bytes < 1024) return bytes + "B";
@@ -685,7 +754,24 @@
     }
     let searchResults = []; // 검색된 메시지 엘리먼트 배열
     let currentSearchIdx = -1;
+    // [신규 추가] 공유 파일 목록에 항목 하나만 추가하는 함수
+    function appendFileToInfo(msg) {
+        let fileContainer = document.querySelector("#roomInfo .file-list");
+        if (!fileContainer || !msg.fileUrl) return;
 
+        // 만약 '공유된 파일 없음' 문구가 있다면 제거
+        if (fileContainer.innerText.includes("공유된 파일 없음")) {
+            fileContainer.innerHTML = "";
+        }
+
+        const div = document.createElement("div");
+        div.className = "file-item";
+        div.innerHTML = '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' + escapeHtml(msg.fileName) + '</a>' +
+            (msg.fileSize ? ' (' + formatFileSize(msg.fileSize) + ')' : '');
+
+        // 맨 아래에 추가
+        fileContainer.appendChild(div);
+    }
     function searchMessages() {
         const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
         if (!keyword) {
@@ -752,41 +838,103 @@
             bubble.style.outline = "none";
         });
     }
-    // [신규] STOMP 연결 및 구독 함수
-    function connectStomp(roomId) {
-        const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');// WebSocketConfig에서 설정한 엔드포인트
-        stompClient = Stomp.over(socket);
-        stompClient.debug = null; // 디버그 로그 끄기 (개발 중엔 켜두셔도 됩니다)
-        stompClient.connect({}, function (frame) {
-            console.log('STOMP Connected: ' + frame);
-            // 해당 채팅방 구독 (/sub/chat/room/{roomId})
-            stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
-                const received = JSON.parse(message.body);
 
+    function connectStompOnce() {
+        if (stompClient) return;
+
+        const socket = new SockJS('${pageContext.request.contextPath}/ws-stomp');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, () => {
+            // 🔥 목록 구독은 최초 1번만
+            listSubscription = stompClient.subscribe(
+                '/sub/chat/list/' + loginUserId,
+                msg => updateChatListUI(JSON.parse(msg.body))
+            );
+            if (pendingRoomId) {
+                subscribeRoom(pendingRoomId);
+                pendingRoomId = null;
+            }
+        });
+
+    }
+
+    function subscribeRoom(roomId) {
+
+        if (!stompClient || !stompClient.connected) {
+            pendingRoomId = roomId;
+            connectStompOnce();
+            return;
+        }
+
+        if (roomSubscription) {
+            roomSubscription.unsubscribe();
+        }
+
+        roomSubscription = stompClient.subscribe(
+            '/sub/chat/room/' + roomId,
+            msg => {
+                const received = JSON.parse(msg.body);
                 if (received.type === 'DELETE') {
                     handleDeleteMessageUI(received.messageId);
                 } else {
                     showReceivedMessage(received);
                 }
-            });
-
-            // "나의 채팅 목록" 구독 (왼쪽 사이드바용)
-            stompClient.subscribe('/sub/chat/list/' + loginUserId, function (message) {
-                const msg = JSON.parse(message.body);
-                updateChatListUI(msg);
-            });
-
-        }, function(error) {
-            console.error("STOMP connection error:", error);
-        });
+            }
+        );
     }
+
+
+
+    messageInput.addEventListener("keydown", (e) => {
+        if (!selectedRoomId) return;
+
+        // 엔터키 입력 시
+        if (e.key === "Enter") {
+            if (e.shiftKey) {
+                // Shift + Enter: 기본 동작인 줄바꿈을 허용함
+                // textarea 높이를 자동 조절하고 싶다면 아래 함수 호출 (선택사항)
+            } else {
+                // 그냥 Enter: 메시지 전송
+                e.preventDefault(); // 줄바꿈 방지
+                sendMessage();
+                // 전송 후 높이 초기화
+                messageInput.style.height = 'auto';
+            }
+        }
+    });
+    document.addEventListener("keydown", (e) => {
+        const fileInput = document.getElementById("fileInput");
+        const hasFile = fileInput && fileInput.files.length > 0; // 파일이 선택되었는지 확인
+
+        // 엔터키를 눌렀고, 파일이 선택된 상태이며, 채팅방이 선택되어 있을 때
+        if (e.key === "Enter" && !e.shiftKey && hasFile && selectedRoomId) {
+            // 단, 검색창(searchInput)이나 다른 입력창에 있을 때는 제외
+            if (e.target.tagName !== "TEXTAREA" && e.target.tagName !== "INPUT") {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+    });
     document.addEventListener("DOMContentLoaded", function() {
         const searchInput = document.getElementById("searchInput");
         if (searchInput) {
             searchInput.addEventListener("keydown", function(event) {
+                // 1. 엔터키를 누르면 검색 실행
                 if (event.key === "Enter") {
-                    event.preventDefault(); // 엔터키의 기본 동작(폼 제출 등) 방지
+                    event.preventDefault();
                     searchMessages();
+                }
+                // 2. 위쪽 방향키를 누르면 이전 결과로 이동 (▲ 버튼과 동일)
+                else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    if (typeof navSearch === "function") navSearch(-1);
+                }
+                // 3. 아래쪽 방향키를 누르면 다음 결과로 이동 (▼ 버튼과 동일)
+                else if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    if (typeof navSearch === "function") navSearch(1);
                 }
             });
         }
@@ -799,8 +947,30 @@
             document.getElementById("fileNameText").innerText = file.name;
         }
     });
-    initEmptyRoom();
-    loadChatRooms();
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+
+        if (mode === 'view') {
+            $(".app").addClass("full-chat");
+        }
+
+        loadChatRooms();
+        connectStompOnce();
+
+        if (!autoRoomId) {
+            initEmptyRoom();
+        }
+        tryAutoEnter(); // ✅ 여기 딱 한 번
+
+    });
+
+    window.addEventListener("beforeunload", () => {
+        if (stompClient) {
+            stompClient.disconnect();
+        }
+    });
+
 </script>
 </body>
 </html>

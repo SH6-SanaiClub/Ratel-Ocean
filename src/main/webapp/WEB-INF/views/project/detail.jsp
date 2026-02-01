@@ -313,7 +313,7 @@
             </c:choose>
 
             <button type="button" class="btn-outline" id="btnChat"
-                    onclick="openChat('${project.clientId}')"
+                    onclick="moveToChat()"
             ${isApplied ? '' : 'disabled'}>
                 <i class="fa-regular fa-comments"></i> 클라이언트와 채팅하기
             </button>

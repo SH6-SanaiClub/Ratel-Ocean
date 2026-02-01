@@ -208,15 +208,17 @@ function renderDetail(data) {
 
     if (imgSrc && imgSrc !== 'null') {
         imageHtml = `
+        <div style="position:relative; width:80px; height:80px; margin: 0 auto;">
             <img src="${imgSrc}" class="detail-img" 
-                 style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:1px solid #eee; "
+                 style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:1px solid #eee; display:block;"
                  onerror="this.style.display='none'; this.parentElement.querySelector('.alt-icon').style.display='flex';">
             
             <div class="alt-icon" style="display:none; width:100%; height:100%; border-radius:50%; background:#f0f0f0; align-items:center; justify-content:center; font-size:30px; color:#ccc; position:absolute; top:0; left:0;">
                 <i class="fa-solid fa-user"></i>
-            </div>`;
+            </div>
+        </div>`;
     } else {
-        imageHtml = `<div style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc;"><i class="fa-solid fa-user"></i></div>`;
+        imageHtml = `<div style="width:80px; height:80px; border-radius:50%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:30px; color:#ccc; margin: 0 auto;"><i class="fa-solid fa-user"></i></div>`;
     }
 
     // 2. 평점 처리
@@ -278,7 +280,7 @@ function renderDetail(data) {
         </div>
 
         <div class="action-btn-group" style="margin-top:auto; padding-top:20px;">
-            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="updateStatus(${data.applicationId}, 'CHATTING')">
+            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="openChatRoom(${data.freelancerId})">
                 1:1 채팅하기
             </button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
@@ -292,6 +294,36 @@ function renderDetail(data) {
         </div>
     `;
     $('#applicantDetailArea').html(html);
+}
+
+function openChatRoom(freelancerId) {
+   if (!currentProjectId) {
+        alert("프로젝트 정보가 없습니다.");
+        return;
+    }
+
+    if (!freelancerId) {
+        alert("프리랜서 정보가 올바르지 않습니다.");
+        return;
+    }
+
+    $.ajax({
+        url: contextPath + '/chat/create-or-get-room',
+        type: 'POST',
+        data: {
+            projectId: currentProjectId,
+            freelancerId: freelancerId
+        },
+        success: function (roomId) {
+            const url = `/ratelocean/chat?roomId=${roomId}&mode=view`;
+            const options = "width=470,height=600,resizable=yes,scrollbars=no,status=no,location=no";
+            window.open(url, "chatPopup_" + roomId, options);
+        },
+        error: function (xhr, status, err) {
+            console.error(err);
+            alert("채팅방을 생성하는 중 오류가 발생했습니다.");
+        }
+    });
 }
 
 function goFreelancerProfileDetail() {

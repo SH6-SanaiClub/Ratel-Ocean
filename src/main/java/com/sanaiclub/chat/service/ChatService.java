@@ -4,17 +4,20 @@ import com.sanaiclub.chat.dao.ChatMessageMapper;
 import com.sanaiclub.chat.dao.ChatRoomMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
+import com.sanaiclub.common.util.AuthContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +30,50 @@ public class ChatService {
     // 1. 내 채팅방 목록 조회 (AJAX용)
     // =========================================
     @Transactional
-    public List<ChatRoomDTO> findMyRooms() { // find_my_rooms -> findMyRooms
-        Integer loginUserId = getLoginUserId();
+    public List<ChatRoomDTO> findMyRooms(Integer loginUserId) {
         List<ChatRoomDTO> rooms = chatRoomMapper.findMyRooms(loginUserId);
         return rooms;
     }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    @Transactional
+    public ChatMessageDTO processAndSendMessage(Integer roomId, Integer senderId, String content, MultipartFile file, String uploadPath) throws IOException {
+        String fileName = null;
+        String fileUrl = null;
+        Long fileSize = null;
+
+        if (file != null && !file.isEmpty()) {
+            String originalFileName = file.getOriginalFilename();
+            fileSize = file.getSize();
+            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+            File dir = new File(uploadPath);
+            if (!dir.exists()) dir.mkdirs();
+            File savedFile = new File(uploadPath, savedFileName);
+            file.transferTo(savedFile);
+            fileName = originalFileName;
+            fileUrl = "/upload/chat/" + savedFileName;
+        }
+
+        markRoomAsRead(roomId, AuthContext.getCurrentUserId());
+
+        ChatMessageDTO message =sendAndReturnMessage(
+                roomId,
+                senderId,
+                content,
+                fileName,
+                fileUrl,
+                fileSize
+        );
+        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);
+        messagingTemplate.convertAndSend("/sub/chat/list/" + senderId, message);
+        ChatRoomDTO roomInfo = findRoomInfo(roomId, senderId);
+        if (roomInfo != null && roomInfo.getOpponentId() != null) {
+            messagingTemplate.convertAndSend("/sub/chat/list/" + roomInfo.getOpponentId(), message);
+        }
+        return message;
+    }
+
+
     @Transactional
     public ChatMessageDTO sendAndReturnMessage(Integer roomId, Integer senderId, String content, String fileName, String fileUrl, Long fileSize) {
         chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
@@ -40,6 +82,29 @@ public class ChatService {
         chatRoomMapper.updateLastMessage(roomId);
         return newMessage;
     }
+    @Transactional
+    public Integer createOrGetRoom(Integer projectId, Integer freelancerId) {
+        Integer existingRoomId = chatRoomMapper.findExistRoom(projectId, freelancerId);
+
+        if (existingRoomId != null) {
+            // 이미 방이 있다면 기존 ID 반환
+            return existingRoomId;
+        }
+        ChatRoomDTO newRoom = new ChatRoomDTO();
+        newRoom.setProjectId(projectId);
+        newRoom.setFreelancerId(freelancerId);
+        // client_id 컬럼이 필수라면 프로젝트 정보에서 가져오는 로직이 추가될 수 있습니다.
+
+        // 2. DB에 삽입 (Mapper 호출)
+        chatRoomMapper.insertChatRoom(newRoom);
+
+        // 3. MyBatis useGeneratedKeys에 의해 newRoom 객체에 자동으로 담긴 roomId 반환
+        return newRoom.getRoomId();
+    }
+    public ChatMessageDTO findFileByMessageId(Integer messageId){
+        return chatMessageMapper.findFileByMessageId(messageId);
+    }
+
     // =========================================
     // 2. 단일 채팅방 조회
     // =========================================
@@ -56,21 +121,12 @@ public class ChatService {
     // =========================================
     // 4. 메시지 전송
     // =========================================
-    // =========================================
-    // 5. 공유 파일 조회
-    // =========================================
-    public List<ChatMessageDTO> findSharedFiles(Integer roomId) {
-        List<ChatMessageDTO> messages = chatMessageMapper.findMessages(roomId);
-        messages.removeIf(m -> m.getFileUrl() == null || m.getFileUrl().isEmpty());
-        return messages;
-    }
 
     // =========================================
     // 6. 메시지 읽음 처리
     // =========================================
     @Transactional
-    public void markRoomAsRead(Integer roomId) {
-        Integer loginUserId = getLoginUserId();
+    public void markRoomAsRead(Integer roomId, Integer loginUserId) {
         chatMessageMapper.markRoomMessagesAsRead(roomId, loginUserId);
     }
 
@@ -89,21 +145,6 @@ public class ChatService {
         // 1. 채팅방 상태 업데이트
         chatRoomMapper.exitRoom(param);
 
-    }
-    public String getUserType() {
-        Integer userId = getLoginUserId();
-        if (userId == null) return null;
-
-        // 추가된 매퍼 메서드 호출
-        return chatRoomMapper.getUserTypeById(userId);
-    }
-    // =========================================
-    // 로그인 유저 ID 가져오기 (테스트용)
-    // =========================================
-    public Integer getLoginUserId() {
-        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        HttpSession session = attrs.getRequest().getSession();
-        return (Integer) session.getAttribute("loginUserId");
     }
 
 }

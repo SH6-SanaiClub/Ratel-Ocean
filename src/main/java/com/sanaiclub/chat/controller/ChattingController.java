@@ -1,9 +1,10 @@
 package com.sanaiclub.chat.controller;
 
-import com.sanaiclub.chat.dao.ChatMessageMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
 import com.sanaiclub.chat.service.ChatService;
+import com.sanaiclub.common.util.AuthContext;
+import com.sanaiclub.user.model.vo.UserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -11,7 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +25,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/chat")
@@ -34,79 +33,70 @@ public class ChattingController {
 
     private final ChatService chatService;
     private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
-    private final ChatMessageMapper chatMessageMapper;
 
-    /*
-    /**
-     * [STOMP] 실시간 메시지 전송 처리
-     * 클라이언트가 '/pub/chat/message'로 메시지를 보내면 이 메서드가 실행됨
 
-    @MessageMapping("/chat/message")
-    public void message(ChatMessageDTO message) {
-        // 1. DB 저장 및 메시지 정보 반환 (ID, 생성시간 등 포함)
-        ChatMessageDTO savedMessage = chatService.sendAndReturnMessage(
-                message.getRoomId(),
-                message.getSenderId(),
-                message.getContent(),
-                message.getFileName(),
-                message.getFileUrl(),
-                message.getFileSize()
-        );
-
-        // 2. 해당 방(Room) 구독자들에게 메시지 전송 (채팅방 안의 대화 내용 갱신)
-        messagingTemplate.convertAndSend("/sub/chat/room/" + savedMessage.getRoomId(), savedMessage);
-
-        // 3-1. 보낸 사람(나)의 채팅 목록 갱신
-        messagingTemplate.convertAndSend("/sub/chat/list/" + message.getSenderId(), savedMessage);
-
-        // 3-2. 받는 사람(상대방) 찾기 및 채팅 목록 갱신
-        ChatRoomDTO roomInfo = chatService.findRoomInfo(message.getRoomId(), message.getSenderId());
-
-        if (roomInfo != null) {
-            Integer opponentId = roomInfo.getOpponentId();
-            if (opponentId != null) {
-                messagingTemplate.convertAndSend("/sub/chat/list/" + opponentId, savedMessage);
-            }
-        }
-    }
-*/
     // 채팅 아이콘 → 목록 화면
     @GetMapping
-    public String chatMain(HttpSession session) {
-        Integer loginUserId = chatService.getLoginUserId();
-        String userType = chatService.getUserType(); // DB에서 가져온 타입 (CLIENT 등)
+    public String chatMain(Model model) {
+        // 1. AuthContext에서 로그인한 사용자 ID 및 타입 조회
+        Integer loginUserId = AuthContext.getCurrentUserId();
+        UserType userType = AuthContext.getCurrentUserType();
 
-        session.setAttribute("loginUserId", loginUserId);
-        session.setAttribute("userType", userType);
-        return "chat/room";
+        if (loginUserId == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("loginUserId", loginUserId);
+        model.addAttribute("userType", userType != null ? userType.name() : "");
+
+        // 3. 채팅방 목록 조회 로직 (선택 사항: 비동기로 불러온다면 여기선 패스)
+        // List<ChatRoomDTO> myRooms = chatService.findMyRooms(loginUserId);
+        // model.addAttribute("myRooms", myRooms);
+
+        return "chat/room"; // /WEB-INF/views/chat/room.jsp
     }
-
 
     @GetMapping("/room/{roomId}/info")
     @ResponseBody
-    public ChatRoomDTO roomInfo(
-            @PathVariable Integer roomId,
-            HttpSession session
-    ) {
-        Integer loginUserId = chatService.getLoginUserId(); // 실제 세션 로그인 유저 id로 교체
-
-        // 서비스에서 ChatRoomDTO 반환하도록
-        ChatRoomDTO dto = chatService.findRoomInfo(roomId, loginUserId);
-        System.out.println(" ChatRoomDTO:" + dto);
-        return dto;
+    public ChatRoomDTO roomInfo( @PathVariable Integer roomId) {
+        return chatService.findRoomInfo(roomId, AuthContext.getCurrentUserId());
     }
 
     @PostMapping("/room/{roomId}/read")
     @ResponseBody
     public void markAsRead(@PathVariable Integer roomId) {
-        chatService.markRoomAsRead(roomId);
+        chatService.markRoomAsRead(roomId, AuthContext.getCurrentUserId());
     }
+    @PostMapping("/create-or-get-room")
+    @ResponseBody
+    public Integer createOrGetRoom(
+            @RequestParam Integer projectId,
+            @RequestParam(required = false) Integer freelancerId
+    ) {
+        Integer loginUserId = AuthContext.getCurrentUserId();
+        UserType userType = AuthContext.getCurrentUserType();
 
+        Integer targetFreelancerId;
+
+        if (UserType.CLIENT.equals(userType)) {
+            // 클라이언트라면 전달받은 프리랜서 ID 사용
+            if (freelancerId == null) {
+                throw new IllegalArgumentException("프리랜서 ID가 필요합니다.");
+            }
+            targetFreelancerId = freelancerId;
+        } else {
+            // 프리랜서라면 본인 ID 사용
+            targetFreelancerId = loginUserId;
+        }
+
+        // 서비스 호출 (기존 로직 활용)
+        return chatService.createOrGetRoom(projectId, targetFreelancerId);
+    }
     // 채팅방 목록 데이터 (AJAX)
     @GetMapping("/rooms")
     @ResponseBody
     public List<ChatRoomDTO> rooms() {
-        return chatService.findMyRooms();
+        return chatService.findMyRooms(AuthContext.getCurrentUserId());
     }
 
     // 메시지 목록 조회
@@ -119,9 +109,7 @@ public class ChattingController {
     @PostMapping("/room/{roomId}/exit")
     @ResponseBody
     public String exitRoom(@PathVariable Integer roomId, HttpSession session) {
-        Integer loginUserId = chatService.getLoginUserId();
-        chatService.exitRoom(roomId, loginUserId);
-
+        chatService.exitRoom(roomId, AuthContext.getCurrentUserId());
         return "ok";
     }
     // 메시지 전송
@@ -132,41 +120,15 @@ public class ChattingController {
             @RequestParam(required = false) MultipartFile file,
             HttpSession session
     ) throws IOException {
-        String fileName = null;
-        String fileUrl = null;
-        Long fileSize = null;
-
-        if (file != null && !file.isEmpty()) {
-            String originalFileName = file.getOriginalFilename();
-            fileSize = file.getSize();
-            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
-            String uploadDir = session.getServletContext().getRealPath("/") + "upload/chat";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
-            File savedFile = new File(uploadDir, savedFileName);
-            file.transferTo(savedFile);
-            fileName = originalFileName;
-            fileUrl = "/upload/chat/" + savedFileName;
-        }
-
-        // --- [1. DB 저장] ---
-        Integer senderId = chatService.getLoginUserId();
-        ChatMessageDTO message =
-                chatService.sendAndReturnMessage(
-                        roomId,
-                        senderId,
-                        content,
-                        fileName,
-                        fileUrl,
-                        fileSize
-                );
-        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, message);
-        messagingTemplate.convertAndSend("/sub/chat/list/" + senderId, message);
-        ChatRoomDTO roomInfo = chatService.findRoomInfo(roomId, senderId);
-        if (roomInfo != null && roomInfo.getOpponentId() != null) {
-            messagingTemplate.convertAndSend("/sub/chat/list/" + roomInfo.getOpponentId(), message);
-        }
-
+        Integer senderId = AuthContext.getCurrentUserId();
+        String uploadPath = session.getServletContext().getRealPath("/") + "upload/chat";
+        ChatMessageDTO message = chatService.processAndSendMessage(
+                roomId,
+                senderId,
+                content,
+                file,
+                uploadPath
+        );
         return ResponseEntity.ok(message);
     }
     @GetMapping("/file/{messageId}")
@@ -175,7 +137,7 @@ public class ChattingController {
     ) throws Exception {
 
         // 1️⃣ DB에서 파일 정보 조회
-        ChatMessageDTO msg = chatMessageMapper.findFileByMessageId(messageId);
+        ChatMessageDTO msg = chatService.findFileByMessageId(messageId);
 
         if (msg == null || msg.getFileUrl() == null) {
             return ResponseEntity.notFound().build();
@@ -205,16 +167,6 @@ public class ChattingController {
                 .body(resource);
     }
 
-    // 채팅방 진입 (화면)
-    @GetMapping("/room/{roomId}") // room_id -> roomId
-    public String roomPage(@PathVariable Integer roomId, Model model, HttpSession httpSession) {
-        // login_user_id -> loginUserId
-        Integer loginUserId = (Integer) httpSession.getAttribute("loginUserId");
-        model.addAttribute("roomId", roomId); // room_id -> roomId
-        httpSession.setAttribute("loginUserId", chatService.getLoginUserId());
-        return "chat/room";
-    }
-
     @PostMapping("/message/{messageId}/delete")
     @ResponseBody
     public ResponseEntity<?> deleteMessage(@PathVariable int messageId, @RequestBody Map<String, Integer> payload) {
@@ -225,12 +177,10 @@ public class ChattingController {
             }
             chatService.deleteMessage(messageId);
 
-            // 실시간 삭제 알림 전송
             Map<String, Object> deleteSignal = new HashMap<>();
             deleteSignal.put("type", "DELETE");
             deleteSignal.put("messageId", messageId);
 
-            // 해당 채팅방을 구독 중인 사용자들에게 신호 전송
             messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, deleteSignal);
 
             return ResponseEntity.ok().build();
