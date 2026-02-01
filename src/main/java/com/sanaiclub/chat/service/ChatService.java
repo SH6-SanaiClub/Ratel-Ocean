@@ -4,6 +4,7 @@ import com.sanaiclub.chat.dao.ChatMessageMapper;
 import com.sanaiclub.chat.dao.ChatRoomMapper;
 import com.sanaiclub.chat.model.dto.ChatMessageDTO;
 import com.sanaiclub.chat.model.dto.ChatRoomDTO;
+import com.sanaiclub.common.util.AuthContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -40,6 +41,7 @@ public class ChatService {
         String fileName = null;
         String fileUrl = null;
         Long fileSize = null;
+
         if (file != null && !file.isEmpty()) {
             String originalFileName = file.getOriginalFilename();
             fileSize = file.getSize();
@@ -51,6 +53,9 @@ public class ChatService {
             fileName = originalFileName;
             fileUrl = "/upload/chat/" + savedFileName;
         }
+
+        markRoomAsRead(roomId, AuthContext.getCurrentUserId());
+
         ChatMessageDTO message =sendAndReturnMessage(
                 roomId,
                 senderId,
