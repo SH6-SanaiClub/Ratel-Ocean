@@ -11,524 +11,714 @@
   <title>내 프로젝트 관리</title>
 
   <style>
-    :root{
-      --bg:#f6f7fb; --card:#fff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
-      --primary:#1a9aa6; --primary-weak:rgba(26,154,166,.12);
-      --shadow:0 20px 60px rgba(17,24,39,.08);
-      --radius:18px;
-      --ok:#22c55e; --warn:#f59e0b; --info:#3b82f6; --danger:#ef4444;
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
+
+    html, body { height: 100%; }
+    body { background: #f5f6f8; }
+    .pm{
+      --primary:#173160;
+      --primary-weak: rgba(59,111,220,.10);
+      --primary-bd:   rgba(59,111,220,.22);
+
+      --bg:#f6f6f8;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+
+      --line:#e2e8f0;
+      --line2:#cbd5e1;
+
+      --shadow: 0 6px 18px rgba(15,23,42,.05);
+
+      --outer-radius: 10px;
+      --inner-radius: 999px;
+
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --info:#3b6fdc;
+      --danger:#ef4444;
+
+      --ghost-bg:#e5e7eb;
+      --ghost-fg:#111827;
+      --ghost-bd:#cbd5e1;
+
       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:var(--bg);
+      color: var(--text);
+
+      min-height: calc(100vh - 80px);
+    }
+
+    .pm *{ box-sizing:border-box; }
+
+    .pm .wrap{ max-width:1200px; margin:26px auto 70px; padding:0 18px; }
+
+
+    .pm .pageTitle{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:16px;
+    }
+    .pm .titleBox{ display:flex; flex-direction:column; gap:6px; }
+    .pm .h1{
+      margin:0;
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:-.6px;
       color:var(--text);
     }
-    .wrap{ max-width:1180px; margin:26px auto 70px; padding:0 18px; }
-
-    .pageTitle{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
-    .h1{ font-size:34px; font-weight:950; letter-spacing:-.5px; margin:0; }
-    .sub{ margin:6px 0 0; color:var(--muted); font-weight:800; }
-
-    .btn{
-      border:none; border-radius:14px; padding:12px 14px; font-weight:950; cursor:pointer; font-size:13px;
-      display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+    .pm .sub{
+      margin:0;
+      color:var(--muted);
+      font-weight:800;
+      line-height:1.45;
+      font-size:13px;
     }
-    .btn.primary{ background:var(--primary); color:#fff; box-shadow:0 14px 30px rgba(26,154,166,.22); }
-    .btn.ghost{ background:#fff; border:1px solid var(--line); color:#111827; }
-    .btn:hover{ filter:brightness(.985); }
 
-    .gridTop{
-      margin-top:18px;
+
+    .pm .btn{
+      border:1px solid transparent;
+      border-radius: 12px;
+      padding:11px 14px;
+      font-weight:900;
+      cursor:pointer;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+      user-select:none;
+      text-decoration:none;
+      transition:filter .12s ease, transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .pm .btn:active{ transform:translateY(1px); }
+
+    .pm .btn.primary{
+      background:var(--primary);
+      color:#fff;
+      border-color: rgba(23,49,96,.20);
+      box-shadow:none;
+    }
+    .pm .btn.primary:hover{ filter:brightness(1.02); }
+
+    .pm .btn.ghost{
+      background: var(--ghost-bg);
+      color: var(--ghost-fg);
+      /*border-color: var(--ghost-bd);*/
+      box-shadow:none;
+    }
+    .pm .btn.ghost:hover{ filter:brightness(.99); }
+
+    .pm .btn.cal{
+      background: #fff;
+      border-color: var(--ghost-bg);
+      color: var(--ghost-fg);
+    }
+
+    .pm .gridTop{
       display:grid;
       grid-template-columns: 1.2fr 1fr 1fr;
       gap:14px;
+      margin-bottom:14px;
     }
-    .stat{
+    .pm .stat{
       background:var(--card);
-      border:1px solid rgba(229,231,235,.75);
-      box-shadow:var(--shadow);
-      border-radius:22px;
-      padding:16px 18px;
+      border:1px solid var(--line);
+      border-radius: var(--outer-radius);
+      box-shadow: var(--shadow);
+      padding:16px 16px;
       min-height:110px;
-      position:relative;
-      overflow:hidden;
     }
-    .stat .label{ color:var(--muted); font-weight:950; font-size:13px; display:flex; gap:8px; align-items:center; }
-    .dot{ width:8px; height:8px; border-radius:999px; background:var(--info); }
-    .dot.warn{ background:var(--warn); }
-    .dot.ok{ background:var(--ok); }
+    .pm .statTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .pm .statLabel{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-weight:900;
+      font-size:12.5px;
+    }
+    .pm .dot{ width:8px; height:8px; border-radius:999px; background:var(--info); }
+    .pm .dot.warn{ background:var(--warn); }
+    .pm .dot.ok{ background:var(--ok); }
 
-    .stat .value{ margin-top:10px; font-size:34px; font-weight:950; letter-spacing:-.6px; }
-    .stat .small{
-      margin-top:8px; display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px; border-radius:999px; background:var(--primary-weak); color:#0b6e76;
-      font-weight:950; font-size:12px;
+    .pm .statValue{
+      margin-top:10px;
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:-.8px;
+      color:var(--text);
+    }
+    .pm .chip{
+      margin-top:10px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius: var(--inner-radius);
+      background: var(--primary-weak);
+      border:1px solid var(--primary-bd);
+      color: var(--text);
+      font-weight:900;
+      font-size:12px;
     }
 
-    .main{
-      margin-top:16px;
+
+    .pm .main{
       display:grid;
       grid-template-columns: 420px 1fr;
       gap:14px;
       align-items:start;
     }
-
-    .panel{
+    .pm .panel{
       background:var(--card);
-      border:1px solid rgba(229,231,235,.75);
-      box-shadow:var(--shadow);
-      border-radius:22px;
-      padding:16px 16px;
+      border:1px solid var(--line);
+      border-radius: var(--outer-radius);
+      box-shadow: var(--shadow);
+      padding:16px;
     }
-    .panel h3{ margin:0 0 12px; font-size:14px; font-weight:950; }
 
-    /*!* Tabs *!*/
-    /*.tabs{*/
-    /*  display:flex; gap:10px; align-items:center;*/
-    /*  border-bottom:1px solid rgba(229,231,235,.9);*/
-    /*  padding-bottom:10px;*/
-    /*  margin-bottom:12px;*/
-    /*  overflow:auto;*/
-    /*}*/
 
-    /* Tabs: 왼쪽(탭) + 오른쪽(상세관리 버튼) */
-    .tabs{
+    .pm .calHead{
       display:flex;
       align-items:center;
-      justify-content:space-between; /* 핵심 */
-      gap:10px;
-      border-bottom:1px solid rgba(229,231,235,.9);
-      padding-bottom:10px;
+      justify-content:space-between;
+      gap:12px;
       margin-bottom:12px;
     }
-
-    /* 탭 3개를 한 덩어리로 */
-    .tabGroup{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      overflow:auto;
-    }
-
-    /* 오른쪽 버튼 영역 */
-    .tabsRight{
-      margin-left:auto;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-shrink:0;
-    }
-
-    .tab{
-      padding:10px 12px;
-      border-radius:999px;
+    .pm .ym{
       font-weight:950;
-      font-size:13px;
-      color:#374151;
-      border:1px solid transparent;
-      text-decoration:none;
-      white-space:nowrap;
+      font-size:16px;
+      letter-spacing:-.3px;
+      color:var(--text);
     }
-    .tab.active{
-      background:var(--primary-weak);
-      border-color:rgba(26,154,166,.25);
-      color:#0b6e76;
-    }
+    .pm .calNav{ display:flex; gap:8px; align-items:center; }
 
-    /* Calendar */
-    .calHead{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      margin-bottom:10px;
-    }
-    .calNav{ display:flex; gap:8px; align-items:center; }
-    .calNav .btn{ padding:10px 12px; }
-    .ym{ font-weight:950; font-size:16px; letter-spacing:-.3px; }
-
-    .calGrid{
+    .pm .calGrid{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
       gap:8px;
       user-select:none;
     }
-    .dow{
-      text-align:center; font-size:12px; font-weight:950; color:var(--muted);
+    .pm .dow{
+      text-align:center;
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
       padding:6px 0;
     }
-    .day{
+    .pm .day{
       background:#fff;
-      border:1px solid rgba(229,231,235,.85);
-      border-radius:14px;
-      min-height:52px;
-      padding:8px 9px;
+      border:1px solid var(--line);
+      border-radius: 10px;
+      min-height:56px;
+      padding:9px 10px;
       position:relative;
       cursor:pointer;
+      transition:border-color .12s ease, background .12s ease;
     }
-    .day.muted{ opacity:.35; cursor:default; }
-    .day .n{ font-weight:950; font-size:13px; }
-    .day .marks{ position:absolute; left:9px; bottom:8px; display:flex; gap:4px; }
-    .mk{ width:6px; height:6px; border-radius:999px; background:var(--info); }
-    .mk.start{ background:var(--ok); }
-    .mk.milestone{ background:var(--warn); }
-    .mk.end{ background:var(--danger); }
-    .day.selected{ outline:2px solid rgba(26,154,166,.35); background:rgba(26,154,166,.06); }
+    .pm .day:hover{
+      border-color: rgba(15,23,42,.22);
+      background: rgba(15,23,42,.01);
+    }
+    .pm .day.muted{ opacity:.35; cursor:default; }
+    .pm .day.muted:hover{ border-color:var(--line); background:#fff; }
+    .pm .day .n{ font-weight:950; font-size:13px; color:var(--text); }
+    .pm .day .marks{
+      position:absolute;
+      left:10px;
+      bottom:9px;
+      display:flex;
+      gap:5px;
+    }
+    .pm .mk{ width:6px; height:6px; border-radius:999px; background:var(--info); }
+    .pm .mk.start{ background:var(--ok); }
+    .pm .mk.milestone{ background:var(--warn); }
+    .pm .mk.end{ background:var(--danger); }
 
-    .eventList{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
-    .evt{
-      border:1px solid rgba(229,231,235,.85);
-      border-radius:14px;
-      padding:10px 10px;
-      background:linear-gradient(180deg,#fff 0%, #fbfdff 100%);
-      cursor:pointer;
+    .pm .day.selected{
+      border-color: var(--primary-bd);
+      background: var(--primary-weak);
     }
-    .evt:hover{ filter:brightness(.99); }
-    .evt .t{
+
+    .pm .sectionTitle{
+      margin:14px 0 10px;
+      font-size:13px;
+      font-weight:950;
+      color:var(--text);
+    }
+    .pm .eventList{ display:flex; flex-direction:column; gap:8px; }
+
+    .pm .evt{
+      border:1px solid var(--line);
+      border-radius: 10px;
+      padding:10px 10px;
+      background:#fff;
+      cursor:pointer;
+      transition:border-color .12s ease, background .12s ease;
+    }
+    .pm .evt:hover{
+      border-color: rgba(15,23,42,.22);
+      background: rgba(15,23,42,.01);
+    }
+    .pm .evt .t{
       font-weight:950;
       font-size:13px;
       display:flex;
-      flex-direction:column;   /* 줄바꿈 핵심 */
-      align-items:flex-start;  /* 왼쪽 정렬 */
+      flex-direction:column;
       gap:6px;
+      color:var(--text);
     }
-    .evt .t span{
-      display:block;           /* 제목을 한 줄 블록으로 */
-      line-height:1.25;
-      word-break:keep-all;
+    .pm .evt .t span{ display:block; line-height:1.28; word-break:keep-all; }
+    .pm .evt .s{
+      color:var(--muted);
+      font-weight:850;
+      font-size:12px;
+      margin-top:6px;
     }
 
-    .evt .s{ color:var(--muted); font-weight:850; font-size:12px; margin-top:6px; }
-    .pill{
-      display:inline-flex; align-items:center;
-      padding:4px 8px; border-radius:999px;
-      font-weight:950; font-size:11px;
-      border:1px solid rgba(229,231,235,.85);
-      background:rgba(17,24,39,.03);
-      color:#374151;
+    .pm .pill{
+      display:inline-flex;
+      align-items:center;
+      padding:4px 9px;
+      border-radius: var(--inner-radius);
+      font-weight:950;
+      font-size:11px;
+      border:1px solid var(--line2);
+      background: rgba(15,23,42,.03);
+      color:#334155;
+      width:fit-content;
     }
-    .pill.start{ background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.22); color:#0f7a3a; }
-    .pill.milestone{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.22); color:#9a5a00; }
-    .pill.end{ background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.22); color:#b91c1c; }
+    .pm .pill.start{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.22); color:#0f7a3a; }
+    .pm .pill.milestone{ background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.22); color:#9a5a00; }
+    .pm .pill.end{ background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.22); color:#b91c1c; }
 
-    /* Project cards */
-    .cards{ display:flex; flex-direction:column; gap:12px; }
-    .card{
-      border:1px solid rgba(229,231,235,.85);
-      border-radius:18px;
-      padding:14px 14px;
+
+    .pm .tabs{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+      padding-bottom:10px;
+      margin-bottom:12px;
+    }
+    .pm .tabGroup{
+      display:flex;
+      gap:25px;
+      align-items:flex-end;
+
+      overflow: visible;
+      flex-wrap: nowrap;
+    }
+    .pm .tab{
+      position:relative;
+      padding:10px 2px;
+      font-weight:950;
+      font-size:13px;
+      color:#334155;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .pm .tab:hover{ color:var(--text); }
+    .pm .tab.active{ color:var(--text); }
+    .pm .tab.active:after{
+      content:"";
+      position:absolute;
+      left:0; right:0;
+      bottom:-10px;
+      height:3px;
+      background: var(--primary);
+      border-radius: 999px;
+    }
+    .pm .tabsRight{ flex-shrink:0; }
+
+
+    .pm .cards{ display:flex; flex-direction:column; gap:12px; }
+
+    .pm .card{
       background:#fff;
+      border:1px solid var(--line);
+      border-radius: var(--outer-radius);
+      box-shadow: var(--shadow);
+      padding:16px;
     }
-    .cardTop{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    .pm .cardTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
     }
-    .title{ font-weight:950; font-size:16px; letter-spacing:-.2px; }
-    .client{ margin-top:6px; color:var(--muted); font-weight:850; font-size:12px; }
+    .pm .title{
+      font-weight:950;
+      font-size:16px;
+      letter-spacing:-.2px;
+      color:var(--text);
+    }
+    .pm .client{
+      margin-top:6px;
+      color:var(--muted);
+      font-weight:850;
+      font-size:12px;
+    }
 
-    .badge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(17,24,39,.04);
-      border:1px solid rgba(229,231,235,.85);
-      font-weight:950; font-size:12px; color:#374151;
+    .pm .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius: var(--inner-radius);
+      font-weight:950;
+      font-size:12px;
+      border:1px solid var(--line2);
+      background: rgba(15,23,42,.03);
+      color:#334155;
     }
-    .badge.warn{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.22); color:#9a5a00; }
-    .badge.ok{ background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.22); color:#0f7a3a; }
-    .badge.info{ background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.22); color:#1d4ed8; }
+    .pm .badge.info{ background: var(--primary-weak); border-color: var(--primary-bd); color: var(--text); }
+    .pm .badge.warn{ background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.22); color:#9a5a00; }
+    .pm .badge.ok{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.22); color:#0f7a3a; }
 
-    .metaRow{
-      margin-top:12px;
+    .pm .metaRow{
+      margin-top:14px;
+      padding-top:14px;
+      border-top: 1px dashed rgba(148,163,184,.55);
       display:grid;
       grid-template-columns: 1.1fr 1.1fr .8fr .9fr;
-      gap:10px;
-      align-items:center;
+      gap:14px;
+      align-items:start;
     }
-    .k{ color:var(--muted); font-size:11px; font-weight:950; }
-    .v{ margin-top:5px; font-weight:950; font-size:13px; }
+    .pm .k{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:950;
+      letter-spacing:-.1px;
+    }
+    .pm .v{
+      margin-top:6px;
+      font-weight:950;
+      font-size:13px;
+      color:var(--text);
+      line-height:1.35;
+    }
 
-    .progressWrap{ display:flex; align-items:center; gap:10px; }
-    .bar{ height:6px; background:rgba(17,24,39,.08); border-radius:999px; overflow:hidden; flex:1; }
-    .bar > span{ display:block; height:100%; background:var(--primary); width:0; }
-    .pct{ font-weight:950; font-size:12px; color:#0b6e76; }
+    .pm .progressWrap{ display:flex; align-items:center; gap:10px; }
+    .pm .bar{
+      height:8px;
+      background: rgba(15,23,42,.08);
+      border-radius: 999px;
+      overflow:hidden;
+      flex:1;
+    }
+    .pm .bar > span{
+      display:block;
+      height:100%;
+      background: var(--primary);
+      border-radius: 999px;
+      width:0;
+    }
+    .pm .pct{
+      min-width:38px;
+      text-align:right;
+      font-weight:950;
+      font-size:12px;
+      color: var(--text);
+    }
 
-    .actions{
-      margin-top:12px;
-      display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
+    .pm .actions{
+      margin-top:14px;
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
 
     @media (max-width: 980px){
-      .gridTop{ grid-template-columns:1fr; }
-      .main{ grid-template-columns:1fr; }
-      .metaRow{ grid-template-columns:1fr 1fr; }
-      .btn{ justify-content:center; }
+      .pm .gridTop{ grid-template-columns:1fr; }
+      .pm .main{ grid-template-columns:1fr; }
+      .pm .metaRow{ grid-template-columns:1fr 1fr; }
+      .pm .tabs{ flex-direction:column; align-items:stretch; gap:10px; }
+      .pm .tabsRight{ display:flex; justify-content:flex-end; }
+      .pm .tabGroup{ gap:14px; flex-wrap:wrap; } /* 모바일에서 줄바꿈 */
     }
   </style>
 </head>
 
 <body>
 <jsp:include page="/WEB-INF/views/common/headerBase.jsp" />
-<div class="wrap">
 
-  <div class="pageTitle">
-    <div>
-      <h1 class="h1">내 프로젝트 관리</h1>
-      <p class="sub">캘린더로 계약/마일스톤 일정을 확인하고 프로젝트를 효율적으로 관리하세요.</p>
+<div class="pm">
+  <div class="wrap">
+
+    <div class="pageTitle">
+      <div class="titleBox">
+        <h1 class="h1">내 프로젝트 관리</h1>
+        <p class="sub">캘린더로 계약/마일스톤 일정을 확인하고 프로젝트를 효율적으로 관리하세요.</p>
+      </div>
+
+      <a class="btn primary" href="${pageContext.request.contextPath}/project/bookmark">
+        북마크 목록
+      </a>
     </div>
 
-    <a class="btn primary" href="${pageContext.request.contextPath}/project/bookmark" style="text-decoration:none;">
-      북마크 목록
-    </a>
-  </div>
-
-  <!-- Top Summary -->
-  <div class="gridTop">
-    <div class="stat">
-      <div class="label"><span class="dot info"></span> 진행 중</div>
-      <div class="value"><c:out value="${summary.inProgressCount}"/></div>
-      <div class="small">예상 수익 ₩ <fmt:formatNumber value="${summary.expectedRevenue}" type="number" groupingUsed="true"/></div>
-
-    </div>
-
-    <div class="stat">
-      <div class="label"><span class="dot warn"></span> 지원한 프로젝트</div>
-      <div class="value"><c:out value="${summary.appliedCount}"/></div>
-    </div>
-
-    <div class="stat">
-      <div class="label"><span class="dot ok"></span> 완료된 프로젝트</div>
-      <div class="value"><c:out value="${summary.completedCount}"/></div>
-    </div>
-  </div>
-
-  <div class="main">
-
-    <!-- LEFT: Calendar -->
-    <div class="panel">
-      <div class="calHead">
-        <div class="ym" id="ymText"></div>
-        <div class="calNav">
-          <button class="btn ghost" type="button" id="prevBtn">◀</button>
-          <button class="btn ghost" type="button" id="todayBtn">오늘</button>
-          <button class="btn ghost" type="button" id="nextBtn">▶</button>
+    <!-- Top Summary -->
+    <div class="gridTop">
+      <div class="stat">
+        <div class="statTop">
+          <div class="statLabel"><span class="dot"></span> 진행 중</div>
+        </div>
+        <div class="statValue"><c:out value="${summary.inProgressCount}"/></div>
+        <div class="chip">
+          예상 수익 ₩ <fmt:formatNumber value="${summary.expectedRevenue}" type="number" groupingUsed="true"/>
         </div>
       </div>
 
-      <div class="calGrid" id="calGrid">
-        <div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div>
-        <div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>
-        <!-- days injected -->
+      <div class="stat">
+        <div class="statTop">
+          <div class="statLabel"><span class="dot warn"></span> 지원한 프로젝트</div>
+        </div>
+        <div class="statValue"><c:out value="${summary.appliedCount}"/></div>
       </div>
 
-      <h3 style="margin-top:16px;">선택한 날짜 일정</h3>
-      <div class="eventList" id="eventList">
-        <div style="color:var(--muted); font-weight:900; font-size:13px;">날짜를 선택하면 일정이 표시됩니다.</div>
+      <div class="stat">
+        <div class="statTop">
+          <div class="statLabel"><span class="dot ok"></span> 완료된 프로젝트</div>
+        </div>
+        <div class="statValue"><c:out value="${summary.completedCount}"/></div>
       </div>
     </div>
 
-    <!-- RIGHT: Tabs + List -->
-    <div class="panel">
+    <div class="main">
 
-      <div class="tabs">
-        <div class="tabGroup">
-          <a class="tab ${tab eq 'inProgress' ? 'active' : ''}"
-             href="${pageContext.request.contextPath}/freelancer/project/manage?tab=inProgress&ym=${ym}">
-            진행 중 (<c:out value="${summary.inProgressCount}"/>)
-          </a>
-          <a class="tab ${tab eq 'applied' ? 'active' : ''}"
-             href="${pageContext.request.contextPath}/freelancer/project/manage?tab=applied&ym=${ym}">
-            지원한 (<c:out value="${summary.appliedCount}"/>)
-          </a>
-          <a class="tab ${tab eq 'completed' ? 'active' : ''}"
-             href="${pageContext.request.contextPath}/freelancer/project/manage?tab=completed&ym=${ym}">
-            완료 (<c:out value="${summary.completedCount}"/>)
-          </a>
+      <!-- Calendar -->
+      <div class="panel">
+        <div class="calHead">
+          <div class="ym" id="ymText"></div>
+          <div class="calNav">
+            <button class="btn cal" type="button" id="prevBtn">◀</button>
+            <button class="btn cal" type="button" id="todayBtn">오늘</button>
+            <button class="btn cal" type="button" id="nextBtn">▶</button>
+          </div>
         </div>
 
-        <div class="tabsRight">
-          <a class="btn primary"
-             href="${pageContext.request.contextPath}/freelancer/project/detail"
-             style="text-decoration:none;">
-            상세 관리
-          </a>
+        <div class="calGrid" id="calGrid">
+          <div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div>
+          <div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>
+        </div>
+
+        <div class="sectionTitle">선택한 날짜 일정</div>
+        <div class="eventList" id="eventList">
+          <div style="color:var(--muted); font-weight:900; font-size:13px;">날짜를 선택하면 일정이 표시됩니다.</div>
         </div>
       </div>
 
+      <!-- Tabs + List -->
+      <div class="panel">
 
-      <div class="cards">
-        <!-- 진행중 -->
-        <c:if test="${tab eq 'inProgress'}">
-          <c:if test="${empty inProgressList}">
-            <div style="color:var(--muted); font-weight:900; padding:14px;">진행 중인 프로젝트가 없습니다.</div>
-          </c:if>
+        <div class="tabs">
+          <div class="tabGroup">
+            <a class="tab ${tab eq 'inProgress' ? 'active' : ''}"
+               href="${pageContext.request.contextPath}/freelancer/project/manage?tab=inProgress&ym=${ym}">
+              진행 중
+            </a>
+            <a class="tab ${tab eq 'applied' ? 'active' : ''}"
+               href="${pageContext.request.contextPath}/freelancer/project/manage?tab=applied&ym=${ym}">
+              지원 중
+            </a>
+            <a class="tab ${tab eq 'completed' ? 'active' : ''}"
+               href="${pageContext.request.contextPath}/freelancer/project/manage?tab=completed&ym=${ym}">
+              완료
+            </a>
+          </div>
 
-          <c:forEach var="p" items="${inProgressList}">
-            <div class="card">
-              <div class="cardTop">
-                <div>
-                  <div class="title"><c:out value="${p.title}"/></div>
-                  <div class="client">클라이언트: <c:out value="${p.clientName}"/></div>
-                </div>
+          <div class="tabsRight">
+            <a class="btn primary"
+               href="${pageContext.request.contextPath}/freelancer/project/detail">
+              상세 관리
+            </a>
+          </div>
+        </div>
 
-                <div class="badge info">
-                  계약 종료까지
-                  <c:if test="${p.dday ne null}">
-                    · D-<c:out value="${p.dday}"/>
-                  </c:if>
-                </div>
-              </div>
+        <div class="cards">
+          <!-- 진행중 -->
+          <c:if test="${tab eq 'inProgress'}">
+            <c:if test="${empty inProgressList}">
+              <div style="color:var(--muted); font-weight:900; padding:14px;">진행 중인 프로젝트가 없습니다.</div>
+            </c:if>
 
-              <div class="metaRow">
-                <div>
-                  <div class="k">계약 기간</div>
-                  <div class="v"><c:out value="${p.startDate}"/> ~ <c:out value="${p.endDate}"/></div>
-                </div>
+            <c:forEach var="p" items="${inProgressList}">
+              <div class="card">
+                <div class="cardTop">
+                  <div>
+                    <div class="title"><c:out value="${p.title}"/></div>
+                    <div class="client">클라이언트: <c:out value="${p.clientName}"/></div>
+                  </div>
 
-                <div>
-                  <div class="k">다음 마일스톤</div>
-                  <div class="v">
-                    <c:choose>
-                      <c:when test="${not empty p.nextMilestoneName}">
-                        <c:out value="${p.nextMilestoneName}"/>
-                        <c:if test="${not empty p.nextMilestoneDueDate}">
-                          · <c:out value="${p.nextMilestoneDueDate}"/>
-                        </c:if>
-                      </c:when>
-                      <c:otherwise>없음</c:otherwise>
-                    </c:choose>
+                  <div class="badge info">
+                    계약 종료까지
+                    <c:if test="${p.dday ne null}">
+                      · D-<c:out value="${p.dday}"/>
+                    </c:if>
                   </div>
                 </div>
 
-                <div>
-                  <div class="k">진척도</div>
-                  <div class="v">
-                    <div class="progressWrap">
-                      <div class="bar"><span style="width:${p.progressPercent}%;"></span></div>
-                      <div class="pct"><c:out value="${p.progressPercent}"/>%</div>
+                <div class="metaRow">
+                  <div>
+                    <div class="k">계약 기간</div>
+                    <div class="v"><c:out value="${p.startDate}"/> ~ <c:out value="${p.endDate}"/></div>
+                  </div>
+
+                  <div>
+                    <div class="k">다음 마일스톤</div>
+                    <div class="v">
+                      <c:choose>
+                        <c:when test="${not empty p.nextMilestoneName}">
+                          <c:out value="${p.nextMilestoneName}"/>
+                          <c:if test="${not empty p.nextMilestoneDueDate}">
+                            · <c:out value="${p.nextMilestoneDueDate}"/>
+                          </c:if>
+                        </c:when>
+                        <c:otherwise>없음</c:otherwise>
+                      </c:choose>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="k">진척도</div>
+                    <div class="v">
+                      <div class="progressWrap">
+                        <div class="bar"><span style="width:${p.progressPercent}%;"></span></div>
+                        <div class="pct"><c:out value="${p.progressPercent}"/>%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="k">계약 금액</div>
+                    <div class="v">
+                      ₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/>
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <div class="k">계약 금액</div>
-                  <div class="v">
-                    ₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/>
+                <div class="actions">
+                  <a class="btn ghost" href="${pageContext.request.contextPath}/chat/list">메시지</a>
+                </div>
+              </div>
+            </c:forEach>
+          </c:if>
+
+          <!-- 지원 -->
+          <c:if test="${tab eq 'applied'}">
+            <c:if test="${empty appliedList}">
+              <div style="color:var(--muted); font-weight:900; padding:14px;">지원한 프로젝트가 없습니다.</div>
+            </c:if>
+
+            <c:forEach var="p" items="${appliedList}">
+              <div class="card">
+                <div class="cardTop">
+                  <div>
+                    <div class="title"><c:out value="${p.title}"/></div>
+                    <div class="client">클라이언트: <c:out value="${p.clientName}"/></div>
                   </div>
 
+                  <div class="badge warn">
+                    공고 마감
+                    <c:if test="${p.dday ne null}">
+                      · D-<c:out value="${p.dday}"/>
+                    </c:if>
+                  </div>
+                </div>
+
+                <div class="metaRow">
+                  <div>
+                    <div class="k">예상 시작</div>
+                    <div class="v"><c:out value="${p.startDate}"/></div>
+                  </div>
+
+                  <div>
+                    <div class="k">마감</div>
+                    <div class="v"><c:out value="${p.endDate}"/></div>
+                  </div>
+
+                  <div>
+                    <div class="k"> </div>
+                    <div class="v"> </div>
+                  </div>
+
+                  <div>
+                    <div class="k">예산</div>
+                    <div class="v">₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/></div>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <a class="btn ghost" href="${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}">공고 보기</a>
                 </div>
               </div>
-
-              <div class="actions">
-                <a class="btn ghost" href="${pageContext.request.contextPath}/chat/list" style="text-decoration:none;">메시지</a>
-              </div>
-            </div>
-          </c:forEach>
-        </c:if>
-
-        <!-- 지원 -->
-        <c:if test="${tab eq 'applied'}">
-          <c:if test="${empty appliedList}">
-            <div style="color:var(--muted); font-weight:900; padding:14px;">지원한 프로젝트가 없습니다.</div>
+            </c:forEach>
           </c:if>
 
-          <c:forEach var="p" items="${appliedList}">
-            <div class="card">
-              <div class="cardTop">
-                <div>
-                  <div class="title"><c:out value="${p.title}"/></div>
-                  <div class="client">클라이언트: <c:out value="${p.clientName}"/></div>
+          <!-- 완료 -->
+          <c:if test="${tab eq 'completed'}">
+            <c:if test="${empty completedList}">
+              <div style="color:var(--muted); font-weight:900; padding:14px;">완료된 프로젝트가 없습니다.</div>
+            </c:if>
+
+            <c:forEach var="p" items="${completedList}">
+              <div class="card">
+                <div class="cardTop">
+                  <div>
+                    <div class="title"><c:out value="${p.title}"/></div>
+                    <div class="client">클라이언트: <c:out value="${p.clientName}"/></div>
+                  </div>
+
+                  <div class="badge ok">완료</div>
                 </div>
 
-                <div class="badge warn">
-                  공고 마감
-                  <c:if test="${p.dday ne null}">
-                    · D-<c:out value="${p.dday}"/>
-                  </c:if>
+                <div class="metaRow">
+                  <div>
+                    <div class="k">계약 기간</div>
+                    <div class="v"><c:out value="${p.startDate}"/> ~ <c:out value="${p.endDate}"/></div>
+                  </div>
+
+                  <div>
+                    <div class="k">마지막 진행률</div>
+                    <div class="v"><c:out value="${p.progressPercent}"/>%</div>
+                  </div>
+
+                  <div>
+                    <div class="k">총 금액</div>
+                    <div class="v">₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/></div>
+                  </div>
+
+                  <div>
+                    <div class="k">후기/평가</div>
+                    <div class="v">추후 연동</div>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <a class="btn ghost" href="${pageContext.request.contextPath}/contract/detail?contractId=${p.contractId}">상세 보기</a>
+                  <a class="btn primary" href="${pageContext.request.contextPath}/freelancer/project/detail?tab=reviews&contractId=${p.contractId}">리뷰 보기</a>
                 </div>
               </div>
-
-              <div class="metaRow">
-                <div>
-                  <div class="k">예상 시작</div>
-                  <div class="v"><c:out value="${p.startDate}"/></div>
-                </div>
-
-                <div>
-                  <div class="k">마감</div>
-                  <div class="v"><c:out value="${p.endDate}"/></div>
-                </div>
-
-                <div>
-                  <div class="k"> </div>
-                  <div class="v"> </div>
-                </div>
-
-                <div>
-                  <div class="k">예산</div>
-                  <div class="v">₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/></div>
-
-                </div>
-              </div>
-
-              <div class="actions">
-                <a class="btn ghost" href="${pageContext.request.contextPath}/project/detail?projectId=${p.projectId}" style="text-decoration:none;">공고 보기</a>
-              </div>
-            </div>
-          </c:forEach>
-        </c:if>
-
-        <!-- 완료 -->
-        <c:if test="${tab eq 'completed'}">
-          <c:if test="${empty completedList}">
-            <div style="color:var(--muted); font-weight:900; padding:14px;">완료된 프로젝트가 없습니다.</div>
+            </c:forEach>
           </c:if>
 
-          <c:forEach var="p" items="${completedList}">
-            <div class="card">
-              <div class="cardTop">
-                <div>
-                  <div class="title"><c:out value="${p.title}"/></div>
-                  <div class="client">클라이언트: <c:out value="${p.clientName}"/></div>
-                </div>
-
-                <div class="badge ok">완료</div>
-              </div>
-
-              <div class="metaRow">
-                <div>
-                  <div class="k">계약 기간</div>
-                  <div class="v"><c:out value="${p.startDate}"/> ~ <c:out value="${p.endDate}"/></div>
-                </div>
-
-                <div>
-                  <div class="k">마지막 진행률</div>
-                  <div class="v"><c:out value="${p.progressPercent}"/>%</div>
-                </div>
-
-                <div>
-                  <div class="k">총 금액</div>
-                  <div class="v">₩ <fmt:formatNumber value="${p.totalBudget}" type="number" groupingUsed="true"/></div>
-                </div>
-
-                <div>
-                  <div class="k">후기/평가</div>
-                  <div class="v">추후 연동</div>
-                </div>
-              </div>
-
-              <div class="actions">
-                <a class="btn ghost" href="${pageContext.request.contextPath}/contract/detail?contractId=${p.contractId}" style="text-decoration:none;">상세 보기</a>
-                <a class="btn primary" href="${pageContext.request.contextPath}/freelancer/project/detail?tab=reviews&contractId=${p.contractId}" style="text-decoration:none;">리뷰 보기</a>
-              </div>
-            </div>
-          </c:forEach>
-        </c:if>
-
+        </div>
       </div>
     </div>
   </div>
 </div>
-<!-- ===== 캘린더 이벤트 데이터(숨김) : JS 문자열 삽입 금지 버전 ===== -->
+
+<!-- 캘린더 이벤트 데이터 -->
 <div id="evDataWrap" style="display:none;">
   <c:forEach var="ev" items="${events}">
     <div class="evData"
@@ -546,8 +736,7 @@
 <script>
   const ctx = "${pageContext.request.contextPath}";
 
-  // ===== data-*에서 events 읽어서 날짜별로 쌓기 (JS 문자열 깨짐 방지) =====
-  const calendarEvents = {}; // { "2026-01-16": [ ... ] }
+  const calendarEvents = {};
 
   function normalizeType(t){
     if(!t) return "milestone";
@@ -573,11 +762,9 @@
     calendarEvents[date].push({ date, type, title, projectId, contractId, milestoneId, stepOrder });
   });
 
-  // ===== 기본 상태 =====
   let current = new Date();
   let selectedDate = null;
 
-  // 서버에서 내려준 ym(예: 2026-01)이 있으면 그 달로 시작
   <c:if test="${not empty ym}">
   current = new Date("${ym}-01T00:00:00");
   </c:if>
@@ -591,7 +778,6 @@
   function fmtYm(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1); }
 
   function renderCalendar(){
-    // 기존 day 제거
     calGrid.querySelectorAll('.day').forEach(d => d.remove());
 
     const y = current.getFullYear();
@@ -602,7 +788,6 @@
     const startDow = firstDay.getDay();
     const lastDate = new Date(y, m+1, 0).getDate();
 
-    // 앞쪽 padding
     for(let i=0;i<startDow;i++){
       const d = document.createElement('div');
       d.className = 'day muted';
@@ -627,13 +812,12 @@
         const marks = document.createElement('div');
         marks.className = 'marks';
 
-        // type별 점 1개씩
         const seen = {};
         list.forEach(ev => {
           if(seen[ev.type]) return;
           seen[ev.type] = true;
           const mk = document.createElement('span');
-          mk.className = 'mk ' + ev.type; // start/milestone/end
+          mk.className = 'mk ' + ev.type;
           marks.appendChild(mk);
         });
 
@@ -644,7 +828,6 @@
       calGrid.appendChild(cell);
     }
 
-    // 선택 유지
     if(selectedDate){
       const sel = document.querySelector('.day[data-date="'+selectedDate+'"]');
       if(sel) selectDate(sel, selectedDate, true);
@@ -661,7 +844,6 @@
   function pillHtml(type, stepOrder){
     if(type === "start") return '<span class="pill start">계약 시작</span>';
     if(type === "end") return '<span class="pill end">계약 종료</span>';
-    // milestone
     const step = (stepOrder != null) ? (' ' + stepOrder + '단계') : '';
     return '<span class="pill milestone">마일스톤' + step + '</span>';
   }
@@ -701,7 +883,6 @@
     });
   }
 
-  // title을 innerHTML에 넣을 때 안전 처리
   function escapeHtml(str){
     return String(str ?? '')
             .replaceAll('&','&amp;')
@@ -711,7 +892,6 @@
             .replaceAll("'","&#39;");
   }
 
-  // ===== 월 이동: (핵심) 서버에 ym으로 다시 요청해서 events를 새로 받아오기 =====
   function goMonth(delta){
     const d = new Date(current);
     d.setMonth(d.getMonth() + delta);
@@ -730,10 +910,8 @@
     window.location.href = ctx + "/freelancer/project/manage?tab=" + encodeURIComponent(tab) + "&ym=" + fmtYm(d);
   };
 
-  // 최초 렌더
   renderCalendar();
 </script>
-
 
 </body>
 </html>

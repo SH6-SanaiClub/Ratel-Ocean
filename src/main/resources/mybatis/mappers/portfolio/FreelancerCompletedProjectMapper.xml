@@ -55,13 +55,14 @@
         ORDER BY COALESCE(c.completed_at, c.contract_end_date) DESC
     </select>
 
-    <!-- 지원 시 선택한 스택 -->
+    <!-- 선택한 스택 -->
     <select id="selectStacksByApplicationId"
             resultType="com.sanaiclub.portfolio.model.dto.CompletedProjectStackDTO">
         SELECT
             s.stack_id   AS stackId,
             s.stack_name AS stackName,
-            pfs.is_primary AS isPrimary
+            pfs.is_primary AS isPrimary,
+            s.category AS category
         FROM project_freelancer_stacks pfs
                  JOIN stacks s ON s.stack_id = pfs.stack_id
         WHERE pfs.application_id = #{applicationId}

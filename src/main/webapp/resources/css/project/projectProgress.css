@@ -1,7 +1,6 @@
-/* 마일스톤 카드 */
 .milestone-card {
     background: #fff;
-    border: 1px solid #eee;
+    border: 1px solid rgba(59,111,220,.22);
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 12px;
@@ -10,7 +9,7 @@
 }
 
 .milestone-card:hover {
-    border-color: #1F7A8C;
+    border-color: #173160;
 }
 
 .ms-header {
@@ -22,9 +21,9 @@
 
 .ms-step {
     font-size: 11px;
-    color: #1F7A8C;
+    color: #173160;
     font-weight: 800;
-    background: #E0F7FA;
+    background: rgba(59,111,220,.10);
     padding: 3px 8px;
     border-radius: 4px;
 }
@@ -32,11 +31,10 @@
 .ms-title {
     font-size: 14px;
     font-weight: 700;
-    color: #333;
+    color: #0f172a;
     margin-left: 5px;
 }
 
-/* 상태 뱃지 */
 .ms-status {
     font-size: 11px;
     font-weight: 700;
@@ -46,7 +44,7 @@
 
 .st-WAITING {
     background: #f5f5f5;
-    color: #999;
+    color: #9ca3af;
 }
 
 .st-REQUESTED {
@@ -64,23 +62,22 @@
     display: flex;
     justify-content: space-between;
     font-size: 13px;
-    color: #666;
+    color: #475569;
     margin-bottom: 5px;
 }
 
 .ms-amount {
     font-weight: 700;
-    color: #333;
+    color: #0f172a;
 }
 
-/* 지급 승인 버튼 */
 .btn-pay-approve {
     width: 100%;
     margin-top: 10px;
     padding: 10px;
     border: none;
     border-radius: 6px;
-    background: #1F7A8C;
+    background: #173160;
     color: #fff;
     font-weight: 700;
     cursor: pointer;
@@ -91,57 +88,42 @@
 }
 
 .btn-pay-approve:hover {
-    background: #166678;
+    background: #102645;
 }
 
 @keyframes pulse {
-    0% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
-    100% {
-        opacity: 1;
-    }
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
-/* ========================================
-   마일스톤 상태별 스타일 추가
-   ======================================== */
-
-/* DEPOSITED 상태 */
 .st-DEPOSITED {
-    background: #E3F2FD;
-    color: #1565C0;
+    background: rgba(59,111,220,.10);
+    color: #173160;
 }
 
-/* 요청된 마일스톤 카드 강조 */
 .milestone-card.requested {
     border: 2px solid #D32F2F;
     box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);
 }
 
-/* 마일스톤 액션 버튼 영역 */
 .ms-actions {
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid rgba(59,111,220,.22);
 }
 
-/* 버튼 그룹 (승인/거부) */
 .btn-group-payout {
     display: flex;
     gap: 8px;
 }
 
-/* 직접 지급 버튼 */
 .btn-pay-direct {
     width: 100%;
     padding: 10px 16px;
     border: none;
     border-radius: 6px;
-    background: #1565C0;
+    background: #173160;
     color: #fff;
     font-weight: 600;
     font-size: 13px;
@@ -154,32 +136,9 @@
 }
 
 .btn-pay-direct:hover {
-    background: #0D47A1;
+    background: #102645;
 }
 
-/* 승인 버튼 */
-.btn-pay-approve {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    background: #1F7A8C;
-    color: #fff;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
-}
-
-.btn-pay-approve:hover {
-    background: #166678;
-}
-
-/* 거부 버튼 */
 .btn-pay-reject {
     flex: 1;
     padding: 10px 16px;
@@ -201,10 +160,6 @@
 .btn-pay-reject:hover {
     background: #FFEBEE;
 }
-
-/* ========================================
-   비밀번호 인증 모달 스타일
-   ======================================== */
 
 .payout-modal {
     position: fixed;
@@ -233,28 +188,28 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(59,111,220,.22);
 }
 
 .payout-modal-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 700;
-    color: #333;
+    color: #0f172a;
 }
 
 .payout-modal-close {
     background: none;
     border: none;
     font-size: 24px;
-    color: #999;
+    color: #9ca3af;
     cursor: pointer;
     padding: 0;
     line-height: 1;
 }
 
 .payout-modal-close:hover {
-    color: #333;
+    color: #0f172a;
 }
 
 .payout-modal-body {
@@ -263,7 +218,7 @@
 
 .payout-modal-body p {
     margin: 0 0 16px 0;
-    color: #666;
+    color: #475569;
     font-size: 14px;
 }
 
@@ -276,12 +231,12 @@
 .payout-input-group label {
     font-weight: 600;
     font-size: 14px;
-    color: #333;
+    color: #0f172a;
 }
 
 .payout-input-group input {
     padding: 12px 14px;
-    border: 1px solid #ddd;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     font-size: 14px;
     transition: border-color 0.2s;
@@ -289,11 +244,11 @@
 
 .payout-input-group input:focus {
     outline: none;
-    border-color: #1F7A8C;
+    border-color: #173160;
 }
 
 .payout-help-text {
-    color: #999;
+    color: #9ca3af;
     font-size: 12px;
 }
 
@@ -302,30 +257,30 @@
     justify-content: flex-end;
     gap: 10px;
     padding: 16px 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid rgba(59,111,220,.22);
     background: #fafafa;
 }
 
 .payout-modal-footer .btn-cancel {
     padding: 10px 20px;
-    border: 1px solid #ddd;
+    border: 1px solid #cbd5e1;
     border-radius: 6px;
     background: #fff;
-    color: #666;
+    color: #475569;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .payout-modal-footer .btn-cancel:hover {
-    background: #f5f5f5;
+    background: #f1f5f9;
 }
 
 .payout-modal-footer .btn-confirm {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
-    background: #1F7A8C;
+    background: #173160;
     color: #fff;
     font-weight: 600;
     cursor: pointer;
@@ -333,7 +288,7 @@
 }
 
 .payout-modal-footer .btn-confirm:hover {
-    background: #166678;
+    background: #102645;
 }
 
 .payout-modal-footer .btn-confirm:disabled {
