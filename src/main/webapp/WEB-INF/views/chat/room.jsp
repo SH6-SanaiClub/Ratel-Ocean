@@ -46,9 +46,6 @@
                 </div>
             </div>
         </div>
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
-                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none; font-size: 13px;">나가기</button>
-                </div>
             </div>
         </div>
         <div class="chat-body" id="chatBody"></div>
