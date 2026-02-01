@@ -23,19 +23,15 @@
     </select>
 
     <select id="selectMonthlyEarnings" resultType="map">
-        SELECT DATE_FORMAT(cm.due_date, '%Y-%m') AS month,
-            SUM(cm.amount)                    AS totalAmount
-        FROM contract_milestones cm
-            JOIN contracts c
-        ON cm.contract_id = c.contract_id
-        WHERE c.origin_contract_url LIKE CONCAT('%/'
-            , #{userId}
-            , '/%') -- 프리랜서 식별
-          AND cm.status = 'PAID'
-          AND cm.due_date >= DATE_FORMAT(DATE_SUB(NOW()
-            , INTERVAL 5 MONTH)
-            , '%Y-%m-01')
-        GROUP BY DATE_FORMAT(cm.due_date, '%Y-%m')
+        SELECT
+            DATE_FORMAT(c.contracted_at, '%Y-%m') AS month,
+            SUM(c.total_budget)                   AS totalAmount
+        FROM contracts c
+            JOIN project_applications pa ON c.contract_id = pa.application_id
+        WHERE pa.freelancer_id = #{userId}
+          AND c.total_budget IS NOT NULL
+          AND c.contracted_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(c.contracted_at, '%Y-%m')
         ORDER BY month ASC
     </select>
 
