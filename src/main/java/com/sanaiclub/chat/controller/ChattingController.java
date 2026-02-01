@@ -34,26 +34,17 @@ public class ChattingController {
     private final ChatService chatService;
     private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
 
-
-    // 채팅 아이콘 → 목록 화면
     @GetMapping
     public String chatMain(Model model) {
-        // 1. AuthContext에서 로그인한 사용자 ID 및 타입 조회
         Integer loginUserId = AuthContext.getCurrentUserId();
         UserType userType = AuthContext.getCurrentUserType();
 
         if (loginUserId == null) {
             return "redirect:/login";
         }
-
         model.addAttribute("loginUserId", loginUserId);
         model.addAttribute("userType", userType != null ? userType.name() : "");
-
-        // 3. 채팅방 목록 조회 로직 (선택 사항: 비동기로 불러온다면 여기선 패스)
-        // List<ChatRoomDTO> myRooms = chatService.findMyRooms(loginUserId);
-        // model.addAttribute("myRooms", myRooms);
-
-        return "chat/room"; // /WEB-INF/views/chat/room.jsp
+        return "chat/room";
     }
 
     @GetMapping("/room/{roomId}/info")
@@ -67,6 +58,7 @@ public class ChattingController {
     public void markAsRead(@PathVariable Integer roomId) {
         chatService.markRoomAsRead(roomId, AuthContext.getCurrentUserId());
     }
+
     @PostMapping("/create-or-get-room")
     @ResponseBody
     public Integer createOrGetRoom(
@@ -75,37 +67,28 @@ public class ChattingController {
     ) {
         Integer loginUserId = AuthContext.getCurrentUserId();
         UserType userType = AuthContext.getCurrentUserType();
-
         Integer targetFreelancerId;
 
         if (UserType.CLIENT.equals(userType)) {
-            // 클라이언트라면 전달받은 프리랜서 ID 사용
-            if (freelancerId == null) {
-                throw new IllegalArgumentException("프리랜서 ID가 필요합니다.");
-            }
             targetFreelancerId = freelancerId;
         } else {
-            // 프리랜서라면 본인 ID 사용
             targetFreelancerId = loginUserId;
         }
-
-        // 서비스 호출 (기존 로직 활용)
         return chatService.createOrGetRoom(projectId, targetFreelancerId);
     }
-    // 채팅방 목록 데이터 (AJAX)
+
     @GetMapping("/rooms")
     @ResponseBody
     public List<ChatRoomDTO> rooms() {
         return chatService.findMyRooms(AuthContext.getCurrentUserId());
     }
 
-    // 메시지 목록 조회
     @GetMapping("/room/{roomId}/messages")
     @ResponseBody
     public List<ChatMessageDTO> getMessages(@PathVariable Integer roomId) {
         return chatService.findMessages(roomId);
     }
-    //방 나가기
+
     @PostMapping("/room/{roomId}/exit")
     @ResponseBody
     public String exitRoom(@PathVariable Integer roomId, HttpSession session) {
@@ -131,19 +114,16 @@ public class ChattingController {
         );
         return ResponseEntity.ok(message);
     }
+
     @GetMapping("/file/{messageId}")
     public ResponseEntity<Resource> downloadFile(
             @PathVariable Integer messageId, HttpSession session
     ) throws Exception {
-
-        // 1️⃣ DB에서 파일 정보 조회
         ChatMessageDTO msg = chatService.findFileByMessageId(messageId);
 
         if (msg == null || msg.getFileUrl() == null) {
             return ResponseEntity.notFound().build();
         }
-
-        // 2️⃣ 실제 파일 경로
         String contextPath = session.getServletContext().getRealPath("/");
         String filePath = contextPath + msg.getFileUrl();
         File file = new File(filePath);
@@ -151,14 +131,11 @@ public class ChattingController {
         if (!file.exists()) {
             return ResponseEntity.notFound().build();
         }
-        // 3️⃣ Resource로 변환
         Resource resource = new FileSystemResource(file);
 
-        // 4️⃣ 파일명 인코딩 (한글 깨짐 방지)
         String encodedFileName =
                 URLEncoder.encode(msg.getFileName(), "UTF-8").replaceAll("\\+", "%20");
 
-        // 5️⃣ 다운로드 헤더
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + encodedFileName + "\"")
@@ -168,21 +145,17 @@ public class ChattingController {
     }
 
     @PostMapping("/message/{messageId}/delete")
-    @ResponseBody
     public ResponseEntity<?> deleteMessage(@PathVariable int messageId, @RequestBody Map<String, Integer> payload) {
         try {
-            Integer roomId = payload.get("roomId"); // 클라이언트에서 roomId를 함께 전달받음
+            Integer roomId = payload.get("roomId");
             if (roomId == null) {
                 return ResponseEntity.badRequest().body("roomId is missing");
             }
             chatService.deleteMessage(messageId);
-
             Map<String, Object> deleteSignal = new HashMap<>();
             deleteSignal.put("type", "DELETE");
             deleteSignal.put("messageId", messageId);
-
             messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, deleteSignal);
-
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();

@@ -22,18 +22,15 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
-
     private final ChatRoomMapper chatRoomMapper;
     private final ChatMessageMapper chatMessageMapper;
 
-    // =========================================
-    // 1. 내 채팅방 목록 조회 (AJAX용)
-    // =========================================
     @Transactional
     public List<ChatRoomDTO> findMyRooms(Integer loginUserId) {
         List<ChatRoomDTO> rooms = chatRoomMapper.findMyRooms(loginUserId);
         return rooms;
     }
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Transactional
@@ -53,9 +50,7 @@ public class ChatService {
             fileName = originalFileName;
             fileUrl = "/upload/chat/" + savedFileName;
         }
-
         markRoomAsRead(roomId, AuthContext.getCurrentUserId());
-
         ChatMessageDTO message =sendAndReturnMessage(
                 roomId,
                 senderId,
@@ -73,78 +68,59 @@ public class ChatService {
         return message;
     }
 
-
     @Transactional
     public ChatMessageDTO sendAndReturnMessage(Integer roomId, Integer senderId, String content, String fileName, String fileUrl, Long fileSize) {
-        chatMessageMapper.insertMessage(roomId, senderId, content, fileName, fileUrl, fileSize);
-        List<ChatMessageDTO> messages = chatMessageMapper.findMessages(roomId);
-        ChatMessageDTO newMessage = messages.get(messages.size() - 1);
+        ChatMessageDTO message = new ChatMessageDTO();
+        message.setRoomId(roomId);
+        message.setSenderId(senderId);
+        message.setContent(content);
+        message.setFileName(fileName);
+        message.setFileUrl(fileUrl);
+        message.setFileSize(fileSize);
+        chatMessageMapper.insertMessage(message);
         chatRoomMapper.updateLastMessage(roomId);
-        return newMessage;
+        return message;
     }
+
     @Transactional
     public Integer createOrGetRoom(Integer projectId, Integer freelancerId) {
         Integer existingRoomId = chatRoomMapper.findExistRoom(projectId, freelancerId);
 
         if (existingRoomId != null) {
-            // 이미 방이 있다면 기존 ID 반환
             return existingRoomId;
         }
         ChatRoomDTO newRoom = new ChatRoomDTO();
         newRoom.setProjectId(projectId);
         newRoom.setFreelancerId(freelancerId);
-        // client_id 컬럼이 필수라면 프로젝트 정보에서 가져오는 로직이 추가될 수 있습니다.
-
-        // 2. DB에 삽입 (Mapper 호출)
         chatRoomMapper.insertChatRoom(newRoom);
-
-        // 3. MyBatis useGeneratedKeys에 의해 newRoom 객체에 자동으로 담긴 roomId 반환
         return newRoom.getRoomId();
     }
+
     public ChatMessageDTO findFileByMessageId(Integer messageId){
         return chatMessageMapper.findFileByMessageId(messageId);
     }
 
-    // =========================================
-    // 2. 단일 채팅방 조회
-    // =========================================
     public ChatRoomDTO findRoomInfo(Integer roomId, Integer loginUserId) {
         return chatRoomMapper.findRoomInfo(roomId, loginUserId);
     }
-    // =========================================
-    // 3. 메시지 목록 조회
-    // =========================================
+
     public List<ChatMessageDTO> findMessages(Integer roomId) {
         return chatMessageMapper.findMessages(roomId);
     }
 
-    // =========================================
-    // 4. 메시지 전송
-    // =========================================
-
-    // =========================================
-    // 6. 메시지 읽음 처리
-    // =========================================
     @Transactional
     public void markRoomAsRead(Integer roomId, Integer loginUserId) {
         chatMessageMapper.markRoomMessagesAsRead(roomId, loginUserId);
     }
 
-    // =========================================
-    // 7. 메시지 삭제
-    // =========================================
     public void deleteMessage(Integer messageId) {
         chatMessageMapper.deleteMessage(messageId);
     }
-    //방 나가기
+
     public void exitRoom(Integer roomId, Integer userId) {
         Map<String, Object> param = new HashMap<>();
         param.put("roomId", roomId);
         param.put("userId", userId);
-
-        // 1. 채팅방 상태 업데이트
         chatRoomMapper.exitRoom(param);
-
     }
-
 }

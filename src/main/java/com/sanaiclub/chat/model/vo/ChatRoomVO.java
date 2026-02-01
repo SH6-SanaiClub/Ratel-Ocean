@@ -9,12 +9,10 @@ import java.util.Date;
 @Getter
 @Setter
 public class ChatRoomVO {
-
-    private Integer roomId;                // 방 ID
-    private Integer projectId;              // 상대방 ID
+    private Integer roomId;
+    private Integer projectId;
     private Integer freelancerId;
-    private Boolean isActive;           // 방 활성화 여부
-    private Date lastMessageAt;       // 마지막 메시지 내용
+    private Date lastMessageAt;
     private Date createdAt;
     private Boolean freelancer_exited;
     private Boolean client_exited;
