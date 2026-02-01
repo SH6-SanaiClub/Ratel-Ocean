@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %> <%-- 숫자 포맷팅용 --%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> <%-- 문자열 처리용 --%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -17,12 +19,20 @@
             box-sizing: border-box;
         }
 
+        /* [색상 변경] 전체 테마를 청록색(#1F7A8C) & 붉은색(#E74C3C)으로 통일 */
         :root {
+            /* 메인 컬러: Teal */
             --primary: #1F7A8C;
-            --secondary: #A9D9DB;
-            --dark: #2B2B2B;
-            --muted: #6F7272;
-            --light: #F1F6EE;
+            --primary-bg: #E0F2F1; /* 연한 청록 배경 */
+
+            /* 포인트 컬러: Red (강조/알림) */
+            --danger: #E74C3C;
+            --danger-bg: #FFEBEE; /* 연한 붉은 배경 */
+
+            /* 텍스트/배경 */
+            --dark: #2C3E50;
+            --muted: #7F8C8D;
+            --light: #F5F7FA; /* 차분한 쿨 그레이 */
         }
 
         body {
@@ -73,6 +83,7 @@
         .stat-card:hover {
             box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             transform: translateY(-2px);
+            border: 1px solid var(--primary-bg); /* 호버 시 미세한 테두리 */
         }
 
         .stat-header {
@@ -88,10 +99,11 @@
             font-weight: 500;
         }
 
+        /* [변경] 아이콘 배경색: 연한 청록색 */
         .stat-icon {
             width: 40px;
             height: 40px;
-            background: var(--light);
+            background: var(--primary-bg);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -207,21 +219,20 @@
         .item-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
-            background: var(--secondary);
-            color: var(--dark);
             border-radius: 20px;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
         }
 
+        /* [변경] 상태 배지 색상: 진행중(청록), 모집중(붉은색) */
         .item-badge.status-active {
-            background: #dcfce7;
-            color: #166534;
+            background: var(--primary-bg);
+            color: var(--primary);
         }
 
         .item-badge.status-pending {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--danger-bg);
+            color: var(--danger);
         }
 
         .item-meta {
@@ -240,13 +251,13 @@
         .applicant-avatar {
             width: 36px;
             height: 36px;
-            background: var(--secondary);
+            background: var(--primary-bg); /* 연한 청록 */
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            color: var(--dark);
+            color: var(--primary); /* 진한 청록 글씨 */
         }
 
         .applicant-name {
@@ -390,45 +401,41 @@
             <a href="${pageContext.request.contextPath}/client/projects" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="item-list">
-            <li class="item">
-                <div class="item-header">
-                    <div class="item-title">웹사이트 리뉴얼 프로젝트</div>
-                    <span class="item-badge status-active">진행중</span>
-                </div>
-                <div class="item-meta">
-                    <span>₩6,000,000</span>
-                    <span>•</span>
-                    <span>3개월</span>
-                    <span>•</span>
-                    <span>지원자 12명</span>
-                </div>
-            </li>
-            <li class="item">
-                <div class="item-header">
-                    <div class="item-title">모바일 앱 개발</div>
-                    <span class="item-badge status-active">진행중</span>
-                </div>
-                <div class="item-meta">
-                    <span>₩12,000,000</span>
-                    <span>•</span>
-                    <span>5개월</span>
-                    <span>•</span>
-                    <span>지원자 8명</span>
-                </div>
-            </li>
-            <li class="item">
-                <div class="item-header">
-                    <div class="item-title">백엔드 API 구축</div>
-                    <span class="item-badge status-pending">모집중</span>
-                </div>
-                <div class="item-meta">
-                    <span>₩10,000,000</span>
-                    <span>•</span>
-                    <span>3개월</span>
-                    <span>•</span>
-                    <span>지원자 3명</span>
-                </div>
-            </li>
+            <c:choose>
+                <c:when test="${empty recentProjects}">
+                    <li class="item" style="text-align: center; color: var(--muted); padding: 20px;">최근 등록한 프로젝트가 없습니다.</li>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach items="${recentProjects}" var="project">
+                        <li class="item">
+                            <div class="item-header">
+                                <div class="item-title">${project.title}</div>
+                                    <%-- 상태에 따른 뱃지 색상 변경 --%>
+                                <c:choose>
+                                    <c:when test="${project.projectStatus eq 'RECRUITING'}">
+                                        <span class="item-badge status-pending">모집중</span>
+                                    </c:when>
+                                    <c:when test="${project.projectStatus eq 'ONGOING'}">
+                                        <span class="item-badge status-active">진행중</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="item-badge" style="background: #eee; color: #666;">${project.projectStatus}</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="item-meta">
+                                    <%-- 예산 통화 포맷팅 --%>
+                                <span><fmt:formatNumber value="${project.budget}" type="currency" currencySymbol="₩"/></span>
+                                <span>•</span>
+                                    <%-- 기간 계산 (DTO 메서드 활용) --%>
+                                <span>약 ${project.durationMonths}개월</span>
+                                <span>•</span>
+                                <span>지원자 ${project.applicantCount}명</span>
+                            </div>
+                        </li>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
         </ul>
     </div>
 
@@ -439,48 +446,35 @@
             <a href="${pageContext.request.contextPath}/client/applicants" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="item-list">
-            <li class="item">
-                <div class="applicant-info">
-                    <div class="applicant-avatar">김</div>
-                    <div>
-                        <div class="applicant-name">김개발</div>
-                        <div class="applicant-role">Backend Developer • 경력 5년</div>
-                    </div>
-                </div>
-                <div class="item-meta" style="margin-top: 0.5rem;">
-                    <span>웹사이트 리뉴얼 프로젝트</span>
-                    <span>•</span>
-                    <span>평점 4.9</span>
-                </div>
-            </li>
-            <li class="item">
-                <div class="applicant-info">
-                    <div class="applicant-avatar">이</div>
-                    <div>
-                        <div class="applicant-name">이디자이너</div>
-                        <div class="applicant-role">UI/UX Designer • 경력 3년</div>
-                    </div>
-                </div>
-                <div class="item-meta" style="margin-top: 0.5rem;">
-                    <span>모바일 앱 개발</span>
-                    <span>•</span>
-                    <span>평점 4.8</span>
-                </div>
-            </li>
-            <li class="item">
-                <div class="applicant-info">
-                    <div class="applicant-avatar">박</div>
-                    <div>
-                        <div class="applicant-name">박풀스택</div>
-                        <div class="applicant-role">Full-stack Developer • 경력 7년</div>
-                    </div>
-                </div>
-                <div class="item-meta" style="margin-top: 0.5rem;">
-                    <span>백엔드 API 구축</span>
-                    <span>•</span>
-                    <span>평점 5.0</span>
-                </div>
-            </li>
+            <c:choose>
+                <c:when test="${empty recentApplicants}">
+                    <li class="item" style="text-align: center; color: var(--muted); padding: 20px;">새로운 지원자가 없습니다.</li>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach items="${recentApplicants}" var="applicant">
+                        <%-- 클릭 시 상세 페이지 이동 링크 추가 --%>
+                        <li class="item" onclick="location.href='${pageContext.request.contextPath}/client/applicant/${applicant.applicationId}'" style="cursor: pointer;">
+                            <div class="applicant-info">
+                                    <%-- 이름 첫 글자로 아바타 표시 --%>
+                                <div class="applicant-avatar">${fn:substring(applicant.freelancerName, 0, 1)}</div>
+                                <div>
+                                    <div class="applicant-name">${applicant.freelancerName}</div>
+                                    <div class="applicant-role">
+                                            ${applicant.profileTitle != null ? applicant.profileTitle : '직무 미기재'}
+                                        • 경력 ${applicant.careerYear != null ? applicant.careerYear : 0}년
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item-meta" style="margin-top: 0.5rem;">
+                                <span>${applicant.projectTitle}</span>
+                                <span>•</span>
+                                    <%-- 평점 소수점 1자리 포맷팅 --%>
+                                <span>평점 <fmt:formatNumber value="${applicant.rating != null ? applicant.rating : 0.0}" pattern="0.0"/></span>
+                            </div>
+                        </li>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
         </ul>
     </div>
 </main>
@@ -520,16 +514,32 @@
     }
 
     // 월별 지출 차트
+    // [수정] 월별 지출 차트 (Bar) - 실제 데이터 연결
     const spendingCtx = document.getElementById('spendingChart').getContext('2d');
+
+    // JSP List -> JS Array 변환
+    const monthlyLabels = [
+        <c:forEach items="${monthlyLabels}" var="label" varStatus="status">
+        '${label}'${!status.last ? ',' : ''}
+        </c:forEach>
+    ];
+
+    const monthlyData = [
+        <c:forEach items="${monthlyData}" var="val" varStatus="status">
+        ${val}${!status.last ? ',' : ''}
+        </c:forEach>
+    ];
+
     new Chart(spendingCtx, {
         type: 'bar',
         data: {
-            labels: ['8월', '9월', '10월', '11월', '12월', '1월'],
+            labels: monthlyLabels, // 서버에서 받은 날짜 (2025-09, ...)
             datasets: [{
-                label: '월별 지출 (만원)',
-                data: [450, 380, 520, 600, 480, 720],
+                label: '지출 금액',
+                data: monthlyData, // 서버에서 받은 금액
                 backgroundColor: '#1F7A8C',
-                borderRadius: 6
+                borderRadius: 4,
+                barThickness: 30
             }]
         },
         options: {
@@ -541,32 +551,41 @@
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return value + '만원';
+                            // 금액 단위 포맷팅 (만원 단위로 보여주거나, 그냥 원 단위)
+                            if(value >= 10000) return (value / 10000).toLocaleString() + '만원';
+                            return value.toLocaleString() + '원';
                         }
                     }
                 }
             },
-            plugins: {
-                legend: {
-                    display: false
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        return Number(tooltipItem.yLabel).toLocaleString() + '원';
+                    }
                 }
+            },
+            plugins: {
+                legend: { display: false }
             }
         }
     });
 
     // 프로젝트 상태 차트
     const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusData = [
+        <c:forEach items="${projectStatusCounts}" var="cnt" varStatus="s">
+        ${cnt}${!s.last ? ',' : ''}
+        </c:forEach>
+    ];
+
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
             labels: ['완료', '진행중', '모집중'],
             datasets: [{
-                data: [4, 2, 2],
-                backgroundColor: [
-                    '#1F7A8C',
-                    '#A9D9DB',
-                    '#6F7272'
-                ],
+                data: statusData,
+                backgroundColor: ['#1F7A8C', '#A9D9DB', '#6F7272'],
                 borderWidth: 0
             }]
         },
@@ -574,11 +593,7 @@
             responsive: true,
             maintainAspectRatio: true,
             aspectRatio: 1.5,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
+            plugins: { legend: { position: 'bottom' } }
         }
     });
 </script>

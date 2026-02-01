@@ -3,10 +3,15 @@ package com.sanaiclub.user.service;
 import com.sanaiclub.contract.model.dto.ContractResponseDTO;
 import com.sanaiclub.contract.model.vo.ContractStatus;
 import com.sanaiclub.contract.service.ContractService;
+import com.sanaiclub.user.dao.ClientDashboardMapper;
+import com.sanaiclub.user.model.dto.ClientDashboardDTO;
+import com.sanaiclub.user.model.dto.RecentApplicantDTO;
+import com.sanaiclub.user.model.dto.RecentProjectDTO;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,6 +25,110 @@ public class ClientDashboardService {
     private static final Logger logger = LoggerFactory.getLogger(ClientDashboardService.class);
     
     private final ContractService contractService;
+
+    private final ClientDashboardMapper clientDashboardMapper;
+
+    /**
+     * 클라이언트 대시보드 상단 통계 데이터 조회
+     */
+    @Transactional(readOnly = true)
+    public ClientDashboardDTO getDashboardSummary(Integer userId) {
+        ClientDashboardDTO summary = clientDashboardMapper.selectDashboardSummary(userId);
+
+        // 데이터가 없을 경우 0으로 초기화하여 반환 (NullPointerException 방지)
+        if (summary == null) {
+            summary = new ClientDashboardDTO();
+            summary.setTotalProjects(0);
+            summary.setActiveContracts(0);
+            summary.setTotalApplicants(0);
+            summary.setCompletedProjects(0);
+        }
+        return summary;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getMonthlyExpenditureData(Integer userId) {
+        // 1. DB에서 데이터 조회
+        List<Map<String, Object>> rawData = clientDashboardMapper.selectMonthlyExpenditure(userId);
+
+        // 2. DB 결과를 Map으로 변환 (검색 속도 최적화)
+        Map<String, Long> dataMap = new HashMap<>();
+        for (Map<String, Object> row : rawData) {
+            String month = (String) row.get("month");
+            // Number로 받고 long으로 변환 (DB 타입 대응)
+            Number amount = (Number) row.get("totalAmount");
+            dataMap.put(month, amount.longValue());
+        }
+
+        // 3. 최근 6개월 라벨 생성 및 0원 채우기
+        List<String> labels = new ArrayList<>();
+        List<Long> values = new ArrayList<>();
+
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+        // 5달 전 ~ 현재까지 루프
+        for (int i = 5; i >= 0; i--) {
+            String monthKey = today.minusMonths(i).format(formatter);
+            labels.add(monthKey);
+            // 데이터가 있으면 넣고, 없으면 0
+            values.add(dataMap.getOrDefault(monthKey, 0L));
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels); // 차트 X축
+        result.put("data", values);   // 차트 Y축 데이터
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecentProjectDTO> getRecentProjects(Integer userId) {
+        return clientDashboardMapper.selectRecentProjects(userId);
+    }
+
+    /**
+     * [추가] 새로운 지원자 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<RecentApplicantDTO> getRecentApplicants(Integer userId) {
+        return clientDashboardMapper.selectRecentApplicants(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> getProjectStatusData(Integer userId) {
+        List<Map<String, Object>> statusCounts = clientDashboardMapper.selectProjectStatusCounts(userId);
+
+        // 1. Map 변환 (대소문자 처리)
+        Map<String, Integer> countMap = new HashMap<>();
+        for (Map<String, Object> row : statusCounts) {
+            String status = null;
+            Object countObj = null;
+
+            if (row.containsKey("status")) {
+                status = (String) row.get("status");
+                countObj = row.get("count");
+            } else if (row.containsKey("STATUS")) {
+                status = (String) row.get("STATUS");
+                countObj = row.get("COUNT");
+            }
+
+            if (status != null && countObj instanceof Number) {
+                countMap.put(status, ((Number) countObj).intValue());
+            }
+        }
+
+        int completed = countMap.getOrDefault("CLOSED", 0);
+        int ongoing = countMap.getOrDefault("IN_PROGRESS", 0);
+        int recruiting = countMap.getOrDefault("READY", 0);
+
+        List<Integer> result = new ArrayList<>();
+        result.add(completed);
+        result.add(ongoing);
+        result.add(recruiting);
+
+        return result;
+    }
+
 
     /**
      * 클라이언트 대시보드 통계 데이터 조회
@@ -54,8 +163,8 @@ public class ClientDashboardService {
         return contracts.stream()
             .filter(c -> {
                 ContractStatus status = c.getContractStatus();
-                return status != null && (status == ContractStatus.WAITING 
-                    || status == ContractStatus.SIGNED 
+                return status != null && (status == ContractStatus.WAITING
+                    || status == ContractStatus.SIGNED
                     || status == ContractStatus.PAID);
             })
             .count();
@@ -65,15 +174,15 @@ public class ClientDashboardService {
         return contracts.stream()
             .filter(c -> {
                 boolean isLumpSum = (c.getTotalMilestones() == null || c.getTotalMilestones() == 0)
-                        && ("FIXED".equals(c.getPaymentMethod()) 
-                            || "FULL".equals(c.getPaymentMethod()) 
+                        && ("FIXED".equals(c.getPaymentMethod())
+                            || "FULL".equals(c.getPaymentMethod())
                             || c.getPaymentMethod() == null);
-                
+
                 if (isLumpSum) {
                     return c.getContractStatus() == ContractStatus.COMPLETED;
                 } else {
                     if (c.getTotalMilestones() != null && c.getTotalMilestones() > 0) {
-                        return c.getPaidMilestones() != null 
+                        return c.getPaidMilestones() != null
                                 && c.getPaidMilestones().equals(c.getTotalMilestones());
                     }
                 }
@@ -86,15 +195,15 @@ public class ClientDashboardService {
         return contracts.stream()
             .filter(c -> {
                 boolean isLumpSum = (c.getTotalMilestones() == null || c.getTotalMilestones() == 0)
-                        && ("FIXED".equals(c.getPaymentMethod()) 
-                            || "FULL".equals(c.getPaymentMethod()) 
+                        && ("FIXED".equals(c.getPaymentMethod())
+                            || "FULL".equals(c.getPaymentMethod())
                             || c.getPaymentMethod() == null);
-                
+
                 if (isLumpSum) {
                     return c.getContractStatus() == ContractStatus.COMPLETED && c.getTotalBudget() != null;
                 } else {
                     if (c.getTotalMilestones() != null && c.getTotalMilestones() > 0) {
-                        boolean isFullyCompleted = c.getPaidMilestones() != null 
+                        boolean isFullyCompleted = c.getPaidMilestones() != null
                                 && c.getPaidMilestones().equals(c.getTotalMilestones());
                         return isFullyCompleted && c.getTotalBudget() != null;
                     }
@@ -109,8 +218,8 @@ public class ClientDashboardService {
         return contracts.stream()
             .filter(c -> {
                 ContractStatus status = c.getContractStatus();
-                return status != null && (status == ContractStatus.WAITING 
-                    || status == ContractStatus.SIGNED 
+                return status != null && (status == ContractStatus.WAITING
+                    || status == ContractStatus.SIGNED
                     || status == ContractStatus.PAID)
                         && c.getTotalBudget() != null;
             })
@@ -122,21 +231,21 @@ public class ClientDashboardService {
         return contracts.stream()
             .filter(c -> {
                 ContractStatus status = c.getContractStatus();
-                
+
                 if (status == ContractStatus.PAID) {
                     boolean isLumpSum = (c.getTotalMilestones() == null || c.getTotalMilestones() == 0)
-                            && ("FIXED".equals(c.getPaymentMethod()) 
-                                || "FULL".equals(c.getPaymentMethod()) 
+                            && ("FIXED".equals(c.getPaymentMethod())
+                                || "FULL".equals(c.getPaymentMethod())
                                 || c.getPaymentMethod() == null);
                     if (isLumpSum && "[지급요청]".equals(c.getCancelReason())) {
                         return true;
                     }
                 }
-                
+
                 if (c.getRequestedMilestones() != null && c.getRequestedMilestones() > 0) {
                     return true;
                 }
-                
+
                 return false;
             })
             .count();
@@ -146,21 +255,21 @@ public class ClientDashboardService {
         return contracts.stream()
             .filter(c -> {
                 ContractStatus status = c.getContractStatus();
-                
+
                 if (status == ContractStatus.PAID) {
                     boolean isLumpSum = (c.getTotalMilestones() == null || c.getTotalMilestones() == 0)
-                            && ("FIXED".equals(c.getPaymentMethod()) 
-                                || "FULL".equals(c.getPaymentMethod()) 
+                            && ("FIXED".equals(c.getPaymentMethod())
+                                || "FULL".equals(c.getPaymentMethod())
                                 || c.getPaymentMethod() == null);
                     if (isLumpSum && "[지급요청]".equals(c.getCancelReason())) {
                         return true;
                     }
                 }
-                
+
                 if (c.getRequestedMilestones() != null && c.getRequestedMilestones() > 0) {
                     return true;
                 }
-                
+
                 return false;
             })
             .sorted((a, b) -> {
@@ -176,7 +285,7 @@ public class ClientDashboardService {
         LocalDate now = LocalDate.now();
         Map<String, Long> monthlyExpenditure = new LinkedHashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-        
+
         for (int i = 5; i >= 0; i--) {
             LocalDate month = now.minusMonths(i);
             String monthKey = month.format(formatter);
@@ -189,13 +298,13 @@ public class ClientDashboardService {
                 try {
                     String dateStr = null;
                     String monthKey = null;
-                    
+
                     if (c.getContractStatus() == ContractStatus.COMPLETED && c.getCompletedAt() != null) {
                         dateStr = c.getCompletedAt();
                     } else if (c.getContractedAt() != null) {
                         dateStr = c.getContractedAt();
                     }
-                    
+
                     if (dateStr != null && dateStr.length() >= 7) {
                         monthKey = dateStr.substring(0, 7);
                         if (monthlyExpenditure.containsKey(monthKey)) {

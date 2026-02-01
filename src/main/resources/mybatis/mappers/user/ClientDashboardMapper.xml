@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.user.dao.ClientDashboardMapper">
+
+    <select id="selectDashboardSummary" resultType="com.sanaiclub.user.model.dto.ClientDashboardDTO">
+        SELECT
+            -- 1. 등록한 총 프로젝트 수
+            (SELECT COUNT(*)
+             FROM projects
+             WHERE client_id = #{userId}) AS totalProjects,
+
+            -- 2. 진행 중인 계약 건수
+            (SELECT COUNT(*)
+             FROM contracts c
+                      JOIN project_applications pa ON c.contract_id = pa.application_id
+                      JOIN projects p ON pa.project_id = p.project_id
+             WHERE p.client_id = #{userId}
+               AND c.contract_status = 'SIGNED') AS activeContracts,
+
+            -- 3. 받은 총 지원자 수
+            (SELECT COUNT(*)
+             FROM project_applications pa
+                      JOIN projects p ON pa.project_id = p.project_id
+             WHERE p.client_id = #{userId}) AS totalApplicants,
+
+            -- 4. 완료된 프로젝트 수
+            (SELECT COUNT(*)
+             FROM projects
+             WHERE client_id = #{userId}
+               AND project_status = 'CLOSED') AS completedProjects
+    </select>
+
+    <select id="selectMonthlyExpenditure" resultType="map">
+        SELECT
+            DATE_FORMAT(contracted_at, '%Y-%m') AS month,
+            SUM(total_budget)                   AS totalAmount
+        FROM contracts
+        WHERE origin_contract_url LIKE CONCAT('contracts/', #{userId}, '/%')
+          AND total_budget IS NOT NULL
+          AND contracted_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(contracted_at, '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+    <select id="selectRecentProjects" resultType="com.sanaiclub.user.model.dto.RecentProjectDTO">
+        SELECT
+            p.project_id,
+            p.title,
+            p.project_status,
+            p.budget,
+            p.start_date,
+            p.deadline_date AS endDate,  (SELECT COUNT(*) FROM project_applications pa WHERE pa.project_id = p.project_id) AS applicantCount
+        FROM projects p
+        WHERE p.client_id = #{userId}
+        ORDER BY p.created_at DESC
+            LIMIT 3
+    </select>
+
+    <select id="selectRecentApplicants" resultType="com.sanaiclub.user.model.dto.RecentApplicantDTO">
+        SELECT
+            pa.application_id,
+            u.user_id AS freelancerId,
+            u.name AS freelancerName,     -- [핵심] 없는 컬럼 처리 (이미지 기반)
+            fp.nickname AS profileTitle,  -- 직무 컬럼 없음 -> 닉네임으로 대체
+            0 AS careerYear,              -- 경력 컬럼 없음 -> 0으로 처리 (에러 방지)
+            0.0 AS rating,                -- 평점 컬럼 없음 -> 0.0으로 처리 (에러 방지)
+
+            p.title AS projectTitle,
+            pa.applied_at
+        FROM project_applications pa
+                 JOIN projects p ON pa.project_id = p.project_id
+                 JOIN users u ON pa.freelancer_id = u.user_id
+                 LEFT JOIN freelancer_profiles fp ON u.user_id = fp.freelancer_id
+        WHERE p.client_id = #{userId}
+          AND pa.application_status = 'PENDING'
+        ORDER BY pa.applied_at DESC
+            LIMIT 3
+    </select>
+
+    <select id="selectProjectStatusCounts" resultType="map">
+        SELECT
+            project_status AS status,
+            COUNT(*) AS count
+        FROM projects
+        WHERE client_id = #{userId}
+        GROUP BY project_status
+    </select>
+
+</mapper>

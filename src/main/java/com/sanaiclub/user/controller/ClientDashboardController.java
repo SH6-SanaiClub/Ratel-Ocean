@@ -1,6 +1,9 @@
 package com.sanaiclub.user.controller;
 
 import com.sanaiclub.common.util.AuthContext;
+import com.sanaiclub.user.model.dto.ClientDashboardDTO;
+import com.sanaiclub.user.model.dto.RecentApplicantDTO;
+import com.sanaiclub.user.model.dto.RecentProjectDTO;
 import com.sanaiclub.user.service.ClientDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -9,6 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 클라이언트 대시보드
@@ -42,13 +48,35 @@ public class ClientDashboardController {
 
         logger.info("클라이언트 대시보드 접근: userId={}, loginId={}", userId, loginId);
 
-        // Mock 데이터 (추후 Service에서 실제 데이터 조회)
+        // 실제 DB 데이터 조회 (Service 호출)
+        ClientDashboardDTO summary = clientDashboardService.getDashboardSummary(userId);
+
+        // Model에 데이터 전달
         model.addAttribute("userId", userId);
         model.addAttribute("loginId", loginId);
-        model.addAttribute("totalProjects", 8);
-        model.addAttribute("activeContracts", 2);
-        model.addAttribute("totalApplicants", 23);
-        model.addAttribute("completedProjects", 4);
+
+        // DTO의 데이터를 뷰(JSP)에서 사용하는 이름으로 전달
+        model.addAttribute("totalProjects", summary.getTotalProjects());
+        model.addAttribute("activeContracts", summary.getActiveContracts());
+        model.addAttribute("totalApplicants", summary.getTotalApplicants());
+        model.addAttribute("completedProjects", summary.getCompletedProjects());
+
+        // 월별 지출 차트 데이터
+        Map<String, Object> chartData = clientDashboardService.getMonthlyExpenditureData(userId);
+        model.addAttribute("monthlyLabels", chartData.get("labels")); // List<String>
+        model.addAttribute("monthlyData", chartData.get("data"));     // List<Long>
+
+        // 최근 등록한 프로젝트
+        List<RecentProjectDTO> recentProjects = clientDashboardService.getRecentProjects(userId);
+        model.addAttribute("recentProjects", recentProjects);
+
+        // 새로운 지원자
+        List<RecentApplicantDTO> recentApplicants = clientDashboardService.getRecentApplicants(userId);
+        model.addAttribute("recentApplicants", recentApplicants);
+
+        // 프로젝트 상태 차트 데이터 ([완료, 진행중, 모집중] 순서)
+        List<Integer> statusCounts = clientDashboardService.getProjectStatusData(userId);
+        model.addAttribute("projectStatusCounts", statusCounts);
 
         return "user/client/dashboard";
     }
@@ -73,7 +101,7 @@ public class ClientDashboardController {
 
         try {
             // Service에서 통계 데이터 조회
-            ClientDashboardService.ClientDashboardStatistics statistics = 
+            ClientDashboardService.ClientDashboardStatistics statistics =
                 clientDashboardService.getClientDashboardStatistics(userId);
 
             // Model에 데이터 전달
