@@ -19,20 +19,21 @@
             box-sizing: border-box;
         }
 
-        /* [색상 변경] 전체 테마를 청록색(#1F7A8C) & 붉은색(#E74C3C)으로 통일 */
+        /* [색상 변경] 요청하신 코드의 색상 팔레트 적용 */
         :root {
-            /* 메인 컬러: Teal */
-            --primary: #1F7A8C;
-            --primary-bg: #E0F2F1; /* 연한 청록 배경 */
+            /* 메인 컬러: Deep Blue (#173160) */
+            --primary: #173160;
+            /* 연한 배경: Line Soft (#e6ebf2) 또는 Ghost BG (#e5e7eb) 활용 */
+            --primary-bg: #e6ebf2;
 
-            /* 포인트 컬러: Red (강조/알림) */
-            --danger: #E74C3C;
-            --danger-bg: #FFEBEE; /* 연한 붉은 배경 */
+            /* 포인트 컬러: Red (#dc2626) */
+            --danger: #dc2626;
+            --danger-bg: #fee2e2; /* 연한 붉은색 */
 
             /* 텍스트/배경 */
-            --dark: #2C3E50;
-            --muted: #7F8C8D;
-            --light: #F5F7FA; /* 차분한 쿨 그레이 */
+            --dark: #0f172a;   /* 아주 짙은 남색 (#0f172a) */
+            --muted: #64748b;  /* 차분한 회색 (#64748b) */
+            --light: #f6f6f8;  /* 밝은 배경색 (#f6f6f8) */
         }
 
         body {
@@ -99,7 +100,7 @@
             font-weight: 500;
         }
 
-        /* [변경] 아이콘 배경색: 연한 청록색 */
+        /* [변경] 아이콘 배경색 */
         .stat-icon {
             width: 40px;
             height: 40px;
@@ -224,7 +225,7 @@
             font-weight: 600;
         }
 
-        /* [변경] 상태 배지 색상: 진행중(청록), 모집중(붉은색) */
+        /* [변경] 상태 배지 색상 */
         .item-badge.status-active {
             background: var(--primary-bg);
             color: var(--primary);
@@ -251,13 +252,13 @@
         .applicant-avatar {
             width: 36px;
             height: 36px;
-            background: var(--primary-bg); /* 연한 청록 */
+            background: var(--primary-bg);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            color: var(--primary); /* 진한 청록 글씨 */
+            color: var(--primary);
         }
 
         .applicant-name {
@@ -398,7 +399,7 @@
     <div class="section-card">
         <div class="section-header">
             <h2 class="section-title">최근 등록한 프로젝트</h2>
-            <a href="${pageContext.request.contextPath}/client/projects" class="view-all-link">전체 보기 →</a>
+            <a href="${pageContext.request.contextPath}/client/manage" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="item-list">
             <c:choose>
@@ -443,7 +444,7 @@
     <div class="section-card">
         <div class="section-header">
             <h2 class="section-title">새로운 지원자</h2>
-            <a href="${pageContext.request.contextPath}/client/applicants" class="view-all-link">전체 보기 →</a>
+            <a href="${pageContext.request.contextPath}/client/manage" class="view-all-link">전체 보기 →</a>
         </div>
         <ul class="item-list">
             <c:choose>

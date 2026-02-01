@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sanaiclub.user.dao.FreelancerDashboardMapper">
+
+    <select id="countOngoingContracts" resultType="int">
+        SELECT COUNT(*) FROM contracts c
+        WHERE c.origin_contract_url LIKE CONCAT('%/', #{userId}, '/%')
+          AND c.contract_status IN ('SIGNED', 'PAID')
+    </select>
+
+    <select id="selectTotalEarned" resultType="long">
+        SELECT COALESCE(total_earned, 0) FROM freelancer_wallets WHERE freelancer_id = #{userId}
+    </select>
+
+    <select id="countPendingApplications" resultType="int">
+        SELECT COUNT(*) FROM project_applications WHERE freelancer_id = #{userId} AND application_status = 'PENDING'
+    </select>
+
+    <select id="selectWalletBalance" resultType="long">
+        SELECT COALESCE(balance, 0) FROM freelancer_wallets WHERE freelancer_id = #{userId}
+    </select>
+
+    <select id="selectMonthlyEarnings" resultType="map">
+        SELECT DATE_FORMAT(cm.due_date, '%Y-%m') AS month,
+            SUM(cm.amount)                    AS totalAmount
+        FROM contract_milestones cm
+            JOIN contracts c
+        ON cm.contract_id = c.contract_id
+        WHERE c.origin_contract_url LIKE CONCAT('%/'
+            , #{userId}
+            , '/%') -- 프리랜서 식별
+          AND cm.status = 'PAID'
+          AND cm.due_date >= DATE_FORMAT(DATE_SUB(NOW()
+            , INTERVAL 5 MONTH)
+            , '%Y-%m-01')
+        GROUP BY DATE_FORMAT(cm.due_date, '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+    <select id="selectContractStatusCounts" resultType="map">
+        SELECT
+            contract_status AS status,
+            COUNT(*) AS count
+        FROM contracts
+        WHERE origin_contract_url LIKE CONCAT('%/', #{userId}, '/%')
+        GROUP BY contract_status
+    </select>
+
+    <select id="selectRecentAppliedProjects" resultType="com.sanaiclub.user.model.dto.FreelancerProjectDTO">
+        SELECT
+            p.project_id,
+            p.title,
+            p.budget,
+            p.est_duration AS estDuration,
+            pa.application_status AS applicationStatus,
+            pa.applied_at AS appliedAt
+        FROM project_applications pa
+                 JOIN projects p ON pa.project_id = p.project_id
+        WHERE pa.freelancer_id = #{userId}
+        ORDER BY pa.applied_at DESC
+            LIMIT 3
+    </select>
+
+</mapper>
