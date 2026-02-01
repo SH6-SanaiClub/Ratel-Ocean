@@ -12,5 +12,4 @@ public interface FreelancerCompletedProjectMapper {
 
     List<CompletedPlatformProjectDTO> selectCompletedProjects(@Param("freelancerId") Integer freelancerId);
 
-    List<CompletedProjectStackDTO> selectStacksByApplicationId(@Param("applicationId") Integer applicationId);
 }

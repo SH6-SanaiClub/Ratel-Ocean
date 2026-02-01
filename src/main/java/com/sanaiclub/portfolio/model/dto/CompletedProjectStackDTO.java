@@ -11,4 +11,5 @@ public class CompletedProjectStackDTO {
     private Integer stackId;
     private String stackName;
     private Boolean isPrimary;
+    private String category;
 }

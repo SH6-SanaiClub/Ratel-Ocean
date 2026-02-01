@@ -94,16 +94,15 @@
         ) nm ON nm.contract_id = c.contract_id
     </sql>
 
-    <!-- 진행중 프로젝트: SIGNED -->
+    <!-- 진행중 프로젝트: PAID -->
     <select id="selectInProgressProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
         <include refid="projectCardBaseSelect"/>
         WHERE pa.freelancer_id = #{freelancerId}
-        AND c.contract_status IN ('SIGNED', 'PAID')
+        AND c.contract_status ='PAID'
         ORDER BY c.contracted_at DESC
     </select>
 
     <!-- 지원중 프로젝트: 계약 전 상태 -->
-    <!-- 계약 테이블이 아직 없을 수 있으니: project_applications + projects 기준으로 별도 카드 -->
     <select id="selectAppliedProjects" resultType="com.sanaiclub.project.model.dto.FreelancerProjectCardDTO">
         SELECT
             p.project_id          AS projectId,
@@ -156,7 +155,7 @@
             JOIN project_applications pa ON pa.application_id = c.contract_id
             JOIN projects p ON p.project_id = pa.project_id
         WHERE pa.freelancer_id = #{freelancerId}
-          AND c.contract_status IN ('SIGNED', 'PAID')
+          AND c.contract_status ='PAID'
           AND m.due_date IS NOT NULL
           AND m.due_date BETWEEN #{start} AND #{end}
 
@@ -175,7 +174,7 @@
             JOIN project_applications pa ON pa.application_id = c.contract_id
             JOIN projects p ON p.project_id = pa.project_id
         WHERE pa.freelancer_id = #{freelancerId}
-          AND c.contract_status IN ('SIGNED', 'PAID')
+          AND c.contract_status ='PAID'
           AND c.contract_start_date BETWEEN #{start} AND #{end}
 
         UNION ALL
@@ -193,7 +192,7 @@
             JOIN project_applications pa ON pa.application_id = c.contract_id
             JOIN projects p ON p.project_id = pa.project_id
         WHERE pa.freelancer_id = #{freelancerId}
-          AND c.contract_status IN ('SIGNED', 'PAID')
+          AND c.contract_status ='PAID'
           AND c.contract_end_date BETWEEN #{start} AND #{end}
 
         ORDER BY date ASC

@@ -10,154 +10,264 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>마이페이지</title>
+  <title>내 프로필 수정</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
-      --bg: #f6f4fb;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --primary: #6d4dfd;
-      --primary-weak: rgba(109,77,253,0.12);
-      --shadow: 0 20px 60px rgba(17,24,39,0.08);
-      --radius: 18px;
+      --bg:#f6f6f8;
+      --paper:#ffffff;
+
+      --sb-bg:#ffffff;
+      --sb-hover:#f3f5f7;
+      --sb-active-bg:#eef2f4;
+      --sb-active-line: var(--text);
+
+      --text:#0f172a;
+      --muted:#6b7280;
+
+      --line:#d8dee6;
+      --line2:#c9d1dc;
+
+      --primary:#173160;
+      --primary-deep:#1f4fd8;
+      --primary-weak: rgba(45,108,223,.12);
+
+      --danger:#e04545;
+
+      --shadow: 0 10px 28px rgba(17,24,39,.06);
+      --shadow2: 0 6px 16px rgba(17,24,39,.06);
+
+      --R0:0px;
+      --R1:6px;
+      --R2:14px;
+
+      --focus: 0 0 0 3px rgba(45,108,223,.22);
     }
-    *{ box-sizing: border-box; }
+
+    *{ box-sizing:border-box; }
     body{
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .wrap{
       max-width: 1320px;
-      margin: 26px auto 60px;
+      margin: 22px auto 60px;
       padding: 0 18px;
     }
-    .page{
-      background: var(--card);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(229,231,235,0.7);
-      overflow: hidden;
+
+    .sb-title{
+      margin: 6px 10px 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial, sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 900 !important;
+      line-height: 1.25 !important;
+      letter-spacing: -0.2px !important;
+      color: var(--text) !important;
+      text-decoration: none !important;
     }
+    .sb-title *{
+      font-family: inherit !important;
+      color: inherit !important;
+      text-decoration: none !important;
+    }
+
+    .page{
+      background: var(--paper);
+      border-radius: var(--R0);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
     .content{
-      display: grid;
+      display:grid;
       grid-template-columns: 300px 1fr;
       min-height: 760px;
     }
 
     .sidebar{
       border-right: 1px solid var(--line);
-      padding: 22px 18px;
-      background: linear-gradient(180deg, #fff 0%, #fbfaff 100%);
+      padding: 18px 14px;
+      background: var(--sb-bg);
     }
-    .sb-title{
-      font-size: 14px;
-      color: var(--muted);
-      font-weight: 700;
-      margin: 6px 8px 14px;
-    }
+
     .menu{
       display:flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
+
     .menu a{
-      text-decoration: none;
+      text-decoration:none !important;
       color: var(--text);
       padding: 12px 12px;
-      border-radius: 14px;
+      border-radius: 6px;
       border: 1px solid transparent;
       display:flex;
       align-items:center;
       gap: 10px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
-    }
-    .menu a:hover{ background: #f7f5ff; }
-    .menu a.active{
-      background: var(--primary-weak);
-      border-color: rgba(109,77,253,0.35);
-      color: #2b1cc9;
-    }
-    .icon{
-      width: 30px; height: 30px;
-      border-radius: 12px;
-      background: #f3f4f6;
-      display:flex; align-items:center; justify-content:center;
-      color: #374151;
-      font-size: 14px;
-    }
-    .menu a.active .icon{
-      background: rgba(109,77,253,0.18);
-      color: var(--primary);
+      background: transparent;
+      transition: background .12s ease, border-color .12s ease;
+      position: relative;
     }
 
-    .main{ padding: 36px 44px; }
+    .menu a:hover{
+      background: var(--sb-hover);
+    }
+
+    .menu a.active{
+      background: var(--sb-active-bg);
+      border-color: rgba(15,23,42,.10);
+    }
+
+    .menu a.active::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:8px;
+      bottom:8px;
+      width:3px;
+      background: var(--sb-active-line); /* == #0f172a */
+      border-radius: 2px;
+    }
+
+    .icon{
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: rgba(15,23,42,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(15,23,42,.75);
+      font-size: 14px;
+    }
+
+    .menu a.active .icon{
+      background: rgba(15,23,42,.08);
+      color: var(--text);
+    }
+
+    .main{
+      padding: 28px 34px;
+      background:#fff;
+    }
+
     .card-head{
       display:flex;
-      align-items: flex-end;
+      align-items:flex-start;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 18px;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
     }
     .title{
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 900;
       margin: 0;
+      letter-spacing: -.2px;
     }
     .desc{
       margin: 6px 0 0;
       color: var(--muted);
       font-size: 13px;
+      line-height: 1.45;
+      font-weight: 650;
     }
 
-    .panel{ display:none; animation: fade 180ms ease-out; }
+    .panel{ display:none; animation: fade 160ms ease-out; }
     .panel.active{ display:block; }
     @keyframes fade{
-      from{ opacity: 0; transform: translateY(4px); }
-      to{ opacity: 1; transform: translateY(0); }
+      from{ opacity:0; transform: translateY(4px); }
+      to{ opacity:1; transform: translateY(0); }
     }
 
     .form{
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 20px;
+      border-radius: var(--R1);
+      padding: 18px;
       background: #fff;
+      box-shadow: var(--shadow2);
     }
 
-    .btns{ display:flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+    .btns{ display:flex; gap:10px; justify-content:flex-end; margin-top: 16px; }
+
     .btn{
-      border: none;
-      border-radius: 14px;
-      padding: 12px 18px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 11px 16px;
       font-weight: 900;
       cursor: pointer;
       font-size: 14px;
+      background:#fff;
+      transition: background .12s ease, border-color .12s ease, box-shadow .12s ease, transform .08s ease;
     }
+    .btn:active{ transform: translateY(1px); }
+    .btn:focus{ outline:none; box-shadow: var(--focus); }
+
     .btn.primary{
       background: var(--primary);
-      color: #fff;
-      box-shadow: 0 14px 30px rgba(109,77,253,0.22);
+      color:#fff;
+      border-color: rgba(45,108,223,.25);
+      /*box-shadow: 0 12px 26px rgba(45,108,223,.20);*/
     }
-    .btn.ghost{ background: #fff; border: 1px solid var(--line); color: #111827; }
-    .btn.danger{ background:#e04545; color:#fff; }
-    .btn.small{ padding: 8px 10px; font-size: 12px; border-radius: 12px; }
+    .btn.primary:hover{ filter: brightness(.98); }
+
+    .btn.ghost{
+      background:#fff;
+      border-color: var(--line2);
+      color: var(--text);
+    }
+    .btn.ghost:hover{
+      background:#f3f4f6;
+      border-color:#b9c0cc;
+    }
+
+    .btn.danger{
+      background: #e5e7eb;
+      color: #111827;
+      border-color: #cbd5e1;
+      box-shadow: none;
+    }
+    .btn.danger:hover{
+      background: #e5e7eb;
+      border-color: #cbd5e1;
+    }
+
+    .btn.small{
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      font-weight: 900;
+    }
 
     select,input,textarea{
+      width:100%;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 10px 10px;
+      border-radius: 12px;
+      padding: 10px 12px;
       font-size: 14px;
       outline: none;
       background: #fff;
+      color: var(--text);
     }
     textarea{ min-height: 90px; resize: vertical; }
 
-    /* ===== Toast (하단 중앙, 자동 사라짐) ===== */
+    select:focus,input:focus,textarea:focus{
+      border-color: rgba(45,108,223,.55);
+      box-shadow: 0 0 0 4px rgba(45,108,223,.12);
+    }
+
     .toast{
       position: fixed;
       left: 50%;
@@ -177,28 +287,19 @@
       max-width: min(720px, calc(100vw - 32px));
       text-align: center;
     }
-    .toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
 
-    /* ====== Stack UI (스케치 느낌) ====== */
     .stack-top{
       display:flex;
       gap:10px;
       align-items:center;
       margin-bottom: 10px;
     }
-    .stack-top .search{
-      flex: 1;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    .stack-top input[type="text"]{ width:100%; }
+    .stack-top .search{ flex:1; display:flex; gap:10px; align-items:center; }
+
     .tagBox{
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--R2);
       padding: 14px;
       background: #fff;
     }
@@ -207,52 +308,59 @@
       max-height: 150px;
       overflow:auto;
       padding: 6px;
-      border: 1px dashed var(--line);
-      border-radius: 14px;
+      border: 1px dashed var(--line2);
+      border-radius: 12px;
+      background: #fafbfc;
     }
     .btnsWrap{ display:flex; flex-wrap:wrap; gap:8px; }
+
     .tag{
-      border:1px solid #ccc;
-      border-radius:999px;
+      border:1px solid var(--line2);
+      border-radius: 999px;
       padding:8px 12px;
       cursor:pointer;
       background:#fff;
-      font-weight:800;
-      font-size:13px;
-      user-select: none;
+      font-weight: 900;
+      font-size: 13px;
+      user-select:none;
+      transition: background .12s ease, border-color .12s ease, color .12s ease;
     }
-    .tag.active{ border-color:#2d6cdf; color:#2d6cdf; background: rgba(45,108,223,0.06); }
+    .tag:hover{ background:#f3f4f6; }
+    .tag.active{
+      border-color: rgba(59,111,220,.22);
+      background: rgba(59,111,220,.10);
+      color: var(--text);
+    }
 
     .sel{ margin-top:14px; }
     .sel-title{ font-size: 14px; font-weight: 900; margin: 0 0 8px; }
     .sel-item{
-      display:flex; gap:10px; align-items:center;
+      display:flex;
+      gap:10px;
+      align-items:center;
       padding: 10px 12px;
       border:1px solid var(--line);
-      border-radius:14px;
+      border-radius: 12px;
       margin: 10px 0;
       justify-content: space-between;
+      background:#fff;
     }
-    .right{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-    }
-    .hint{ font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .right{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .hint{ font-size: 12px; color: var(--muted); margin-top: 8px; font-weight: 650; }
 
-    /* ====== Career/External list + inline edit ====== */
-    .topActions{
-      display:flex;
-      justify-content: flex-end;
-      margin-bottom: 10px;
-    }
+    /* ===== Career/External list ===== */
+    .head-actions{ display:flex; gap:10px; align-items:center; }
     .list{
       margin-top: 14px;
-      border-top: 1px dashed var(--line);
+      border-top: 1px dashed var(--line2);
       padding-top: 14px;
-      display:flex; flex-direction: column; gap: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .item{
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 14px;
       display:flex;
       align-items: center;
@@ -260,18 +368,28 @@
       gap: 10px;
       background:#fff;
     }
-    .meta{ display:flex; flex-direction: column; gap:4px; }
-    .meta b{ font-size: 14px; }
-    .meta span{ color: var(--muted); font-size: 12px; }
+    .meta{ display:flex; flex-direction: column; gap:4px; min-width:0; }
+    .meta b{ font-size: 14px; font-weight: 900; }
+    .meta span{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.45;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 720px;
+      font-variant-numeric: tabular-nums;
+    }
     .mini{ display:flex; gap:8px; align-items:center; }
     .mini form{ margin:0; }
 
     .editForm{
       margin-top: 10px;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 14px;
-      background: #fbfaff;
+      background: #fafbfc;
       display:none;
     }
     .editForm.active{ display:block; }
@@ -282,70 +400,53 @@
       gap: 14px;
     }
     .row{ display:flex; flex-direction: column; gap: 8px; }
-    .row label{ font-size: 13px; color: #374151; font-weight: 700; }
+    .row label{ font-size: 13px; color: #374151; font-weight: 900; }
     .full{ grid-column: 1 / -1; }
 
-    /* ===== Position 카드형 버튼 ===== */
-
-    /* 포지션 버튼 영역만 grid로 */
     #positionButtons{
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4칸, 더 크고 싶으면 3 또는 2로 */
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
     }
-
-    /* 카드형 버튼 스타일 */
     #positionButtons .posTag{
-      display: flex;
-      align-items: center;
+      display:flex;
+      align-items:center;
       gap: 12px;
-      padding: 14px 16px;
-      border-radius: 18px;
+      padding: 14px 14px;
+      border-radius: 12px;
       border: 1px solid var(--line);
       background: #fff;
       font-weight: 900;
       font-size: 14px;
-      justify-content: flex-start;
+      justify-content:flex-start;
+      cursor:pointer;
+      transition: background .12s ease, border-color .12s ease, transform .08s ease;
     }
+    #positionButtons .posTag:hover{
+      border-color: rgba(59,111,220,.22);
+      background: rgba(59,111,220,.10);
+    }
+    #positionButtons .posTag:active{ transform: translateY(1px); }
 
-    /* 아이콘 박스 */
     #positionButtons .posTag .posIcon{
-      width: 42px;
-      height: 42px;
-      border-radius: 16px;
-      background: #f3f4f6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      background: #eef2f7;
+      display:flex; align-items:center; justify-content:center;
       font-size: 18px;
       flex: 0 0 auto;
     }
-
-    /* 라벨 */
-    #positionButtons .posTag .posLabel{
-      font-weight: 900;
-    }
-
-    /* 선택(active) 상태 */
     #positionButtons .posTag.active{
-      border-color: rgba(109,77,253,0.35);
-      background: var(--primary-weak);
-      color: #2b1cc9;
+      border-color: rgba(59,111,220,.22);
+      background: rgba(59,111,220,.10);
+      color: var(--text);
     }
-
     #positionButtons .posTag.active .posIcon{
-      background: rgba(109,77,253,0.18);
-    }
-    .head-actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
+      background: rgba(45,108,223,.14);
     }
 
-    /* ====== settings(프로필 기본정보) : 스케치 정렬 ====== */
-    .settingsWrap{
-      max-width: 980px;
-    }
+    /* ===== settings grid ===== */
+    .settingsWrap{ max-width: 980px; }
 
     .settingsGrid{
       display:grid;
@@ -362,54 +463,40 @@
 
     .setBox{
       border:1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--R2);
       background:#fff;
       padding: 16px;
     }
-
     .setLabel{
       font-size: 13px;
       color:#374151;
       font-weight: 900;
       margin-bottom: 8px;
     }
-
     .setInput, .setTextarea{
       width:100%;
       border:1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 12px 12px;
       font-size:14px;
       outline:none;
     }
-    .setTextarea{
-      min-height: 130px;
-      resize: vertical;
-    }
+    .setTextarea{ min-height: 130px; resize: vertical; }
 
     .setInput:focus, .setTextarea:focus{
-      border-color: rgba(109,77,253,0.55);
-      box-shadow: 0 0 0 4px rgba(109,77,253,0.12);
+      border-color: rgba(45,108,223,.55);
+      box-shadow: 0 0 0 4px rgba(45,108,223,.12);
     }
 
     .setPhoto{ grid-area: photo; }
     .setInfo{ grid-area: info; }
-    .setGit{ grid-area: git; }
-    .setBlog{ grid-area: blog; }
     .setEdu{ grid-area: edu; }
     .setPort{ grid-area: port; }
     .setSave{ grid-area: save; display:flex; justify-content:flex-end; }
-    /* photo/info 같은 줄 높이 맞추기 */
-    .setPhoto, .setInfo{ height: 100%; }
-    .setInfo{
-      display:flex;
-      flex-direction:column;
-    }
-    .setInfo .setTextarea{
-      flex: 1;
-      min-height: 0;
-      resize: none;
-    }
+
+    .setPhoto, .setInfo{ height:100%; }
+    .setInfo{ display:flex; flex-direction:column; }
+    .setInfo .setTextarea{ flex:1; min-height:0; resize:none; }
 
     .avatarLg{
       width: 180px;
@@ -417,7 +504,7 @@
       border-radius: 999px;
       border:1px solid var(--line);
       overflow:hidden;
-      background:#f3f4f6;
+      background:#eef2f7;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -426,11 +513,7 @@
     .avatarLg img{ width:100%; height:100%; object-fit:cover; display:block; }
     .avatarLg .ph{ color:#9ca3af; font-weight:900; }
 
-    .photoBtns{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-    }
+    .photoBtns{ display:flex; gap:10px; justify-content:center; }
 
     .eduGrid{
       display:grid;
@@ -438,50 +521,42 @@
       gap: 12px;
     }
 
+    .urlRow{
+      grid-column: 1 / -1;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 18px;
+    }
+
+
     .fileBar{
-      border:1px dashed rgba(109,77,253,0.35);
-      background: rgba(109,77,253,0.06);
-      border-radius: 16px;
+      border:1px dashed var(--line2);
+      background: #fafbfc;
+      border-radius: 12px;
       padding: 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: 12px;
       cursor:pointer;
+      transition: border-color .12s ease, background .12s ease, transform .08s ease;
     }
-    .fileBar strong{ font-weight: 900; }
-    .fileBar span{ color: var(--muted); font-size: 12px; font-weight: 800; }
+    .fileBar:focus{ outline:none; box-shadow: var(--focus); }
 
     .fileBar.dragover{
-      background: rgba(109,77,253,0.12);
-      border-color: rgba(109,77,253,0.55);
+      background: rgba(45,108,223,.08);
+      border-color: rgba(45,108,223,.45);
       transform: translateY(-1px);
     }
-
-    /* Git/Blog를 반반으로 나누는 내부 그리드 */
-    .urlRow{
-      grid-column: 1 / -1;            /* settingsGrid 두 칸 전체를 사용 */
-      display:grid;
-      grid-template-columns: 1fr 1fr;  /* 반반 */
-      gap: 16px 18px;
-    }
-    .fileBar.dragover{
-      background: rgba(109,77,253,0.12);
-      border-color: rgba(109,77,253,0.55);
-      transform: translateY(-1px);
-    }
-    /* 포트폴리오 드롭 영역 텍스트 정렬 */
-    .fileLeft{
-      display:flex;
-      align-items:baseline;
-      gap:8px;
-    }
+    .fileLeft{ display:flex; align-items:baseline; gap:8px; }
     .fileLeft b{ font-weight: 900; }
-    .fileLeft .muted{ color: var(--muted); font-size: 12px; font-weight: 800; }
+    .fileLeft .muted{ color: var(--muted); font-size: 12px; font-weight: 700; }
+
+    /* 레벨 가이드 */
     .levelGuide{
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #fbfaff;
+      border-radius: var(--R2);
+      background: #fafbfc;
       padding: 14px;
       margin: 0 0 14px;
     }
@@ -494,14 +569,15 @@
       margin: 0 0 10px;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 650;
       line-height: 1.5;
     }
     .levelTable{
-      width: 100%;
+      width:100%;
       border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 14px;
+      overflow:hidden;
+      border-radius: 12px;
+      background:#fff;
     }
     .levelTable th, .levelTable td{
       border: 1px solid var(--line);
@@ -511,55 +587,34 @@
       background: #fff;
     }
     .levelTable th{
-      background: rgba(109,77,253,0.06);
+      background: #f3f4f6;
       font-weight: 900;
+      color: #374151;
     }
     .levelTable td:first-child{
       width: 70px;
-      text-align: center;
+      text-align:center;
       font-weight: 900;
     }
 
-    .levelGuide{
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #fbfaff;
-      padding: 14px;
-      margin: 0 0 14px;
-    }
-    .levelGuide h3{
-      margin: 0 0 6px;
-      font-size: 14px;
-      font-weight: 900;
-    }
-    .levelGuide p{
-      margin: 0 0 10px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-    .levelTable{
-      width: 100%;
-      border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 14px;
-    }
-    .levelTable th, .levelTable td{
-      border: 1px solid var(--line);
-      padding: 10px 10px;
-      font-size: 12px;
-      vertical-align: top;
-      background: #fff;
-    }
-    .levelTable th{
-      background: rgba(109,77,253,0.06);
-      font-weight: 900;
-    }
-    .levelTable td:first-child{
-      width: 70px;
-      text-align: center;
-      font-weight: 900;
+    @media (max-width: 980px){
+      .content{ grid-template-columns: 1fr; }
+      .sidebar{ border-right:0; border-bottom:1px solid var(--line); }
+      .main{ padding: 22px 18px; }
+      .settingsGrid{
+        grid-template-columns: 1fr;
+        grid-template-areas:
+      "photo"
+      "info"
+      "git"
+      "blog"
+      "edu"
+      "port"
+      "save";
+      }
+      .urlRow{ grid-template-columns: 1fr; }
+      #positionButtons{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .meta span{ max-width: 100%; white-space: normal; }
     }
 
   </style>
@@ -591,14 +646,12 @@
           <a href="?tab=external" data-tab="external" class="<%= "external".equals(tab) ? "active" : "" %>">
             <div class="icon">🗂️</div> 외부 프로젝트
           </a>
-
         </nav>
       </aside>
 
       <!-- Main -->
       <main class="main">
 
-        <!-- ===================== 프로필 기본 정보 수정 ===================== -->
         <section class="panel <%= "settings".equals(tab) ? "active" : "" %>" id="panel-settings">
           <div class="card-head">
             <div>
@@ -606,8 +659,8 @@
               <p class="desc">프로필 기본 정보 수정 페이지 입니다.</p>
             </div>
           </div>
-          <div class="form settingsWrap">
 
+          <div class="form settingsWrap">
             <form id="basicAllForm"
                   method="post"
                   action="${pageContext.request.contextPath}/freelancer/profile/edit/all/save"
@@ -617,14 +670,13 @@
 
               <div class="settingsGrid">
 
-                <!-- (좌) 프로필 사진 -->
+
                 <div class="setBox setPhoto">
                   <div class="setLabel">프로필 사진</div>
 
                   <div class="avatarLg">
                     <c:choose>
                       <c:when test="${not empty profile.profileImageUrl}">
-                        <!-- 캐시 무효화 + id 부여 -->
                         <img id="avatarImg"
                              src="${pageContext.request.contextPath}${profile.profileImageUrl}?v=<%=System.currentTimeMillis()%>"
                              alt="profile"/>
@@ -639,16 +691,13 @@
 
                   <div class="photoBtns">
                     <button type="button" class="btn ghost" id="btnChangeImg">사진변경</button>
-                    <!-- 삭제는 서버 로직 있으면 hidden flag로 처리 -->
                     <button type="button" class="btn danger" id="btnDeleteImg"
                             <c:if test="${empty profile.profileImageUrl}">disabled</c:if>>삭제</button>
                   </div>
 
-                  <!-- 서버에서 delete 처리할 거면 같이 쓰기 -->
                   <input type="hidden" name="deleteProfileImage" id="deleteProfileImage" value="false"/>
                 </div>
 
-                <!-- (우) 닉네임 + 자기소개 -->
                 <div class="setBox setInfo">
                   <div class="setLabel">닉네임</div>
                   <input class="setInput" name="nickname"
@@ -661,7 +710,6 @@
                             placeholder="자기소개를 입력하세요.">${fn:escapeXml(profile.introduction)}</textarea>
                 </div>
 
-                <!-- Git URL -->
                 <div class="urlRow">
                   <div class="setBox">
                     <div class="setLabel">Git URL</div>
@@ -678,8 +726,7 @@
                   </div>
                 </div>
 
-
-                <!-- 학력 (큰 박스) -->
+                <!-- 학력 -->
                 <div class="setBox setEdu">
                   <div class="setLabel">학력</div>
 
@@ -695,8 +742,7 @@
                   </div>
                 </div>
 
-                <!-- 포트폴리오 파일 (긴 바) -->
-                <!-- 포트폴리오 파일 (긴 바) -->
+                <!-- 포트폴리오 -->
                 <div class="setBox setPort">
                   <div class="setLabel">포트폴리오 파일</div>
 
@@ -704,17 +750,15 @@
                     <div style="margin-bottom:10px; font-size:13px;">
                       현재 파일:
                       <a href="${pageContext.request.contextPath}${profile.portfolioUrl}" target="_blank" rel="noopener"
-                         style="font-weight:900; color:#2b1cc9; text-decoration:none;">
+                         style="font-weight:900; color:var(--primary-deep); text-decoration:none;">
                         <c:out value="${profile.portfolioTitle}" />
                       </a>
                     </div>
                   </c:if>
 
-                  <!-- 실제 파일 인풋 -->
                   <input id="portfolioFile" type="file" name="portfolioFile" style="display:none;" />
                   <input type="hidden" name="deletePortfolio" id="deletePortfolio" value="false"/>
 
-                  <!-- 드롭 영역 -->
                   <div id="pfDrop" class="fileBar" tabindex="0">
                     <div class="fileLeft">
                       <b>파일 선택</b>
@@ -729,8 +773,6 @@
                   </div>
                 </div>
 
-
-                <!-- 저장 버튼 (오른쪽 아래) -->
                 <div class="setSave">
                   <button class="btn primary" type="submit">저장</button>
                 </div>
@@ -738,10 +780,8 @@
               </div>
             </form>
           </div>
-
         </section>
 
-        <!-- ===================== 포지션 ===================== -->
         <section class="panel <%= "position".equals(tab) ? "active" : "" %>" id="panel-position">
           <div class="card-head">
             <div>
@@ -750,51 +790,23 @@
             </div>
           </div>
 
-          <!-- ===================== 스킬 ===================== -->
+          <div class="levelGuide">
+            <h3>포지션 레벨 기준표</h3>
+            <p>포지션별로 “지금 실무에서 어느 정도까지 혼자 할 수 있는지” 기준으로 선택해주세요.</p>
 
-            <div class="levelGuide">
-              <h3>포지션 레벨 기준표</h3>
-              <p>
-                포지션별로 “지금 실무에서 어느 정도까지 혼자 할 수 있는지” 기준으로 선택해주세요.
-              </p>
-
-              <table class="levelTable">
-                <thead>
-                <tr>
-                  <th>레벨</th>
-                  <th>명칭</th>
-                  <th>설명</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>입문/초급</td>
-                  <td>문법 및 기초 개념만 이해, 간단한 코드/수정만 가능</td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>기초</td>
-                  <td>기본적인 CRUD, 단순 기능 구현 가능, 문서/예제 참고 필요</td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>중급</td>
-                  <td>실무 프로젝트 투입 가능, 독립적 기능 구현, 오류 해결 가능</td>
-                </tr>
-                <tr>
-                  <td>4</td>
-                  <td>고급</td>
-                  <td>복잡한 로직/구조 설계, 코드 리뷰/리딩, 성능 개선 가능</td>
-                </tr>
-                <tr>
-                  <td>5</td>
-                  <td>전문가</td>
-                  <td>아키텍처 설계, 기술 리딩, 최적화, 타인 멘토링 가능</td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
+            <table class="levelTable">
+              <thead>
+              <tr><th>레벨</th><th>명칭</th><th>설명</th></tr>
+              </thead>
+              <tbody>
+              <tr><td>1</td><td>입문/초급</td><td>문법 및 기초 개념만 이해, 간단한 코드/수정만 가능</td></tr>
+              <tr><td>2</td><td>기초</td><td>기본적인 CRUD, 단순 기능 구현 가능, 문서/예제 참고 필요</td></tr>
+              <tr><td>3</td><td>중급</td><td>실무 프로젝트 투입 가능, 독립적 기능 구현, 오류 해결 가능</td></tr>
+              <tr><td>4</td><td>고급</td><td>복잡한 로직/구조 설계, 코드 리뷰/리딩, 성능 개선 가능</td></tr>
+              <tr><td>5</td><td>전문가</td><td>아키텍처 설계, 기술 리딩, 최적화, 타인 멘토링 가능</td></tr>
+              </tbody>
+            </table>
+          </div>
 
           <form class="form"
                 method="post"
@@ -813,21 +825,20 @@
                           data-name="${fn:escapeXml(p.stackName)}">
                       <span class="posIcon">
                         <c:choose>
-                          <c:when test="${p.stackName eq '웹'}">🖥️</c:when>
-                          <c:when test="${p.stackName eq '모바일앱'}">📱</c:when>
-                          <c:when test="${p.stackName eq '데이터베이스'}">🗄️</c:when>
-                          <c:when test="${p.stackName eq 'DevOps/인프라'}">⚙️</c:when>
-                          <c:when test="${p.stackName eq '게임/그래픽'}">🎮</c:when>
-                          <c:when test="${p.stackName eq 'AI/빅데이터'}">🤖</c:when>
-                          <c:when test="${p.stackName eq '임베디드/하드웨어'}">🔧</c:when>
-                          <c:otherwise>📌</c:otherwise>
+                          <c:when test="${p.stackName eq '웹'}">&#x1F5A5;&#xFE0F;</c:when>
+                          <c:when test="${p.stackName eq '모바일앱'}">&#x1F4F1;</c:when>
+                          <c:when test="${p.stackName eq '데이터베이스'}">&#x1F5C4;&#xFE0F;</c:when>
+                          <c:when test="${p.stackName eq 'DevOps/인프라'}">&#x2699;&#xFE0F;</c:when>
+                          <c:when test="${p.stackName eq '게임/그래픽'}">&#x1F3AE;</c:when>
+                          <c:when test="${p.stackName eq 'AI/빅데이터'}">&#x1F916;</c:when>
+                          <c:when test="${p.stackName eq '임베디드/하드웨어'}">&#x1F527;</c:when>
+                          <c:otherwise>&#x1F3B8;</c:otherwise>
                         </c:choose>
                       </span>
                     <span class="posLabel">${p.stackName}</span>
                   </button>
                 </c:forEach>
               </div>
-
 
               <div class="sel">
                 <div class="sel-title">내 보유 포지션</div>
@@ -844,7 +855,7 @@
           </form>
         </section>
 
-        <!-- ===================== 스킬 ===================== -->
+
         <section class="panel <%= "skill".equals(tab) ? "active" : "" %>" id="panel-skill">
           <div class="card-head">
             <div>
@@ -855,48 +866,21 @@
 
           <div class="levelGuide">
             <h3>기술스택 레벨 기준표</h3>
-            <p>
-              스킬별로 “지금 실무에서 어느 정도까지 혼자 할 수 있는지” 기준으로 선택해주세요.
-            </p>
+            <p>스킬별로 “지금 실무에서 어느 정도까지 혼자 할 수 있는지” 기준으로 선택해주세요.</p>
 
             <table class="levelTable">
               <thead>
-              <tr>
-                <th>레벨</th>
-                <th>명칭</th>
-                <th>설명</th>
-              </tr>
+              <tr><th>레벨</th><th>명칭</th><th>설명</th></tr>
               </thead>
               <tbody>
-              <tr>
-                <td>1</td>
-                <td>입문/초급</td>
-                <td>문법 및 기초 개념만 이해, 간단한 코드/수정만 가능</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>기초</td>
-                <td>기본적인 CRUD, 단순 기능 구현 가능, 문서/예제 참고 필요</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>중급</td>
-                <td>실무 프로젝트 투입 가능, 독립적 기능 구현, 오류 해결 가능</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>고급</td>
-                <td>복잡한 로직/구조 설계, 코드 리뷰/리딩, 성능 개선 가능</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>전문가</td>
-                <td>아키텍처 설계, 기술 리딩, 최적화, 타인 멘토링 가능</td>
-              </tr>
+              <tr><td>1</td><td>입문/초급</td><td>문법 및 기초 개념만 이해, 간단한 코드/수정만 가능</td></tr>
+              <tr><td>2</td><td>기초</td><td>기본적인 CRUD, 단순 기능 구현 가능, 문서/예제 참고 필요</td></tr>
+              <tr><td>3</td><td>중급</td><td>실무 프로젝트 투입 가능, 독립적 기능 구현, 오류 해결 가능</td></tr>
+              <tr><td>4</td><td>고급</td><td>복잡한 로직/구조 설계, 코드 리뷰/리딩, 성능 개선 가능</td></tr>
+              <tr><td>5</td><td>전문가</td><td>아키텍처 설계, 기술 리딩, 최적화, 타인 멘토링 가능</td></tr>
               </tbody>
             </table>
           </div>
-
 
           <form class="form"
                 method="post"
@@ -910,7 +894,7 @@
               <div class="search">
                 <input type="text" id="skillSearch" placeholder="스킬 검색 (예: Java, Spring)"/>
               </div>
-              <button type="button" class="btn ghost" id="skillSearchBtn">검색</button>
+              <button type="button" class="btn primary" id="skillSearchBtn">검색</button>
               <button type="button" class="btn ghost" id="skillResetBtn">초기화</button>
             </div>
 
@@ -944,7 +928,7 @@
           </form>
         </section>
 
-        <!-- ===================== 경력 ===================== -->
+
         <section class="panel <%= "career".equals(tab) ? "active" : "" %>" id="panel-career">
           <div class="card-head">
             <div>
@@ -953,13 +937,11 @@
             </div>
 
             <div class="head-actions">
-              <button type="button" class="btn ghost" id="careerAddToggle">+ 추가</button>
+              <button type="button" class="btn primary" id="careerAddToggle">+ 추가</button>
             </div>
           </div>
 
-
           <div class="form">
-            <!-- 추가 폼 (토글) -->
             <form method="post"
                   action="${pageContext.request.contextPath}/freelancer/profile/edit/career/add"
                   id="careerAddForm"
@@ -998,15 +980,14 @@
               </div>
             </form>
 
-            <!-- 리스트 / 인라인 수정폼 -->
             <div class="sel">
               <div class="title" style="font-size:16px;">내 보유 경력</div>
-              <div class="hint">저장된 회사 경력 목록입니다.</div>
+              <div class="hint">저장된 회사 경력 목록입니다.</a</div>
             </div>
+
             <div class="list" id="careerList">
               <c:forEach var="c" items="${careers}">
                 <div class="itemWrap" data-career-id="${c.careerId}">
-                  <!-- 요약 카드 -->
                   <div class="item">
                     <div class="meta">
                       <b>${c.companyName} · ${c.position}</b>
@@ -1031,7 +1012,6 @@
                     </div>
                   </div>
 
-                  <!-- 인라인 수정 폼 -->
                   <form class="editForm careerEditForm"
                         method="post"
                         action="${pageContext.request.contextPath}/freelancer/profile/edit/career/update">
@@ -1076,7 +1056,7 @@
           </div>
         </section>
 
-        <!-- ===================== 외부 프로젝트 ===================== -->
+
         <section class="panel <%= "external".equals(tab) ? "active" : "" %>" id="panel-external">
           <div class="card-head">
             <div>
@@ -1085,26 +1065,23 @@
             </div>
 
             <div class="head-actions">
-              <button type="button" class="btn ghost" id="expAddToggle">+ 추가</button>
+              <button type="button" class="btn primary" id="expAddToggle">+ 추가</button>
             </div>
           </div>
 
           <div class="form">
-
-            <!-- 추가 폼 (토글) -->
             <form method="post"
                   action="${pageContext.request.contextPath}/freelancer/profile/edit/experience/add"
                   id="expAddForm"
                   style="display:none;">
 
               <div class="split">
-
                 <div class="row">
                   <label>프로젝트명</label>
                   <input name="title" type="text" required placeholder="예) 외주 쇼핑몰 개발" />
                 </div>
                 <div class="row">
-                  <label>클라이언트명(선택)</label>
+                  <label>클라이언트명</label>
                   <input name="clientName" type="text" placeholder="예) ○○회사" />
                 </div>
                 <div class="row">
@@ -1112,7 +1089,7 @@
                   <input name="startDate" type="date" required />
                 </div>
                 <div class="row">
-                  <label>종료일(선택)</label>
+                  <label>종료일</label>
                   <input name="endDate" type="date" />
                 </div>
                 <div class="row">
@@ -1131,7 +1108,6 @@
               </div>
             </form>
 
-            <!-- 리스트 / 인라인 수정폼 -->
             <div class="sel">
               <div class="title" style="font-size:16px;">내 보유 프로젝트</div>
               <div class="hint">저장된 외부 프로젝트 목록입니다.</div>
@@ -1175,7 +1151,7 @@
                         <input name="title" type="text" required value="${fn:escapeXml(e.title)}"/>
                       </div>
                       <div class="row">
-                        <label>클라이언트명(선택)</label>
+                        <label>클라이언트명</label>
                         <input name="clientName" type="text" value="${fn:escapeXml(e.clientName)}"/>
                       </div>
                       <div class="row">
@@ -1183,7 +1159,7 @@
                         <input name="startDate" type="date" required value="${e.startDate}"/>
                       </div>
                       <div class="row">
-                        <label>종료일(선택)</label>
+                        <label>종료일</label>
                         <input name="endDate" type="date" value="${e.endDate}"/>
                       </div>
                       <div class="row">
@@ -1191,7 +1167,7 @@
                         <input name="role" type="text" required value="${fn:escapeXml(e.role)}"/>
                       </div>
                       <div class="row full">
-                        <label>설명(선택)</label>
+                        <label>설명</label>
                         <textarea name="description">${fn:escapeXml(e.description)}</textarea>
                       </div>
                     </div>
@@ -1207,7 +1183,6 @@
           </div>
         </section>
 
-
         <div id="toast" class="toast"></div>
       </main>
     </div>
@@ -1215,7 +1190,7 @@
 </div>
 
 <script>
-  // ================== 탭 전환 (리로드 없이) ==================
+
   (function(){
     const menu = document.getElementById('menu');
     if(!menu) return;
@@ -1240,7 +1215,7 @@
     });
   })();
 
-  // ================== Stack (Skill/Position) ==================
+
   function esc(str){
     if(str === null || str === undefined) return "";
     return String(str)
@@ -1254,7 +1229,6 @@
   const mySkills = new Map();
   const myPositions = new Map();
 
-  // 서버 초기값 → JS 배열
   const initSkills = [
     <c:forEach var="x" items="${mySkills}" varStatus="st">
     {"stackId": ${x.stackId}, "name": "${fn:escapeXml(x.stackName)}", "level": ${x.stackLevel}, "years": ${x.stackYear}}${st.last ? "" : ","}
@@ -1270,7 +1244,6 @@
     }${st.last ? "" : ","}
     </c:forEach>
   ];
-
 
   initSkills.forEach(s => mySkills.set(String(s.stackId), s));
   initPositions.forEach(p => myPositions.set(String(p.stackId), p));
@@ -1299,9 +1272,9 @@
       div.innerHTML =
               '<div><b>'+esc(v.name)+'</b></div>' +
               '<div class="right">' +
-              '<span style="font-weight:800; font-size:12px; color:#6b7280;">Level</span>' +
-              '<select class="skillLevel" data-id="'+v.stackId+'">' + levelOptions(v.level) + '</select>' +
-              '<span style="font-weight:800; font-size:12px; color:#6b7280;">경력</span>' +
+              '<span style="font-weight:800; font-size:12px; color:var(--muted);">Level</span>' +
+              '<select class="skillLevel" data-id="'+v.stackId+'" style="width:auto;">' + levelOptions(v.level) + '</select>' +
+              '<span style="font-weight:800; font-size:12px; color:var(--muted);">경력</span>' +
               '<input type="number" min="0" step="1" class="skillYears" data-id="'+v.stackId+'" value="'+Number(v.years||0)+'" style="width:90px"/> <span>년</span>' +
               '<button type="button" class="btn danger small removeSkill" data-id="'+v.stackId+'">X</button>' +
               '</div>';
@@ -1324,9 +1297,9 @@
       div.innerHTML =
               '<div><b>'+esc(v.name)+'</b></div>' +
               '<div class="right">' +
-              '<span style="font-weight:800; font-size:12px; color:#6b7280;">Level</span>' +
-              '<select class="posLevel" data-id="'+v.stackId+'">' + levelOptions(v.level) + '</select>' +
-              '<span style="font-weight:800; font-size:12px; color:#6b7280;">경력</span>' +
+              '<span style="font-weight:800; font-size:12px; color:var(--muted);">Level</span>' +
+              '<select class="posLevel" data-id="'+v.stackId+'" style="width:auto;">' + levelOptions(v.level) + '</select>' +
+              '<span style="font-weight:800; font-size:12px; color:var(--muted);">경력</span>' +
               '<input type="number" min="0" step="1" class="posYears" data-id="'+v.stackId+'" value="'+Number(v.years||0)+'" style="width:90px"/> <span>년</span>' +
               '<button type="button" class="btn danger small removePos" data-id="'+v.stackId+'">X</button>' +
               '</div>';
@@ -1334,8 +1307,6 @@
     });
   }
 
-
-  // 태그 클릭 토글 (버튼 내부 클릭 포함)
   document.getElementById("skillButtons")?.addEventListener("click", (e) => {
     const btn = e.target.closest("button.tag");
     if(!btn) return;
@@ -1351,15 +1322,11 @@
     if(!btn) return;
     const id = String(btn.dataset.id);
     const name = btn.dataset.name || btn.textContent.trim();
-
     if(myPositions.has(id)) myPositions.delete(id);
     else myPositions.set(id, {stackId:Number(id), name:name, level:1, years:0});
-
     renderPositions();
   });
 
-
-  // 값 변경 반영
   document.addEventListener("change", (e) => {
     if(e.target.classList.contains("skillLevel")){
       const id = String(e.target.dataset.id);
@@ -1383,7 +1350,6 @@
     }
   });
 
-  // 삭제
   document.addEventListener("click", (e) => {
     if(e.target.classList.contains("removeSkill")){
       mySkills.delete(String(e.target.dataset.id));
@@ -1395,7 +1361,6 @@
     }
   });
 
-  // submit 직전 hidden 생성 (컨트롤러 DTO: FreelancerStackSaveRequestDTO.stacks)
   function fillHiddenStacks(box, sourceMap){
     box.innerHTML = "";
     let i = 0;
@@ -1416,7 +1381,6 @@
     fillHiddenStacks(document.getElementById("positionHiddenBox"), myPositions);
   });
 
-  // 스킬 검색(필터링)
   (function(){
     const input = document.getElementById("skillSearch");
     const btn = document.getElementById("skillSearchBtn");
@@ -1436,11 +1400,9 @@
     reset.addEventListener("click", ()=>{ input.value=""; apply(); });
   })();
 
-  // 초기 렌더
   renderSkills();
   renderPositions();
 
-  // ================== Career / External: 토글 + 인라인 수정 ==================
   (function(){
     const addToggle = document.getElementById("careerAddToggle");
     const addForm = document.getElementById("careerAddForm");
@@ -1495,7 +1457,6 @@
     });
   })();
 
-  // ===== Toast helper =====
   function showToast(message, ms){
     const el = document.getElementById("toast");
     if(!el) return;
@@ -1507,7 +1468,6 @@
     }, ms || 2000);
   }
 
-  // ===== 서버 msg 있으면 토스트로 출력 =====
   (function(){
     const serverMsg = "<c:out value='${msg}' default='' />";
     if(serverMsg && serverMsg.trim().length > 0){
@@ -1515,12 +1475,10 @@
     }
   })();
 
-  // ===== settings: 프로필 기본정보(스케치 폼) =====
   (function(){
     const form = document.getElementById("basicAllForm");
     if(!form) return;
 
-    // 프로필 이미지
     const imgInput = document.getElementById("profileImageFile");
     const btnChange = document.getElementById("btnChangeImg");
     const btnDelete = document.getElementById("btnDeleteImg");
@@ -1531,8 +1489,6 @@
     imgInput?.addEventListener("change", () => {
       if(!imgInput.files || imgInput.files.length === 0) return;
       delFlag.value = "false";
-
-      // 즉시 미리보기
       const file = imgInput.files[0];
       const url = URL.createObjectURL(file);
 
@@ -1562,8 +1518,6 @@
       if(!confirm("프로필 이미지를 삭제할까요?")) return;
       delFlag.value = "true";
       if(imgInput) imgInput.value = "";
-
-      // 화면도 즉시 No Image처럼 보이게
       const avatar = document.querySelector(".avatarLg");
       if(avatar){
         avatar.innerHTML = '<div class="ph" id="avatarPh">No Image</div>';
@@ -1571,7 +1525,6 @@
       showToast("프로필 이미지 삭제 예약됨. 저장을 누르면 반영됩니다.", 1800);
     });
 
-    // ===== Portfolio Drag & Drop (중복클릭/중복리스너 방지 포함) =====
     (function(){
       const pfDrop = document.getElementById("pfDrop");
       const pf = document.getElementById("portfolioFile");
@@ -1579,27 +1532,22 @@
       const pfPick = document.getElementById("pfPick");
 
       if(!pfDrop || !pf || !pfName) return;
-
-      // 같은 스크립트가 2번 실행되어 리스너가 중복 등록되는 것 방지
       if(pfDrop.dataset.bound === "1") return;
       pfDrop.dataset.bound = "1";
 
-      // 드롭 시 브라우저가 파일을 열어버리는 기본동작 방지(필수)
       ["dragenter","dragover","dragleave","drop"].forEach(evt=>{
         window.addEventListener(evt, (e)=>{ e.preventDefault(); }, false);
         document.addEventListener(evt, (e)=>{ e.preventDefault(); }, false);
       });
 
-      // 찾기 버튼 클릭은 버블링 막고 한 번만 열기
       pfPick?.addEventListener("click", (e)=>{
         e.preventDefault();
         e.stopPropagation();
         pf.click();
       });
 
-      // 바(div) 클릭은 버튼 말고 빈 공간 클릭일 때만 열기
       pfDrop.addEventListener("click", (e)=>{
-        if(e.target.closest("button")) return; // 버튼 누른 경우는 위에서 처리
+        if(e.target.closest("button")) return;
         pf.click();
       });
 
@@ -1611,28 +1559,22 @@
         }
       });
 
-      pfDrop.addEventListener("dragover", ()=>{
-        pfDrop.classList.add("dragover");
-      });
-      pfDrop.addEventListener("dragleave", ()=>{
-        pfDrop.classList.remove("dragover");
-      });
+      pfDrop.addEventListener("dragover", ()=> pfDrop.classList.add("dragover"));
+      pfDrop.addEventListener("dragleave", ()=> pfDrop.classList.remove("dragover"));
 
       pfDrop.addEventListener("drop", (e)=>{
         pfDrop.classList.remove("dragover");
-
         const files = e.dataTransfer?.files;
         if(!files || files.length === 0) return;
 
         const dt = new DataTransfer();
-        dt.items.add(files[0]);   // 1개만
+        dt.items.add(files[0]);
         pf.files = dt.files;
 
         pfName.textContent = files[0].name;
       });
     })();
 
-    // ===== Portfolio 삭제 버튼 =====
     (function(){
       const btnDel = document.getElementById("btnPortfolioDelete");
       const delFlag = document.getElementById("deletePortfolio");
@@ -1645,19 +1587,13 @@
         if(btnDel.disabled) return;
         if(!confirm("포트폴리오 파일을 삭제할까요?")) return;
 
-        // 삭제 요청 플래그 ON
         delFlag.value = "true";
-
-        // 새 파일 선택도 취소(있으면)
         if(pf) pf.value = "";
-
-        // 화면 표시도 초기화
         if(pfName) pfName.textContent = "선택된 파일 없음";
 
         showToast("포트폴리오 삭제 예약됨. 저장을 누르면 반영됩니다.", 1800);
       });
 
-      // 새 파일을 선택하면 삭제 플래그 OFF
       pf?.addEventListener("change", () => {
         if(pf.files && pf.files.length > 0){
           delFlag.value = "false";
@@ -1666,7 +1602,6 @@
     })();
 
   })();
-
 </script>
 
 </body>
