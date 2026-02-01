@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %> <%-- 숫자 포맷팅용 --%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> <%-- 문자열 처리용 --%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -13,39 +13,38 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* [색상 변경] 요청하신 코드의 색상 팔레트 적용 */
+        /* [색상 변경] manage.css 변수명 및 값 100% 일치 적용 */
         :root {
-            /* 메인 컬러: Deep Blue (#173160) */
-            --primary: #173160;
-            /* 연한 배경: Line Soft (#e6ebf2) 또는 Ghost BG (#e5e7eb) 활용 */
-            --primary-bg: #e6ebf2;
+            --primary-color: #173160;
+            --primary-bg: rgba(59,111,220,.10);
+            --dark-color: #0f172a;
+            --gray-color: #475569;
+            --border-color: rgba(59,111,220,.22);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
-            /* 포인트 컬러: Red (#dc2626) */
-            --danger: #dc2626;
-            --danger-bg: #fee2e2; /* 연한 붉은색 */
-
-            /* 텍스트/배경 */
-            --dark: #0f172a;   /* 아주 짙은 남색 (#0f172a) */
-            --muted: #64748b;  /* 차분한 회색 (#64748b) */
-            --light: #f6f6f8;  /* 밝은 배경색 (#f6f6f8) */
+            /* 추가 포인트 컬러 */
+            --danger-color: #dc2626;
+            --danger-bg: #fee2e2;
+            --accent-blue: #3b6fdc;
         }
 
         body {
-            font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--light);
-            color: var(--dark);
+            background-color: #f6f6f8;
+            color: var(--dark-color);
+            font-family: 'Noto Sans KR', sans-serif;
         }
-
 
         /* 메인 콘텐츠 */
         .main-content {
-            max-width: 1400px;
+            max-width: 1500px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -56,12 +55,13 @@
 
         .page-title {
             font-size: 1.75rem;
-            color: var(--dark);
+            color: var(--dark-color);
             margin-bottom: 0.5rem;
+            font-weight: 800;
         }
 
         .page-subtitle {
-            color: var(--muted);
+            color: var(--gray-color);
             font-size: 0.95rem;
         }
 
@@ -77,14 +77,15 @@
             background: white;
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
             transition: all 0.3s;
         }
 
         .stat-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
             transform: translateY(-2px);
-            border: 1px solid var(--primary-bg); /* 호버 시 미세한 테두리 */
+            border-color: var(--primary-color);
         }
 
         .stat-header {
@@ -95,12 +96,11 @@
         }
 
         .stat-title {
-            color: var(--muted);
+            color: var(--gray-color);
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: 600;
         }
 
-        /* [변경] 아이콘 배경색 */
         .stat-icon {
             width: 40px;
             height: 40px;
@@ -109,18 +109,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
+            color: var(--primary-color);
         }
 
         .stat-value {
             font-size: 2rem;
-            font-weight: 700;
-            color: var(--dark);
+            font-weight: 800;
+            color: var(--dark-color);
             margin-bottom: 0.25rem;
         }
 
         .stat-label {
-            color: var(--muted);
+            color: var(--gray-color);
             font-size: 0.85rem;
         }
 
@@ -136,7 +136,8 @@
             background: white;
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
         }
 
         .chart-header {
@@ -145,12 +146,12 @@
 
         .chart-title {
             font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 700;
+            color: var(--dark-color);
         }
 
         .chart-subtitle {
-            color: var(--muted);
+            color: var(--gray-color);
             font-size: 0.85rem;
             margin-top: 0.25rem;
         }
@@ -160,7 +161,8 @@
             background: white;
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
             margin-bottom: 1.5rem;
         }
 
@@ -173,25 +175,25 @@
 
         .section-title {
             font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 700;
+            color: var(--dark-color);
         }
 
         .view-all-link {
-            color: var(--primary);
+            color: var(--primary-color);
             text-decoration: none;
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: 600;
         }
 
-        /* 프로젝트/지원자 리스트 */
+        /* 리스트 스타일 */
         .item-list {
             list-style: none;
         }
 
         .item {
             padding: 1.25rem;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
             transition: background 0.2s;
         }
 
@@ -200,7 +202,7 @@
         }
 
         .item:hover {
-            background: var(--light);
+            background: #f8fafc;
         }
 
         .item-header {
@@ -211,8 +213,8 @@
         }
 
         .item-title {
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 700;
+            color: var(--dark-color);
             font-size: 0.95rem;
             flex: 1;
         }
@@ -220,27 +222,27 @@
         .item-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        /* [변경] 상태 배지 색상 */
         .item-badge.status-active {
             background: var(--primary-bg);
-            color: var(--primary);
+            color: var(--primary-color);
         }
 
         .item-badge.status-pending {
             background: var(--danger-bg);
-            color: var(--danger);
+            color: var(--danger-color);
         }
 
         .item-meta {
             display: flex;
             gap: 1rem;
-            color: var(--muted);
+            color: var(--gray-color);
             font-size: 0.85rem;
+            font-weight: 500;
         }
 
         .applicant-info {
@@ -257,17 +259,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            color: var(--primary);
+            font-weight: 700;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
         }
 
         .applicant-name {
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 700;
+            color: var(--dark-color);
         }
 
         .applicant-role {
-            color: var(--muted);
+            color: var(--gray-color);
             font-size: 0.85rem;
         }
 
@@ -277,25 +280,11 @@
                 grid-template-columns: 1fr;
             }
         }
-
         @media (max-width: 768px) {
-            .header-inner {
-                padding: 0 1rem;
-            }
-
-            .nav-menu {
-                display: none;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -538,7 +527,7 @@
             datasets: [{
                 label: '지출 금액',
                 data: monthlyData, // 서버에서 받은 금액
-                backgroundColor: '#1F7A8C',
+                backgroundColor: '#173160',
                 borderRadius: 4,
                 barThickness: 30
             }]
@@ -586,7 +575,11 @@
             labels: ['완료', '진행중', '모집중'],
             datasets: [{
                 data: statusData,
-                backgroundColor: ['#1F7A8C', '#A9D9DB', '#6F7272'],
+                backgroundColor: [
+                    '#173160', // 완료: Deep Navy
+                    '#3b6fdc', // 진행중: Accent Blue
+                    '#475569'  // 모집중: Muted Slate
+                ],
                 borderWidth: 0
             }]
         },
