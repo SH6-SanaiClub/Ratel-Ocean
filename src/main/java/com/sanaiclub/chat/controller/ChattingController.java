@@ -28,11 +28,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/chat")
-@RequiredArgsConstructor
 public class ChattingController {
-
-    private final ChatService chatService;
-    private final SimpMessageSendingOperations messagingTemplate; // STOMP 메시지 전송 템플릿
 
     @GetMapping
     public String chatMain(Model model) {
@@ -47,119 +43,6 @@ public class ChattingController {
         return "chat/room";
     }
 
-    @GetMapping("/room/{roomId}/info")
-    @ResponseBody
-    public ChatRoomDTO roomInfo( @PathVariable Integer roomId) {
-        return chatService.findRoomInfo(roomId, AuthContext.getCurrentUserId());
-    }
 
-    @PostMapping("/room/{roomId}/read")
-    @ResponseBody
-    public void markAsRead(@PathVariable Integer roomId) {
-        chatService.markRoomAsRead(roomId, AuthContext.getCurrentUserId());
-    }
 
-    @PostMapping("/create-or-get-room")
-    @ResponseBody
-    public Integer createOrGetRoom(
-            @RequestParam Integer projectId,
-            @RequestParam(required = false) Integer freelancerId
-    ) {
-        Integer loginUserId = AuthContext.getCurrentUserId();
-        UserType userType = AuthContext.getCurrentUserType();
-        Integer targetFreelancerId;
-
-        if (UserType.CLIENT.equals(userType)) {
-            targetFreelancerId = freelancerId;
-        } else {
-            targetFreelancerId = loginUserId;
-        }
-        return chatService.createOrGetRoom(projectId, targetFreelancerId);
-    }
-
-    @GetMapping("/rooms")
-    @ResponseBody
-    public List<ChatRoomDTO> rooms() {
-        return chatService.findMyRooms(AuthContext.getCurrentUserId());
-    }
-
-    @GetMapping("/room/{roomId}/messages")
-    @ResponseBody
-    public List<ChatMessageDTO> getMessages(@PathVariable Integer roomId) {
-        return chatService.findMessages(roomId);
-    }
-
-    @PostMapping("/room/{roomId}/exit")
-    @ResponseBody
-    public String exitRoom(@PathVariable Integer roomId, HttpSession session) {
-        chatService.exitRoom(roomId, AuthContext.getCurrentUserId());
-        return "ok";
-    }
-    // 메시지 전송
-    @PostMapping("/room/{roomId}/message")
-    public ResponseEntity<ChatMessageDTO> sendMessage(
-            @PathVariable Integer roomId,
-            @RequestParam String content,
-            @RequestParam(required = false) MultipartFile file,
-            HttpSession session
-    ) throws IOException {
-        Integer senderId = AuthContext.getCurrentUserId();
-        String uploadPath = session.getServletContext().getRealPath("/") + "upload/chat";
-        ChatMessageDTO message = chatService.processAndSendMessage(
-                roomId,
-                senderId,
-                content,
-                file,
-                uploadPath
-        );
-        return ResponseEntity.ok(message);
-    }
-
-    @GetMapping("/file/{messageId}")
-    public ResponseEntity<Resource> downloadFile(
-            @PathVariable Integer messageId, HttpSession session
-    ) throws Exception {
-        ChatMessageDTO msg = chatService.findFileByMessageId(messageId);
-
-        if (msg == null || msg.getFileUrl() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        String contextPath = session.getServletContext().getRealPath("/");
-        String filePath = contextPath + msg.getFileUrl();
-        File file = new File(filePath);
-
-        if (!file.exists()) {
-            return ResponseEntity.notFound().build();
-        }
-        Resource resource = new FileSystemResource(file);
-
-        String encodedFileName =
-                URLEncoder.encode(msg.getFileName(), "UTF-8").replaceAll("\\+", "%20");
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + encodedFileName + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .contentLength(file.length())
-                .body(resource);
-    }
-
-    @PostMapping("/message/{messageId}/delete")
-    public ResponseEntity<?> deleteMessage(@PathVariable int messageId, @RequestBody Map<String, Integer> payload) {
-        try {
-            Integer roomId = payload.get("roomId");
-            if (roomId == null) {
-                return ResponseEntity.badRequest().body("roomId is missing");
-            }
-            chatService.deleteMessage(messageId);
-            Map<String, Object> deleteSignal = new HashMap<>();
-            deleteSignal.put("type", "DELETE");
-            deleteSignal.put("messageId", messageId);
-            messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, deleteSignal);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fail to delete");
-        }
-    }
 }

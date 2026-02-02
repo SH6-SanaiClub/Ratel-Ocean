@@ -30,9 +30,9 @@
                 <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
                     <div id="searchArea" style="display: none; align-items: center; gap: 5px;">
                         <input type="text" id="searchInput" placeholder="메시지 검색"
-                               style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 130px;">
+                               style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 130px;">
                         <button onclick="searchMessages()"
-                                style="padding: 5px 10px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 12px;">🔍</button>
+                                style="padding: 6px 12px; background: rgba(59,111,220,.1); border: 1px solid rgba(59,111,220,.35); border-radius: 4px; cursor: pointer; font-size: 12px;">🔍</button>
                         <div id="searchNav" style="display: none; align-items: center; gap: 5px; background: #fff; padding: 0 5px; border-radius: 4px;">
                             <button onclick="navSearch(-1)" style="border:none; background:none; cursor:pointer; padding:0 2px;">▲</button>
                             <button onclick="navSearch(1)" style="border:none; background:none; cursor:pointer; padding:0 2px;">▼</button>
@@ -41,11 +41,13 @@
                         </div>
 
             </div>
-        </div>
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
-                    <button id="exitRoomBtn" onclick="exitRoom()" style="display:none; font-size: 13px;">나가기</button>
-                </div>
+                    <button id="exitRoomBtn"
+                            onclick="exitRoom()"
+                            style="display:none; font-size: 12px; color:#ffffff;  background-color: #173160; margin-left: 8px;">
+                        나가기
+                    </button>
             </div>
+        </div>
         </div>
         <div class="chat-body" id="chatBody"></div>
         <div class="chat-input">
@@ -152,19 +154,19 @@
                         const totalUnread = rooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
                         let unreadBadge = "";
                         if (totalUnread > 0) {
-                            unreadBadge = '<span class="total-unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-left: 8px; vertical-align: middle;">' + totalUnread + '</span>';
+                            unreadBadge = '<span class="total-unread-badge" style="background: #173160; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px; margin-left: 8px; vertical-align: middle;">' + totalUnread + '</span>';
                         }
 
                         finalHtml +=
                             '<div class="project-header" onclick="toggleApplicants(\'' + safeId + '\')" ' +
-                            'style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #ddd; cursor: pointer; ' +
+                            'style="padding: 15px; background: rgba(23,49,96,.17); border-bottom: 1px solid #ddd; cursor: pointer; ' +
                             'display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #333;">' +
                             '   <div>' +
                             '       <span style="font-size: 15px;">' + title + '</span>' +
-                            '       <span style="font-size: 12px; color: #666; font-weight: normal; margin-left: 8px;">지원자 ' + rooms.length + '명</span>' +
+                            '       <span style="font-size: 12px; color: #3b6fdc; font-weight: normal; margin-left: 8px;">지원자 ' + rooms.length + '명</span>' +
                             '       ' + unreadBadge +
                             '   </div>' +
-                            '   <span id="icon-' + safeId + '" style="font-size: 12px; color: #999;">▼</span>' +
+                            '   <span id="icon-' + safeId + '" style="font-size: 12px; color: #173160;">▼</span>' +
                             '</div>';
 
                         finalHtml += '<div id="group-' + safeId + '" class="applicant-list-container" style="display: none; background: #fff;">';
@@ -195,7 +197,7 @@
         }
         let unreadHtml = "";
         if (room.unreadCount > 0) {
-            unreadHtml = '<span class="unread-badge" style="background: #e53935; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; margin-left: 8px;">' + room.unreadCount + '</span>';
+            unreadHtml = '<span class="unread-badge" style="background:#173160; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 50%; margin-left: 8px;">' + room.unreadCount + '</span>';
         }
         let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
         if (room.lastMessageDeleted === 1) lastMsg = "메시지가 삭제되었습니다.";
@@ -334,7 +336,7 @@
                                 escapeHtml(msg.fileName) +
                                 '</a>' +
                                 (msg.fileSize
-                                        ? '<div class="file-size">' + formatFileSize(msg.fileSize) + '</div>'
+                                        ? '<span style="font-size: 11px; color: #888; margin-left: 5px;">' + formatFileSize(msg.fileSize) + '</span>'
                                         : ''
                                 ) + '</div>';
                         }
@@ -446,7 +448,7 @@
                         $totalBadge.text(total + 1);
                     } else {
                         const newTotalBadge =
-                            '<span class="total-unread-badge" style="background:#e53935;color:#fff;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:8px;">1</span>';
+                            '<span class="total-unread-badge" style="background:#173160;color:#fff;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:8px;">1</span>';
                         $projectHeader.find('div').first().append(newTotalBadge);
                     }
                 }
@@ -489,10 +491,9 @@
                 appendFileToInfo(msg);
             }
             fileHtml =
-                '<div class="file-section" style="margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px;">' +
                 '📎 <a href="/ratelocean/chat/file/' + msg.messageId + '">' +
                 escapeHtml(msg.fileName) + '</a>' +
-                fileSizeHtml + '</div>';
+                fileSizeHtml;
         }
         let contentHtml = "";
         if (msg.content) {
@@ -557,20 +558,29 @@
                     ? '/ratelocean' + room.profileImageUrl
                     : '/ratelocean/resources/image/default-profile.png';
                 const info = document.getElementById("roomInfo");
+                let contractBtnHtml = "";
+                if (loginUserType  === 'CLIENT') {  // 로그인 유저 타입이 CLIENT일 때만
+                    contractBtnHtml =
+                        '<a href="/ratelocean/client/contract/form" ' +
+                        'style="background-color: #3b6fdc; color: white; margin-top: 5px;">계약하기</a>';
+                }
                 info.innerHTML =
-                    `<div class="profile-card">
-                   <img src="\${profileImg}" class="avatar">
-                    <h3>\${room.name}</h3>
-                    <div class="action-buttons">
-                        <a href="/ratelocean/profile/\${room.opponentId}">프로필</a>
-                       <a href="/ratelocean/project/detail?projectId=\${room.projectId}&page=1&size=10&onlyActive=false&keyword="
-       class="secondary">프로젝트</a>
-                    </div>
-                </div>
-                <div class="info-section">
-                    <h4>공유 파일</h4>
-                    <div class="file-list"></div>
-                </div>`;
+                    '<div class="profile-card">' +
+                    '   <img src="' + profileImg + '" class="avatar">' +
+                    '   <h3>' + room.name + '</h3>' +
+                    '   <div class="action-buttons" style="display: flex; flex-direction: column; gap: 8px;">' +
+                    '       <div style="display: flex; gap: 8px; width: 100%;">' +
+                    '           <a href="/ratelocean/profile/' + room.opponentId + '" style="flex: 1;">프로필</a>' +
+                    '           <a href="/ratelocean/project/detail?projectId=' + room.projectId +
+                    '&page=1&size=10&onlyActive=false&keyword=" class="secondary" style="flex: 1;">프로젝트</a>' +
+                    '       </div>' +
+                    contractBtnHtml +
+                    '   </div>' +
+                    '</div>' +
+                    '<div class="info-section">' +
+                    '   <h4>공유 파일</h4>' +
+                    '   <div class="file-list"></div>' +
+                    '</div>';
         }).catch(err => console.error("방 정보 로드 실패:", err));
     }
     function initEmptyRoom() {
@@ -588,8 +598,7 @@
         }
     }
 
-    function selectRoom( roomId) {
-        console.log(roomId);
+    function selectRoom(roomId) {
         messageInput.value = "";
         const fileInput = document.getElementById("fileInput");
         if (fileInput) fileInput.value = "";
@@ -605,6 +614,24 @@
         }
         loadMessages(roomId);
         const $roomItem = $('#room-item-' + roomId);
+        changeTotalBadge(roomId, $roomItem);
+
+        $roomItem.find('.unread-badge').remove();
+        fetch(`/ratelocean/chat/room/\${roomId}/read`, {
+            method: "POST"
+        }).then(() => {
+        });
+        profileDisplay(roomId);
+        opponentExited = false;
+                let roomDiv = $('.find-out[data-roomid="' + roomId + '"]');
+                let freelancerexitedValue = roomDiv.find('span.freelancerExited').attr('data-free');
+                let clientExitedValue = roomDiv.find('span.clientExited').attr('data-client');
+                opponentExited = freelancerexitedValue == 1 || clientExitedValue == 1;
+        highlightSelectedRoom();
+        subscribeRoom(roomId);
+    }
+    function changeTotalBadge(roomId, $roomItem){
+
         const roomUnread = parseInt(
             $roomItem.find('.unread-badge').text()
         ) || 0;
@@ -628,23 +655,7 @@
                 }
             }
         }
-
-        $roomItem.find('.unread-badge').remove();
-        fetch(`/ratelocean/chat/room/\${roomId}/read`, {
-            method: "POST"
-        }).then(() => {
-        });
-        profileDisplay(roomId);
-        opponentExited = false;
-                let roomDiv = $('.find-out[data-roomid="' + roomId + '"]');
-                let freelancerexitedValue = roomDiv.find('span.freelancerExited').attr('data-free');
-                let clientExitedValue = roomDiv.find('span.clientExited').attr('data-client');
-                opponentExited = freelancerexitedValue == 1 || clientExitedValue == 1;
-        highlightSelectedRoom();
-
-        subscribeRoom(roomId);
     }
-
     function formatFileSize(bytes) {
         if (!bytes) return "";
         if (bytes < 1024) return bytes + "B";
@@ -678,7 +689,7 @@
             const text = bubble.innerText;
             if (text.toLowerCase().includes(keyword)) {
                 const regex = new RegExp(`(${keyword})`, "gi");
-                bubble.innerHTML = text.replace(regex, '<span class="search-highlight" style="background: yellow; font-weight: bold;">$1</span>');
+                bubble.innerHTML = text.replace(regex, '<span class="search-highlight" style="background:#173160; font-weight: bold;">$1</span>');
                 searchResults.push(bubble);
             }
         });
@@ -701,7 +712,7 @@
         const target = searchResults[currentSearchIdx];
 
         searchResults.forEach(el => el.style.outline = "none");
-        target.style.outline = "2px solid orange";
+        target.style.outline = "2px solid #173160";
         target.style.outlineOffset = "2px";
         target.scrollIntoView({ behavior: "smooth", block: "center" });
         document.getElementById("searchIndex").innerText = (currentSearchIdx + 1) + " / " + searchResults.length;
@@ -759,81 +770,13 @@
         );
     }
 
-    messageInput.addEventListener("keydown", (e) => {
-        if (!selectedRoomId) return;
-        if (e.key === "Enter") {
-            if (e.shiftKey) {
-            } else {
-                e.preventDefault();
-                sendMessage();
-                messageInput.style.height = 'auto';
-            }
-        }
-    });
 
-    document.addEventListener("keydown", (e) => {
-        const fileInput = document.getElementById("fileInput");
-        const hasFile = fileInput && fileInput.files.length > 0;
-        if (e.key === "Enter" && !e.shiftKey && hasFile && selectedRoomId) {
-            if (e.target.tagName !== "TEXTAREA" && e.target.tagName !== "INPUT") {
-                e.preventDefault();
-                sendMessage();
-            }
-        }
-    });
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        if (searchInput) {
-            searchInput.addEventListener("keydown", function(event) {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    searchMessages();
-                }
 
-                else if (event.key === "ArrowUp") {
-                    event.preventDefault();
-                    if (typeof navSearch === "function") navSearch(-1);
-                }
 
-                else if (event.key === "ArrowDown") {
-                    event.preventDefault();
-                    if (typeof navSearch === "function") navSearch(1);
-                }
-            });
-        }
-    });
 
-    document.getElementById("fileInput").addEventListener("change", function () {
-        const file = this.files[0];
-        if (file) {
-            document.getElementById("filePreview").style.display = "flex";
-            document.getElementById("fileNameText").innerText = file.name;
-        }
-    });
-
-    $(document).ready(function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode');
-
-        if (mode === 'view') {
-            $(".app").addClass("full-chat");
-        }
-        loadChatRooms();
-        connectStompOnce();
-
-        if (!autoRoomId) {
-            initEmptyRoom();
-        }
-        tryAutoEnter();
-    });
-
-    window.addEventListener("beforeunload", () => {
-        if (stompClient) {
-            stompClient.disconnect();
-        }
-    });
 
 </script>
+<script src="/ratelocean/resources/js/chat.js"></script>
 </body>
 </html>
