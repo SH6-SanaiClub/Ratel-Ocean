@@ -40,6 +40,22 @@ function loadProjectProgress(projectId, element) {
             renderMilestones(data);
 
             $('#ongoingFreelancerDisplay').text("담당자 : " + data.freelancerName);
+
+            if (data.freelancerId) {
+                setTimeout(function() {
+                    if (typeof window.connectProjectChat === 'function') {
+                        window.connectProjectChat(data.projectId, data.freelancerId);
+                    } else {
+                        setTimeout(function() {
+                            if (typeof window.connectProjectChat === 'function') {
+                                window.connectProjectChat(data.projectId, data.freelancerId);
+                            }
+                        }, 500);
+                    }
+                }, 200);
+            } else {
+                console.log("프리랜서 ID 없음 (채팅 연결 불가)");
+            }
         },
         error: function () {
             $('#milestoneListArea').html('<div style="text-align:center; padding:40px; color:#ccc;">정보를 불러오지 못했습니다.</div>');
@@ -130,8 +146,7 @@ function renderMilestones(data) {
             '<div><span class="ms-step">' + m.stepOrder + '단계</span> <span class="ms-title">' + (m.milestoneName || '') + '</span></div>' +
             statusBadge +
             '</div>' +
-            '<div class="ms-details">' +
-            '<span>예정일: ' + dateStr + '</span>' +
+            '<div class="ms-details" style="justify-content: flex-end;">' +
             '<span class="ms-amount">₩ ' + safeAmount + '</span>' +
             '</div>' +
             (btnHtml ? '<div class="ms-actions">' + btnHtml + '</div>' : '') +

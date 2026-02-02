@@ -21,9 +21,9 @@ body {
 
 .container {
     max-width: 1500px;
-    margin: 20px auto;
+    margin: 20px auto !important;
     padding: 20px 30px;
-    height: calc(100vh - 40px);
+    height: calc(100vh - 60px) !important;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -50,10 +50,16 @@ body {
 .manage-grid-layout {
     display: grid;
     grid-template-columns: 350px 1.2fr 1fr;
+
+    grid-template-rows: minmax(0, 1fr);
+
+    padding-bottom: 20px;
+
     gap: 15px;
     flex: 1;
     min-height: 0;
-    padding-bottom: 0;
+
+    box-sizing: border-box;
 }
 
 .card {
