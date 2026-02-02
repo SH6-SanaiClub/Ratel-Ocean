@@ -9,36 +9,207 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        :root { --brand-main: #2C1A52; --brand-accent: #00F0FF; --brand-purple: #8A2BE2; --bg-light: #F8F9FD; --text-dark: #2D2D2D; --border-color: #E2E8F0; }
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Noto Sans KR', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        :root{
+            --primary:#173160;
+            --text:#0f172a;
+            --bg:#f6f6f8;
+
+            --line: rgba(59,111,220,.22);
+            --tint: rgba(59,111,220,.10);
+
+            --neutral-bg:#e5e7eb;
+            --neutral-text:#111827;
+            --neutral-line:#cbd5e1;
+
+            --danger:#e11d48;
+            --ok:#16a34a;
         }
-        .container { width: 100%; max-width: 580px; background: #FFFFFF; border-radius: 20px; padding: 50px 45px; box-shadow: 0 10px 30px rgba(44, 26, 82, 0.08); border: 1px solid var(--border-color); }
-        .header { text-align: center; margin-bottom: 35px; }
-        .header h1 { font-size: 1.6rem; font-weight: 700; color: var(--brand-main); margin: 0; }
-        .form-body { display: flex; flex-direction: column; gap: 24px; }
-        .input-group { display: flex; flex-direction: column; }
-        .label-text { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .label-text i { color: var(--brand-purple); }
-        input[type="text"], input[type="url"], textarea, select { padding: 14px 16px; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text-dark); transition: all 0.2s ease; background: #FFFFFF; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1); }
-        textarea { resize: vertical; min-height: 100px; font-family: inherit; }
-        .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-group { display: flex; gap: 12px; margin-top: 10px; }
-        .btn { flex: 1; padding: 18px; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 8px; border: none; }
-        .btn-secondary { background: #6c757d; color: #FFFFFF; }
-        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3); }
-        .btn-primary { background: linear-gradient(135deg, var(--brand-main) 0%, var(--brand-purple) 100%); color: #FFFFFF; border: none; padding: 18px; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-primary:hover { background: var(--brand-purple); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(44, 26, 82, 0.2); }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%232C1A52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
+
+        body{
+            margin:0;
+            padding:120px 20px 20px;
+            font-family:'Noto Sans KR', sans-serif;
+            background:
+                    radial-gradient(1200px 600px at 20% 10%, rgba(59,111,220,.08), transparent 55%),
+                    radial-gradient(900px 500px at 80% 0%, rgba(23,49,96,.10), transparent 60%),
+                    var(--primary);
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            color:var(--text);
+            letter-spacing:-0.02em;
+        }
+
+        .container{
+            width:100%;
+            max-width:580px;
+            background:#ffffff;
+            border-radius:24px;
+            padding:48px 42px;
+            border:1px solid rgba(15,23,42,.08);
+            box-shadow:0 20px 40px rgba(15,23,42,.06);
+        }
+
+        .header{
+            text-align:center;
+            margin-bottom:28px;
+        }
+
+        .header h1{
+            font-size:1.6rem;
+            font-weight:900;
+            color:var(--text);
+            margin:0;
+        }
+
+        .sub{
+            margin-top:10px;
+            color:rgba(15,23,42,.60);
+            font-size:.95rem;
+            line-height:1.45;
+        }
+
+        .form-body{
+            display:flex;
+            flex-direction:column;
+            gap:22px;
+        }
+
+        .input-group{
+            display:flex;
+            flex-direction:column;
+        }
+
+        .label-text{
+            font-size:.92rem;
+            font-weight:900;
+            color:rgba(15,23,42,.78);
+            margin-bottom:8px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .label-text i{
+            color: rgba(59,111,220,1);
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        select{
+            padding:14px 16px;
+            border:1.5px solid var(--neutral-line);
+            border-radius:12px;
+            font-size:.95rem;
+            color:var(--text);
+            transition:border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+            background: rgba(255,255,255,.72);
+            font-family:inherit;
+        }
+
+        input::placeholder,
+        textarea::placeholder{
+            color: rgba(15,23,42,.45);
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus{
+            outline:none;
+            border-color: var(--line);
+            box-shadow: 0 0 0 3px var(--tint);
+            background:#fff;
+        }
+
+        textarea{
+            resize: vertical;
+            min-height:110px;
+        }
+
+        .grid-row{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:12px;
+        }
+
+        select{
+            appearance:none;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23173160' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat:no-repeat;
+            background-position:right 12px center;
+            background-size:16px;
+            cursor:pointer;
+        }
+
+        .btn-group{
+            display:flex;
+            gap:12px;
+            margin-top:6px;
+        }
+
+        .btn{
+            flex:1;
+            padding:16px 18px;
+            border-radius:16px;
+            font-size:1.02rem;
+            font-weight:900;
+            cursor:pointer;
+            transition: transform .15s ease, filter .15s ease, background-color .15s ease, border-color .15s ease;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+            border:none;
+        }
+
+        .btn-secondary{
+            background:#fff;
+            color:var(--text);
+            border:2px solid var(--neutral-line);
+        }
+
+        .btn-secondary:hover{
+            background: rgba(15,23,42,.03);
+            border-color: rgba(15,23,42,.18);
+        }
+
+        .btn-secondary:active{
+            transform: scale(.99);
+        }
+
+        .btn-primary{
+            background: var(--primary);
+            color:#fff;
+            box-shadow:0 16px 30px rgba(15,23,42,.10);
+        }
+
+        .btn-primary:hover{
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+        }
+
+        .btn-primary:active{
+            transform: scale(.99);
+        }
+
+        .btn-primary:disabled{
+            background: var(--neutral-bg);
+            color: var(--neutral-text);
+            cursor:not-allowed;
+            border:1px solid var(--neutral-line);
+            box-shadow:none;
+            filter:none;
+            transform:none;
+        }
+
+        @media (max-width: 768px){
+            body{ padding:120px 16px 20px; }
+            .container{ padding:34px 22px; border-radius:22px; }
+            .grid-row{ grid-template-columns: 1fr; }
+            .btn-group{ flex-direction:column; }
+        }
     </style>
 </head>
 <body>
@@ -46,6 +217,7 @@
 <div class="container">
     <header class="header">
         <h1>전문가 프로필 등록</h1>
+        <div class="sub">프로젝트 매칭에 활용될 정보입니다. 핵심 강점 위주로 작성해 주세요.</div>
     </header>
 
     <form id="freelancerForm" class="form-body">
@@ -85,13 +257,12 @@
 
         <div class="input-group">
             <label class="label-text"><i class="fas fa-link"></i> 소셜 및 포트폴리오</label>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display:flex; flex-direction:column; gap:10px;">
                 <input type="url" name="githubUrl" placeholder="GitHub 주소 (https://...)">
                 <input type="url" name="websiteUrl" placeholder="포트폴리오 주소 (https://...)">
             </div>
         </div>
 
-        <!-- 이전/다음 버튼 -->
         <div class="btn-group">
             <button type="button" id="prevBtn" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> 이전
@@ -111,6 +282,10 @@
             e.preventDefault();
         });
 
+        $('#prevBtn').click(function() {
+            window.history.back();
+        });
+
         $('#submitBtn').click(function() {
             const nickname = $('input[name="nickname"]').val();
             const introduction = $('textarea[name="introduction"]').val();
@@ -120,7 +295,7 @@
                 return;
             }
 
-            $(this).prop('disabled', true).text('처리 중...');
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
 
             $.ajax({
                 url: contextPath + '/join/freelancer/signup',
@@ -139,20 +314,6 @@
                     $('#submitBtn').prop('disabled', false).html('프로필 저장 후 다음 단계 <i class="fas fa-arrow-right"></i>');
                 }
             });
-        });
-    });
-
-    $(document).ready(function() {
-        // 이전 버튼
-        $('#prevBtn').click(function() {
-            window.history.back();
-        });
-
-        // 기존 submitBtn 코드...
-        $('#submitBtn').click(function() {
-            // ... 기존 코드 유지
-            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
-            // ...
         });
     });
 </script>
