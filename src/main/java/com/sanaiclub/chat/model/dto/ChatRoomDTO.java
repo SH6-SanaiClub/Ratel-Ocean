@@ -10,14 +10,12 @@ import java.util.Date;
 @Setter
 @ToString
 public class ChatRoomDTO {
-
     private Integer roomId;
     private Integer freelancerId;
     private Integer projectId;
     private String title;
     private Integer senderId;
     private Integer opponentId;
-    private Boolean isActive;
     private String profileImageUrl;
     private Date createdAt;
     private Date lastMessageAt;
@@ -28,9 +26,6 @@ public class ChatRoomDTO {
     private Integer unreadCount;
     private String name;
     private boolean hasNewMessage;
-
-
-
 }
 
 

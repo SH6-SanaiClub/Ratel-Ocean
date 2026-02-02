@@ -10,22 +10,22 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 public class ChatMessageDTO {
-    private Integer messageId; // message_id -> messageId
-    private Integer senderId; // sender_id -> senderId
-    private Integer roomId; // room_id -> roomId
-    private Integer projectId; // project_id -> projectId
+    private Integer messageId;
+    private Integer senderId;
+    private Integer roomId;
+    private Integer projectId;
     private String title;
-    private Integer userId; // user_id -> userId
+    private Integer userId;
     private String name;
-    private String profileImageUrl; // profile_image_url -> profileImageUrl
+    private String profileImageUrl;
     private String content;
-    private Date createdAt; // created_at -> createdAt
-    private Date deletedAt; // deleted_at -> deletedAt
-    private int isRead; // is_read -> isRead
-    private int isDeleted; // is_deleted -> isDeleted
-    private String fileName; // file_name -> fileName
-    private String fileUrl; // file_url -> fileUrl
-    private Long fileSize; // file_size -> fileSize
+    private Date createdAt;
+    private Date deletedAt;
+    private int isRead;
+    private int isDeleted;
+    private String fileName;
+    private String fileUrl;
+    private Long fileSize;
     private Boolean freelancerExited;
     private Boolean clientExited;
 }
