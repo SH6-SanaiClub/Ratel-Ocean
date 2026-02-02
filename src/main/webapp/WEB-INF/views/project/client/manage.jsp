@@ -137,7 +137,7 @@
                                 <div class="custom-list-item" onclick="loadCompletedProject(${p.projectId}, this)">
                                     <span class="status-tag tag-completed">종료됨</span>
                                     <span class="item-main-text" style="margin-top:5px; color:#aaa; text-decoration:line-through;">${p.title}</span>
-                                    <div style="font-size:11px; color:#1F7A8C; margin-top:5px; font-weight:700;">
+                                    <div style="font-size:11px; color:#173160; margin-top:5px; font-weight:700;">
                                         <i class="fa-regular fa-pen-to-square"></i> 리뷰 작성하기
                                     </div>
                                 </div>
@@ -155,7 +155,7 @@
                                         </div>
                                         <button type="button"
                                                 onclick="location.href='${pageContext.request.contextPath}/client/mypage'; event.stopPropagation();"
-                                                style="width:100%; padding:6px; background:#1F7A8C; color:#fff; border:none; border-radius:4px; font-size:11px; cursor:pointer; font-weight:700;">
+                                                style="width:100%; padding:6px; background:#173160; color:#fff; border:none; border-radius:4px; font-size:11px; cursor:pointer; font-weight:700;">
                                             리뷰 관리로 이동
                                         </button>
                                     </div>

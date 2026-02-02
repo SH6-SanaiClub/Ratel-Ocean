@@ -5,8 +5,10 @@
 <mapper namespace="com.sanaiclub.user.dao.FreelancerDashboardMapper">
 
     <select id="countOngoingContracts" resultType="int">
-        SELECT COUNT(*) FROM contracts c
-        WHERE c.origin_contract_url LIKE CONCAT('%/', #{userId}, '/%')
+        SELECT COUNT(*)
+        FROM contracts c
+                 INNER JOIN project_applications pa ON c.contract_id = pa.application_id
+        WHERE pa.freelancer_id = #{userId}
           AND c.contract_status IN ('SIGNED', 'PAID')
     </select>
 
@@ -37,11 +39,12 @@
 
     <select id="selectContractStatusCounts" resultType="map">
         SELECT
-            contract_status AS status,
+            c.contract_status AS status,
             COUNT(*) AS count
-        FROM contracts
-        WHERE origin_contract_url LIKE CONCAT('%/', #{userId}, '/%')
-        GROUP BY contract_status
+        FROM contracts c
+            INNER JOIN project_applications pa ON c.contract_id = pa.application_id
+        WHERE pa.freelancer_id = #{userId}
+        GROUP BY c.contract_status
     </select>
 
     <select id="selectRecentAppliedProjects" resultType="com.sanaiclub.user.model.dto.FreelancerProjectDTO">
