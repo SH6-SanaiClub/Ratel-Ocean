@@ -8,21 +8,25 @@
     <!-- 마일스톤 등록 -->
     <insert id="insertMilestone" parameterType="map">
         INSERT INTO contract_milestones (
-            contract_id, 
-            step_order, 
-            milestone_name, 
-            work_scope, 
+            contract_id,
+            step_order,
+            milestone_name,
+            work_scope,
             amount,
             status
         )
         VALUES (
-            #{contractId}, 
-            #{step}, 
-            #{title}, 
-            #{description}, 
-            #{amount},
-            'WAITING'
-        )
+                   #{contractId},
+                   #{step},
+                   #{title},
+                   #{description},
+                   #{amount},
+                   'WAITING'
+               )
+            ON DUPLICATE KEY UPDATE
+                                 milestone_name = #{title},
+                                 work_scope = #{description},
+                                 amount = #{amount}
     </insert>
 
     <!-- 계약 ID로 마일스톤 목록 조회 (step 오름차순) -->

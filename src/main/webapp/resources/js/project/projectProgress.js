@@ -146,8 +146,7 @@ function renderMilestones(data) {
             '<div><span class="ms-step">' + m.stepOrder + '단계</span> <span class="ms-title">' + (m.milestoneName || '') + '</span></div>' +
             statusBadge +
             '</div>' +
-            '<div class="ms-details">' +
-            '<span>예정일: ' + dateStr + '</span>' +
+            '<div class="ms-details" style="justify-content: flex-end;">' +
             '<span class="ms-amount">₩ ' + safeAmount + '</span>' +
             '</div>' +
             (btnHtml ? '<div class="ms-actions">' + btnHtml + '</div>' : '') +
