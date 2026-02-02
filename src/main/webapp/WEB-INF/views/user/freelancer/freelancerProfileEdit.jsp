@@ -678,7 +678,7 @@
                     <c:choose>
                       <c:when test="${not empty profile.profileImageUrl}">
                         <img id="avatarImg"
-                             src="${pageContext.request.contextPath}${profile.profileImageUrl}?v=<%=System.currentTimeMillis()%>"
+                             src="${pageContext.request.contextPath}${profile.profileImageUrl}"
                              alt="profile"/>
                       </c:when>
                       <c:otherwise>
