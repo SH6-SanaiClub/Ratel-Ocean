@@ -25,7 +25,7 @@
 <main class="main-content">
     <!-- 페이지 헤더 -->
 
-    <div class="page-header" style="background: var(--primary); color: #fff; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; min-height: 50px;">
+    <div class="page-header" style="background: var(--primary-color); color: #fff; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; min-height: 50px;">
         <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 1.5rem; background: rgba(255,255,255,0.13); border-radius: 8px; padding: 8px 12px 8px 10px; display: flex; align-items: center; justify-content: center;">
                 <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='white' fill-opacity='0.13'/><path d='M7.5 4.75A2.25 2.25 0 0 0 5.25 7v10A2.25 2.25 0 0 0 7.5 19.25h9A2.25 2.25 0 0 0 18.75 17V7A2.25 2.25 0 0 0 16.5 4.75h-9Zm0 1.5h9c.414 0 .75.336.75.75v10a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V7c0-.414.336-.75.75-.75Zm1.25 2.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm-.75 3.25c0-.414.336-.75.75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1-.75-.75Zm.75 2.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5h-4.5Z' fill='white'/></svg>

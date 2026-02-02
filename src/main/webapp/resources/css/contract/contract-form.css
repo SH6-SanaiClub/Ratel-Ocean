@@ -35,8 +35,8 @@
     --text: #111827;
     --muted: #6b7280;
     --line: #e5e7eb;
-    --primary: #1a9aa6;
-    --primary-weak: rgba(26, 154, 166, 0.12);
+    --primary: #173160;
+    --primary-weak: rgba(59,111,220,.10);
     --shadow: 0 20px 60px rgba(17, 24, 39, 0.08);
     --radius: 18px;
 }
