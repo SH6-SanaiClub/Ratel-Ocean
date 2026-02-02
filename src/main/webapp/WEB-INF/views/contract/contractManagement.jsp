@@ -626,7 +626,7 @@
                         <c:if test="${selectedContract.contractStatus != null and (selectedContract.contractStatus.name() eq 'SIGNED' or selectedContract.contractStatus.name() eq 'signed')}">
                             <div class="action-buttons">
                                 <button type="button" class="btn btn-primary" onclick="openPaymentModalForContract(${selectedContract.contractId}, ${selectedContract.totalBudget}, '${selectedContract.projectTitle != null ? fn:replace(selectedContract.projectTitle, "'", "\\'") : "프로젝트"}', '${selectedContract.freelancerName != null ? fn:replace(selectedContract.freelancerName, "'", "\\'") : "프리랜서"}')">
-                                    💰 계약 결제 완료
+                                    💰 계약 결제 하기
                                 </button>
                                 <form method="post" action="${pageContext.request.contextPath}/client/contract/management/cancel" class="cancel-form" style="display: inline;">
                                     <input type="hidden" name="contractId" value="${selectedContract.contractId}" />
