@@ -34,13 +34,21 @@
 
     <select id="selectMonthlyExpenditure" resultType="map">
         SELECT
-            DATE_FORMAT(contracted_at, '%Y-%m') AS month,
-            SUM(total_budget)                   AS totalAmount
-        FROM contracts
-        WHERE origin_contract_url LIKE CONCAT('contracts/', #{userId}, '/%')
-          AND total_budget IS NOT NULL
-          AND contracted_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01')
-        GROUP BY DATE_FORMAT(contracted_at, '%Y-%m')
+            DATE_FORMAT(wh.created_at, '%Y-%m') AS month,
+    SUM(wh.amount)                      AS totalAmount
+        FROM sanai.wallet_histories wh
+        WHERE wh.wallet_id IN (
+            SELECT DISTINCT fw.wallet_id
+            FROM sanai.freelancer_wallets fw
+            INNER JOIN sanai.project_applications pa ON fw.freelancer_id = pa.freelancer_id
+            INNER JOIN sanai.projects p ON pa.project_id = p.project_id
+            INNER JOIN sanai.contracts c ON pa.application_id = c.contract_id
+            WHERE p.client_id = #{userId}
+          AND c.contract_status IN ('SIGNED', 'PAID', 'COMPLETED')
+            )
+          AND wh.io_type = 'PAYMENT'
+          AND wh.created_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(wh.created_at, '%Y-%m')
         ORDER BY month ASC
     </select>
 
