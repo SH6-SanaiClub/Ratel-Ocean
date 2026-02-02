@@ -9,6 +9,7 @@ import java.util.List;
 public class ClientProjectProgressDTO {
     private Integer contractId;
 
+    private Integer freelancerId;
     private String freelancerName;
     private Date startDate;
     private Date endDate;
