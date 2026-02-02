@@ -24,14 +24,14 @@
 
     <select id="selectMonthlyEarnings" resultType="map">
         SELECT
-            DATE_FORMAT(c.contracted_at, '%Y-%m') AS month,
-            SUM(c.total_budget)                   AS totalAmount
-        FROM contracts c
-            JOIN project_applications pa ON c.contract_id = pa.application_id
-        WHERE pa.freelancer_id = #{userId}
-          AND c.total_budget IS NOT NULL
-          AND c.contracted_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01')
-        GROUP BY DATE_FORMAT(c.contracted_at, '%Y-%m')
+            DATE_FORMAT(wh.created_at, '%Y-%m') AS month,
+            SUM(wh.amount)                      AS totalAmount
+        FROM wallet_histories wh
+            INNER JOIN freelancer_wallets fw ON wh.wallet_id = fw.wallet_id
+        WHERE fw.freelancer_id = #{userId}
+          AND wh.io_type = 'PAYMENT'
+          AND wh.created_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(wh.created_at, '%Y-%m')
         ORDER BY month ASC
     </select>
 

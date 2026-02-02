@@ -35,14 +35,14 @@
     <select id="selectMonthlyExpenditure" resultType="map">
         SELECT
             DATE_FORMAT(wh.created_at, '%Y-%m') AS month,
-    SUM(wh.amount)                      AS totalAmount
-        FROM sanai.wallet_histories wh
+            SUM(wh.amount)                      AS totalAmount
+        FROM wallet_histories wh
         WHERE wh.wallet_id IN (
             SELECT DISTINCT fw.wallet_id
-            FROM sanai.freelancer_wallets fw
-            INNER JOIN sanai.project_applications pa ON fw.freelancer_id = pa.freelancer_id
-            INNER JOIN sanai.projects p ON pa.project_id = p.project_id
-            INNER JOIN sanai.contracts c ON pa.application_id = c.contract_id
+            FROM freelancer_wallets fw
+            INNER JOIN project_applications pa ON fw.freelancer_id = pa.freelancer_id
+            INNER JOIN projects p ON pa.project_id = p.project_id
+            INNER JOIN contracts c ON pa.application_id = c.contract_id
             WHERE p.client_id = #{userId}
           AND c.contract_status IN ('SIGNED', 'PAID', 'COMPLETED')
             )
