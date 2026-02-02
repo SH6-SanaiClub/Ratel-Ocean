@@ -6,6 +6,7 @@
 
     <resultMap id="ProjectProgressMap" type="com.sanaiclub.project.model.dto.ClientProjectProgressDTO">
         <id property="contractId" column="contractId"/>
+        <result property="freelancerId" column="freelancerId"/>
         <result property="freelancerName" column="freelancerName"/>
         <result property="startDate" column="startDate"/>
         <result property="endDate" column="endDate"/>
@@ -29,6 +30,7 @@
     <select id="selectMilestonesByProjectId" resultMap="ProjectProgressMap">
         SELECT
             IFNULL(c.contract_id, pa.application_id) AS contractId,
+            pa.freelancer_id      AS freelancerId,
             u.name                AS freelancerName,
             c.contract_start_date AS startDate,
             c.contract_end_date   AS endDate,

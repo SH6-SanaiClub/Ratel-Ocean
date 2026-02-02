@@ -40,6 +40,22 @@ function loadProjectProgress(projectId, element) {
             renderMilestones(data);
 
             $('#ongoingFreelancerDisplay').text("담당자 : " + data.freelancerName);
+
+            if (data.freelancerId) {
+                setTimeout(function() {
+                    if (typeof window.connectProjectChat === 'function') {
+                        window.connectProjectChat(data.projectId, data.freelancerId);
+                    } else {
+                        setTimeout(function() {
+                            if (typeof window.connectProjectChat === 'function') {
+                                window.connectProjectChat(data.projectId, data.freelancerId);
+                            }
+                        }, 500);
+                    }
+                }, 200);
+            } else {
+                console.log("프리랜서 ID 없음 (채팅 연결 불가)");
+            }
         },
         error: function () {
             $('#milestoneListArea').html('<div style="text-align:center; padding:40px; color:#ccc;">정보를 불러오지 못했습니다.</div>');
