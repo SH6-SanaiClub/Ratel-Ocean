@@ -7,7 +7,7 @@
   *{ box-sizing:border-box; }
   body{ margin:0; font-family: Arial, sans-serif; }
 
-  .header{
+  .ro_hd_header{
     position: sticky; top:0;
     height:64px;
     background:#ffffff;
@@ -15,7 +15,7 @@
     z-index:1000;
     border-bottom:1px solid #e5e7eb;
   }
-  .header-inner{
+  .ro_hd_headerInner{
     height:64px;
     max-width:1200px;
     margin:0 auto;
@@ -26,21 +26,21 @@
     column-gap:16px;
   }
 
-  .logo a{
+  .ro_hd_logo a{
     color:#111827;
     text-decoration:none;
     font-weight:800;
     letter-spacing:.3px;
   }
 
-  .nav{
+  .ro_hd_nav{
     display:flex;
     gap:28px;
     align-items:center;
     justify-content:center;
   }
-  .nav-item{ position:relative; }
-  .nav-link{
+  .ro_hd_navItem{ position:relative; }
+  .ro_hd_navLink{
     display:inline-flex;
     align-items:center;
     height:64px;
@@ -50,9 +50,9 @@
     font-weight:700;
     opacity:.85;
   }
-  .nav-link:hover{ opacity:1; }
+  .ro_hd_navLink:hover{ opacity:1; }
 
-  .dropdown-bar{
+  .ro_hd_dropdownBar{
     position: fixed;
     left:0;
     top:64px;
@@ -65,32 +65,32 @@
     transition: height .25s ease;
     z-index:999;
   }
-  .nav-item:hover .dropdown-bar{ height:180px; }
+  .ro_hd_navItem:hover .ro_hd_dropdownBar{ height:180px; }
 
-  .dropdown-inner{
+  .ro_hd_dropdownInner{
     max-width:1200px;
     margin:0 auto;
     padding:22px 24px 22px 300px;
     display:flex;
     gap:40px;
   }
-  .dd-col{ min-width:180px; }
-  .dd-title{
+  .ro_hd_ddCol{ min-width:180px; }
+  .ro_hd_ddTitle{
     margin:0 0 12px;
     font-size:14px;
     font-weight:800;
     color:#111827;
   }
-  .dd-link{
+  .ro_hd_ddLink{
     display:block;
     font-size:13px;
     color:#4b5563;
     text-decoration:none;
     margin:0 0 9px;
   }
-  .dd-link:hover{ color:#111827; }
+  .ro_hd_ddLink:hover{ color:#111827; }
 
-  .actions{
+  .ro_hd_actions{
     height:64px;
     display:flex;
     align-items:center;
@@ -98,13 +98,13 @@
     gap:12px;
   }
 
-  .icon-item{
+  .ro_hd_iconItem{
     position:relative;
     height:64px;
     display:flex;
     align-items:center;
   }
-  .icon-btn{
+  .ro_hd_iconBtn{
     height:40px;
     width:40px;
     display:flex;
@@ -120,14 +120,14 @@
     opacity:0.9;
 
   }
-  .ico{ display:block; width:20px; height:20px; fill: currentColor; }
+  .ro_hd_ico{ display:block; width:20px; height:20px; fill: currentColor; }
 
-  .icon-btn:hover{
+  .ro_hd_iconBtn:hover{
     opacity:1;
     background:#f3f4f6;
   }
 
-  .mini-dd{
+  .ro_hd_miniDd{
     position:absolute;
     right:0;
     top:64px;
@@ -145,22 +145,22 @@
     transition: opacity .15s ease, transform .15s ease;
     z-index:1001;
   }
-  .icon-item.open .mini-dd{
+  .ro_hd_iconItem.ro_hd_open .ro_hd_miniDd{
     opacity:1;
     transform: translateY(0);
     pointer-events:auto;
   }
 
 
-  .mini-head{
+  .ro_hd_miniHead{
     padding:14px 14px;
     background:#f9fafb;
     border-bottom:1px solid #eef2f7;
     font-weight:800;
     font-size:13px;
   }
-  .mini-body{ padding:12px 14px; }
-  .mini-row{
+  .ro_hd_miniBody{ padding:12px 14px; }
+  .ro_hd_miniRow{
     display:flex;
     gap:10px;
     padding:10px 8px;
@@ -168,13 +168,13 @@
     text-decoration:none;
     color:#111827;
   }
-  .mini-row:hover{ background:#f3f4f6; }
-  .mini-muted{
+  .ro_hd_miniRow:hover{ background:#f3f4f6; }
+  .ro_hd_miniMuted{
     font-size:12px;
     color:#6b7280;
     margin-top:2px;
   }
-  .mini-cta{
+  .ro_hd_miniCta{
     display:block;
     padding:12px 14px;
     border-top:1px solid #eef2f7;
@@ -183,9 +183,9 @@
     color:#111827;
     font-weight:700;
   }
-  .mini-cta:hover{ background:#f9fafb; }
+  .ro_hd_miniCta:hover{ background:#f9fafb; }
 
-  .badge{
+  .ro_hd_badge{
     position:absolute;
     top:6px; right:6px;
     min-width:16px; height:16px;
@@ -199,15 +199,15 @@
   }
 
   @media (max-width: 860px){
-    .header-inner{ grid-template-columns: 1fr 1fr; }
-    .nav{ display:none; }
+    .ro_hd_headerInner{ grid-template-columns: 1fr 1fr; }
+    .ro_hd_nav{ display:none; }
   }
 </style>
 
-<header class="header">
-  <div class="header-inner">
+<header class="ro_hd_header">
+  <div class="ro_hd_headerInner">
 
-    <div class="logo">
+    <div class="ro_hd_logo">
       <c:choose>
         <c:when test="${userType eq 'CLIENT'}">
           <a href="${ctx}/client/dashboard">RatelOcean</a>
@@ -221,7 +221,7 @@
       </c:choose>
     </div>
 
-    <nav class="nav">
+    <nav class="ro_hd_nav">
       <c:choose>
         <c:when test="${userType == 'FREELANCER'}">
           <jsp:include page="/WEB-INF/views/common/nav-freelancer.jsp" />
@@ -234,109 +234,106 @@
       </c:choose>
     </nav>
 
-    <div class="actions">
+    <div class="ro_hd_actions">
 
-      <!-- 채팅 -->
-      <div class="icon-item">
-        <a class="icon-btn js-dd-toggle" href="#" title="채팅" data-dd="chat">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <div class="ro_hd_iconItem">
+        <a class="ro_hd_iconBtn ro_hd_jsDdToggle" href="#" title="채팅" data-dd="chat">
+          <svg class="ro_hd_ico" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M20 2H4a2 2 0 0 0-2 2v14l4-3h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
           </svg>
         </a>
-        <div class="mini-dd">
-          <div class="mini-head">채팅</div>
-          <div class="mini-body">
-            <a class="mini-row" href="${pageContext.request.contextPath}/chat">
+        <div class="ro_hd_miniDd">
+          <div class="ro_hd_miniHead">채팅</div>
+          <div class="ro_hd_miniBody">
+            <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/chat">
               <div>
                 <div style="font-weight:800; font-size:13px;">채팅 목록</div>
-                <div class="mini-muted">대화를 확인하세요.</div>
+                <div class="ro_hd_miniMuted">대화를 확인하세요.</div>
               </div>
             </a>
           </div>
-          <a class="mini-cta" href="${pageContext.request.contextPath}/chat">채팅 전체 보기</a>
+          <a class="ro_hd_miniCta" href="${pageContext.request.contextPath}/chat">채팅 전체 보기</a>
         </div>
       </div>
 
-      <!-- 알림 -->
-      <div class="icon-item">
-        <a class="icon-btn js-dd-toggle" href="#" title="알림" data-dd="noti">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <div class="ro_hd_iconItem">
+        <a class="ro_hd_iconBtn ro_hd_jsDdToggle" href="#" title="알림" data-dd="noti">
+          <svg class="ro_hd_ico" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1l-2-2z"/>
           </svg>
         </a>
-        <div class="mini-dd">
-          <div class="mini-head">알림</div>
-          <div class="mini-body">
-            <a class="mini-row" href="${pageContext.request.contextPath}/notification">
+        <div class="ro_hd_miniDd">
+          <div class="ro_hd_miniHead">알림</div>
+          <div class="ro_hd_miniBody">
+            <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/notification">
               <div>
                 <div style="font-weight:800; font-size:13px;">알림 목록</div>
-                <div class="mini-muted">새로운 알림을 확인하세요.</div>
+                <div class="ro_hd_miniMuted">새로운 알림을 확인하세요.</div>
               </div>
             </a>
           </div>
-          <a class="mini-cta" href="${pageContext.request.contextPath}/notification">알림 전체 보기</a>
+          <a class="ro_hd_miniCta" href="${pageContext.request.contextPath}/notification">알림 전체 보기</a>
         </div>
       </div>
 
-      <!-- 마이페이지 -->
-      <div class="icon-item">
-        <a class="icon-btn js-dd-toggle" href="#" title="마이페이지" data-dd="mypage">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <div class="ro_hd_iconItem">
+        <a class="ro_hd_iconBtn ro_hd_jsDdToggle" href="#" title="마이페이지" data-dd="mypage">
+          <svg class="ro_hd_ico" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.42 0-8 2-8 4.5V21h16v-2.5C20 16 16.42 14 12 14z"/>
           </svg>
         </a>
 
-        <div class="mini-dd">
-          <div class="mini-head">마이페이지</div>
-          <div class="mini-body">
+        <div class="ro_hd_miniDd">
+          <div class="ro_hd_miniHead">마이페이지</div>
+          <div class="ro_hd_miniBody">
             <c:choose>
               <c:when test="${empty userType}">
-                <a class="mini-row" href="${pageContext.request.contextPath}/login">
+                <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/login">
                   <div>
                     <div style="font-weight:800; font-size:13px;">로그인</div>
-                    <div class="mini-muted">로그인 후 이용할 수 있어요.</div>
+                    <div class="ro_hd_miniMuted">로그인 후 이용할 수 있어요.</div>
                   </div>
                 </a>
-                <a class="mini-row" href="${pageContext.request.contextPath}/join">
+                <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/join">
                   <div>
                     <div style="font-weight:800; font-size:13px;">회원가입</div>
-                    <div class="mini-muted">계정 만들고 시작하기</div>
+                    <div class="ro_hd_miniMuted">계정 만들고 시작하기</div>
                   </div>
                 </a>
               </c:when>
 
               <c:when test="${userType == 'FREELANCER'}">
-                <a class="mini-row" href="${pageContext.request.contextPath}/freelancer/mypage">
+                <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/freelancer/mypage">
                   <div>
                     <div style="font-weight:800; font-size:13px;">마이페이지</div>
-                    <div class="mini-muted">내 정보 수정</div>
+                    <div class="ro_hd_miniMuted">내 정보 수정</div>
                   </div>
                 </a>
-                <a class="mini-row" href="${pageContext.request.contextPath}/freelancer/mypage">
+                <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/freelancer/mypage">
                   <div>
                     <div style="font-weight:800; font-size:13px;">내 지갑</div>
-                    <div class="mini-muted">출금/거래내역</div>
+                    <div class="ro_hd_miniMuted">출금/거래내역</div>
                   </div>
                 </a>
-                <a class="mini-row" href="${pageContext.request.contextPath}/freelancer/profile/edit">
+                <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/freelancer/profile/edit">
                   <div>
                     <div style="font-weight:800; font-size:13px;">내 프로필 수정</div>
-                    <div class="mini-muted">닉네임/학력/경력/프로젝트</div>
+                    <div class="ro_hd_miniMuted">닉네임/학력/경력/프로젝트</div>
                   </div>
                 </a>
               </c:when>
 
               <c:when test="${userType == 'CLIENT'}">
-                <a class="mini-row" href="${pageContext.request.contextPath}/client/mypage">
+                <a class="ro_hd_miniRow" href="${pageContext.request.contextPath}/client/mypage">
                   <div>
                     <div style="font-weight:800; font-size:13px;">마이페이지</div>
-                    <div class="mini-muted">내 정보 수정/리뷰 보기</div>
+                    <div class="ro_hd_miniMuted">내 정보 수정/리뷰 보기</div>
                   </div>
                 </a>
               </c:when>
             </c:choose>
           </div>
-          <a class="mini-cta" href="#" onclick="logout(event)" >로그아웃</a>
+          <a class="ro_hd_miniCta" href="#" onclick="logout(event)" >로그아웃</a>
         </div>
       </div>
 
@@ -346,15 +343,15 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const items = Array.from(document.querySelectorAll('.actions .icon-item'));
-    const toggles = Array.from(document.querySelectorAll('.actions .js-dd-toggle'));
+    const items = Array.from(document.querySelectorAll('.ro_hd_actions .ro_hd_iconItem'));
+    const toggles = Array.from(document.querySelectorAll('.ro_hd_actions .ro_hd_jsDdToggle'));
 
     console.log('[header] toggles:', toggles.length);
 
     function closeAll(except) {
       items.forEach(it => {
         if (except && it === except) return;
-        it.classList.remove('open');
+        it.classList.remove('ro_hd_open');
       });
     }
 
@@ -363,29 +360,25 @@
         e.preventDefault();
         e.stopPropagation();
 
-        const item = btn.closest('.icon-item');
-        const willOpen = !item.classList.contains('open');
+        const item = btn.closest('.ro_hd_iconItem');
+        const willOpen = !item.classList.contains('ro_hd_open');
 
-        closeAll(); // 다른 것 닫고
-        if (willOpen) item.classList.add('open'); // 얘만 열기
+        closeAll();
+        if (willOpen) item.classList.add('ro_hd_open');
       });
     });
 
-    // 드롭다운 내부 클릭은 닫히지 않게
-    document.querySelectorAll('.actions .mini-dd').forEach(dd => {
+    document.querySelectorAll('.ro_hd_actions .ro_hd_miniDd').forEach(dd => {
       dd.addEventListener('click', e => e.stopPropagation());
     });
 
-    // 바깥 클릭하면 닫기
     document.addEventListener('click', () => closeAll());
 
-    // ESC 닫기
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeAll();
     });
   });
 
-  // 로그아웃
   async function logout(e) {
     e.preventDefault();
     try {

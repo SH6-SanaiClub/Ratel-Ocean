@@ -5,14 +5,14 @@
    ========================= */
 :root {
     /* Primary Colors - 프리랜서 프로젝트 관리 페이지와 동일 */
-    --primary-color: #1a9aa6;        /* 청록색 - 메인 브랜드 */
-    --primary-hover: #158a94;        /* Hover 상태 */
-    --primary-weak: rgba(26,154,166,.12);  /* 약한 primary 배경 */
+    --primary-color: #173160;        /* 청록색 - 메인 브랜드 */
+    --primary-hover: #0f172a;        /* Hover 상태 */
+    --primary-weak: rgba(59,111,220,.10);  /* 약한 primary 배경 */
     --secondary-color: #A9D9DB;      /* Mint Blue - 보조 브랜드 */
     --secondary-hover: #7FC5BE;      /* Hover 상태 */
     
     /* Neutral Colors - 프리랜서 프로젝트 관리 페이지와 동일 */
-    --bg: #f6f7fb;                   /* 배경 */
+    --bg: #f6f6f8;                   /* 배경 */
     --card: #fff;                    /* 카드 배경 */
     --dark-color: #111827;           /* 주요 텍스트 */
     --gray-color: #6b7280;           /* 보조 텍스트 */

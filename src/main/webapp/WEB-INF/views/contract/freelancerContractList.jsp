@@ -21,9 +21,9 @@
             --muted: #6b7280;
             --line: #e5e7eb;
             --light-gray: #e5e7eb;
-            --primary: #1a9aa6;
-            --primary-weak: rgba(26,154,166,.12);
-            --primary-hover: #158a94;
+            --primary: #173160;
+            --primary-weak: rgba(59,111,220,.10);
+            --primary-hover: #0f172a;
             --shadow: 0 20px 60px rgba(17,24,39,.08);
             --radius: 18px;
             --ok: #22c55e;
