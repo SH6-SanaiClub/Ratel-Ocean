@@ -43,6 +43,4 @@ public class ChattingController {
         return "chat/room";
     }
 
-
-
 }

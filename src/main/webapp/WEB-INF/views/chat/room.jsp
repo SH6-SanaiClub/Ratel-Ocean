@@ -283,8 +283,29 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ roomId: parseInt(roomId) })
         }).then(res => {
-            if(!res.ok) alert("삭제 실패");
-        });
+            if(res.ok){
+                // 1. 메시지 UI 업데이트
+                handleDeleteMessageUI(messageId);
+
+                // 2. 공유 파일 목록 업데이트
+                // 현재 화면에 있는 메시지 DOM에서 파일만 뽑아서 반영
+                const messages = Array.from(document.querySelectorAll("#chatBody .message")).map(msgDiv => {
+                    const fileLink = msgDiv.querySelector(".bubble a");
+                    return {
+                        fileUrl: fileLink ? fileLink.getAttribute("href") : null,
+                        fileName: fileLink ? fileLink.innerText : null,
+                        isDeleted: msgDiv.querySelector(".bubble").classList.contains("deleted") ? 1 : 0
+                    };
+                });
+                updateSharedFilesFromMessages(messages);
+            } else {
+                alert("삭제 실패");
+            }
+        })
+            .catch(err => {
+                console.error(err);
+                alert("삭제 실패");
+            });
     }
 
     function loadMessages(roomId) {
@@ -406,7 +427,8 @@
             const contentArea = msgElement.querySelector(".bubble");
             if(contentArea) {
                 contentArea.innerText = "삭제된 메시지입니다.";
-                contentArea.classList.add("deleted-text");
+                contentArea.classList.remove("file-bubble");
+                contentArea.classList.add("deleted");
             }
             const actionBtn = msgElement.querySelector(".delete-btn");
             if(actionBtn) actionBtn.style.display = "none";
