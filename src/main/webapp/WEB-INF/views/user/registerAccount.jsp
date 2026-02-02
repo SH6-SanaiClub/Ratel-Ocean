@@ -10,259 +10,273 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        :root {
-            --brand-main: #2C1A52;
-            --brand-accent: #00F0FF;
-            --brand-purple: #8A2BE2;
-            --bg-light: #F8F9FD;
-            --text-dark: #2D2D2D;
-            --border-color: #E2E8F0;
+        :root{
+            --primary:#173160;
+            --text:#0f172a;
+            --bg:#f6f6f8;
+
+            --line: rgba(59,111,220,.22);
+            --tint: rgba(59,111,220,.10);
+            --accent-weak:rgba(59,111,220,.10);
+            --neutral-bg:#e5e7eb;
+            --neutral-text:#111827;
+            --neutral-line:#cbd5e1;
+
+            --danger:#dc3545;
+            --ok:#16a34a;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{ margin:0; padding:0; box-sizing:border-box; }
+
+        body{
+            font-family:'Noto Sans KR', sans-serif;
+            background:
+                    radial-gradient(1200px 600px at 20% 10%, rgba(59,111,220,.08), transparent 55%),
+                    radial-gradient(900px 500px at 80% 0%, rgba(23,49,96,.10), transparent 60%),
+                    var(--primary);
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:120px 20px 20px;
+            color:var(--text);
+            letter-spacing:-0.02em;
         }
 
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        .container{
+            width:100%;
+            max-width:580px;
+            background:#ffffff;
+            border-radius:24px;
+            padding:48px 42px;
+            border:1px solid rgba(15,23,42,.08);
+            box-shadow:0 20px 40px rgba(15,23,42,.06);
         }
 
-        .container {
-            width: 100%;
-            max-width: 580px;
-            background: #FFFFFF;
-            border-radius: 20px;
-            padding: 50px 45px;
-            box-shadow: 0 10px 30px rgba(44, 26, 82, 0.15);
-            border: 1px solid var(--border-color);
+        .header{
+            text-align:center;
+            margin-bottom:32px;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 35px;
+        .header h1{
+            font-size:1.7rem;
+            font-weight:800;
+            color:var(--text);
+            margin-bottom:10px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
         }
 
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--brand-main);
-            margin-bottom: 10px;
+        .header h1 i{
+            color:var(--primary);
         }
 
-        .header p {
-            font-size: 0.95rem;
-            color: #6c757d;
-            line-height: 1.5;
+        .header p{
+            font-size:.95rem;
+            color:rgba(15,23,42,.60);
+            line-height:1.55;
         }
 
-        .form-body {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+        .form-body{
+            display:flex;
+            flex-direction:column;
+            gap:22px;
         }
 
-        .input-group {
-            display: flex;
-            flex-direction: column;
+        .input-group{
+            display:flex;
+            flex-direction:column;
         }
 
-        .wallet-section .input-group {
-            margin-bottom: 16px;
+        .label-text{
+            font-size:.92rem;
+            font-weight:800;
+            color:rgba(15,23,42,.78);
+            margin-bottom:8px;
+            display:flex;
+            align-items:center;
+            gap:8px;
         }
 
-        .wallet-section .input-group:last-child {
-            margin-bottom: 0;
+        .label-text i{
+            color:rgba(59,111,220,1);
         }
 
-        .label-text {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .label-text i {
-            color: var(--brand-purple);
-        }
-
-        .required {
-            color: #dc3545;
-            margin-left: 4px;
+        .required{
+            color:var(--danger);
+            margin-left:4px;
         }
 
         input[type="text"],
         input[type="password"],
-        select {
-            padding: 14px 16px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            color: var(--text-dark);
-            transition: all 0.2s ease;
-            background: #FFFFFF;
-            font-family: inherit;
+        select{
+            padding:14px 16px;
+            border:1.5px solid var(--neutral-line);
+            border-radius:12px;
+            font-size:.95rem;
+            color:var(--text);
+            transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+            background: rgba(255,255,255,.72);
+            font-family:inherit;
+        }
+
+        input::placeholder{
+            color: rgba(15,23,42,.45);
         }
 
         input:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--brand-purple);
-            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+        select:focus{
+            outline:none;
+            border-color: var(--line);
+            box-shadow: 0 0 0 3px var(--tint);
+            background:#fff;
         }
 
-        select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%232C1A52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            cursor: pointer;
+        select{
+            appearance:none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23173160' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat:no-repeat;
+            background-position:right 12px center;
+            background-size:16px;
+            cursor:pointer;
         }
 
-        .help-text {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 5px;
+        .help-text{
+            font-size:.85rem;
+            color: rgba(15,23,42,.60);
+            margin:4px 0 6px 0;
         }
 
-        .message {
-            font-size: 0.85rem;
-            margin-top: 5px;
-            font-weight: 500;
+        .message{
+            font-size:.85rem;
+            margin-top:6px;
+            font-weight:700;
+            min-height:18px;
         }
 
-        /* 프리랜서 전용 지갑 섹션 */
-        .wallet-section {
-            margin-top: 10px;
-            padding: 25px;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-            border-radius: 12px;
-            border: 1.5px solid #d0d9ff;
+        .wallet-section{
+            margin-top:8px;
+            padding:22px;
+            background: linear-gradient(180deg, rgba(59,111,220,.06) 0%, rgba(23,49,96,.05) 100%);
+            border-radius:16px;
+            border:1.5px solid var(--line);
         }
 
-        .wallet-section h3 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--brand-purple);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .wallet-section h3{
+            font-size:1.05rem;
+            font-weight:900;
+            color:var(--text);
+            margin-bottom:8px;
+            display:flex;
+            align-items:center;
+            gap:10px;
         }
 
-        .wallet-section h3 i {
-            font-size: 1.2rem;
+        .wallet-section h3 i{
+            color:rgba(59,111,220,1);
+            font-size:1.1rem;
         }
 
-        .info-text {
-            font-size: 0.9rem;
-            color: #6c757d;
-            line-height: 1.6;
-            margin-bottom: 20px;
+        .info-text{
+            font-size:.9rem;
+            color: rgba(15,23,42,.60);
+            line-height:1.6;
+            margin-bottom:18px;
         }
 
-        .security-note {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            margin: 20px 0;
+        .security-note{
+            display:flex;
+            align-items:flex-start;
+            gap:12px;
+            padding:16px;
+            background: var(--accent-weak);
+            border: 1px solid var(--line);
+            border-radius:14px;
+            margin-top:2px;
         }
 
-        .security-note i {
-            color: var(--brand-purple);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-            margin-top: 2px;
+        .security-note i{
+            color:rgba(59,111,220,1);
+            font-size:1.15rem;
+            flex-shrink:0;
+            margin-top:2px;
         }
 
-        .security-note .text {
-            font-size: 0.85rem;
-            color: #495057;
-            line-height: 1.5;
+        .security-note .text{
+            font-size:.85rem;
+            color: rgba(15,23,42,.72);
+            line-height:1.55;
         }
 
-        /* 버튼 그룹 */
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
+        .btn-group{
+            display:flex;
+            gap:12px;
+            margin-top:6px;
         }
 
-        .btn {
-            flex: 1;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            border: none;
+        .btn{
+            flex:1;
+            padding:16px 18px;
+            border-radius:16px;
+            font-size:1.02rem;
+            font-weight:900;
+            cursor:pointer;
+            transition: transform .15s ease, filter .15s ease, background-color .15s ease, border-color .15s ease;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+            border:none;
         }
 
-        .btn-secondary {
-            background: #6c757d;
-            color: #FFFFFF;
+        .btn-secondary{
+            background:#fff;
+            color:var(--text);
+            border:2px solid var(--neutral-line);
         }
 
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        .btn-secondary:hover{
+            background: rgba(15,23,42,.03);
+            border-color: rgba(15,23,42,.18);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--brand-main) 0%, var(--brand-purple) 100%);
-            color: #FFFFFF;
+        .btn-secondary:active{
+            transform: scale(.99);
         }
 
-        .btn-primary:hover {
-            background: var(--brand-purple);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+        .btn-primary{
+            background: var(--primary);
+            color:#fff;
+            box-shadow:0 16px 30px rgba(15,23,42,.10);
+        }
+
+        .btn-primary:hover{
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+        }
+
+        .btn-primary:active{
+            transform: scale(.99);
         }
 
         .btn-primary:disabled,
-        .btn-secondary:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+        .btn-secondary:disabled{
+            background: var(--neutral-bg);
+            color: var(--neutral-text);
+            cursor:not-allowed;
+            border:1px solid var(--neutral-line);
+            box-shadow:none;
+            filter:none;
+            transform:none;
         }
 
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .container {
-                padding: 35px 25px;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .wallet-section {
-                padding: 20px;
-            }
-
-            .btn-group {
-                flex-direction: column;
-            }
+        @media (max-width: 768px){
+            .container{ padding:34px 22px; border-radius:22px; }
+            .header h1{ font-size:1.45rem; }
+            .wallet-section{ padding:18px; }
+            .btn-group{ flex-direction:column; }
         }
     </style>
 </head>
@@ -275,7 +289,6 @@
     </div>
 
     <form id="accountForm" class="form-body">
-        <!-- 은행명 -->
         <div class="input-group">
             <label class="label-text">
                 <i class="fas fa-landmark"></i>
@@ -297,7 +310,6 @@
             </select>
         </div>
 
-        <!-- 계좌번호 -->
         <div class="input-group">
             <label class="label-text">
                 <i class="fas fa-credit-card"></i>
@@ -308,7 +320,6 @@
             <span class="help-text">하이픈(-) 없이 숫자만 입력해주세요</span>
         </div>
 
-        <!-- 예금주 -->
         <div class="input-group">
             <label class="label-text">
                 <i class="fas fa-user"></i>
@@ -317,7 +328,6 @@
             <input type="text" name="accountHolder" placeholder="실명을 입력하세요" required>
         </div>
 
-        <!-- 프리랜서인 경우에만 지갑 비밀번호 섹션 표시 -->
         <c:if test="${userDto.userType == 'FREELANCER'}">
             <div class="wallet-section">
                 <h3>
@@ -353,7 +363,6 @@
             </div>
         </c:if>
 
-        <!-- 보안 안내 -->
         <div class="security-note">
             <i class="fas fa-shield-alt"></i>
             <div class="text">
@@ -362,13 +371,12 @@
             </div>
         </div>
 
-        <!-- 이전/다음 버튼 -->
         <div class="btn-group">
             <button type="button" id="prevBtn" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> 이전
+                이전
             </button>
             <button type="button" id="submitBtn" class="btn btn-primary">
-                완료 <i class="fas fa-check"></i>
+                완료
             </button>
         </div>
     </form>
@@ -379,12 +387,10 @@
     const isFreelancer = '${userDto.userType}' === 'FREELANCER';
 
     $(document).ready(function() {
-        // 이전 버튼
         $('#prevBtn').click(function() {
             window.history.back();
         });
 
-        // 프리랜서인 경우 지갑 비밀번호 확인 검증
         if (isFreelancer) {
             $('#walletPasswordConfirm').on('input', function() {
                 const walletPw = $('#walletPassword').val();
@@ -393,7 +399,7 @@
 
                 if (walletPwConfirm.length > 0) {
                     if (walletPw === walletPwConfirm) {
-                        message.text('✓ 비밀번호가 일치합니다').css('color', '#28a745');
+                        message.text('✓ 비밀번호가 일치합니다').css('color', '#16a34a');
                     } else {
                         message.text('✗ 비밀번호가 일치하지 않습니다').css('color', '#dc3545');
                     }
@@ -403,9 +409,7 @@
             });
         }
 
-        // 완료 버튼
         $('#submitBtn').click(function() {
-            // 기본 계좌 정보 검증
             const bankName = $('select[name="bankName"]').val();
             const accountNumber = $('input[name="accountNumber"]').val();
             const accountHolder = $('input[name="accountHolder"]').val();
@@ -420,7 +424,6 @@
                 return;
             }
 
-            // 프리랜서인 경우 지갑 비밀번호 검증
             if (isFreelancer) {
                 const walletPw = $('#walletPassword').val();
                 const walletPwConfirm = $('#walletPasswordConfirm').val();
@@ -444,10 +447,8 @@
                 }
             }
 
-            // 버튼 비활성화 및 처리중 표시
             $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
 
-            // AJAX 요청
             $.ajax({
                 url: contextPath + '/join/complete',
                 method: 'POST',
