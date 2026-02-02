@@ -6,7 +6,6 @@
 <mapper namespace="com.sanaiclub.chat.dao.ChatMessageMapper">
     <resultMap id="messageMap"
                type="com.sanaiclub.chat.model.dto.ChatMessageDTO">
-
         <id column="message_id" property="messageId"/>
         <result column="room_id" property="roomId"/>
         <result column="sender_id" property="senderId"/>
@@ -18,6 +17,7 @@
         <result column="file_url" property="fileUrl"/>
         <result column="file_size" property="fileSize"/>
     </resultMap>
+
     <select id="findFileByMessageId"
             parameterType="int"
             resultType="com.sanaiclub.chat.model.dto.ChatMessageDTO">
@@ -34,13 +34,13 @@
     <select id="findMessages"
             parameterType="int"
             resultMap="messageMap">
-        SELECT
-            *
+        SELECT *
         FROM messages m
         WHERE m.room_id = #{roomId}
         ORDER BY m.created_at ASC
 
     </select>
+
     <insert id="insertMessage">
         INSERT INTO messages (
             room_id,
@@ -52,14 +52,14 @@
             created_at,
             is_read
         ) VALUES (
-                  #{roomId},
-                  #{senderId},
-                  #{content},
-                  #{fileName},
-                  #{fileUrl},
-                  #{fileSize},
-                  CURRENT_TIMESTAMP,
-                  0
+                     #{roomId},
+                     #{senderId},
+                     #{content},
+                     #{fileName},
+                     #{fileUrl},
+                     #{fileSize},
+                     CURRENT_TIMESTAMP,
+                     0
                  )
     </insert>
 
@@ -71,12 +71,10 @@
           AND is_read = 0
     </update>
 
-
     <update id="deleteMessage">
         UPDATE messages
         SET is_deleted = 1, deleted_at = CURRENT_TIMESTAMP
         WHERE message_id = #{messageId}
     </update>
-
 
 </mapper>

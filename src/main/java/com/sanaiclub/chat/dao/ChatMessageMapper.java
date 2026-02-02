@@ -9,6 +9,7 @@ import java.util.List;
 @Mapper
 public interface ChatMessageMapper {
     List<ChatMessageDTO> findMessages(@Param("roomId") Integer roomId);
+
     ChatMessageDTO findFileByMessageId(Integer messageId);
 
     void insertMessage(
