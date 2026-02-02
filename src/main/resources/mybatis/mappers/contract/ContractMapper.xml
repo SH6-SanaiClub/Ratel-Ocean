@@ -32,46 +32,60 @@
     <!-- 새 계약 생성 (INSERT 후 contract_id 반환) -->
     <insert id="insertContract" parameterType="map">
         INSERT INTO contracts (
-        contract_id,
-        contract_start_date,
-        contract_end_date,
-        total_budget,
-        payment_method,
-        contract_status,
-        origin_contract_url,
-        platform_contract_url,
-        ai_report_url,
-        contracted_at,
-        completed_at,
-        cancel_reason,
-        client_rating,
-        client_experience,
-        client_is_renewal_intended,
-        freelancer_rating,
-        freelancer_experience
+            contract_id,
+            contract_start_date,
+            contract_end_date,
+            total_budget,
+            payment_method,
+            contract_status,
+            origin_contract_url,
+            platform_contract_url,
+            ai_report_url,
+            contracted_at,
+            completed_at,
+            cancel_reason,
+            client_rating,
+            client_experience,
+            client_is_renewal_intended,
+            freelancer_rating,
+            freelancer_experience
         )
         VALUES (
-        #{contractId},
-        #{contract.contractStartDate},
-        #{contract.contractEndDate},
-        #{contract.totalBudget},
-        #{contract.paymentMethod},
-        #{contract.contractStatus},
-        #{contract.originContractUrl},
-        #{contract.platformContractUrl},
-        #{contract.aiReportUrl},
-        #{contract.contractedAt},
-        #{contract.completedAt},
-        #{contract.cancelReason},
-        #{contract.clientRating},
-        #{contract.clientExperience},
-        #{contract.clientIsRenewalIntended},
-        #{contract.freelancerRating},
-        #{contract.freelancerExperience}
-        )
-        <selectKey keyProperty="resultMap.contractId" resultType="int" order="AFTER">
-            SELECT #{contractId}
-        </selectKey>
+                   #{contractId},
+                   #{contract.contractStartDate},
+                   #{contract.contractEndDate},
+                   #{contract.totalBudget},
+                   #{contract.paymentMethod},
+                   #{contract.contractStatus},
+                   #{contract.originContractUrl},
+                   #{contract.platformContractUrl},
+                   #{contract.aiReportUrl},
+                   #{contract.contractedAt},
+                   #{contract.completedAt},
+                   #{contract.cancelReason},
+                   #{contract.clientRating},
+                   #{contract.clientExperience},
+                   #{contract.clientIsRenewalIntended},
+                   #{contract.freelancerRating},
+                   #{contract.freelancerExperience}
+               )
+            ON DUPLICATE KEY UPDATE
+                                 contract_start_date = #{contract.contractStartDate},
+                                 contract_end_date = #{contract.contractEndDate},
+                                 total_budget = #{contract.totalBudget},
+                                 payment_method = #{contract.paymentMethod},
+                                 contract_status = #{contract.contractStatus},
+                                 origin_contract_url = #{contract.originContractUrl},
+                                 platform_contract_url = #{contract.platformContractUrl},
+                                 ai_report_url = #{contract.aiReportUrl},
+                                 contracted_at = #{contract.contractedAt},
+                                 completed_at = #{contract.completedAt},
+                                 cancel_reason = #{contract.cancelReason},
+                                 client_rating = #{contract.clientRating},
+                                 client_experience = #{contract.clientExperience},
+                                 client_is_renewal_intended = #{contract.clientIsRenewalIntended},
+                                 freelancer_rating = #{contract.freelancerRating},
+                                 freelancer_experience = #{contract.freelancerExperience}
     </insert>
 
     <!-- 계약 ID로 계약 정보 조회 -->

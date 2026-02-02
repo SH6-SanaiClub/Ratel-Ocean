@@ -208,7 +208,17 @@
   <div class="header-inner">
 
     <div class="logo">
-      <a href="${pageContext.request.contextPath}/">RatelOcean</a>
+      <c:choose>
+        <c:when test="${userType eq 'CLIENT'}">
+          <a href="${ctx}/client/dashboard">RatelOcean</a>
+        </c:when>
+        <c:when test="${userType eq 'FREELANCER'}">
+          <a href="${ctx}/freelancer/dashboard">RatelOcean</a>
+        </c:when>
+        <c:otherwise>
+          <a href="${ctx}/">RatelOcean</a>
+        </c:otherwise>
+      </c:choose>
     </div>
 
     <nav class="nav">
