@@ -637,7 +637,7 @@
     <div class="pageTitle">
         <div class="titleBox">
             <h1>프로젝트 찾기</h1>
-            <p class="bm-sub">프로젝트를 찾을 수 있긔</p>
+            <p class="bm-sub">현재 모집 중인 프로젝트 목록입니다. 조건과 기술 스택을 기준으로 탐색해보세요.</p>
         </div>
 
         <c:if test="${isClient}">
