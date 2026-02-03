@@ -30,7 +30,7 @@ function ioTypeLabel(type) {
     switch (type) {
         case 'DEPOSIT': return '입금';
         case 'WITHDRAWAL': return '출금';
-        case 'PAYMENT': return '결제';
+        case 'PAYMENT': return '수익 입금';
         case 'REFUND': return '환불';
         default: return type;
     }
@@ -57,7 +57,7 @@ function loadMoreHistory(reset) {
             }
 
             list.forEach(function (h) {
-                const isMinus = (h.ioType === 'WITHDRAWAL' || h.ioType === 'PAYMENT');
+                const isMinus = (h.ioType === 'WITHDRAWAL');
                 const sign = isMinus ? '-' : '+';
 
                 const row = `
