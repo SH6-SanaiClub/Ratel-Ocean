@@ -43,7 +43,7 @@
                 <span class="hero-badge">VISUAL IDENTITY SYSTEM</span>
                 <h1 class="hero-title">
                     프로젝트 관리부터<br>
-                    계약, 정산, 경력 관리까지<br>
+                    계약, 정산, 경력 관리<br>
                     한 번에 해결하세요.
                 </h1>
                 <p class="hero-description">

@@ -62,22 +62,15 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalStateException("결제 가능한 상태가 아닙니다. 현재 상태: " + contract.getContractStatus());
         }
 
-        // 3. 결제 상태 검증 (UNPAID 상태여야 함)
-        // Note: PaymentStatus는 별도 컬럼이 없으므로 계약 상태로 판단
-        if (ContractStatus.PAID.equals(contract.getContractStatus()) || 
-            ContractStatus.COMPLETED.equals(contract.getContractStatus())) {
-            throw new IllegalStateException("이미 결제된 계약입니다.");
-        }
-
-        // 4. 금액 검증
+        // 3. 금액 검증
         if (!request.getAmount().equals(contract.getTotalBudget())) {
             throw new IllegalArgumentException("결제 금액이 계약 금액과 일치하지 않습니다.");
         }
 
-        // 5. merchant_uid 생성
+        // 4. merchant_uid 생성
         String merchantUid = MerchantUidGenerator.generate(request.getContractId());
 
-        // 6. 결제 준비 DTO 생성
+        // 5. 결제 준비 DTO 생성
         PaymentPrepareDTO prepareDTO = PaymentPrepareDTO.builder()
                 .merchantUid(merchantUid)
                 .contractId(request.getContractId())
