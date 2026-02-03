@@ -25,4 +25,10 @@ public class FreelancerProjectCardDTO {
 
     private Long totalBudget;
     private Integer dday; // 마감(D-day)용 (endDate - today)
+
+    private Integer clientRating;        // contracts.client_rating
+    private String  clientExperience;    // contracts.client_experience
+
+    private Integer freelancerRating;    // contracts.freelancer_rating
+    private String  freelancerExperience;// contracts.freelancer_experience
 }

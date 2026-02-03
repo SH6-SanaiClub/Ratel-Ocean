@@ -437,7 +437,25 @@
       gap:10px;
       flex-wrap:wrap;
     }
-
+    .pm .reviewBox{ display:flex; flex-direction:column; gap:6px; }
+    .pm .stars{ display:flex; gap:2px; line-height:1; }
+    .pm .star{ font-size:14px; }
+    .pm .star.on{ color: var(--primary); }
+    .pm .star.off{ color: #cbd5e1; } /* 흐린 별 */
+    .pm .reviewText{
+      color: var(--text);
+      font-weight:850;
+      font-size:12px;
+      line-height:1.45;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .pm .reviewHint{
+      color: var(--muted);
+      font-weight:900;
+      font-size:12px;
+      line-height:1.45;
+    }
 
     @media (max-width: 980px){
       .pm .gridTop{ grid-template-columns:1fr; }
@@ -571,7 +589,9 @@
                 <div class="metaRow">
                   <div>
                     <div class="k">계약 기간</div>
-                    <div class="v"><c:out value="${p.startDate}"/> ~ <c:out value="${p.endDate}"/></div>
+                    <div class="v"><c:out value="${p.startDate}"/><br>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~
+                      <br><c:out value="${p.endDate}"/></div>
                   </div>
 
                   <div>
@@ -580,7 +600,7 @@
                       <c:choose>
                         <c:when test="${not empty p.nextMilestoneName}">
                           <c:out value="${p.nextMilestoneName}"/>
-                          <c:if test="${not empty p.nextMilestoneDueDate}">
+                          <c:if test="${not empty p.nextMilestoneDueDate}"><br>
                             · <c:out value="${p.nextMilestoneDueDate}"/>
                           </c:if>
                         </c:when>
@@ -685,7 +705,9 @@
                 <div class="metaRow">
                   <div>
                     <div class="k">계약 기간</div>
-                    <div class="v"><c:out value="${p.startDate}"/> ~ <c:out value="${p.endDate}"/></div>
+                    <div class="v"><c:out value="${p.startDate}"/><br>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~
+                      <br><c:out value="${p.endDate}"/></div>
                   </div>
 
                   <div>
@@ -699,13 +721,38 @@
                   </div>
 
                   <div>
-                    <div class="k">후기/평가</div>
-                    <div class="v">추후 연동</div>
+                    <div class="k">클라이언트 후기</div>
+                    <div class="v">
+                      <div class="reviewBox">
+
+                        <c:choose>
+                          <c:when test="${empty p.freelancerRating and empty p.freelancerExperience}">
+                            <div class="reviewHint">후기를 작성하면 클라이언트 후기를 확인할 수 있습니다.</div>
+                          </c:when>
+
+                          <c:when test="${empty p.clientRating and empty p.clientExperience}">
+                            <div class="reviewHint">클라이언트가 아직 후기를 작성하지 않았습니다.</div>
+                          </c:when>
+
+                          <c:otherwise>
+                            <c:if test="${not empty p.clientRating}">
+                              <div class="stars" aria-label="client rating">
+                                <c:forEach var="i" begin="1" end="5">
+                                  <span class="star ${i <= p.clientRating ? 'on' : 'off'}">★</span>
+                                </c:forEach>
+                              </div>
+                            </c:if>
+                          </c:otherwise>
+                        </c:choose>
+
+                      </div>
+                    </div>
                   </div>
+
                 </div>
 
                 <div class="actions">
-                  <a class="btn ghost" href="${pageContext.request.contextPath}/contract/detail?contractId=${p.contractId}">상세 보기</a>
+                  <a class="btn ghost" href="${pageContext.request.contextPath}/freelancer/contract/list?contractId=${p.contractId}">상세 보기</a>
                   <a class="btn primary" href="${pageContext.request.contextPath}/freelancer/project/detail?tab=reviews&contractId=${p.contractId}">리뷰 보기</a>
                 </div>
               </div>
@@ -871,11 +918,11 @@
 
       div.onclick = () => {
         if(ev.contractId){
-          window.location.href = ctx + "/contract/detail?contractId=" + ev.contractId;
+          window.location.href = ctx + "/freelancer/contract/list?contractId=" + ev.contractId;
           return;
         }
         if(ev.projectId){
-          window.location.href = ctx + "/project/detail?projectId=" + ev.projectId;
+          window.location.href = ctx + "/freelancer/project/detail?projectId=" + ev.projectId;
         }
       };
 
