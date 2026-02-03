@@ -2,7 +2,10 @@ $(document).ready(function () {
     $('#description').summernote({
         height: 350,
         lang: 'ko-KR',
-        toolbar: [['style', ['style']], ['font', ['bold', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link']]]
+        toolbar: [['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['link']]]
     });
 
     $('#stackSearch').on('input', function () {

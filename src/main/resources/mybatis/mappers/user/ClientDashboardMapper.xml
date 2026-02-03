@@ -6,12 +6,10 @@
 
     <select id="selectDashboardSummary" resultType="com.sanaiclub.user.model.dto.ClientDashboardDTO">
         SELECT
-            -- 1. 등록한 총 프로젝트 수
             (SELECT COUNT(*)
              FROM projects
              WHERE client_id = #{userId}) AS totalProjects,
 
-            -- 2. 진행 중인 계약 건수
             (SELECT COUNT(*)
              FROM contracts c
                       JOIN project_applications pa ON c.contract_id = pa.application_id
@@ -19,13 +17,11 @@
              WHERE p.client_id = #{userId}
                AND c.contract_status = 'SIGNED') AS activeContracts,
 
-            -- 3. 받은 총 지원자 수
             (SELECT COUNT(*)
              FROM project_applications pa
                       JOIN projects p ON pa.project_id = p.project_id
              WHERE p.client_id = #{userId}) AS totalApplicants,
 
-            -- 4. 완료된 프로젝트 수
             (SELECT COUNT(*)
              FROM projects
              WHERE client_id = #{userId}
@@ -34,21 +30,15 @@
 
     <select id="selectMonthlyExpenditure" resultType="map">
         SELECT
-            DATE_FORMAT(wh.created_at, '%Y-%m') AS month,
-            SUM(wh.amount)                      AS totalAmount
-        FROM wallet_histories wh
-        WHERE wh.wallet_id IN (
-            SELECT DISTINCT fw.wallet_id
-            FROM freelancer_wallets fw
-            INNER JOIN project_applications pa ON fw.freelancer_id = pa.freelancer_id
+            DATE_FORMAT(c.contracted_at, '%Y-%m') AS month,
+        SUM(c.total_budget)                   AS totalAmount
+        FROM contracts c
+            INNER JOIN project_applications pa ON c.contract_id = pa.application_id
             INNER JOIN projects p ON pa.project_id = p.project_id
-            INNER JOIN contracts c ON pa.application_id = c.contract_id
-            WHERE p.client_id = #{userId}
-          AND c.contract_status IN ('SIGNED', 'PAID', 'COMPLETED')
-            )
-          AND wh.io_type = 'PAYMENT'
-          AND wh.created_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 MONTH), '%Y-%m-01')
-        GROUP BY DATE_FORMAT(wh.created_at, '%Y-%m')
+        WHERE p.client_id = #{userId}
+          AND c.contract_status IN ('PAID', 'COMPLETED')
+          AND c.contracted_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 MONTH), '%Y-%m-01')
+        GROUP BY DATE_FORMAT(c.contracted_at, '%Y-%m')
         ORDER BY month ASC
     </select>
 
@@ -67,24 +57,22 @@
     </select>
 
     <select id="selectRecentApplicants" resultType="com.sanaiclub.user.model.dto.RecentApplicantDTO">
-        SELECT
-            pa.application_id,
-            u.user_id AS freelancerId,
-            u.name AS freelancerName,     -- [핵심] 없는 컬럼 처리 (이미지 기반)
-            fp.nickname AS profileTitle,  -- 직무 컬럼 없음 -> 닉네임으로 대체
-            0 AS careerYear,              -- 경력 컬럼 없음 -> 0으로 처리 (에러 방지)
-            0.0 AS rating,                -- 평점 컬럼 없음 -> 0.0으로 처리 (에러 방지)
+        SELECT pa.application_id,
+               u.user_id   AS freelancerId,
+               u.name      AS freelancerName,
+               fp.nickname AS profileTitle,
+               0           AS careerYear,
+               0.0         AS rating,
 
-            p.title AS projectTitle,
-            pa.applied_at
+               p.title     AS projectTitle,
+               pa.applied_at
         FROM project_applications pa
                  JOIN projects p ON pa.project_id = p.project_id
                  JOIN users u ON pa.freelancer_id = u.user_id
                  LEFT JOIN freelancer_profiles fp ON u.user_id = fp.freelancer_id
         WHERE p.client_id = #{userId}
           AND pa.application_status = 'PENDING'
-        ORDER BY pa.applied_at DESC
-            LIMIT 3
+        ORDER BY pa.applied_at DESC LIMIT 3
     </select>
 
     <select id="selectProjectStatusCounts" resultType="map">
