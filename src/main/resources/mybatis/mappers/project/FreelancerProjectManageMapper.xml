@@ -57,6 +57,11 @@
 
             c.total_budget           AS totalBudget,
 
+            c.client_rating          AS clientRating,
+            c.client_experience      AS clientExperience,
+            c.freelancer_rating      AS freelancerRating,
+            c.freelancer_experience  AS freelancerExperience,
+
             /* D-day: 계약 종료일 기준 */
             DATEDIFF(c.contract_end_date, CURDATE())       AS dday,
 
