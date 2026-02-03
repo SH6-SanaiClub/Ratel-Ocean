@@ -197,7 +197,7 @@
         }
         let unreadHtml = "";
         if (room.unreadCount > 0) {
-            unreadHtml = '<span class="unread-badge" style="background:#173160; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 50%; margin-left: 8px;">' + room.unreadCount + '</span>';
+            unreadHtml = '<span class="unread-badge" style="background: #173160; color: #fff; font-size: 11px; padding: 4px 7px; border-radius: 10px; margin-left: 8px; vertical-align: middle;">' + room.unreadCount + '</span>';
         }
         let lastMsg = room.lastMessageContent || "아직 메시지가 없습니다.";
         if (room.lastMessageDeleted === 1) lastMsg = "메시지가 삭제되었습니다.";
