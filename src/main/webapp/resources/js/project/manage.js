@@ -130,6 +130,9 @@ function renderList(list) {
         if (app.applicationStatus === 'VIEWED') {
             statusText = "열람함";
             badgeStyle = "background:#E3F2FD; color:#1F7A8C;";
+        } else if (app.applicationStatus === 'CHATTING') {
+            statusText = "대화중";
+            badgeStyle = "background:#E8EAF6; color:#3F51B5; border:1px solid #C5CAE9;";
         } else if (app.applicationStatus === 'OFFERED') {
             statusText = "제안중";
             badgeStyle = "background:#E8F5E9; color:#2E7D32;";
@@ -198,8 +201,7 @@ function renderDetail(data) {
     if (imgSrc && imgSrc !== 'null') {
         if (!imgSrc.startsWith('/') && !imgSrc.startsWith('http')) {
             imgSrc = contextPath + "/resources/upload/profile/" + encodeURIComponent(imgSrc);
-        }
-        else if (imgSrc.startsWith('/')) {
+        } else if (imgSrc.startsWith('/')) {
             imgSrc = contextPath + imgSrc;
         }
     }
@@ -246,8 +248,12 @@ function renderDetail(data) {
     let chatStyle = "btn-outline", offerStyle = "btn-primary", rejectStyle = "btn-secondary";
 
     if (status === 'REJECTED' || status === 'CONTRACTED' || status === 'CANCELED') {
-        chatDisabled = "disabled"; offerDisabled = "disabled"; rejectDisabled = "disabled";
-        chatStyle = "btn-disabled"; offerStyle = "btn-disabled"; rejectStyle = "btn-disabled";
+        chatDisabled = "disabled";
+        offerDisabled = "disabled";
+        rejectDisabled = "disabled";
+        chatStyle = "btn-disabled";
+        offerStyle = "btn-disabled";
+        rejectStyle = "btn-disabled";
     }
 
     const html = `
@@ -280,12 +286,12 @@ function renderDetail(data) {
         </div>
 
         <div class="action-btn-group" style="margin-top:auto; padding-top:20px;">
-            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="openChatRoom(${data.freelancerId})">
-                1:1 채팅하기
+            <button class="btn-action ${chatStyle}" ${chatDisabled} onclick="openChatRoom(${data.freelancerId}, ${data.applicationId})">
+            1:1 채팅하기
             </button>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="goToContractForm(${currentProjectId}, ${data.freelancerId})">
-                    계약 제안
+                <button class="btn-action ${offerStyle}" ${offerDisabled} onclick="goToContractForm(${currentProjectId}, ${data.freelancerId}, ${data.applicationId})">
+                계약 제안
                 </button>
                 <button class="btn-action ${rejectStyle}" ${rejectDisabled} onclick="updateStatus(${data.applicationId}, 'REJECTED')">
                     불합격
@@ -296,8 +302,8 @@ function renderDetail(data) {
     $('#applicantDetailArea').html(html);
 }
 
-function openChatRoom(freelancerId) {
-   if (!currentProjectId) {
+function openChatRoom(freelancerId, applicationId) {
+    if (!currentProjectId) {
         alert("프로젝트 정보가 없습니다.");
         return;
     }
@@ -318,6 +324,21 @@ function openChatRoom(freelancerId) {
             const url = `/ratelocean/chat?roomId=${roomId}&mode=view`;
             const options = "width=470,height=600,resizable=yes,scrollbars=no,status=no,location=no";
             window.open(url, "chatPopup_" + roomId, options);
+
+            if (applicationId) {
+                $.ajax({
+                    url: contextPath + '/client/api/applicant/status',
+                    type: 'POST',
+                    data: {
+                        applicationId: applicationId,
+                        status: 'CHATTING'
+                    },
+                    success: function () {
+                        // 3. 화면 배지 즉시 변경
+                        updateListItemBadge(applicationId, 'CHATTING');
+                    }
+                });
+            }
         },
         error: function (xhr, status, err) {
             console.error(err);
@@ -352,10 +373,18 @@ function updateStatus(appId, status) {
 
 function updateListItemBadge(appId, status) {
     const badge = $(`#item-${appId} .status-badge`);
-    if (status === 'VIEWED') badge.text("열람함").css({background: "#E3F2FD", color: "#1F7A8C"});
-    else if (status === 'OFFERED') badge.text("제안중").css({background: "#E8F5E9", color: "#2E7D32"});
-    else if (status === 'REJECTED') badge.text("불합격").css({background: "#FFEBEE", color: "#C62828"});
-    else if (status === 'CONTRACTED') badge.text("계약완료").css({background: "#FFF3E0", color: "#EF6C00"});
+
+    if (status === 'VIEWED') {
+        badge.text("열람함").css({background: "#E3F2FD", color: "#1F7A8C", border: "none"});
+    } else if (status === 'CHATTING') {
+        badge.text("대화중").css({background: "#E8EAF6", color: "#3F51B5", border: "1px solid #C5CAE9"});
+    } else if (status === 'OFFERED') {
+        badge.text("제안중").css({background: "#E8F5E9", color: "#2E7D32", border: "none"});
+    } else if (status === 'REJECTED') {
+        badge.text("불합격").css({background: "#FFEBEE", color: "#C62828", border: "none"});
+    } else if (status === 'CONTRACTED') {
+        badge.text("계약완료").css({background: "#FFF3E0", color: "#EF6C00", border: "none"});
+    }
 }
 
 function goToProjectDetail() {
@@ -386,11 +415,34 @@ function deleteProject() {
     }
 }
 
-function goToContractForm(projectId, freelancerId) {
+function goToContractForm(projectId, freelancerId, applicationId) {
     if (!projectId || !freelancerId) {
         alert('프로젝트와 프리랜서를 선택해주세요.');
         return;
     }
-    const url = contextPath + '/client/contract/form?projectId=' + projectId + '&freelancerId=' + freelancerId;
-    window.location.href = url;
+
+    if (applicationId) {
+        $.ajax({
+            url: contextPath + '/client/api/applicant/status',
+            type: 'POST',
+            data: {
+                applicationId: applicationId,
+                status: 'OFFERED' // '제안중' 상태
+            },
+            success: function () {
+                // 3. 성공하면 계약서 작성 페이지로 이동
+                const url = contextPath + '/client/contract/form?projectId=' + projectId + '&freelancerId=' + freelancerId;
+                window.location.href = url;
+            },
+            error: function () {
+                // 에러 나도 일단 이동은 시킴
+                alert("상태 변경 중 오류가 발생했으나 페이지로 이동합니다.");
+                const url = contextPath + '/client/contract/form?projectId=' + projectId + '&freelancerId=' + freelancerId;
+                window.location.href = url;
+            }
+        });
+    } else {
+        const url = contextPath + '/client/contract/form?projectId=' + projectId + '&freelancerId=' + freelancerId;
+        window.location.href = url;
+    }
 }
