@@ -15,7 +15,7 @@
                       JOIN project_applications pa ON c.contract_id = pa.application_id
                       JOIN projects p ON pa.project_id = p.project_id
              WHERE p.client_id = #{userId}
-               AND c.contract_status = 'SIGNED') AS activeContracts,
+               AND c.contract_status = 'PAID') AS activeContracts,
 
             (SELECT COUNT(*)
              FROM project_applications pa

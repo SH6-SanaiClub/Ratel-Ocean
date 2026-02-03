@@ -56,22 +56,22 @@ public class ProjectDetailService {
 
     @Transactional
     public String toggleApply(Integer projectId, Integer userId) {
-        // 1. 현재 상태 조회
+        // 현재 상태 조회
         String currentStatus = projectDetailMapper.selectApplicationStatus(projectId, userId);
 
         if (currentStatus == null) {
-            // 2-1. 기록이 아예 없음 -> 신규 지원 (INSERT)
+            // 기록이 아예 없으면 신규 지원
             projectDetailMapper.insertApplication(projectId, userId);
             return "APPLIED"; // Controller에서 처리할 응답값
         }
 
-        // 2-2. 기록이 있음 -> 상태 판단
+        // 기록이 있으면 상태 판단
         if (ApplicationStatus.CANCELED.name().equals(currentStatus)) {
-            // 취소했던 상태라면 -> 다시 지원 (PENDING으로 변경)
+            // 취소했던 상태라면 다시 지원 (PENDING으로 변경)
             projectDetailMapper.updateApplicationStatus(projectId, userId, ApplicationStatus.PENDING.name());
             return "APPLIED";
         } else {
-            // 이미 지원 중인 상태(PENDING, VIEWED 등)라면 -> 지원 취소 (CANCELED로 변경)
+            // 이미 지원 중인 상태(PENDING, VIEWED 등)라면 지원 취소 (CANCELED로 변경)
             projectDetailMapper.updateApplicationStatus(projectId, userId, ApplicationStatus.CANCELED.name());
             return "CANCELED";
         }
