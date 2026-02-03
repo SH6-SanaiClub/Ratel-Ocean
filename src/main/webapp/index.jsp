@@ -11,20 +11,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-<!-- Header -->
 <header class="header">
     <div class="container">
         <div class="header-content">
             <div class="logo">
                 <a href="${pageContext.request.contextPath}/">
-                    <span class="logo-icon">🦦</span>
-                    <span class="logo-text">Ratel-Ocean</span>
+
+                    <span class="logo-text">RatelOcean</span>
                 </a>
             </div>
             <nav class="nav">
                 <ul class="nav-list">
                     <li><a href="#features">기능 소개</a></li>
-                    <li><a href="#benefits">예제 더보드</a></li>
+                    <li><a href="#benefits">예시 대시보드</a></li>
                     <li><a href="#projects">프로젝트</a></li>
                     <li><a href="#pricing">도움말</a></li>
                 </ul>
@@ -37,7 +36,6 @@
     </div>
 </header>
 
-<!-- Hero Section -->
 <section class="hero">
     <div class="container">
         <div class="hero-content">
@@ -45,13 +43,13 @@
                 <span class="hero-badge">VISUAL IDENTITY SYSTEM</span>
                 <h1 class="hero-title">
                     프로젝트 관리부터<br>
-                    계약, 정산, 자산화까지<br>
-                    한번에 해결하세요.
+                    계약, 정산, 경력 관리까지<br>
+                    한 번에 해결하세요.
                 </h1>
                 <p class="hero-description">
-                    프리랜서 전문 프리랜서를 위한 통합 시스템. 일상적 업무를<br>
-                    자동으로 관리하고, 비즈니스 거래에서의 안전을 보장하며,<br>
-                    프로젝트 경력을 관리하세요.
+                    프리랜서와 클라이언트를 위한 통합 플랫폼.<br>
+                    프로젝트 운영, 계약/정산 흐름을 체계화하고<br>
+                    수행 이력을 경력으로 깔끔하게 관리할 수 있습니다.
                 </p>
                 <div class="hero-actions">
                     <a href="${pageContext.request.contextPath}/join/select-role?userType=FREELANCER" class="btn btn-primary btn-lg">
@@ -68,7 +66,7 @@
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">✓</span>
-                        <span class="feature-text">안전 정산 솔루션</span>
+                        <span class="feature-text">안전한 정산 프로세스</span>
                     </div>
                 </div>
             </div>
@@ -119,10 +117,9 @@
     </div>
 </section>
 
-<!-- Partners Section -->
 <section class="partners">
     <div class="container">
-        <p class="partners-title">우리의 파트너들을 만나보세요. 여러분.</p>
+        <p class="partners-title">함께 성장하는 파트너들과 안전한 프로젝트 경험을 만들어갑니다.</p>
         <div class="partners-grid">
             <div class="partner-logo">ACME Corp</div>
             <div class="partner-logo">Starkind</div>
@@ -133,132 +130,127 @@
     </div>
 </section>
 
-<!-- Core Values Section -->
-<section class="values">
+<section class="values" id="benefits">
     <div class="container">
         <h2 class="section-title">전문가의 안정과 성장을 위해 설계되었습니다</h2>
-        <p class="section-subtitle">프리랜서와 전문직이 안전하게 프로젝트 수주 및 관리하면서 수익을 보장을 지원을 중심으로 출시되었습니다.</p>
+        <p class="section-subtitle">프리랜서와 클라이언트가 신뢰 기반으로 협업할 수 있도록, 핵심 흐름을 한 곳에 모았습니다.</p>
 
         <div class="values-grid">
             <div class="value-card">
                 <div class="value-icon">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <path d="M24 4L6 14V22C6 33 13.5 43 24 44C34.5 43 42 33 42 22V14L24 4Z" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18 24L22 28L30 20" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M24 4L6 14V22C6 33 13.5 43 24 44C34.5 43 42 33 42 22V14L24 4Z" stroke="#173160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18 24L22 28L30 20" stroke="#173160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
-                <h3 class="value-title">게임 리스크 감소</h3>
+                <h3 class="value-title">거래 리스크 감소</h3>
                 <p class="value-description">
-                    안전하게 업무를 보호 받아 안정된 업계에서 거래를 하세요.
-                    프로젝트 보호금 제도와 정산되어서 안전하고 효과적으로 관리됩니다.
+                    프로젝트 진행 과정에서 생길 수 있는 리스크를 줄이고,
+                    계약과 산출물 흐름을 체계적으로 관리할 수 있습니다.
                 </p>
                 <ul class="value-list">
-                    <li>프로젝트 커리 보호금</li>
-                    <li>실전 근본 보호</li>
-                    <li>실천 모범 사례</li>
+                    <li>명확한 계약 흐름</li>
+                    <li>진행 상태 투명화</li>
+                    <li>분쟁 예방 가이드</li>
                 </ul>
             </div>
 
             <div class="value-card">
                 <div class="value-icon">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="18" stroke="#1F7A8C" stroke-width="2"/>
-                        <path d="M24 12V24L30 30" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="24" cy="24" r="18" stroke="#173160" stroke-width="2"/>
+                        <path d="M24 12V24L30 30" stroke="#173160" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </div>
                 <h3 class="value-title">현금 흐름 안정화</h3>
                 <p class="value-description">
-                    프리랜서 수수를 계약하면 발생되어 정산과 센터 보호
-                    관리를 시스템으로 협력해서 깨끗한 허위 업무를 조정해 자동으로 산고는 모습입니다.
+                    정산 상태와 거래 내역을 한눈에 확인하고,
+                    업무-정산 간 공백을 최소화할 수 있도록 돕습니다.
                 </p>
                 <ul class="value-list">
-                    <li>수입 발행을 안전</li>
-                    <li>근본부터 정산을 수익</li>
-                    <li>교부된 보호 사업비</li>
+                    <li>정산 내역 일원화</li>
+                    <li>예상 수익 가시화</li>
+                    <li>거래 기록 자동 보관</li>
                 </ul>
             </div>
 
             <div class="value-card">
                 <div class="value-icon">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <path d="M40 18L24 6L8 18V38C8 39.1046 8.89543 40 10 40H38C39.1046 40 40 39.1046 40 38V18Z" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18 40V24H30V40" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M40 18L24 6L8 18V38C8 39.1046 8.89543 40 10 40H38C39.1046 40 40 39.1046 40 38V18Z" stroke="#173160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18 40V24H30V40" stroke="#173160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
                 <h3 class="value-title">경력 자산화</h3>
                 <p class="value-description">
-                    프리랜서 수행한 프로젝트를 단순한 일사적 가치를 프로모트 하세요.
-                    실제 수개 경험을 가자 시장에서 방향한 거위 수수를 수액합니다.
+                    수행한 프로젝트 이력을 깔끔하게 정리하고,
+                    다음 프로젝트 수주에 활용할 수 있도록 지원합니다.
                 </p>
                 <ul class="value-list">
-                    <li>정보와 클로저 이력</li>
-                    <li>실채 추율 제공면</li>
-                    <li>디지털 링터 수익</li>
+                    <li>프로젝트 히스토리 관리</li>
+                    <li>성과/리뷰 축적</li>
+                    <li>포트폴리오 연결</li>
                 </ul>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Features Section -->
 <section class="features" id="features">
     <div class="container">
-        <h2 class="section-title">왜 Ratel-Ocean를 선택해야 할까요?</h2>
-        <p class="section-subtitle">프리랜서 커뮤니티를 중심으로 방송된 중심의 수이로 관리방식이 실현 방식을 것으로 제공됩니다.</p>
+        <h2 class="section-title">왜 Ratel-Ocean을 선택해야 할까요?</h2>
+        <p class="section-subtitle">협업 과정의 번거로움을 줄이고, 핵심에 집중할 수 있도록 기능을 설계했습니다.</p>
 
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon-large">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                        <rect x="8" y="8" width="48" height="48" rx="8" stroke="#1F7A8C" stroke-width="2"/>
-                        <path d="M28 32L32 36L40 28" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="8" y="8" width="48" height="48" rx="8" stroke="#173160" stroke-width="2"/>
+                        <path d="M28 32L32 36L40 28" stroke="#173160" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
-                <h3 class="feature-title">안전한 상거 거래</h3>
+                <h3 class="feature-title">안전한 프로젝트 운영</h3>
                 <p class="feature-description">
-                    다양한 업종을 추종은 통합 에어컨이 생활에서
-                    필아터 행사자로 근성이 안내합의 관리 수치를
-                    보호하게 거래를 합니다.
+                    진행 상태, 지원자, 계약까지 하나의 흐름으로 관리해
+                    놓치는 일이 없도록 도와드립니다.
                 </p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon-large">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                        <path d="M32 8L8 20V32C8 45.255 17.255 57.255 32 60C46.745 57.255 56 45.255 56 32V20L32 8Z" stroke="#1F7A8C" stroke-width="2"/>
-                        <circle cx="32" cy="32" r="8" stroke="#1F7A8C" stroke-width="2"/>
+                        <path d="M32 8L8 20V32C8 45.255 17.255 57.255 32 60C46.745 57.255 56 45.255 56 32V20L32 8Z" stroke="#173160" stroke-width="2"/>
+                        <circle cx="32" cy="32" r="8" stroke="#173160" stroke-width="2"/>
                     </svg>
                 </div>
-                <h3 class="feature-title">편한 세금 & 정산</h3>
+                <h3 class="feature-title">정산 & 거래 내역 관리</h3>
                 <p class="feature-description">
-                    세금 산출 계산을 환한하실 수 있어서 일저 근본을 보장해 배부 정삭 방송 프로필
-                    낼해볼 수 세무 관리를 경험해시고 근접합니다.
+                    정산 흐름과 거래 내역을 한곳에서 확인하고,
+                    기록을 체계적으로 보관할 수 있습니다.
                 </p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon-large">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                        <circle cx="32" cy="20" r="8" stroke="#1F7A8C" stroke-width="2"/>
-                        <path d="M16 56C16 46.059 23.163 38 32 38C40.837 38 48 46.059 48 56" stroke="#1F7A8C" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="32" cy="20" r="8" stroke="#173160" stroke-width="2"/>
+                        <path d="M16 56C16 46.059 23.163 38 32 38C40.837 38 48 46.059 48 56" stroke="#173160" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <h3 class="feature-title">간편한 경력 관리</h3>
+                <h3 class="feature-title">간편한 경력/리뷰 관리</h3>
                 <p class="feature-description">
-                    보호 평가 프로젝트를 어떤 여부는 관리하고
-                    전공들 취급해 선택해 타지털 포트폴리오를
-                    수작혀하여 합니다.
+                    프로젝트 경험과 리뷰를 모아,
+                    신뢰를 쌓고 다음 기회를 더 쉽게 만드세요.
                 </p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Projects Preview Section -->
 <section class="projects" id="projects">
     <div class="container">
         <h2 class="section-title">프로젝트 미리보기</h2>
-        <p class="section-subtitle">실시간으로 등록된 마을라이 프로젝트를 확인해보세요.</p>
+        <p class="section-subtitle">실제로 등록되는 프로젝트 형태를 미리 확인해보세요.</p>
 
         <div class="projects-tabs">
             <button class="tab-button active" data-tab="all">상세정보</button>
@@ -276,8 +268,8 @@
                 </div>
                 <h3 class="project-title">프로젝트 표준 계약서</h3>
                 <p class="project-description">
-                    Ratel-Ocean에서 제공하는 법적 등기가 보완되어 프로젝트 계약서를 사용합니다.
-                    한번 클릭으로 검증되어 사용됩니다.
+                    계약 과정에서 필요한 핵심 항목을 표준화해,
+                    빠르고 안전하게 계약을 진행할 수 있습니다.
                 </p>
                 <div class="project-footer">
                     <div class="project-amount">
@@ -286,7 +278,7 @@
                         <span class="amount-change">상승 +12%</span>
                     </div>
                     <div class="project-deadline">
-                        <span class="deadline-label">지원 마감일</span>
+                        <span class="deadline-label">지원 현황</span>
                         <span class="deadline-value">4건</span>
                         <span class="deadline-date">2일 뒤 마감</span>
                     </div>
@@ -307,7 +299,7 @@
                 </div>
                 <h3 class="project-title">E-커머스 모바일 앱 개발</h3>
                 <p class="project-description">
-                    고객 맞춤형 쇼핑 경험을 제공하는 모바일 애플리케이션을 개발합니다.
+                    고객 맞춤형 쇼핑 경험을 제공하는 모바일 애플리케이션 개발 프로젝트입니다.
                     iOS와 Android 모두 지원합니다.
                 </p>
                 <div class="project-footer">
@@ -317,7 +309,7 @@
                         <span class="amount-change">상승 +8%</span>
                     </div>
                     <div class="project-deadline">
-                        <span class="deadline-label">지원 마감일</span>
+                        <span class="deadline-label">지원 현황</span>
                         <span class="deadline-value">7건</span>
                         <span class="deadline-date">5일 뒤 마감</span>
                     </div>
@@ -348,7 +340,7 @@
                         <span class="amount-change">상승 +15%</span>
                     </div>
                     <div class="project-deadline">
-                        <span class="deadline-label">지원 마감일</span>
+                        <span class="deadline-label">지원 현황</span>
                         <span class="deadline-value">3건</span>
                         <span class="deadline-date">7일 뒤 마감</span>
                     </div>
@@ -367,23 +359,22 @@
     </div>
 </section>
 
-<!-- CTA Section -->
 <section class="cta">
     <div class="container">
         <div class="cta-content">
             <h2 class="cta-title">프리랜서 커리어를 한 단계 업그레이드하세요</h2>
             <p class="cta-description">
-                이제 수요 협력을 전문 직후를 통해 작업. 정산, 경력을 서로 Ratel-Ocean에서 건파하고 있습니다.
+                프로젝트 운영부터 정산, 경력 관리까지.<br>
+                Ratel-Ocean에서 더 간편하고 안전하게 시작할 수 있습니다.
             </p>
             <div class="cta-actions">
                 <a href="${pageContext.request.contextPath}/join/select-role" class="btn btn-primary btn-lg">지금 무료로 시작하기</a>
-                <a href="#features" class="btn btn-outline-white btn-lg">도움 받기</a>
+                <a href="#features" class="btn btn-outline-white btn-lg">기능 더 보기</a>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Footer -->
 <footer class="footer">
     <div class="container">
         <div class="footer-content">
@@ -393,8 +384,8 @@
                     <span class="logo-text">Ratel-Ocean</span>
                 </div>
                 <p class="footer-description">
-                    일정한 수주를 투명한 규모를 스랭 주운한 프로젝트를 선택할
-                    거리사항부터 받침돼 모호 근본수 관리수합니다.
+                    프리랜서와 클라이언트를 연결하고,
+                    계약/정산/경력 관리를 더 안전하고 간편하게 만드는 플랫폼입니다.
                 </p>
                 <div class="social-links">
                     <a href="#" aria-label="Facebook">f</a>
@@ -406,9 +397,9 @@
                 <div class="footer-column">
                     <h4>제품</h4>
                     <ul>
-                        <li><a href="#">프리 계약</a></li>
-                        <li><a href="#">포트 투적</a></li>
-                        <li><a href="#">운영일</a></li>
+                        <li><a href="#">프로젝트 관리</a></li>
+                        <li><a href="#">계약/정산</a></li>
+                        <li><a href="#">경력 관리</a></li>
                     </ul>
                 </div>
 

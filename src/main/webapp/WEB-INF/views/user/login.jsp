@@ -70,6 +70,7 @@
             text-decoration:none;
             font-weight:800;
             letter-spacing:.3px;
+            font-size:20px;
         }
 
         .logo-icon{
