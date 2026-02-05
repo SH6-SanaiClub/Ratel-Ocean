@@ -277,30 +277,11 @@
 
     function deleteMessage(messageId) {
         if (!confirm("메시지를 삭제하시겠습니까?")) return;
-        const roomId = selectedRoomId;
         fetch("/ratelocean/chat/message/" + messageId + "/delete", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId: parseInt(roomId) })
+            body: JSON.stringify({ roomId: parseInt(selectedRoomId) })
         }).then(res => {
-            if(res.ok){
-                // 1. 메시지 UI 업데이트
-                handleDeleteMessageUI(messageId);
-
-                // 2. 공유 파일 목록 업데이트
-                // 현재 화면에 있는 메시지 DOM에서 파일만 뽑아서 반영
-                const messages = Array.from(document.querySelectorAll("#chatBody .message")).map(msgDiv => {
-                    const fileLink = msgDiv.querySelector(".bubble a");
-                    return {
-                        fileUrl: fileLink ? fileLink.getAttribute("href") : null,
-                        fileName: fileLink ? fileLink.innerText : null,
-                        isDeleted: msgDiv.querySelector(".bubble").classList.contains("deleted") ? 1 : 0
-                    };
-                });
-                updateSharedFilesFromMessages(messages);
-            } else {
-                alert("삭제 실패");
-            }
         })
             .catch(err => {
                 console.error(err);
@@ -534,7 +515,19 @@
         body.scrollTop = body.scrollHeight;
     }
 
-    function updateSharedFilesFromMessages(messages) {
+    function updateSharedFilesFromMessages() {
+
+        // 2. 공유 파일 목록 업데이트
+        // 현재 화면에 있는 메시지 DOM에서 파일만 뽑아서 반영
+        const messages = Array.from(document.querySelectorAll("#chatBody .message")).map(msgDiv => {
+            const fileLink = msgDiv.querySelector(".bubble a");
+            return {
+                fileUrl: fileLink ? fileLink.getAttribute("href") : null,
+                fileName: fileLink ? fileLink.innerText : null,
+                isDeleted: msgDiv.querySelector(".bubble").classList.contains("deleted") ? 1 : 0
+            };
+        });
+
        let fileContainer = document.querySelector("#roomInfo .file-list");
         if (!fileContainer) {
             const infoSection = document.querySelector("#roomInfo .info-section");
@@ -785,6 +778,7 @@
                 const received = JSON.parse(msg.body);
                 if (received.type === 'DELETE') {
                     handleDeleteMessageUI(received.messageId);
+                    updateSharedFilesFromMessages();
                 } else {
                     showReceivedMessage(received);
                 }
