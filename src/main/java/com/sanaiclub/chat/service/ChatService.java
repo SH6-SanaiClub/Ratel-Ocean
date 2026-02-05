@@ -50,7 +50,7 @@ public class ChatService {
             fileName = originalFileName;
             fileUrl = "/upload/chat/" + savedFileName;
         }
-        markRoomAsRead(roomId, AuthContext.getCurrentUserId());
+        markRoomAsRead(roomId, senderId);
         ChatMessageDTO message =sendAndReturnMessage(
                 roomId,
                 senderId,
