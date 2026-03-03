@@ -11,7 +11,14 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:property-placeholder location="classpath:jwt.properties, classpath:deepseek-api.properties" ignore-unresolvable="true"/>
+    <context:property-placeholder
+            location="classpath:jwt.properties,
+              classpath:jwt-local.properties,
+              classpath:deepseek-api.properties,
+              classpath:deepseek-api-local.properties"
+            ignore-resource-not-found="true"
+            ignore-unresolvable="true"
+            order="1"/>
 
     <!-- Annotation-driven MVC -->
     <mvc:annotation-driven>

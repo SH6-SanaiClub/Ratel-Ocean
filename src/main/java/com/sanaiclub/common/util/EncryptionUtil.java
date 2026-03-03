@@ -2,6 +2,7 @@ package com.sanaiclub.common.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -13,7 +14,10 @@ import java.util.Base64;
 
 
 @Component
-@PropertySource("classpath:security.properties")
+@PropertySources({
+        @PropertySource("classpath:security.properties"),
+        @PropertySource(value = "classpath:security-local.properties", ignoreResourceNotFound = true)
+})
 public class EncryptionUtil {
 
     @Value("${security.aes.key}")

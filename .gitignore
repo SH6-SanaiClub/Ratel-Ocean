@@ -46,22 +46,12 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 # ===== 민감정보 =====
-*.properties
-
-**/db.properties
-**/database.properties
-**/security.properties
-**/application-local.properties
-**/application-dev.properties
+**/*-local.properties
 **/*-local.yml
 **/*-local.yaml
 *.env
 .env.local
 .env.*.local
-**/jwt.properties
-**/bizno-api.properties
-**/deepseek-api.properties
-**/portone-api.properties
 
 # ===== 로그 파일 =====
 logs/

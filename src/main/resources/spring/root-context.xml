@@ -13,7 +13,19 @@
 
     <!-- Properties 파일 로드 -->
     <context:property-placeholder
-            location="classpath:db.properties,classpath:jwt.properties,classpath:bizno-api.properties,classpath:deepseek-api.properties,classpath:security.properties,classpath:portone-api.properties"
+            location="classpath:db.properties,
+                  classpath:db-local.properties,
+                  classpath:jwt.properties,
+                  classpath:jwt-local.properties,
+                  classpath:bizno-api.properties,
+                  classpath:bizno-api-local.properties,
+                  classpath:deepseek-api.properties,
+                  classpath:deepseek-api-local.properties,
+                  classpath:security.properties,
+                  classpath:security-local.properties,
+                  classpath:portone-api.properties,
+                  classpath:portone-api-local.properties"
+            ignore-resource-not-found="true"
             ignore-unresolvable="true"
             order="1"/>
 
